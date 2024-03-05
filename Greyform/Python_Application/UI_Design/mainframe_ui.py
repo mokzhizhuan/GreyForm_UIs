@@ -1,0 +1,162 @@
+# -*- coding: utf-8 -*-
+
+################################################################################
+## Form generated from reading UI file 'mainframe.ui'
+##
+## Created by: Qt User Interface Compiler version 6.6.2
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
+
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
+    QFont, QFontDatabase, QGradient, QIcon,
+    QImage, QKeySequence, QLinearGradient, QPainter,
+    QPalette, QPixmap, QRadialGradient, QTransform)
+from PySide6.QtOpenGLWidgets import QOpenGLWidget
+from PySide6.QtWidgets import (QApplication, QGraphicsView, QGroupBox, QLabel,
+    QListView, QMainWindow, QPushButton, QSizePolicy,
+    QStackedWidget, QStatusBar, QVBoxLayout, QWidget)
+import Cover_1.stl_rc
+import square_rc
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        if not MainWindow.objectName():
+            MainWindow.setObjectName(u"MainWindow")
+        MainWindow.resize(1225, 786)
+        self.centralwidget = QWidget(MainWindow)
+        self.centralwidget.setObjectName(u"centralwidget")
+        self.stackedWidget = QStackedWidget(self.centralwidget)
+        self.stackedWidget.setObjectName(u"stackedWidget")
+        self.stackedWidget.setGeometry(QRect(-10, 10, 1221, 781))
+        self.mainmenu = QWidget()
+        self.mainmenu.setObjectName(u"mainmenu")
+        self.pushButton_2 = QPushButton(self.mainmenu)
+        self.pushButton_2.setObjectName(u"pushButton_2")
+        self.pushButton_2.setGeometry(QRect(480, 590, 151, 71))
+        self.pushButton_2.setCheckable(False)
+        self.QTitle = QLabel(self.mainmenu)
+        self.QTitle.setObjectName(u"QTitle")
+        self.QTitle.setGeometry(QRect(40, 200, 1021, 221))
+        self.QTitle.setScaledContents(False)
+        self.QTitle.setAlignment(Qt.AlignCenter)
+        self.stackedWidget.addWidget(self.mainmenu)
+        self.page = QWidget()
+        self.page.setObjectName(u"page")
+        self.pushButton = QPushButton(self.page)
+        self.pushButton.setObjectName(u"pushButton")
+        self.pushButton.setGeometry(QRect(320, 660, 89, 21))
+        self.CloseButton = QPushButton(self.page)
+        self.CloseButton.setObjectName(u"CloseButton")
+        self.CloseButton.setGeometry(QRect(170, 660, 101, 25))
+        self.PathButton = QPushButton(self.page)
+        self.PathButton.setObjectName(u"PathButton")
+        self.PathButton.setGeometry(QRect(20, 660, 121, 25))
+        self.Selectivefilelistview = QListView(self.page)
+        self.Selectivefilelistview.setObjectName(u"Selectivefilelistview")
+        self.Selectivefilelistview.setGeometry(QRect(50, 40, 371, 591))
+        self.verticalLayoutWidget = QWidget(self.page)
+        self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
+        self.verticalLayoutWidget.setGeometry(QRect(590, 50, 411, 591))
+        self.verticalLayout = QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.tablelabel = QLabel(self.page)
+        self.tablelabel.setObjectName(u"tablelabel")
+        self.tablelabel.setGeometry(QRect(60, 20, 67, 17))
+        self.stackedWidget.addWidget(self.page)
+        self.page_2 = QWidget()
+        self.page_2.setObjectName(u"page_2")
+        self.SideViewButton = QPushButton(self.page_2)
+        self.SideViewButton.setObjectName(u"SideViewButton")
+        self.SideViewButton.setGeometry(QRect(40, 460, 261, 151))
+        self.Itemlabel = QLabel(self.page_2)
+        self.Itemlabel.setObjectName(u"Itemlabel")
+        self.Itemlabel.setGeometry(QRect(250, 30, 651, 31))
+        self.BottomViewButton = QPushButton(self.page_2)
+        self.BottomViewButton.setObjectName(u"BottomViewButton")
+        self.BottomViewButton.setGeometry(QRect(40, 280, 261, 151))
+        self.TopViewButton = QPushButton(self.page_2)
+        self.TopViewButton.setObjectName(u"TopViewButton")
+        self.TopViewButton.setGeometry(QRect(40, 100, 261, 141))
+        self.BackButton = QPushButton(self.page_2)
+        self.BackButton.setObjectName(u"BackButton")
+        self.BackButton.setGeometry(QRect(240, 650, 89, 31))
+        self.NextButton = QPushButton(self.page_2)
+        self.NextButton.setObjectName(u"NextButton")
+        self.NextButton.setGeometry(QRect(70, 650, 89, 31))
+        self.dimageWidget = QOpenGLWidget(self.page_2)
+        self.dimageWidget.setObjectName(u"dimageWidget")
+        self.dimageWidget.setGeometry(QRect(500, 110, 561, 521))
+        self.stackedWidget.addWidget(self.page_2)
+        self.page_3 = QWidget()
+        self.page_3.setObjectName(u"page_3")
+        self.Itemlabel_2 = QLabel(self.page_3)
+        self.Itemlabel_2.setObjectName(u"Itemlabel_2")
+        self.Itemlabel_2.setGeometry(QRect(220, 550, 651, 31))
+        self.BackButton_2 = QPushButton(self.page_3)
+        self.BackButton_2.setObjectName(u"BackButton_2")
+        self.BackButton_2.setGeometry(QRect(220, 690, 89, 31))
+        self.graphicsView = QGraphicsView(self.page_3)
+        self.graphicsView.setObjectName(u"graphicsView")
+        self.graphicsView.setGeometry(QRect(290, 70, 651, 421))
+        self.NextButton_2 = QPushButton(self.page_3)
+        self.NextButton_2.setObjectName(u"NextButton_2")
+        self.NextButton_2.setGeometry(QRect(80, 690, 89, 31))
+        self.Ygroupbox = QGroupBox(self.page_3)
+        self.Ygroupbox.setObjectName(u"Ygroupbox")
+        self.Ygroupbox.setGeometry(QRect(960, 630, 191, 80))
+        self.titleYlabel = QLabel(self.Ygroupbox)
+        self.titleYlabel.setObjectName(u"titleYlabel")
+        self.titleYlabel.setGeometry(QRect(10, 40, 61, 17))
+        self.Ylabel = QLabel(self.Ygroupbox)
+        self.Ylabel.setObjectName(u"Ylabel")
+        self.Ylabel.setGeometry(QRect(80, 30, 91, 31))
+        self.Xgroupbox = QGroupBox(self.page_3)
+        self.Xgroupbox.setObjectName(u"Xgroupbox")
+        self.Xgroupbox.setGeometry(QRect(960, 520, 191, 80))
+        self.titleXlabel = QLabel(self.Xgroupbox)
+        self.titleXlabel.setObjectName(u"titleXlabel")
+        self.titleXlabel.setGeometry(QRect(10, 30, 71, 17))
+        self.Xlabel = QLabel(self.Xgroupbox)
+        self.Xlabel.setObjectName(u"Xlabel")
+        self.Xlabel.setGeometry(QRect(80, 20, 91, 31))
+        self.stackedWidget.addWidget(self.page_3)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.statusbar = QStatusBar(MainWindow)
+        self.statusbar.setObjectName(u"statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+
+        self.retranslateUi(MainWindow)
+
+        QMetaObject.connectSlotsByName(MainWindow)
+    # setupUi
+
+    def retranslateUi(self, MainWindow):
+        MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"fileselectiveframe", None))
+        self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"Click to Continue", None))
+        self.QTitle.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:36pt;\">GRAYFORM UI</span></p></body></html>", None))
+        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Next", None))
+        self.CloseButton.setText(QCoreApplication.translate("MainWindow", u"Close", None))
+        self.PathButton.setText(QCoreApplication.translate("MainWindow", u"Set File Path", None))
+        self.tablelabel.setText(QCoreApplication.translate("MainWindow", u"Table", None))
+        self.SideViewButton.setText(QCoreApplication.translate("MainWindow", u"Side VIew", None))
+        self.Itemlabel.setText(QCoreApplication.translate("MainWindow", u"Product :", None))
+        self.BottomViewButton.setText(QCoreApplication.translate("MainWindow", u"Bottom View", None))
+        self.TopViewButton.setText(QCoreApplication.translate("MainWindow", u"Top View", None))
+        self.BackButton.setText(QCoreApplication.translate("MainWindow", u"Back", None))
+        self.NextButton.setText(QCoreApplication.translate("MainWindow", u"Next", None))
+        self.Itemlabel_2.setText(QCoreApplication.translate("MainWindow", u"Product:", None))
+        self.BackButton_2.setText(QCoreApplication.translate("MainWindow", u"Back", None))
+        self.NextButton_2.setText(QCoreApplication.translate("MainWindow", u"Next", None))
+        self.Ygroupbox.setTitle("")
+        self.titleYlabel.setText(QCoreApplication.translate("MainWindow", u"Height:", None))
+        self.Ylabel.setText(QCoreApplication.translate("MainWindow", u"800", None))
+        self.Xgroupbox.setTitle("")
+        self.titleXlabel.setText(QCoreApplication.translate("MainWindow", u"Width:", None))
+        self.Xlabel.setText(QCoreApplication.translate("MainWindow", u"800", None))
+    # retranslateUi
+
