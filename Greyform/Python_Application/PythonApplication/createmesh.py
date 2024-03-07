@@ -20,43 +20,57 @@ import pandas as pd
 import cv2
 from vtk import *
 from vtk import vtkUnstructuredGridReader
+from vtkmodules.qt import QVTKRenderWindowInteractor
 
 class createMesh(QMainWindow):
-    def createmesh(CurrentMesh, plotters):
-        if plotters:
-            plotters.clear()
-        
-        #mesh data insertion
-        cylinder = pv.Cylinder(resolution=100, center=(60, 140, 471), direction=(0, 0, 1), height=16 , radius=8).triangulate().subdivide(3)
-        
+    def __init__(self):
+        self.reader = None
 
-        polydata = pv.read(CurrentMesh)
-        plotters.add_mesh(polydata, color=(230, 230, 250), show_edges=True, edge_color=(128,128,128) ,cmap="terrain", clim=[1,3] ,  name='roombuilding', opacity="linear")
-        plotters.set_focus(polydata.center)
-        plotters.add_mesh(cylinder , pickable = False)
-        #actor.SetVisibility(False)
-        def callback(actor):
-            plotters.set_focus(cylinder.points[0])
-        plotters.allow_quit_keypress = False
-        plotters.clear_events_for_key('q')
-        plotters.show_axes()
-        label_actor = plotters.add_point_labels([cylinder.points[0]], [""], point_size=20, font_size=36, pickable=False)
-        plotters.remove_actor(label_actor)
-        plotters.add_actor(label_actor, reset_camera=False, name='label', pickable=True)
-
-        plotters.enable_mesh_picking(callback(label_actor))
-        def my_cpos_callback(*args):
-            plotters.add_text(str(plotters.camera_position), name="cpos")
-            return
-
-        plotters.iren.add_observer(vtk.vtkCommand.EndInteractionEvent, my_cpos_callback)
-        plotters.show()
+    #vtkrenderwindow
+    def createmesh(self, CurrentMesh, renderwindowinteractor):
+        ren = vtk.vtkRenderer()
+        renderwindowinteractor.GetRenderWindow().AddRenderer(ren)
+        renderwindowinteractor.GetRenderWindow().SetSize(1600, 800)
+        polydata = createMesh.loadStl(self, CurrentMesh)
+        camera = vtk.vtkInteractorStyleTrackballCamera()
+        axes = vtkAxesActor()
+        #vtkOrientation
+        widget = vtkOrientationMarkerWidget()
+        widget.SetOrientationMarker(axes)
+        widget.SetInteractor(renderwindowinteractor)
+        widget.SetViewport(0.0, 0.0, 0.4, 0.4)
+        widget.SetEnabled(1)
+        widget.InteractiveOn()
+        renderwindowinteractor.SetInteractorStyle(camera)
+        ren.AddActor(createMesh.polyDataToActor(self, polydata))
+        ren.SetBackground(255, 255, 255)
+        renderwindowinteractor.Initialize()
+        renderwindowinteractor.GetRenderWindow().Render()
+        renderwindowinteractor.Start()
 
 
-    def createmeshsloop(plotters, sequence):
-        for i in range(1, sequence):
-            cylinder = pv.Cylinder(resolution=100, center=(140, 200, (47-(i*16))), direction=(0, 0, 1), height=16 , radius=8).triangulate().subdivide(3)
-            plotters.add_mesh(cylinder, color='white' , show_edges=True)
-            plotters.show()
+    def loadStl(self, fname):
+        """Load the given STL file, and return a vtkPolyData object for it."""
+        self.reader = vtk.vtkSTLReader()
+        self.reader.SetFileName(fname)
+        self.reader.Update()
+        polydata = self.reader.GetOutput()
+        return polydata
+    
+    def polyDataToActor(self, polydata):
+        """Wrap the provided vtkPolyData object in a mapper and an actor, returning
+    the actor."""
+        mapper = vtk.vtkPolyDataMapper()
+        if vtk.VTK_MAJOR_VERSION <= 5:
+            mapper.SetInput(self.reader.GetOutput())
+            mapper.SetInput(polydata)
+        else:
+            mapper.SetInputConnection(self.reader.GetOutputPort())
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        actor.GetProperty().SetRepresentationToSurface()
+        actor.GetProperty().SetColor((230/255),(230/255), (250/255))
+        return actor
+
 
     

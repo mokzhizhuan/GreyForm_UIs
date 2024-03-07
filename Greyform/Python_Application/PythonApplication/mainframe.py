@@ -19,9 +19,11 @@ import PythonApplication.fileselectionmesh as fileselectionmesh
 import PythonApplication.setsequence as SequenceData
 import pyvista as pv
 import PythonApplication.createmesh as Createmesh
-import PythonApplication.dialog as backtomenudialog
+import PythonApplication.menuconfirm as backtomenudialog
+import PythonApplication.menu_close as closewindow
 from pyvistaqt import QtInteractor , BackgroundPlotter
 from vtkmodules.qt import QVTKRenderWindowInteractor
+import vtk
 
 class Ui_MainWindow(object):
     def __init__(self):
@@ -68,10 +70,15 @@ class Ui_MainWindow(object):
         self.QTitle.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.QTitle.setObjectName("QTitle")
         self.menuStartButton = QtWidgets.QPushButton(parent=self.mainmenu)
-        self.menuStartButton.setGeometry(QtCore.QRect(870, 980, 240, 25))
+        self.menuStartButton.setGeometry(QtCore.QRect(730, 980, 240, 25))
         self.menuStartButton.setCheckable(False)
         self.menuStartButton.setObjectName("menuStartButton")
         self.menuStartButton.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
+        self.menuCloseButton = QtWidgets.QPushButton(parent=self.mainmenu)
+        self.menuCloseButton.setGeometry(QtCore.QRect(1000, 980, 240, 25))
+        self.menuCloseButton.setCheckable(False)
+        self.menuCloseButton.setObjectName("menuStartButton")
+        self.menuCloseButton.clicked.connect(lambda: closewindow.Ui_Dialog_Close.show_dialog_close(MainWindow))
         self.stackedWidget.addWidget(self.mainmenu)
         self.page = QtWidgets.QWidget()
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
@@ -92,7 +99,7 @@ class Ui_MainWindow(object):
         self.BacktoMenuButton = QtWidgets.QPushButton(parent=self.page)
         self.BacktoMenuButton.setGeometry(QtCore.QRect(240, 980, 121, 25))
         self.BacktoMenuButton.setObjectName("BacktoMenuButton")
-        self.BacktoMenuButton.clicked.connect(lambda: backtomenudialog.Dialog.show_dialog(MainWindow, self.stackedWidget))
+        self.BacktoMenuButton.clicked.connect(lambda: backtomenudialog.Ui_Dialog_Confirm.show_dialog_confirm(MainWindow, self.stackedWidget))
         self.horizontalLayoutWidget_2 = QtWidgets.QWidget(parent=self.page)
         self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(840, 90, 1060, 840))
         self.horizontalLayoutWidget_2.setObjectName("horizontalLayoutWidget_2")
@@ -105,7 +112,7 @@ class Ui_MainWindow(object):
         self.pyvistaframe.setFrameShadow(QFrame.Raised)
         self.plotterloader = QtInteractor(self.pyvistaframe , line_smoothing=True, point_smoothing= True, polygon_smoothing=True, multi_samples=8)
         self.plotterloader.enable()
-        self.horizontalLayout_2.addWidget(self.pyvistaframe)
+        self.horizontalLayout_2.addWidget(self.plotterloader.interactor)
         self.FilePathButton = QtWidgets.QPushButton(parent=self.page)
         self.FilePathButton.setGeometry(QtCore.QRect(100, 980, 89, 25))
         self.FilePathButton.setObjectName("FilePathButton")
@@ -151,7 +158,7 @@ class Ui_MainWindow(object):
         self.pyvistaframe_2.setFrameShadow(QFrame.Raised)
         self.plotterloader_2 = QtInteractor(self.pyvistaframe_2, line_smoothing=True, point_smoothing= True, polygon_smoothing=True, multi_samples=8)
         self.plotterloader_2.enable()
-        self.horizontalLayout_4.addWidget(self.pyvistaframe_2)
+        self.horizontalLayout_4.addWidget(self.plotterloader_2.interactor)
         self.stackedWidget.addWidget(self.page_2)
         self.page_3 = QtWidgets.QWidget()
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
@@ -161,18 +168,19 @@ class Ui_MainWindow(object):
         self.page_3.setSizePolicy(sizePolicy)
         self.page_3.setObjectName("page_3")
         self.verticalLayoutWidget = QtWidgets.QWidget(parent=self.page_3)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(160, 20, 1601, 801))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(160, 20, 1600, 800))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
-        self.frame = QFrame(self.verticalLayoutWidget)
-        self.frame.setObjectName("frame")
-        self.frame.setFrameShape(QFrame.StyledPanel)
-        self.frame.setFrameShadow(QFrame.Raised)
-        self.plotter = QtInteractor(self.frame , line_smoothing=True, point_smoothing= True, polygon_smoothing=True)
-        self.plotter = BackgroundPlotter(toolbar=True, menu_bar=True, editor=True)
+        self.vtkframe = QFrame(self.verticalLayoutWidget)
+        self.vtkframe.setObjectName("pyvistaframe_2")
+        self.vtkframe.setFrameShape(QFrame.StyledPanel)
+        self.vtkframe.setFrameShadow(QFrame.Raised)
+        # Create a render window, and set interaction styles
+        self.renderWindowInteractor = QVTKRenderWindowInteractor.QVTKRenderWindowInteractor(self.vtkframe)
+        self.renderWindowInteractor.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.verticalLayout.addWidget(self.plotter.interactor)
+        self.verticalLayout.addWidget(self.vtkframe)
         self.Ygroupbox = QtWidgets.QGroupBox(parent=self.page_3)
         self.Ygroupbox.setGeometry(QtCore.QRect(1700, 940, 171, 51))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Minimum)
@@ -214,7 +222,7 @@ class Ui_MainWindow(object):
         self.sequence = self.seq1Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq1Button, self.NextButton_Page_3 , self.Seqlabel))
         self.sequence = self.seq2Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq2Button, self.NextButton_Page_3 , self.Seqlabel))
         self.sequence = self.seq3Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq3Button, self.NextButton_Page_3 , self.Seqlabel))
-        self.NextButton_Page_3.clicked.connect(lambda: Createmesh.createMesh.createmesh(self.file_path , self.plotter))
+        self.NextButton_Page_3.clicked.connect(lambda: Createmesh.createMesh.createmesh(self,self.file_path , self.renderWindowInteractor))
         self.stackedWidget.addWidget(self.page_3)
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
@@ -247,6 +255,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "mainframe"))
         self.QTitle.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">GRAYFORM UI</span></p></body></html>"))
         self.menuStartButton.setText(_translate("MainWindow", "Click to Continue"))
+        self.menuCloseButton.setText(_translate("MainWindow", "Click to Close the Window"))
         self.NextButton_Page_2.setText(_translate("MainWindow", "Next"))
         self.BacktoMenuButton.setText(_translate("MainWindow", "Back To Menu"))
         self.FilePathButton.setText(_translate("MainWindow", "File_Path"))
