@@ -19,7 +19,9 @@ import PythonApplication.fileselectionmesh as fileselectionmesh
 import PythonApplication.setsequence as SequenceData
 import pyvista as pv
 import PythonApplication.createmesh as Createmesh
-from pyvistaqt import QtInteractor
+import PythonApplication.dialog as backtomenudialog
+from pyvistaqt import QtInteractor , BackgroundPlotter
+from vtkmodules.qt import QVTKRenderWindowInteractor
 
 class Ui_MainWindow(object):
     def __init__(self):
@@ -78,8 +80,6 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.page.sizePolicy().hasHeightForWidth())
         self.page.setSizePolicy(sizePolicy)
         self.page.setObjectName("page")
-        self.viewergraphics = gl.GLViewWidget()
-        self.viewergraphics_2 = gl.GLViewWidget()
         self.Selectivefilelistview = QtWidgets.QListView(parent=self.page)
         self.Selectivefilelistview.setGeometry(QtCore.QRect(100, 80, 431, 861))
         self.Selectivefilelistview.setObjectName("Selectivefilelistview")
@@ -92,13 +92,20 @@ class Ui_MainWindow(object):
         self.BacktoMenuButton = QtWidgets.QPushButton(parent=self.page)
         self.BacktoMenuButton.setGeometry(QtCore.QRect(240, 980, 121, 25))
         self.BacktoMenuButton.setObjectName("BacktoMenuButton")
-        self.BacktoMenuButton.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        self.BacktoMenuButton.clicked.connect(lambda: backtomenudialog.Dialog.show_dialog(MainWindow, self.stackedWidget))
         self.horizontalLayoutWidget_2 = QtWidgets.QWidget(parent=self.page)
-        self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(840, 90, 1061, 841))
+        self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(840, 90, 1060, 840))
         self.horizontalLayoutWidget_2.setObjectName("horizontalLayoutWidget_2")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_2)
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.pyvistaframe = QFrame(self.horizontalLayoutWidget_2)
+        self.pyvistaframe.setObjectName("pyvistaframe")
+        self.pyvistaframe.setFrameShape(QFrame.Panel)
+        self.pyvistaframe.setFrameShadow(QFrame.Raised)
+        self.plotterloader = QtInteractor(self.pyvistaframe , line_smoothing=True, point_smoothing= True, polygon_smoothing=True, multi_samples=8)
+        self.plotterloader.enable()
+        self.horizontalLayout_2.addWidget(self.pyvistaframe)
         self.FilePathButton = QtWidgets.QPushButton(parent=self.page)
         self.FilePathButton.setGeometry(QtCore.QRect(100, 980, 89, 25))
         self.FilePathButton.setObjectName("FilePathButton")
@@ -138,6 +145,13 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
         self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.pyvistaframe_2 = QFrame(self.horizontalLayoutWidget)
+        self.pyvistaframe_2.setObjectName("pyvistaframe_2")
+        self.pyvistaframe_2.setFrameShape(QFrame.StyledPanel)
+        self.pyvistaframe_2.setFrameShadow(QFrame.Raised)
+        self.plotterloader_2 = QtInteractor(self.pyvistaframe_2, line_smoothing=True, point_smoothing= True, polygon_smoothing=True, multi_samples=8)
+        self.plotterloader_2.enable()
+        self.horizontalLayout_4.addWidget(self.pyvistaframe_2)
         self.stackedWidget.addWidget(self.page_2)
         self.page_3 = QtWidgets.QWidget()
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
@@ -153,7 +167,8 @@ class Ui_MainWindow(object):
         self.frame.setObjectName("frame")
         self.frame.setFrameShape(QFrame.StyledPanel)
         self.frame.setFrameShadow(QFrame.Raised)
-        self.plotter = QtInteractor(self.frame)
+        self.plotter = QtInteractor(self.frame , line_smoothing=True, point_smoothing= True, polygon_smoothing=True)
+        self.plotter = BackgroundPlotter(toolbar=True, menu_bar=True, editor=True)
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -212,20 +227,12 @@ class Ui_MainWindow(object):
 
     #when selected from the file
     def on_selection_changed(self, index):
-        if self.currentSTL != None:
-            self.viewergraphics.removeItem(self.currentSTL)
-            self.viewergraphics_2.removeItem(self.currentSTL)
-        
         model = self.Selectivefilelistview.model()
         self.file_path = model.filePath(index)
         file = self.Selectivefilelistview.model().itemData(index)[0]
-        self.currentSTL = fileselectionmesh.FileSelectionMesh.meshdata(self , self.file_path , self.viewergraphics , self.viewergraphics_2, self.currentSTL)
+        fileselectionmesh.FileSelectionMesh.meshdata(self.file_path , self.plotterloader , self.plotterloader_2)
         self.file = file.replace('.stl', '')
         self.NextButton_Page_2.show()
-
-        #view stl file for layouts
-        self.horizontalLayout_2.addWidget(self.viewergraphics,1)#view stl file
-        self.horizontalLayout_4.addWidget(self.viewergraphics_2,1)
 
         _translate = QtCore.QCoreApplication.translate
         self.Itemlabel.setText(_translate("MainWindow", "Product : " + str(self.file)))

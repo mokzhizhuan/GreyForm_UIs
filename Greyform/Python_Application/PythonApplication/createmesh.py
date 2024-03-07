@@ -16,31 +16,41 @@ import pyvista as pv
 import vtk
 from ipywidgets import interact
 from pyvistaqt import QtInteractor
+import pandas as pd
+import cv2
+from vtk import *
+from vtk import vtkUnstructuredGridReader
 
 class createMesh(QMainWindow):
     def createmesh(CurrentMesh, plotters):
+        if plotters:
+            plotters.clear()
+        
         #mesh data insertion
-        func = lambda line: line
-        cylinder = pv.Cylinder(resolution=100, center=(100, 300, 47), direction=(0, 0, 1), height=16 , radius=8).triangulate().subdivide(3)
-        meshs = pv.read(CurrentMesh)
-        plotters.add_mesh(meshs, color=(31, 236, 67), show_edges=True, edge_color="black" ,cmap="terrain", clim=[1,3] ,  name='roombuilding')
-        plotters.set_focus(meshs.center)
-        plotters.add_mesh(cylinder, color='white' , show_edges=True, edge_color="black")
+        cylinder = pv.Cylinder(resolution=100, center=(60, 140, 471), direction=(0, 0, 1), height=16 , radius=8).triangulate().subdivide(3)
+        
 
-        ctf = vtk.vtkColorTransferFunction()
-        ctf.AddRGBPoint(0,1,0,0)
-        ctf.AddRGBPoint(1,0,1,0)
-        ctf.AddRGBPoint(2,0,0,1)
-        plotters.camera_set = True
-        plotters.where_is('roombuilding')
+        polydata = pv.read(CurrentMesh)
+        plotters.add_mesh(polydata, color=(230, 230, 250), show_edges=True, edge_color=(128,128,128) ,cmap="terrain", clim=[1,3] ,  name='roombuilding', opacity="linear")
+        plotters.set_focus(polydata.center)
+        plotters.add_mesh(cylinder , pickable = False)
+        #actor.SetVisibility(False)
+        def callback(actor):
+            plotters.set_focus(cylinder.points[0])
+        plotters.allow_quit_keypress = False
+        plotters.clear_events_for_key('q')
+        plotters.show_axes()
+        label_actor = plotters.add_point_labels([cylinder.points[0]], [""], point_size=20, font_size=36, pickable=False)
+        plotters.remove_actor(label_actor)
+        plotters.add_actor(label_actor, reset_camera=False, name='label', pickable=True)
+
+        plotters.enable_mesh_picking(callback(label_actor))
         def my_cpos_callback(*args):
             plotters.add_text(str(plotters.camera_position), name="cpos")
             return
+
         plotters.iren.add_observer(vtk.vtkCommand.EndInteractionEvent, my_cpos_callback)
-        plotters.show_axes()
-        
         plotters.show()
-        plotters.enable()
 
 
     def createmeshsloop(plotters, sequence):

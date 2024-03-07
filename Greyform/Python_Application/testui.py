@@ -1,25 +1,50 @@
 import sys
-import os
-from PyQt5 import QtGui, uic
-from UI_Design import main_ui
-from PyQt5 import QtCore, QtGui, QtWidgets, uic
-from PyQt5.QtCore import * 
-from PyQt5.QtGui import * 
-from PyQt5.QtWidgets import * 
-file = os.path.abspath(main_ui.__file__)
-
-
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QDialog, QVBoxLayout, QLabel, QWidget
 
 class MyWindow(QMainWindow):
     def __init__(self):
-        super(MyWindow, self).__init__()
-        self.files = file
-        self.files = self.files.replace("_ui.py" , ".ui")
-        print(self.files)
-        uic.loadUi(self.files, self)
-        self.show()
+        super().__init__()
 
-if __name__ == '__main__':
+        # Set the window properties (title and initial size)
+        self.setWindowTitle("Dialog Box Example")
+        self.setGeometry(100, 100, 400, 200)  # (x, y, width, height)
+
+        # Create a central widget for the main window
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+
+        # Create a button that triggers the dialog
+        dialog_button = QPushButton("Show Dialog")
+        dialog_button.clicked.connect(self.show_dialog)
+
+        # Create a layout for the central widget
+        layout = QVBoxLayout()
+        layout.addWidget(dialog_button)
+        central_widget.setLayout(layout)
+
+    def show_dialog(self):
+        # Create a QDialog instance
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Dialog Box")
+
+        # Create a label with a message
+        label = QLabel("This is a message in the dialog box.")
+
+        # Create a layout for the dialog
+        dialog_layout = QVBoxLayout()
+        dialog_layout.addWidget(label)
+
+        # Set the layout for the dialog
+        dialog.setLayout(dialog_layout)
+
+        # Show the dialog as a modal dialog (blocks the main window)
+        dialog.exec_()
+
+def main():
     app = QApplication(sys.argv)
     window = MyWindow()
+    window.show()
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()
