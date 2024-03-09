@@ -31,8 +31,6 @@ class Ui_MainWindow(object):
         self.x = 661 #graph x axis
         self.y = 431 #graph y axis
         self.filepath = None
-        self.xpos = 0
-        self.ypos = 0
         self.dir_path = None
         self.viewer = None
         self.file = None
@@ -222,7 +220,39 @@ class Ui_MainWindow(object):
         self.sequence = self.seq1Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq1Button, self.NextButton_Page_3 , self.Seqlabel))
         self.sequence = self.seq2Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq2Button, self.NextButton_Page_3 , self.Seqlabel))
         self.sequence = self.seq3Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq3Button, self.NextButton_Page_3 , self.Seqlabel))
-        self.NextButton_Page_3.clicked.connect(lambda: Createmesh.createMesh.createmesh(self,self.file_path , self.renderWindowInteractor))
+        self.NextButton_Page_3.clicked.connect(lambda: Createmesh.createMesh.createmesh(self,self.file_path , self.renderWindowInteractor, self.Ylabel, self.Xlabel,
+                                                                                        self.Xlabel_2, self.Ylabel_2))
+        self.Xgroupbox_2 = QtWidgets.QGroupBox(parent=self.page_3)
+        self.Xgroupbox_2.setGeometry(QtCore.QRect(1490, 860, 171, 61))
+        self.Xgroupbox_2.setTitle("")
+        self.Xgroupbox_2.setObjectName("Xgroupbox_2")
+        self.titleXlabel_2 = QtWidgets.QLabel(parent=self.Xgroupbox_2)
+        self.titleXlabel_2.setGeometry(QtCore.QRect(10, 20, 71, 17))
+        self.titleXlabel_2.setObjectName("titleXlabel_2")
+        self.Xlabel_2 = QtWidgets.QLabel(parent=self.Xgroupbox_2)
+        self.Xlabel_2.setGeometry(QtCore.QRect(80, 20, 91, 31))
+        self.Xlabel_2.setObjectName("Xlabel_2")
+        self.Ygroupbox_2 = QtWidgets.QGroupBox(parent=self.page_3)
+        self.Ygroupbox_2.setGeometry(QtCore.QRect(1500, 940, 171, 51))
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.Ygroupbox_2.sizePolicy().hasHeightForWidth())
+        self.Ygroupbox_2.setSizePolicy(sizePolicy)
+        self.Ygroupbox_2.setTitle("")
+        self.Ygroupbox_2.setObjectName("Ygroupbox_2")
+        self.titleYlabel_2 = QtWidgets.QLabel(parent=self.Ygroupbox_2)
+        self.titleYlabel_2.setGeometry(QtCore.QRect(10, 20, 61, 17))
+        self.titleYlabel_2.setObjectName("titleYlabel_2")
+        self.Ylabel_2 = QtWidgets.QLabel(parent=self.Ygroupbox_2)
+        self.Ylabel_2.setGeometry(QtCore.QRect(80, 10, 91, 31))
+        self.Ylabel_2.setObjectName("Ylabel_2")
+        self.displaybeforelabel = QtWidgets.QLabel(parent=self.page_3)
+        self.displaybeforelabel.setGeometry(QtCore.QRect(1530, 840, 101, 17))
+        self.displaybeforelabel.setObjectName("displaybeforelabel")
+        self.label_2 = QtWidgets.QLabel(parent=self.page_3)
+        self.label_2.setGeometry(QtCore.QRect(1740, 830, 101, 17))
+        self.label_2.setObjectName("label_2")
         self.stackedWidget.addWidget(self.page_3)
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
@@ -266,12 +296,18 @@ class Ui_MainWindow(object):
         self.BackButton.setText(_translate("MainWindow", "Back"))
         self.NextButton_Page_3.setText(_translate("MainWindow", "Next"))
         self.titleYlabel.setText(_translate("MainWindow", "Height:"))
-        self.Ylabel.setText(_translate("MainWindow", str(self.ypos)))
+        self.Ylabel.setText(_translate("MainWindow", "0"))
         self.titleXlabel.setText(_translate("MainWindow", "Width:"))
-        self.Xlabel.setText(_translate("MainWindow", str(self.xpos)))
+        self.Xlabel.setText(_translate("MainWindow", "0"))
         self.BackButton_Page_2.setText(_translate("MainWindow", "Back"))
         self.ConfirmButtton.setText(_translate("MainWindow", "Confirm"))
         self.Itemlabel_Page_3.setText(_translate("MainWindow", "Product:"))
         self.Seqlabel.setText(_translate("MainWindow", "Sequence:"))
+        self.titleXlabel_2.setText(_translate("MainWindow", "Width:"))
+        self.Xlabel_2.setText(_translate("MainWindow", "0"))
+        self.titleYlabel_2.setText(_translate("MainWindow", "Height:"))
+        self.Ylabel_2.setText(_translate("MainWindow", "0"))
+        self.displaybeforelabel.setText(_translate("MainWindow", "Before Display"))
+        self.label_2.setText(_translate("MainWindow", "After Display"))
 
 
