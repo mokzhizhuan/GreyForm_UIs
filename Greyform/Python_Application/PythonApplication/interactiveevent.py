@@ -44,6 +44,7 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         _translate = QtCore.QCoreApplication.translate
         self.xlabels.setText(_translate("MainWindow", str("{0:.2f}".format(clickPos[0]))))
         self.ylabels.setText(_translate("MainWindow", str("{0:.2f}".format(clickPos[1]))))
+        
         self.OnLeftButtonDown()
 
     def RightButtonPressEvent(self, obj, event):
@@ -76,12 +77,13 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
     def KeyPressed(self, obj, event):
         key = self.renderwindowinteractors.GetKeySym()
         camera = vtk.vtkCamera()
-        print(key)
         if key in "j":
-            print(self.actorviewsbathpos)
-            camera.SetFocalPoint(self.actorviewsbathpos[0],self.actorviewsbathpos[1], self.actorviewsbathpos[2])
+            camera.SetFocalPoint(self.actorviewsbathpos[1],self.actorviewsbathpos[0], self.actorviewsbathpos[2])
             self.render.SetActiveCamera(camera)
-        elif key in "n":
-            print(self.actorviewsshowerpos)
-            camera.SetFocalPoint(self.actorviewsshowerpos[0],self.actorviewsshowerpos[1], self.actorviewsshowerpos[2])
-            self.render.SetActiveCamera(camera)
+        #elif key in "n":
+            #camera.SetFocalPoint(self.actorviewsshowerpos[0],self.actorviewsshowerpos[1], self.actorviewsshowerpos[2])
+            #self.render.SetActiveCamera(camera)
+        elif key in "l":
+            camera.SetFocalPoint(0,0,0)
+            self.render.ResetCamera()
+

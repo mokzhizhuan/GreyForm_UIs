@@ -110,7 +110,6 @@ class Ui_MainWindow(object):
         self.pyvistaframe.setFrameShadow(QFrame.Raised)
         self.plotterloader = QtInteractor(self.pyvistaframe , line_smoothing=True, point_smoothing= True, polygon_smoothing=True, multi_samples=8)
         self.plotterloader.enable()
-        self.horizontalLayout_2.addWidget(self.plotterloader.interactor)
         self.FilePathButton = QtWidgets.QPushButton(parent=self.page)
         self.FilePathButton.setGeometry(QtCore.QRect(100, 980, 89, 25))
         self.FilePathButton.setObjectName("FilePathButton")
@@ -156,7 +155,6 @@ class Ui_MainWindow(object):
         self.pyvistaframe_2.setFrameShadow(QFrame.Raised)
         self.plotterloader_2 = QtInteractor(self.pyvistaframe_2, line_smoothing=True, point_smoothing= True, polygon_smoothing=True, multi_samples=8)
         self.plotterloader_2.enable()
-        self.horizontalLayout_4.addWidget(self.plotterloader_2.interactor)
         self.stackedWidget.addWidget(self.page_2)
         self.page_3 = QtWidgets.QWidget()
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
@@ -268,7 +266,8 @@ class Ui_MainWindow(object):
         model = self.Selectivefilelistview.model()
         self.file_path = model.filePath(index)
         file = self.Selectivefilelistview.model().itemData(index)[0]
-        fileselectionmesh.FileSelectionMesh.meshdata(self.file_path , self.plotterloader , self.plotterloader_2)
+        fileselectionmesh.FileSelectionMesh.meshdata(self, self.horizontalLayout_2,self.horizontalLayout_4, self.file_path , self.plotterloader , self.plotterloader_2, 
+                                                     self.pyvistaframe , self.pyvistaframe_2, self.horizontalLayoutWidget, self.horizontalLayoutWidget_2)
         self.file = file.replace('.stl', '')
         self.NextButton_Page_2.show()
 

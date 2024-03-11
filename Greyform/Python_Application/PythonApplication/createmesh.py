@@ -23,6 +23,11 @@ from vtk import vtkUnstructuredGridReader
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import math
 import PythonApplication.interactiveevent as events
+import ifcopenshell
+import ifcopenshell.geom
+import ifcopenshell.util.element as Element
+from ifcopenshell.util.placement import get_local_placement
+import multiprocessing
 
 class createMesh(QMainWindow):
     def __init__(self):
@@ -35,7 +40,10 @@ class createMesh(QMainWindow):
         ren = vtk.vtkRenderer()
         renderwindowinteractor.GetRenderWindow().AddRenderer(ren)
         renderwindowinteractor.GetRenderWindow().SetSize(1600, 800)
-        polydata = createMesh.loadStl(self, CurrentMesh)
+        if "ifc" in CurrentMesh:
+            polydata = createMesh.loadmeshinGLView(self, CurrentMesh)
+        else:
+            polydata = createMesh.loadStl(self, CurrentMesh)
         ren.AddActor(createMesh.polyDataToActor(self, polydata))
         ren.SetBackground(255, 255, 255)
         actorviewbath = vtkCylinderSource()
@@ -59,8 +67,37 @@ class createMesh(QMainWindow):
         xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(ren.GetActiveCamera().GetPosition()[0]))))
         ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(ren.GetActiveCamera().GetPosition()[1]))))
 
+    #load mesh in GLViewWidget
+    def loadmeshinGLView(self, file_path):
+        try:
+            ifc_file = ifcopenshell.open(file_path)
+        except:
+            print(ifcopenshell.get_log())
+        else:
+            settings = ifcopenshell.geom.settings()
+            iterator = ifcopenshell.geom.iterator(settings, ifc_file, multiprocessing.cpu_count())
+            if iterator.initialize():
+                while True:
+                    shape = iterator.get()
+                    element = ifc_file.by_guid(shape.guid)
+                    faces = shape.geometry.faces # Indices of vertices per triangle face e.g. [f1v1, f1v2, f1v3, f2v1, f2v2, f2v3, ...]
+                    verts = shape.geometry.verts # X Y Z of vertices in flattened list e.g. [v1x, v1y, v1z, v2x, v2y, v2z, ...]
+                    materials = shape.geometry.materials # Material names and colour style information that are relevant to this shape
+                    material_ids = shape.geometry.material_ids # Indices of material applied per triangle face e.g. [f1m, f2m, ...]
 
+                    # Since the lists are flattened, you may prefer to group them per face like so depending on your geometry kernel
+                    grouped_verts = [[verts[i], verts[i + 1], verts[i + 2]] for i in range(0, len(verts), 3)]
+                    grouped_faces = [[faces[i], faces[i + 1], faces[i + 2]] for i in range(0, len(faces), 3)]
+                    if not iterator.next():
+                        break
+                    createMesh.showmesh(self, grouped_verts, grouped_faces)
 
+    def showmesh(self, grouped_verts, grouped_faces):
+        polydata = vtk.vtkPolyData()
+        polydata.SetVerts(grouped_verts)
+        polydata.SetPolys(grouped_faces)
+
+        return polydata
 
 
     def loadStl(self, fname):
