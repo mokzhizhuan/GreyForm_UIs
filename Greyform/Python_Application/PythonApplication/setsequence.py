@@ -20,7 +20,6 @@ import pyvista as pv
 class loadseqdata(object):
     #when selected how many sequence
     def on_selection_sequence(buttonseq, buttonnextpage , label):     
-
         dataseqtext = buttonseq.text()
         dataseqtext = dataseqtext.replace("Sequence " , "")
         buttonnextpage.show()

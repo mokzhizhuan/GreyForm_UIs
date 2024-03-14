@@ -14,7 +14,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import OpenGL.GL as gl         
 import pyqtgraph.opengl as gl
-import PythonApplication.ShowfileSTL as ShowfileSTL
 import PythonApplication.fileselectionmesh as fileselectionmesh
 import PythonApplication.setsequence as SequenceData
 import pyvista as pv
@@ -24,18 +23,19 @@ import PythonApplication.menu_close as closewindow
 from pyvistaqt import QtInteractor , BackgroundPlotter
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import vtk
+import PythonApplication.progressBar as Loading
+import os
 
 class Ui_MainWindow(object):
     def __init__(self):
         self.item = None
         self.x = 661 #graph x axis
         self.y = 431 #graph y axis
-        self.filepath = None
-        self.dir_path = None
         self.viewer = None
         self.file = None
         self.currentSTL = None
         self.sequence = None
+        self.filepaths = os.getcwd()
         
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -113,7 +113,7 @@ class Ui_MainWindow(object):
         self.FilePathButton = QtWidgets.QPushButton(parent=self.page)
         self.FilePathButton.setGeometry(QtCore.QRect(100, 980, 89, 25))
         self.FilePathButton.setObjectName("FilePathButton")
-        self.FilePathButton.clicked.connect(lambda: ShowfileSTL.ShowfileSTL.browsefilesdirectory(self, self.Selectivefilelistview))
+        self.FilePathButton.clicked.connect(self.browsefilesdirectory)
         self.stackedWidget.addWidget(self.page)
         self.page_2 = QtWidgets.QWidget()
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
@@ -170,9 +170,9 @@ class Ui_MainWindow(object):
         self.vtkframe.setObjectName("pyvistaframe_2")
         self.vtkframe.setFrameShape(QFrame.StyledPanel)
         self.vtkframe.setFrameShadow(QFrame.Raised)
+        self.vtkframe.setGeometry(QtCore.QRect(160, 20, 1600, 800))
         # Create a render window, and set interaction styles
         self.renderWindowInteractor = QVTKRenderWindowInteractor.QVTKRenderWindowInteractor(self.vtkframe)
-        self.renderWindowInteractor.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -218,8 +218,8 @@ class Ui_MainWindow(object):
         self.sequence = self.seq1Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq1Button, self.NextButton_Page_3 , self.Seqlabel))
         self.sequence = self.seq2Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq2Button, self.NextButton_Page_3 , self.Seqlabel))
         self.sequence = self.seq3Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq3Button, self.NextButton_Page_3 , self.Seqlabel))
-        self.NextButton_Page_3.clicked.connect(lambda: Createmesh.createMesh.createmesh(self,self.file_path , self.renderWindowInteractor, self.Ylabel, self.Xlabel,
-                                                                                        self.Xlabel_2, self.Ylabel_2))
+        self.NextButton_Page_3.clicked.connect(lambda: Createmesh.createMesh.createmesh(self,self.file_path , self.renderWindowInteractor, self.Ylabel, 
+                                                                                                                 self.Xlabel,self.Xlabel_2, self.Ylabel_2))
         self.Xgroupbox_2 = QtWidgets.QGroupBox(parent=self.page_3)
         self.Xgroupbox_2.setGeometry(QtCore.QRect(1490, 860, 171, 61))
         self.Xgroupbox_2.setTitle("")
@@ -256,7 +256,6 @@ class Ui_MainWindow(object):
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -268,6 +267,7 @@ class Ui_MainWindow(object):
         file = self.Selectivefilelistview.model().itemData(index)[0]
         fileselectionmesh.FileSelectionMesh.meshdata(self, self.horizontalLayout_2,self.horizontalLayout_4, self.file_path , self.plotterloader , self.plotterloader_2, 
                                                      self.pyvistaframe , self.pyvistaframe_2, self.horizontalLayoutWidget, self.horizontalLayoutWidget_2)
+        
         self.file = file.replace('.stl', '')
         self.NextButton_Page_2.show()
 
@@ -275,7 +275,16 @@ class Ui_MainWindow(object):
         self.Itemlabel.setText(_translate("MainWindow", "Product : " + str(self.file)))
         self.Itemlabel_Page_3.setText(_translate("MainWindow", "Product: " + str(self.file)))
 
-
+    def browsefilesdirectory(self):
+        print(self.filepaths)
+        self.filepaths = QFileDialog.getExistingDirectory(None,"Choose Directory",self.filepaths)
+        model = QFileSystemModel()
+        model.setRootPath(self.filepaths)
+        model.setFilter(QDir.NoDotAndDotDot | QDir.Files)
+        self.Selectivefilelistview.setModel(model)
+        self.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
+        self.Selectivefilelistview.setAlternatingRowColors(True)
+        print(self.filepaths)
     
 
 

@@ -19,6 +19,8 @@ import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
 from pyvistaqt import QtInteractor , BackgroundPlotter
 import multiprocessing
+import threading
+import PythonApplication.progressBar as Progress
 
 
 class FileSelectionMesh(QMainWindow):
@@ -40,18 +42,16 @@ class FileSelectionMesh(QMainWindow):
             #clear mesh
             FileSelectionMesh.clearLayout(horizontalLayout)
             FileSelectionMesh.clearLayout(horizontalLayout_page2) 
+            fileinfo = QFileInfo(self.file_path)
             plotterloader = FileSelectionMesh.loadpyvista(pyvistaframe , layoutWidget, plotterloader)
             plotterloader_2 = FileSelectionMesh.loadpyvista(pyvistaframe_2 , layoutWidget_page2, plotterloader_2)
             horizontalLayout.addWidget(plotterloader.interactor)
             horizontalLayout_page2.addWidget(plotterloader_2.interactor)
             plotterloader.clear()
             plotterloader_2.clear()
-            meshsplot = pv.read(file_path)
-            plotterloader.add_mesh(meshsplot, color=(230, 230, 250), show_edges=True, edge_color=(128,128,128) ,cmap="terrain", clim=[1,3] ,  name='roombuilding', opacity="linear")
-            plotterloader_2.add_mesh(meshsplot, color=(230, 230, 250), show_edges=True, edge_color=(128,128,128) ,cmap="terrain", clim=[1,3] ,  name='roombuilding', opacity="linear")
-            #show Frame
-            plotterloader.show()
-            plotterloader_2.show()
+            progressbarprogram = Progress.pythonProgressBar(100000, plotterloader, plotterloader_2, file_path)
+            progressbarprogram.exec_()
+            #Timer.singleShot(100000, lambda: FileSelectionMesh.add_mesh_later(plotterloader, plotterloader_2, file_path))
 
     #clear layout
     def clearLayout(layout):
@@ -68,6 +68,7 @@ class FileSelectionMesh(QMainWindow):
         pyvistaframe.setFrameShadow(QFrame.Raised)
         plotterloader = QtInteractor(pyvistaframe, line_smoothing=True, point_smoothing= True, polygon_smoothing=True, multi_samples=8)
         return plotterloader
+
 
     #load mesh in GLViewWidget
     def loadmeshinGLView(self, file_path):
@@ -100,4 +101,5 @@ class FileSelectionMesh(QMainWindow):
         mesh = gl.GLMeshItem(meshdata=meshdata, smooth=True, drawFaces=False, drawEdges=True, edgeColor=(0, 1, 0, 1))
         self.viewer.addItem(mesh)
         self.viewer_page2.addItem(mesh)
+
     

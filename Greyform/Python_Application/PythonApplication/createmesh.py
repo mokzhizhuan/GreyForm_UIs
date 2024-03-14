@@ -19,7 +19,6 @@ from pyvistaqt import QtInteractor
 import pandas as pd
 import cv2
 from vtk import *
-from vtk import vtkUnstructuredGridReader
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import math
 import PythonApplication.interactiveevent as events
@@ -28,41 +27,44 @@ import ifcopenshell.geom
 import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
 import multiprocessing
+import vtkmodules.vtkInteractionStyle
+from vtkmodules.vtkCommonColor import vtkNamedColors
+from vtkmodules.vtkIOGeometry import vtkSTLReader
+
+import PythonApplication.progressBarvtk as progressvtk
 
 class createMesh(QMainWindow):
     def __init__(self):
         self.reader = None
         self.bathview = None
         self.showerview = None
+        self.meshbounds = None
 
     #vtkrenderwindow
     def createmesh(self, CurrentMesh, renderwindowinteractor , ylabel , xlabel, xlabelbefore, ylabelbefore):
         ren = vtk.vtkRenderer()
+        renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         renderwindowinteractor.GetRenderWindow().AddRenderer(ren)
-        renderwindowinteractor.GetRenderWindow().SetSize(1600, 800)
         if "ifc" in CurrentMesh:
-            polydata = createMesh.loadmeshinGLView(self, CurrentMesh)
+            polydataverts, polydatafaces = createMesh.loadmeshinGLView(self, CurrentMesh)
+            polydata = vtkPolyData()
+            polydata.SetPoints(polydataverts)
+            polydata.SetPolys(polydatafaces)
         else:
-            polydata = createMesh.loadStl(self, CurrentMesh)
+            #progressbarprogram = progressvtk.pythonProgressBar(100000, CurrentMesh, ren, renderwindowinteractor, xlabelbefore, ylabelbefore, xlabel , ylabel)
+            #progressbarprogram.exec_()
+            polydata = createMesh.loadStl(self, CurrentMesh) 
+            QTimer.singleShot(1000000, lambda: polydata)       
         ren.AddActor(createMesh.polyDataToActor(self, polydata))
         ren.SetBackground(255, 255, 255)
-        actorviewbath = vtkCylinderSource()
-        actorviewbath.SetCenter(0.0,0.0,0.0)
-        actorviewbath.SetRadius(5)
-        actorviewbath.SetHeight(2)
-        actorviewbath.SetResolution(10)
-        actorviewshower = vtkCylinderSource()
-        actorviewshower.SetCenter(0.0,0.0,0.0)
-        actorviewshower.SetRadius(5)
-        actorviewshower.SetHeight(2)
-        actorviewshower.SetResolution(10)
-        ren.AddActor(createMesh.loadactorviewbath(self, actorviewbath))
-        ren.AddActor(createMesh.loadactorviewshower(self, actorviewshower))
-        camera = events.myInteractorStyle(xlabel,ylabel,ren , renderwindowinteractor, self.bathview, self.showerview)
+        camera = events.myInteractorStyle(xlabel,ylabel,ren , renderwindowinteractor, self.meshbounds, xlabelbefore, ylabelbefore)
         renderwindowinteractor.SetInteractorStyle(camera)
         renderwindowinteractor.GetRenderWindow().Render()
         renderwindowinteractor.Initialize()
         renderwindowinteractor.Start()
+        renderwindowinteractor.GetRenderWindow().Finalize()
+        renderwindowinteractor.GetRenderWindow().SetSize(1600,800)
+        renderwindowinteractor.GetRenderWindow().Render()
         _translate = QtCore.QCoreApplication.translate
         xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(ren.GetActiveCamera().GetPosition()[0]))))
         ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(ren.GetActiveCamera().GetPosition()[1]))))
@@ -90,14 +92,8 @@ class createMesh(QMainWindow):
                     grouped_faces = [[faces[i], faces[i + 1], faces[i + 2]] for i in range(0, len(faces), 3)]
                     if not iterator.next():
                         break
-                    createMesh.showmesh(self, grouped_verts, grouped_faces)
+                    return grouped_verts , grouped_faces
 
-    def showmesh(self, grouped_verts, grouped_faces):
-        polydata = vtk.vtkPolyData()
-        polydata.SetVerts(grouped_verts)
-        polydata.SetPolys(grouped_faces)
-
-        return polydata
 
 
     def loadStl(self, fname):
@@ -106,6 +102,17 @@ class createMesh(QMainWindow):
         self.reader.SetFileName(fname)
         self.reader.Update()
         polydata = self.reader.GetOutput()
+        center = [0.0, 0.0, 0.0]
+        for i in range(polydata.GetNumberOfPoints()):
+            point = polydata.GetPoint(i)
+            center[0] += point[0]
+            center[1] += point[1]
+            center[2] += point[2]
+
+        num_points = polydata.GetNumberOfPoints()
+        center[0] /= num_points
+        center[1] /= num_points
+        center[2] /= num_points
         return polydata
     
     def polyDataToActor(self, polydata):
@@ -118,51 +125,30 @@ class createMesh(QMainWindow):
         else:
             mapper.SetInputConnection(self.reader.GetOutputPort())
         actor = vtk.vtkActor()
+        surface_filter = vtk.vtkDataSetSurfaceFilter()
+        surface_filter.SetInputConnection(self.reader.GetOutputPort())
+        surface_filter.Update()
+        decimate = vtk.vtkDecimatePro()
+        decimate.SetInputConnection(surface_filter.GetOutputPort())
+        # Set the desired reduction factor or target number of polygons
+        decimate.SetTargetReduction(0.9)  # Example: reduce mesh to 10% of original size
+        decimate.PreserveTopologyOn()  # Preserve topology
+        decimate.Update()
         actor.SetMapper(mapper)
         actor.GetProperty().SetRepresentationToSurface()
+        print(actor.GetBounds())
+        self.meshbounds = []
+        for i in range(6):
+            self.meshbounds.append(actor.GetBounds()[i])
         #color RGB must be /255 for Red, green , blue color code
         actor.GetProperty().SetColor((230/255),(230/255), (250/255))
+        actor.GetProperty().SetDiffuse(0.8)
+        colorsd = vtkNamedColors()
+        actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d('LightSteelBlue'))
+        actor.GetProperty().SetSpecular(0.3)
+        actor.GetProperty().SetSpecularPower(60.0)
         return actor
-    
-    def loadactorviewbath(self, polydata):
-        """Wrap the provided vtkPolyData object in a mapper and an actor, returning
-    the actor."""
-        mapper = vtk.vtkPolyDataMapper()
-        if vtk.VTK_MAJOR_VERSION <= 5:
-            mapper.SetInput(polydata.GetOutput())
-            mapper.SetInput(polydata)
-        else:
-            mapper.SetInputConnection(polydata.GetOutputPort())
-        actor = vtk.vtkActor()
-        actor.SetMapper(mapper)
-        actor.GetProperty().SetRepresentationToSurface()
-        actor.SetPosition(300,500,20)
-        actor.SetVisibility(False)
-        self.bathview = []
-        self.bathview.append(actor.GetPosition()[0])
-        self.bathview.append(actor.GetPosition()[1])
-        self.bathview.append(actor.GetPosition()[2])
-        return actor
-    
-    def loadactorviewshower(self, polydata):
-        """Wrap the provided vtkPolyData object in a mapper and an actor, returning
-    the actor."""
-        mapper = vtk.vtkPolyDataMapper()
-        if vtk.VTK_MAJOR_VERSION <= 5:
-            mapper.SetInput(polydata.GetOutput())
-            mapper.SetInput(polydata)
-        else:
-            mapper.SetInputConnection(polydata.GetOutputPort())
-        actor = vtk.vtkActor()
-        actor.SetMapper(mapper)
-        actor.GetProperty().SetRepresentationToSurface()
-        actor.SetPosition(2400,500,20)
-        actor.SetVisibility(False)
-        self.showerview = []
-        self.showerview.append(actor.GetPosition()[0])
-        self.showerview.append(actor.GetPosition()[1])
-        self.showerview.append(actor.GetPosition()[2])
-        return actor
+
 
 
 
