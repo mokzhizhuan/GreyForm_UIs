@@ -25,86 +25,143 @@ import math
 import PythonApplication.interactiveevent as events
 
 class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
-    def __init__(self,xlabel, ylabel, ren,  renderwindowinteractor,meshbounds, xlabelbefore , ylabelbefore, parent=None):
+    def __init__(self,xlabel, ylabel, ren,  renderwindowinteractor,meshbounds, xlabelbefore , ylabelbefore,zlabelbefore, polydata, polys, parent=None):
         self.AddObserver("LeftButtonPressEvent", self.leftButtonPressEvent)
         self.AddObserver("RightButtonPressEvent", self.RightButtonPressEvent)
+        self.AddObserver("MiddleButtonPressEvent", self.MiddleButtonPressEvent)
         self.AddObserver("KeyPressEvent", self.KeyPressed)
-        self.AddObserver('InteractionEvent', CameraObserver(ren.GetActiveCamera()))
-        camera = vtk.vtkCamera()
-        ren.SetActiveCamera(camera)
-        camera.ParallelProjectionOn()
+        self.selected_cells = [] 
         ren.ResetCamera()
+        camera = ren.GetActiveCamera()
         self.xlabels = xlabel
         self.ylabels = ylabel
         self.render = ren
+        self.zstore = 0
         self.renderwindowinteractors = renderwindowinteractor
         self.meshbound = meshbounds
-        self.render.ResetCamera()
+        self.mesh = polydata
+        self.polys = polys
         self.renderwindowinteractors.GetRenderWindow().Render()
         _translate = QtCore.QCoreApplication.translate
         self.xlabelbefore = xlabelbefore
         self.ylabelbefore = ylabelbefore
+        self.zlabelbefore = zlabelbefore
         xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))))
         ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))))
-
+        zlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))))
 
     def leftButtonPressEvent(self, obj, event):
         clickPos = self.GetInteractor().GetEventPosition()       # <<<-----<
         _translate = QtCore.QCoreApplication.translate
         self.xlabels.setText(_translate("MainWindow", str("{0:.2f}".format(clickPos[0]))))
         self.ylabels.setText(_translate("MainWindow", str("{0:.2f}".format(clickPos[1]))))
+        camera = self.render.GetActiveCamera()
+        self.xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))))
+        self.ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))))
+        self.zlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))))
+
         self.OnLeftButtonDown()
+
 
     def RightButtonPressEvent(self, obj , event):
         clickPos = self.GetInteractor().GetEventPosition()       # <<<-----<
+        _translate = QtCore.QCoreApplication.translate
+        self.xlabels.setText(_translate("MainWindow", str("{0:.2f}".format(clickPos[0]))))
+        self.ylabels.setText(_translate("MainWindow", str("{0:.2f}".format(clickPos[1]))))
         picker = vtk.vtkCellPicker()
         picker.SetTolerance(0.0005)
-        picker.Pick(clickPos[0], clickPos[1], 0, self.render)
+        center = [(self.meshbound[0] + self.meshbound[1]) / 2, (self.meshbound[2] + self.meshbound[3]) / 2, (self.meshbound[4] + self.meshbound[5]) / 2]
+        #Click position is mostly 2d coordination x and y axis
+        picker.Pick(clickPos[0], clickPos[1],0, self.render)
         world_pos = picker.GetPickPosition()
-        camera = vtk.vtkCamera()
-        camera.SetPosition(world_pos)
-        self.render.SetActiveCamera(camera)
+        camera = self.render.GetActiveCamera()
+        camera.SetPosition(world_pos)#camera set pick from the cell picker click position coordinates
+        camera.SetFocalPoint(center)
+        camera.SetViewUp(0,0,1)#default view up of the camera
+        self.render.SetActiveCamera(camera)#insert and replace a new camera
         self.renderwindowinteractors.GetRenderWindow().Render()
-        self.OnRightButtonDoubleClick()
+        #camera coordinates
+        self.xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))))
+        self.ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))))
+        self.zlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))))
+        self.OnRightButtonDown()
+
+    def MiddleButtonPressEvent(self, obj, event):
+        click_pos = self.GetInteractor().GetEventPosition() 
+        _translate = QtCore.QCoreApplication.translate
+        self.xlabels.setText(_translate("MainWindow", str("{0:.2f}".format(click_pos[0]))))
+        self.ylabels.setText(_translate("MainWindow", str("{0:.2f}".format(click_pos[1]))))
+        # Check if the click position intersects with the mesh
+        picker = vtk.vtkCellPicker()
+        picker.SetTolerance(0.001)  # Set tolerance to determine whether a pick occurs
+        picker.PickFromListOn()  # Ensure that only the mesh is pickable
+        picker.AddPickList(self.mesh)
+
+        picker.Pick(click_pos[0], click_pos[1], 0, self.render)
+        if picker.GetCellId() == -1:
+            # If the click occurs outside the mesh, set the camera to show an outside view
+            self.setOutsideView()
+        self.OnMiddleButtonDown()
+
+    def setOutsideView(self):
+        # Calculate the bounding box of the mesh
+        center = [(self.meshbound[0] + self.meshbound[1]) / 2, (self.meshbound[2] + self.meshbound[3]) / 2, (self.meshbound[4] + self.meshbound[5]) / 2]
+        camera = self.render.GetActiveCamera()
+        # Set camera position and focal point to show an outside view
+        camera.SetPosition(center[0], center[1], self.meshbound[5] + 2 * (self.meshbound[5] - self.meshbound[4]))
+        camera.SetFocalPoint(center)
+        _translate = QtCore.QCoreApplication.translate
+        self.xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))))
+        self.ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))))
+        self.zlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))))
 
     def KeyPressed(self, obj, event):
         key = self.renderwindowinteractors.GetKeySym()
         camera = self.render.GetActiveCamera()
         if key in "l":
-            camera.ParallelProjectionOn()
             self.render.ResetCamera()
             self.renderwindowinteractors.GetRenderWindow().Render()
+            #camera coordinates
             _translate = QtCore.QCoreApplication.translate
             self.xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))))
             self.ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))))
+            self.zlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))))
         elif key in "Up":
-            camera.Elevation(5)
+            camera.Elevation(2)#will put restriction soon based on the coordinates
             camera.OrthogonalizeViewUp()
             self.renderwindowinteractors.GetRenderWindow().Render()
+            #camera coordinates
             _translate = QtCore.QCoreApplication.translate
             self.xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))))
             self.ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))))
+            self.zlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))))
         elif key in "Down":
-            camera.Elevation(-5)
+            camera.Elevation(-2)#will put restriction soon based on the coordinates
             camera.OrthogonalizeViewUp()
             self.renderwindowinteractors.GetRenderWindow().Render()
+            #camera coordinates
             _translate = QtCore.QCoreApplication.translate
             self.xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))))
             self.ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))))
+            self.zlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))))
         elif key in "Left":
-            camera.Azimuth(-5)
+            camera.Azimuth(-2)#will put restriction soon based on the coordinates
             camera.OrthogonalizeViewUp()
             self.renderwindowinteractors.GetRenderWindow().Render()
+            #camera coordinates
             _translate = QtCore.QCoreApplication.translate
             self.xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))))
             self.ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))))
+            self.zlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))))
         elif key in "Right":
-            camera.Azimuth(5)
+            camera.Azimuth(2)#will put restriction soon based on the coordinates
             camera.OrthogonalizeViewUp() 
             self.renderwindowinteractors.GetRenderWindow().Render()
+            #camera coordinates
             _translate = QtCore.QCoreApplication.translate
             self.xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))))
-            self.ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))))      
+            self.ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))))    
+            self.zlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))))
 
 class CameraObserver(object):
     def __init__(self, cam):

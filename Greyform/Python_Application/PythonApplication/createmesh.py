@@ -41,34 +41,34 @@ class createMesh(QMainWindow):
         self.meshbounds = None
 
     #vtkrenderwindow
-    def createmesh(self, CurrentMesh, renderwindowinteractor , ylabel , xlabel, xlabelbefore, ylabelbefore):
+    def createmesh(self, CurrentMesh, renderwindowinteractor , ylabel , xlabel, xlabelbefore, ylabelbefore, zlabelbefore):
         ren = vtk.vtkRenderer()
         renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         renderwindowinteractor.GetRenderWindow().AddRenderer(ren)
+        ren.UseHiddenLineRemovalOn()
         if "ifc" in CurrentMesh:
             polydataverts, polydatafaces = createMesh.loadmeshinGLView(self, CurrentMesh)
             polydata = vtkPolyData()
             polydata.SetPoints(polydataverts)
             polydata.SetPolys(polydatafaces)
         else:
-            #progressbarprogram = progressvtk.pythonProgressBar(100000, CurrentMesh, ren, renderwindowinteractor, xlabelbefore, ylabelbefore, xlabel , ylabel)
-            #progressbarprogram.exec_()
-            polydata = createMesh.loadStl(self, CurrentMesh) 
-            QTimer.singleShot(1000000, lambda: polydata)       
-        ren.AddActor(createMesh.polyDataToActor(self, polydata))
-        ren.SetBackground(255, 255, 255)
-        camera = events.myInteractorStyle(xlabel,ylabel,ren , renderwindowinteractor, self.meshbounds, xlabelbefore, ylabelbefore)
-        renderwindowinteractor.SetInteractorStyle(camera)
-        renderwindowinteractor.GetRenderWindow().Render()
-        renderwindowinteractor.Initialize()
-        renderwindowinteractor.Start()
-        renderwindowinteractor.GetRenderWindow().Finalize()
-        renderwindowinteractor.GetRenderWindow().SetSize(1600,800)
-        renderwindowinteractor.GetRenderWindow().Render()
-        _translate = QtCore.QCoreApplication.translate
-        xlabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(ren.GetActiveCamera().GetPosition()[0]))))
-        ylabelbefore.setText(_translate("MainWindow", str("{0:.2f}".format(ren.GetActiveCamera().GetPosition()[1]))))
-
+            progressbarprogram = progressvtk.pythonProgressBar(100000, CurrentMesh, ren, renderwindowinteractor, xlabelbefore, ylabelbefore,  zlabelbefore,xlabel , ylabel)
+            progressbarprogram.exec_()
+            #polydata = createMesh.loadStl(self, CurrentMesh) 
+            #QTimer.singleShot(1000000, lambda: polydata)
+        
+        #actor = createMesh.polyDataToActor(self, polydata)
+        #ren.AddActor(actor)
+        #ren.SetBackground(255, 255, 255)
+        #camera = events.myInteractorStyle(xlabel,ylabel,ren , renderwindowinteractor, self.meshbounds, xlabelbefore, ylabelbefore, zlabelbefore , actor , polydata)
+        #renderwindowinteractor.SetInteractorStyle(camera)
+        #renderwindowinteractor.GetRenderWindow().Render()
+        #renderwindowinteractor.Initialize()
+        #renderwindowinteractor.Start()
+        #renderwindowinteractor.GetRenderWindow().Finalize()
+        #renderwindowinteractor.GetRenderWindow().SetSize(1600,800)
+        #renderwindowinteractor.GetRenderWindow().Render()
+            
     #load mesh in GLViewWidget
     def loadmeshinGLView(self, file_path):
         try:
@@ -136,13 +136,13 @@ class createMesh(QMainWindow):
         decimate.Update()
         actor.SetMapper(mapper)
         actor.GetProperty().SetRepresentationToSurface()
-        print(actor.GetBounds())
         self.meshbounds = []
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
         #color RGB must be /255 for Red, green , blue color code
         actor.GetProperty().SetColor((230/255),(230/255), (250/255))
         actor.GetProperty().SetDiffuse(0.8)
+        actor.GetProperty().BackfaceCullingOn()
         colorsd = vtkNamedColors()
         actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d('LightSteelBlue'))
         actor.GetProperty().SetSpecular(0.3)

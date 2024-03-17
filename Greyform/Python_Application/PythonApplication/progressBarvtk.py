@@ -18,13 +18,12 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 from vtkmodules.vtkIOGeometry import vtkSTLReader
 
 class pythonProgressBar(QDialog):
-    def __init__(self, value , polydata, ren, renderwindowinteractor, xlabelbefore, ylabelbefore, xlabel , ylabel):
+    def __init__(self, value , polydata, ren, renderwindowinteractor, xlabelbefore, ylabelbefore,zlabelbefore,  xlabel , ylabel):
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setWindowTitle("Progress Window")
         self.setGeometry(100, 100, 400, 200)
         self.setLayout(progress_layout)
-        print(polydata)
         label = QLabel("Graphics is loading , please wait.")
         label.setGeometry(QtCore.QRect(50, 30, 170, 30))
         label.setWordWrap(True)
@@ -33,39 +32,40 @@ class pythonProgressBar(QDialog):
         self.meshbounds = None
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setGeometry(30, 130, 340, 30)
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
         self.value = value
         self.polydata = polydata
         self.ren = ren
+        self.renderwindowinteractor = renderwindowinteractor
+        self.xlabelbefore = xlabelbefore
+        self.ylabelbefore = ylabelbefore
+        self.zlabelbefore = zlabelbefore
+        self.xlabels = xlabel
+        self.ylabels = ylabel
         self.ren.SetBackground(255, 255, 255)
-        polydataextracted = self.start_progress()
-        self.ren.AddActor(self.polyDataToActor(polydataextracted))
-        camera = events.myInteractorStyle(xlabel,ylabel,ren , renderwindowinteractor, self.meshbounds, xlabelbefore, ylabelbefore)
-        renderwindowinteractor.SetInteractorStyle(camera)
+        QTimer.singleShot(self.value, self.loadStl)
 
         # Set the layout for the dialog
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_progress)
+        self.timer.timeout.connect(self.updateProgress)
         self.timer.start(100) 
         progress_layout.addWidget(label)
         progress_layout.addWidget(self.progress_bar)
-        self.stop_progress()
 
-    def start_progress(self):
-        poly_data = QTimer.singleShot(self.value, self.loadStl)
-        return poly_data
-    
-    def update_progress(self):
-        value = self.progress_bar.value()
-        if value < 100:
-            self.progress_bar.setValue(value + 1)
-            QTimer.singleShot(100, self.update_progress)  # Update progress again after 100 milliseconds
-        else:
+    def updateProgress(self):
+        # Update loading progress
+        current_value = self.progress_bar.value()
+        new_value = (current_value + 1) % 101  # Increment progress by 1
+        self.progress_bar.setValue(new_value)
+        if new_value == 100:
             self.timer.stop()  # Stop the timer when progress reaches 100%
             self.progress_bar.setValue(0)  # Reset progress to 0
             self.timer.start(100)
 
+
     def loadStl(self):
-        self.update_progress()
+        self.updateProgress()
         """Load the given STL file, and return a vtkPolyData object for it."""
         self.reader.SetFileName(self.polydata)
         self.reader.Update()
@@ -81,7 +81,21 @@ class pythonProgressBar(QDialog):
         center[0] /= num_points
         center[1] /= num_points
         center[2] /= num_points
-        return polydata
+
+        actor = self.polyDataToActor(polydata)
+        self.ren.AddActor(actor)
+        camera = events.myInteractorStyle(self.xlabels,self.ylabels,self.ren , self.renderwindowinteractor, self.meshbounds, 
+                                          self.xlabelbefore, self.ylabelbefore, self.zlabelbefore, actor , polydata)
+        self.renderwindowinteractor.SetInteractorStyle(camera)
+        self.renderwindowinteractor.SetInteractorStyle(camera)
+        self.renderwindowinteractor.GetRenderWindow().Render()
+        self.renderwindowinteractor.Initialize()
+        self.renderwindowinteractor.Start()
+        self.renderwindowinteractor.GetRenderWindow().Finalize()
+        self.renderwindowinteractor.GetRenderWindow().SetSize(1600,800)
+        self.renderwindowinteractor.GetRenderWindow().Render()
+        self.close()
+        
     
     def polyDataToActor(self, polydata):
         """Wrap the provided vtkPolyData object in a mapper and an actor, returning
@@ -108,6 +122,3 @@ class pythonProgressBar(QDialog):
         actor.GetProperty().SetSpecularPower(60.0)
         return actor
     
-    def stop_progress(self):
-        self.timer.stop()
-        self.close()
