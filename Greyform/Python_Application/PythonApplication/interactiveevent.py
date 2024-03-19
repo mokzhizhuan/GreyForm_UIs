@@ -114,11 +114,11 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
             self.renderwindowinteractors.GetRenderWindow().Render()
             return #return to its original position
         elif key in "Up":
-            if camera_position[0] < (self.meshbound[1]-80):
+            if camera_position[0] < (self.meshbound[1]-100):
                 actor_position[0] += actor_speed
                 camera_position[0] += actor_speed
         elif key in "Down":
-            if camera_position[0] > (self.meshbound[0]+80):
+            if camera_position[0] > (self.meshbound[0]+100):
                 actor_position[0] -= actor_speed
                 camera_position[0] -= actor_speed
         elif key in "Left":
@@ -126,7 +126,7 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
                 actor_position[1] += actor_speed
                 camera_position[1] += actor_speed
         elif key in "Right":
-            if camera_position[1] > (self.meshbound[2]+80):
+            if camera_position[1] > (self.meshbound[2]+100):
                 actor_position[1] -= actor_speed
                 camera_position[1] -= actor_speed
         self.actor.SetPosition(actor_position)

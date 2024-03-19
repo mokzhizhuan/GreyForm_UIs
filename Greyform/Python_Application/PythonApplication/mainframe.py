@@ -255,6 +255,8 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(0)
+        # Connect close event of the main window to a cleanup function
+        self.closeEvent = self.clean
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     #when selected from the file
@@ -282,7 +284,7 @@ class Ui_MainWindow(object):
         self.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
         self.Selectivefilelistview.setAlternatingRowColors(True)
     
-    def closeEvent(self, event):
+    def clean(self, event):
         self.horizontalLayoutWidget.close()
         self.horizontalLayoutWidget_2.close()
         self.pyvistaframe.close()
@@ -290,8 +292,8 @@ class Ui_MainWindow(object):
         self.plotterloader_2.close()
         self.pyvistaframe_2.close()
         self.vtkframe.close()
-        self.renderWindowInteractor.close()
-
+        self.renderWindowInteractor.Finalize()
+        self.renderWindowInteractor.GetRenderWindow().GetInteractor().TerminateApp()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
