@@ -23,7 +23,7 @@ import threading
 import PythonApplication.progressBar as Progress
 
 
-class FileSelectionMesh(QMainWindow):
+class FileSelectionMesh(QWidget):
     #load meshdata from file
     def meshdata(self, horizontalLayout, horizontalLayout_page2,  file_path, plotterloader , plotterloader_2 , pyvistaframe , pyvistaframe_2 , layoutWidget, layoutWidget_page2):
         #load glviewer in ifc

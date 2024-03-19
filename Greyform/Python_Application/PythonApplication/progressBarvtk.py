@@ -84,8 +84,9 @@ class pythonProgressBar(QDialog):
 
         actor = self.polyDataToActor(polydata)
         self.ren.AddActor(actor)
+
         camera = events.myInteractorStyle(self.xlabels,self.ylabels,self.ren , self.renderwindowinteractor, self.meshbounds, 
-                                          self.xlabelbefore, self.ylabelbefore, self.zlabelbefore, actor , polydata)
+                                          self.xlabelbefore, self.ylabelbefore, self.zlabelbefore, actor , polydata, self.reader)
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.renderwindowinteractor.GetRenderWindow().Render()

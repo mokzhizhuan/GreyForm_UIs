@@ -44,7 +44,7 @@ class pythonProgressBar(QDialog):
     def update_progress(self):
         value = self.progress_bar.value()
         if value < 100:
-            self.progress_bar.setValue(value + 1)
+            self.progress_bar.setValue(value + 1) 
             QTimer.singleShot(100, self.update_progress)  # Update progress again after 100 milliseconds
         else:
             self.timer.stop()  # Stop the timer when progress reaches 100%

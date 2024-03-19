@@ -218,8 +218,8 @@ class Ui_MainWindow(object):
         self.sequence = self.seq1Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq1Button, self.NextButton_Page_3 , self.Seqlabel))
         self.sequence = self.seq2Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq2Button, self.NextButton_Page_3 , self.Seqlabel))
         self.sequence = self.seq3Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq3Button, self.NextButton_Page_3 , self.Seqlabel))
-        self.NextButton_Page_3.clicked.connect(lambda: Createmesh.createMesh.createmesh(self,self.file_path , self.renderWindowInteractor, self.Ylabel, 
-                                                                                                                 self.Xlabel,self.Xlabel_2, self.Ylabel_2, self.Zlabel))
+        self.NextButton_Page_3.clicked.connect(lambda: Createmesh.createMesh.createmesh(self,self.file_path , self.renderWindowInteractor, self.Ylabel, self.Xlabel,self.Xlabel_2, 
+                                                                                        self.Ylabel_2, self.Zlabel, self.verticalLayoutWidget))
         self.Xgroupbox_2 = QGroupBox(self.page_3)
         self.Xgroupbox_2.setObjectName(u"Xgroupbox_2")
         self.Xgroupbox_2.setGeometry(QRect(1480, 860, 171, 61))
@@ -286,6 +286,15 @@ class Ui_MainWindow(object):
         self.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
         self.Selectivefilelistview.setAlternatingRowColors(True)
     
+    def closeEvent(self, event):
+        self.horizontalLayoutWidget.close()
+        self.horizontalLayoutWidget_2.close()
+        self.pyvistaframe.close()
+        self.plotterloader.close()
+        self.plotterloader_2.close()
+        self.pyvistaframe_2.close()
+        self.vtkframe.close()
+        self.renderWindowInteractor.close()
 
 
     def retranslateUi(self, MainWindow):

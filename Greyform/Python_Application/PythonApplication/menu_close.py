@@ -9,7 +9,7 @@ class Ui_Dialog_Close(QMainWindow):
         dialog.setWindowTitle("Dialog Box")
         dialog.resize(400, 300)
         # Create a label with a mes sage
-        label = QLabel("Are you sure you want to go back to the menu?")
+        label = QLabel("Are you sure you want to close the window??")
         label.setGeometry(QtCore.QRect(100, 40, 171, 31))
         label.setWordWrap(True)
         label.setObjectName("label")
@@ -27,8 +27,19 @@ class Ui_Dialog_Close(QMainWindow):
         buttonBox.setObjectName("buttonBox")
         buttonBox.accepted.connect(dialog.close)
         buttonBox.accepted.connect(self.close)
+        
         buttonBox.rejected.connect(dialog.close)
         dialog_layout.addWidget(buttonBox)
 
         # Show the dialog as a modal dialog (blocks the main window)
         dialog.exec_()
+
+    def closeEvent(self, event):
+        self.horizontalLayoutWidget.close()
+        self.horizontalLayoutWidget_2.close()
+        self.pyvistaframe.close()
+        self.plotterloader.close()
+        self.plotterloader_2.close()
+        self.pyvistaframe_2.close()
+        self.vtkframe.close()
+        self.renderWindowInteractor.close()

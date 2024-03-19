@@ -41,10 +41,12 @@ class createMesh(QMainWindow):
         self.meshbounds = None
 
     #vtkrenderwindow
-    def createmesh(self, CurrentMesh, renderwindowinteractor , ylabel , xlabel, xlabelbefore, ylabelbefore, zlabelbefore):
+    def createmesh(self, CurrentMesh, renderwindowinteractor , ylabel , xlabel, xlabelbefore, ylabelbefore, zlabelbefore, verticalLayoutWidget):
         ren = vtk.vtkRenderer()
         renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         renderwindowinteractor.GetRenderWindow().AddRenderer(ren)
+        self.renderwindowinteractor = renderwindowinteractor
+        self.vtkwidget = verticalLayoutWidget
         ren.UseHiddenLineRemovalOn()
         if "ifc" in CurrentMesh:
             polydataverts, polydatafaces = createMesh.loadmeshinGLView(self, CurrentMesh)
@@ -148,6 +150,10 @@ class createMesh(QMainWindow):
         actor.GetProperty().SetSpecular(0.3)
         actor.GetProperty().SetSpecularPower(60.0)
         return actor
+    
+    def closeEvent(self, event):
+        self.vtkWidget.Finalize()     ############################ important
+        self.renderwindowinteractor.TerminateApp()
 
 
 
