@@ -12,18 +12,13 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *  
 from PyQt5.QtGui import *
-import OpenGL.GL as gl         
-import pyqtgraph.opengl as gl
 import PythonApplication.fileselectionmesh as fileselectionmesh
 import PythonApplication.setsequence as SequenceData
-import pyvista as pv
 import PythonApplication.createmesh as Createmesh
 import PythonApplication.menuconfirm as backtomenudialog
 import PythonApplication.menu_close as closewindow
-from pyvistaqt import QtInteractor , BackgroundPlotter
+from pyvistaqt import QtInteractor 
 from vtkmodules.qt import QVTKRenderWindowInteractor
-import vtk
-import PythonApplication.progressBar as Loading
 import os
 
 class Ui_MainWindow(object):

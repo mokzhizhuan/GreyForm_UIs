@@ -5,21 +5,12 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *  
 from PyQt5.QtGui import *
 import OpenGL.GL as gl        
-from OpenGL import GLU   
-from pyqtgraph.opengl import GLViewWidget, MeshData, GLMeshItem 
 import pyqtgraph.opengl as gl
-import numpy as np
-from stl import mesh
-import pyqtgraph as pg
-import trimesh
-import pyvista as pv
 import ifcopenshell
 import ifcopenshell.geom
-import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
-from pyvistaqt import QtInteractor , BackgroundPlotter
+from pyvistaqt import QtInteractor 
 import multiprocessing
-import threading
 import PythonApplication.progressBar as Progress
 
 

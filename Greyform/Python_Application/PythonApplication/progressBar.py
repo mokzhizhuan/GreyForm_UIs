@@ -3,8 +3,6 @@ from PyQt5 import  QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QDialog, QProgressBar, QLabel
 from PyQt5.QtCore import QTimer
 import pyvista as pv
-from decimal import Decimal
-import PythonApplication.fileselectionmesh as meshcreate
 
 class pythonProgressBar(QDialog):
     def __init__(self, value , plotterloader, plotterloader_2, file_path):
@@ -25,12 +23,7 @@ class pythonProgressBar(QDialog):
         self.loader_2 = plotterloader_2
         self.filepath = file_path
         self.start_progress()
-
-        # Create a layout for the progressbar
-
-        # Set the layout for the dialog
         
-
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
         self.timer.start(100) 
@@ -55,8 +48,6 @@ class pythonProgressBar(QDialog):
         self.update_progress()
         meshsplot = pv.read(self.filepath)
         self.loader.add_mesh(meshsplot, color=(230, 230, 250), show_edges=True, edge_color=(128,128,128) ,cmap="terrain", clim=[1,3] ,  name='roombuilding', opacity="linear")
-        #plotterloader.show_bounds()
-        #plotterloader.show_axes_all()
         self.loader_2.add_mesh(meshsplot, color=(230, 230, 250), show_edges=True, edge_color=(128,128,128) ,cmap="terrain", clim=[1,3] ,  name='roombuilding', opacity="linear")
         #show Frame
         self.loader.show()

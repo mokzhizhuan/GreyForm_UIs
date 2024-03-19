@@ -2,20 +2,10 @@ import sys
 from PyQt5 import  QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QDialog, QProgressBar, QLabel
 from PyQt5.QtCore import QTimer
-from decimal import Decimal
 import vtk
 from vtk import *
-from vtkmodules.qt import QVTKRenderWindowInteractor
-import math
 import PythonApplication.interactiveevent as events
-import ifcopenshell
-import ifcopenshell.geom
-import ifcopenshell.util.element as Element
-from ifcopenshell.util.placement import get_local_placement
-import multiprocessing
-import vtkmodules.vtkInteractionStyle
 from vtkmodules.vtkCommonColor import vtkNamedColors
-from vtkmodules.vtkIOGeometry import vtkSTLReader
 
 class pythonProgressBar(QDialog):
     def __init__(self, value , polydata, ren, renderwindowinteractor, xlabelbefore, ylabelbefore,zlabelbefore,  xlabel , ylabel):

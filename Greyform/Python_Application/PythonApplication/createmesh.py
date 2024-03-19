@@ -4,33 +4,14 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *  
 from PyQt5.QtGui import *
-import OpenGL.GL as gl        
-from OpenGL import GLU   
-from pyqtgraph.opengl import  GLMeshItem 
-import pyqtgraph.opengl as gl
-import numpy as np
-from stl import mesh
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import pyvista as pv
 import vtk
 from ipywidgets import interact
-from pyvistaqt import QtInteractor
-import pandas as pd
-import cv2
 from vtk import *
-from vtkmodules.qt import QVTKRenderWindowInteractor
-import math
-import PythonApplication.interactiveevent as events
 import ifcopenshell
 import ifcopenshell.geom
-import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
 import multiprocessing
-import vtkmodules.vtkInteractionStyle
 from vtkmodules.vtkCommonColor import vtkNamedColors
-from vtkmodules.vtkIOGeometry import vtkSTLReader
-
 import PythonApplication.progressBarvtk as progressvtk
 
 class createMesh(QMainWindow):
