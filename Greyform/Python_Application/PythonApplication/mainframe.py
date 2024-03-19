@@ -277,6 +277,7 @@ class Ui_MainWindow(object):
         self.Itemlabel.setText(_translate("MainWindow", "Product : " + str(self.file)))
         self.Itemlabel_Page_3.setText(_translate("MainWindow", "Product: " + str(self.file)))
 
+    #browse file directory
     def browsefilesdirectory(self):
         self.filepaths = QFileDialog.getExistingDirectory(None,"Choose Directory",self.filepaths)
         model = QFileSystemModel()

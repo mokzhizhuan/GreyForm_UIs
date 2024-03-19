@@ -49,7 +49,7 @@ class FileSelectionMesh(QWidget):
             horizontalLayout_page2.addWidget(plotterloader_2.interactor)
             plotterloader.clear()
             plotterloader_2.clear()
-            progressbarprogram = Progress.pythonProgressBar(100000, plotterloader, plotterloader_2, file_path)
+            progressbarprogram = Progress.pythonProgressBar(60000, plotterloader, plotterloader_2, file_path)
             progressbarprogram.exec_()
             #Timer.singleShot(100000, lambda: FileSelectionMesh.add_mesh_later(plotterloader, plotterloader_2, file_path))
 

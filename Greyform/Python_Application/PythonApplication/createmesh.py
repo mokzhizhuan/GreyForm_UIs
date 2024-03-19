@@ -54,22 +54,8 @@ class createMesh(QMainWindow):
             polydata.SetPoints(polydataverts)
             polydata.SetPolys(polydatafaces)
         else:
-            progressbarprogram = progressvtk.pythonProgressBar(100000, CurrentMesh, ren, renderwindowinteractor, xlabelbefore, ylabelbefore,  zlabelbefore,xlabel , ylabel)
+            progressbarprogram = progressvtk.pythonProgressBar(60000, CurrentMesh, ren, renderwindowinteractor, xlabelbefore, ylabelbefore,  zlabelbefore,xlabel , ylabel)
             progressbarprogram.exec_()
-            #polydata = createMesh.loadStl(self, CurrentMesh) 
-            #QTimer.singleShot(1000000, lambda: polydata)
-        
-        #actor = createMesh.polyDataToActor(self, polydata)
-        #ren.AddActor(actor)
-        #ren.SetBackground(255, 255, 255)
-        #camera = events.myInteractorStyle(xlabel,ylabel,ren , renderwindowinteractor, self.meshbounds, xlabelbefore, ylabelbefore, zlabelbefore , actor , polydata)
-        #renderwindowinteractor.SetInteractorStyle(camera)
-        #renderwindowinteractor.GetRenderWindow().Render()
-        #renderwindowinteractor.Initialize()
-        #renderwindowinteractor.Start()
-        #renderwindowinteractor.GetRenderWindow().Finalize()
-        #renderwindowinteractor.GetRenderWindow().SetSize(1600,800)
-        #renderwindowinteractor.GetRenderWindow().Render()
             
     #load mesh in GLViewWidget
     def loadmeshinGLView(self, file_path):
@@ -96,26 +82,6 @@ class createMesh(QMainWindow):
                         break
                     return grouped_verts , grouped_faces
 
-
-
-    def loadStl(self, fname):
-        """Load the given STL file, and return a vtkPolyData object for it."""
-        self.reader = vtk.vtkSTLReader()
-        self.reader.SetFileName(fname)
-        self.reader.Update()
-        polydata = self.reader.GetOutput()
-        center = [0.0, 0.0, 0.0]
-        for i in range(polydata.GetNumberOfPoints()):
-            point = polydata.GetPoint(i)
-            center[0] += point[0]
-            center[1] += point[1]
-            center[2] += point[2]
-
-        num_points = polydata.GetNumberOfPoints()
-        center[0] /= num_points
-        center[1] /= num_points
-        center[2] /= num_points
-        return polydata
     
     def polyDataToActor(self, polydata):
         """Wrap the provided vtkPolyData object in a mapper and an actor, returning

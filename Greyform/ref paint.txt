@@ -1,0 +1,101 @@
+class SceneClass(QGraphicsScene):
+    def __init__(self, parent=None):
+        super(SceneClass, self).__init__(QRectF(-1000, -1000, 2000, 2000), parent)
+        self._edge_item = None
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            node = Node()
+            node.setPos(event.scenePos())
+            self.addItem(node)
+
+            if self._edge_item:
+                self._edge_item.dst = node
+                self._edge_item = None
+            else:
+                self._edge_item = Edge()
+                self._edge_item.src = node
+                self.addItem(self._edge_item)
+
+    def mouseMoveEvent(self, event):
+        if self._edge_item:
+            self._edge_item.p2 = event.scenePos()
+        super(SceneClass, self).mouseMoveEvent(event)
+
+
+class Node(QGraphicsEllipseItem):
+    def __init__(self, rect=QRectF(-10, -10, 20, 20), parent=None):
+        super(Node, self).__init__(rect, parent)
+        self.edges = []
+        self.setZValue(1)
+        self.setBrush(Qt.darkGray)
+        self.setFlag(QGraphicsItem.ItemIsMovable, True)
+        self.setFlag(QGraphicsItem.ItemIsSelectable, True)
+        self.setFlag(QGraphicsItem.ItemSendsGeometryChanges, True)
+
+    def addEdge(self, edge):
+        self.edges.append(edge)
+
+    def itemChange(self, change, value):
+        if change == QGraphicsItem.ItemSelectedChange:
+            self.setBrush(Qt.green if value else Qt.darkGray)
+        if change == QGraphicsItem.ItemPositionHasChanged:
+            for edge in self.edges:
+                edge.adjust()
+        return super(Node, self).itemChange(change, value)
+
+
+class Edge(QGraphicsLineItem):
+    def __init__(self, parent=None):
+        super(Edge, self).__init__(parent)
+        self.setPen(QPen(Qt.red, 3))
+        self._src = None
+        self._dst = None
+
+    @property
+    def src(self):
+        return self._src
+
+    @src.setter
+    def src(self, node):
+        self._src = node
+        self._src.addEdge(self)
+        self.adjust()
+
+    @property
+    def dst(self):
+        return self._dst
+
+    @dst.setter
+    def dst(self, node):
+        self._dst = node
+        self._dst.addEdge(self)
+        self.adjust()
+
+    @property
+    def p1(self):
+        return self.line().p1()
+
+    @p1.setter
+    def p1(self, p):
+        line = self.line()
+        line.setP1(p)
+        self.setLine(line)
+
+    @property
+    def p2(self):
+        return self.line().p2()
+
+    @p2.setter
+    def p2(self, p):
+        line = self.line()
+        line.setP2(p)
+        self.setLine(line)
+
+    def adjust(self):
+        self.prepareGeometryChange()
+        if self.src:
+            self.p1 = self.src.pos()
+            self.p2 = self.src.pos()
+        if self.dst:
+            self.p2 = self.dst.pos()
