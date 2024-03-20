@@ -1,10 +1,20 @@
-from PyQt5 import  QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QDialog, QProgressBar, QLabel
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+    QDialog,
+    QProgressBar,
+    QLabel,
+)
 from PyQt5.QtCore import QTimer
 import pyvista as pv
 
+
 class pythonProgressBar(QDialog):
-    def __init__(self, value , plotterloader, plotterloader_2, file_path):
+    def __init__(self, value, plotterloader, plotterloader_2, file_path):
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setWindowTitle("Progress Window")
@@ -22,10 +32,10 @@ class pythonProgressBar(QDialog):
         self.loader_2 = plotterloader_2
         self.filepath = file_path
         self.start_progress()
-        
+
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
-        self.timer.start(100) 
+        self.timer.start(100)
         progress_layout.addWidget(label)
         progress_layout.addWidget(self.progress_bar)
 
@@ -36,8 +46,10 @@ class pythonProgressBar(QDialog):
     def update_progress(self):
         value = self.progress_bar.value()
         if value < 100:
-            self.progress_bar.setValue(value + 1) 
-            QTimer.singleShot(100, self.update_progress)  # Update progress again after 100 milliseconds
+            self.progress_bar.setValue(value + 1)
+            QTimer.singleShot(
+                100, self.update_progress
+            )  # Update progress again after 100 milliseconds
         else:
             self.timer.stop()  # Stop the timer when progress reaches 100%
             self.progress_bar.setValue(0)  # Reset progress to 0
@@ -46,11 +58,27 @@ class pythonProgressBar(QDialog):
     def add_mesh_later(self):
         self.update_progress()
         meshsplot = pv.read(self.filepath)
-        self.loader.add_mesh(meshsplot, color=(230, 230, 250), show_edges=True, edge_color=(128,128,128) ,cmap="terrain", clim=[1,3] ,  name='roombuilding', opacity="linear")
-        self.loader_2.add_mesh(meshsplot, color=(230, 230, 250), show_edges=True, edge_color=(128,128,128) ,cmap="terrain", clim=[1,3] ,  name='roombuilding', opacity="linear")
-        #show Frame
+        self.loader.add_mesh(
+            meshsplot,
+            color=(230, 230, 250),
+            show_edges=True,
+            edge_color=(128, 128, 128),
+            cmap="terrain",
+            clim=[1, 3],
+            name="roombuilding",
+            opacity="linear",
+        )
+        self.loader_2.add_mesh(
+            meshsplot,
+            color=(230, 230, 250),
+            show_edges=True,
+            edge_color=(128, 128, 128),
+            cmap="terrain",
+            clim=[1, 3],
+            name="roombuilding",
+            opacity="linear",
+        )
+        # show Frame
         self.loader.show()
         self.loader_2.show()
         self.close()
-
-

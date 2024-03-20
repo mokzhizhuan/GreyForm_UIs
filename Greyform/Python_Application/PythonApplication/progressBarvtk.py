@@ -1,13 +1,34 @@
-from PyQt5 import  QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QDialog, QProgressBar, QLabel
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+    QDialog,
+    QProgressBar,
+    QLabel,
+)
 from PyQt5.QtCore import QTimer
 import vtk
 from vtk import *
 import PythonApplication.interactiveevent as events
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
+
 class pythonProgressBar(QDialog):
-    def __init__(self, value , polydata, ren, renderwindowinteractor, xlabelbefore, ylabelbefore,zlabelbefore,  xlabel , ylabel):
+    def __init__(
+        self,
+        value,
+        polydata,
+        ren,
+        renderwindowinteractor,
+        xlabelbefore,
+        ylabelbefore,
+        zlabelbefore,
+        xlabel,
+        ylabel,
+    ):
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setWindowTitle("Progress Window")
@@ -38,7 +59,7 @@ class pythonProgressBar(QDialog):
         # Set the layout for the dialog
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.updateProgress)
-        self.timer.start(100) 
+        self.timer.start(100)
         progress_layout.addWidget(label)
         progress_layout.addWidget(self.progress_bar)
 
@@ -51,7 +72,6 @@ class pythonProgressBar(QDialog):
             self.timer.stop()  # Stop the timer when progress reaches 100%
             self.progress_bar.setValue(0)  # Reset progress to 0
             self.timer.start(100)
-
 
     def loadStl(self):
         self.updateProgress()
@@ -74,22 +94,32 @@ class pythonProgressBar(QDialog):
         actor = self.polyDataToActor(polydata)
         self.ren.AddActor(actor)
 
-        camera = events.myInteractorStyle(self.xlabels,self.ylabels,self.ren , self.renderwindowinteractor, self.meshbounds, 
-                                          self.xlabelbefore, self.ylabelbefore, self.zlabelbefore, actor , polydata, self.reader)
+        camera = events.myInteractorStyle(
+            self.xlabels,
+            self.ylabels,
+            self.ren,
+            self.renderwindowinteractor,
+            self.meshbounds,
+            self.xlabelbefore,
+            self.ylabelbefore,
+            self.zlabelbefore,
+            actor,
+            polydata,
+            self.reader,
+        )
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
         self.renderwindowinteractor.GetRenderWindow().Finalize()
-        self.renderwindowinteractor.GetRenderWindow().SetSize(1600,800)
+        self.renderwindowinteractor.GetRenderWindow().SetSize(1600, 800)
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.close()
-        
-    
+
     def polyDataToActor(self, polydata):
         """Wrap the provided vtkPolyData object in a mapper and an actor, returning
-    the actor."""
+        the actor."""
         mapper = vtk.vtkPolyDataMapper()
         if vtk.VTK_MAJOR_VERSION <= 5:
             mapper.SetInput(self.reader.GetOutput())
@@ -103,12 +133,11 @@ class pythonProgressBar(QDialog):
         self.meshbounds = []
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
-        #color RGB must be /255 for Red, green , blue color code
-        actor.GetProperty().SetColor((230/255),(230/255), (250/255))
+        # color RGB must be /255 for Red, green , blue color code
+        actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
         actor.GetProperty().SetDiffuse(0.8)
         colorsd = vtkNamedColors()
-        actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d('LightSteelBlue'))
+        actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d("LightSteelBlue"))
         actor.GetProperty().SetSpecular(0.3)
         actor.GetProperty().SetSpecularPower(60.0)
         return actor
-    

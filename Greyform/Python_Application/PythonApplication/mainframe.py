@@ -1,46 +1,60 @@
-from PyQt5 import QtCore, QtWidgets , QtGui
-from PyQt5.QtWidgets import * 
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *  
+from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.fileselectionmesh as fileselectionmesh
 import PythonApplication.setsequence as SequenceData
 import PythonApplication.createmesh as Createmesh
 import PythonApplication.menuconfirm as backtomenudialog
 import PythonApplication.menu_close as closewindow
-from pyvistaqt import QtInteractor 
+from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import os
+
 
 class Ui_MainWindow(object):
     def __init__(self):
         self.filepaths = os.getcwd()
 
-    #Main Window starting setup   
+    # Main Window starting setup
     def setupUi_mainWindow(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1920, 1080)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.centralwidget.sizePolicy().hasHeightForWidth()
+        )
         self.centralwidget.setSizePolicy(sizePolicy)
         self.centralwidget.setObjectName("centralwidget")
         self.stackedWidget = QtWidgets.QStackedWidget(parent=self.centralwidget)
         self.stackedWidget.setGeometry(QtCore.QRect(0, 0, 1980, 1080))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.stackedWidget.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.stackedWidget.sizePolicy().hasHeightForWidth()
+        )
         self.stackedWidget.setSizePolicy(sizePolicy)
         self.stackedWidget.setObjectName("stackedWidget")
         self.setupUi_Menu(MainWindow)
-        
-    #Main menu Ui Setup
+
+    # Main menu Ui Setup
     def setupUi_Menu(self, MainWindow):
         self.mainmenu = QtWidgets.QWidget()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.mainmenu.sizePolicy().hasHeightForWidth())
@@ -59,14 +73,19 @@ class Ui_MainWindow(object):
         self.menuCloseButton.setGeometry(QtCore.QRect(1000, 980, 240, 25))
         self.menuCloseButton.setCheckable(False)
         self.menuCloseButton.setObjectName("menuStartButton")
-        self.menuCloseButton.clicked.connect(lambda: closewindow.Ui_Dialog_Close.show_dialog_close(MainWindow))
+        self.menuCloseButton.clicked.connect(
+            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(MainWindow)
+        )
         self.stackedWidget.addWidget(self.mainmenu)
         self.setupUi_Page1(MainWindow)
-    
-    #Page 1 UI setup
+
+    # Page 1 UI setup
     def setupUi_Page1(self, MainWindow):
         self.page = QtWidgets.QWidget()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.page.sizePolicy().hasHeightForWidth())
@@ -75,7 +94,9 @@ class Ui_MainWindow(object):
         self.Selectivefilelistview = QtWidgets.QListView(parent=self.page)
         self.Selectivefilelistview.setGeometry(QtCore.QRect(100, 80, 431, 861))
         self.Selectivefilelistview.setObjectName("Selectivefilelistview")
-        self.item = self.Selectivefilelistview.clicked.connect(self.on_selection_changed)
+        self.item = self.Selectivefilelistview.clicked.connect(
+            self.on_selection_changed
+        )
         self.NextButton_Page_2 = QtWidgets.QPushButton(parent=self.page)
         self.NextButton_Page_2.setGeometry(QtCore.QRect(400, 980, 101, 25))
         self.NextButton_Page_2.setObjectName("NextButton_Page_2")
@@ -93,18 +114,27 @@ class Ui_MainWindow(object):
         self.pyvistaframe.setObjectName("pyvistaframe")
         self.pyvistaframe.setFrameShape(QFrame.Panel)
         self.pyvistaframe.setFrameShadow(QFrame.Raised)
-        self.plotterloader = QtInteractor(self.pyvistaframe , line_smoothing=True, point_smoothing= True, polygon_smoothing=True, multi_samples=8)
+        self.plotterloader = QtInteractor(
+            self.pyvistaframe,
+            line_smoothing=True,
+            point_smoothing=True,
+            polygon_smoothing=True,
+            multi_samples=8,
+        )
         self.plotterloader.enable()
         self.FilePathButton = QtWidgets.QPushButton(parent=self.page)
         self.FilePathButton.setGeometry(QtCore.QRect(100, 980, 89, 25))
         self.FilePathButton.setObjectName("FilePathButton")
         self.stackedWidget.addWidget(self.page)
         self.setupUi_Page2(MainWindow)
-        
-    #Page 2 Ui Setup
+
+    # Page 2 Ui Setup
     def setupUi_Page2(self, MainWindow):
         self.page_2 = QtWidgets.QWidget()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.page_2.sizePolicy().hasHeightForWidth())
@@ -139,15 +169,24 @@ class Ui_MainWindow(object):
         self.pyvistaframe_2.setObjectName("pyvistaframe_2")
         self.pyvistaframe_2.setFrameShape(QFrame.StyledPanel)
         self.pyvistaframe_2.setFrameShadow(QFrame.Raised)
-        self.plotterloader_2 = QtInteractor(self.pyvistaframe_2, line_smoothing=True, point_smoothing= True, polygon_smoothing=True, multi_samples=8)
+        self.plotterloader_2 = QtInteractor(
+            self.pyvistaframe_2,
+            line_smoothing=True,
+            point_smoothing=True,
+            polygon_smoothing=True,
+            multi_samples=8,
+        )
         self.plotterloader_2.enable()
         self.stackedWidget.addWidget(self.page_2)
         self.setupUi_Page3(MainWindow)
-    
-    #Page 3 of the UI
+
+    # Page 3 of the UI
     def setupUi_Page3(self, MainWindow):
         self.page_3 = QtWidgets.QWidget()
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.page_3.sizePolicy().hasHeightForWidth())
@@ -162,14 +201,18 @@ class Ui_MainWindow(object):
         self.vtkframe.setFrameShadow(QFrame.Raised)
         self.vtkframe.setGeometry(QtCore.QRect(160, 20, 1600, 800))
         # Create a render window, and set interaction styles
-        self.renderWindowInteractor = QVTKRenderWindowInteractor.QVTKRenderWindowInteractor(self.vtkframe)
+        self.renderWindowInteractor = (
+            QVTKRenderWindowInteractor.QVTKRenderWindowInteractor(self.vtkframe)
+        )
         self.verticalLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
         self.verticalLayout.addWidget(self.vtkframe)
         self.Ygroupbox = QtWidgets.QGroupBox(parent=self.page_3)
         self.Ygroupbox.setGeometry(QtCore.QRect(1700, 940, 171, 51))
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Minimum
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.Ygroupbox.sizePolicy().hasHeightForWidth())
@@ -189,10 +232,16 @@ class Ui_MainWindow(object):
         self.titleXlabel.setGeometry(QtCore.QRect(10, 20, 71, 17))
         self.titleXlabel.setObjectName("titleXlabel")
         self.Xlabel = QtWidgets.QLabel(parent=self.Xgroupbox)
-        self.Xlabel.setGeometry(QtCore.QRect(80, 20, 91, 31)), self.Xlabel.setObjectName("Xlabel")
+        self.Xlabel.setGeometry(
+            QtCore.QRect(80, 20, 91, 31)
+        ), self.Xlabel.setObjectName("Xlabel")
         self.BackButton_Page_2 = QtWidgets.QPushButton(parent=self.page_3)
         self.BackButton_Page_2.setGeometry(QtCore.QRect(590, 980, 80, 25))
-        self.BackButton_Page_2.setObjectName("BackButton_2"), self.BackButton_Page_2.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
+        self.BackButton_Page_2.setObjectName(
+            "BackButton_2"
+        ), self.BackButton_Page_2.clicked.connect(
+            lambda: self.stackedWidget.setCurrentIndex(2)
+        )
         self.ConfirmButtton = QtWidgets.QPushButton(parent=self.page_3)
         self.ConfirmButtton.setGeometry(QtCore.QRect(430, 980, 80, 25))
         self.ConfirmButtton.setObjectName("ConfirmButton")
@@ -203,10 +252,10 @@ class Ui_MainWindow(object):
         self.Seqlabel.setGeometry(QtCore.QRect(480, 850, 751, 21))
         self.Seqlabel.setObjectName("Seqlabel")
         self.Xgroupbox_2 = QGroupBox(self.page_3)
-        self.Xgroupbox_2.setObjectName(u"Xgroupbox_2")
+        self.Xgroupbox_2.setObjectName("Xgroupbox_2")
         self.Xgroupbox_2.setGeometry(QRect(1480, 860, 171, 61))
         self.titleXlabel_2 = QLabel(self.Xgroupbox_2)
-        self.titleXlabel_2.setObjectName(u"titleXlabel_2")
+        self.titleXlabel_2.setObjectName("titleXlabel_2")
         self.titleXlabel_2.setGeometry(QRect(10, 20, 71, 17))
         self.Xlabel_2 = QLabel(self.Xgroupbox_2)
         self.Xlabel_2.setObjectName("Xlabel_2")
@@ -215,16 +264,16 @@ class Ui_MainWindow(object):
         self.Ygroupbox_2.setObjectName("Ygroupbox_2")
         self.Ygroupbox_2.setGeometry(QRect(1360, 950, 171, 51))
         self.titleYlabel_2 = QLabel(self.Ygroupbox_2)
-        self.titleYlabel_2.setObjectName(u"titleYlabel_2")
+        self.titleYlabel_2.setObjectName("titleYlabel_2")
         self.titleYlabel_2.setGeometry(QRect(10, 20, 61, 17))
         self.Ylabel_2 = QLabel(self.Ygroupbox_2)
         self.Ylabel_2.setObjectName("Ylabel_2")
         self.Ylabel_2.setGeometry(QRect(80, 10, 91, 31))
         self.displaybeforelabel = QLabel(self.page_3)
-        self.displaybeforelabel.setObjectName(u"displaybeforelabel")
+        self.displaybeforelabel.setObjectName("displaybeforelabel")
         self.displaybeforelabel.setGeometry(QRect(1360, 840, 181, 17))
         self.label_2 = QLabel(self.page_3)
-        self.label_2.setObjectName(u"label_2")
+        self.label_2.setObjectName("label_2")
         self.label_2.setGeometry(QRect(1740, 830, 101, 17))
         self.Zgroupbox = QGroupBox(self.page_3)
         self.Zgroupbox.setObjectName("Zgroupbox")
@@ -233,13 +282,13 @@ class Ui_MainWindow(object):
         self.titleZlabel_3.setObjectName("titleZlabel_3")
         self.titleZlabel_3.setGeometry(QRect(10, 20, 71, 17))
         self.Zlabel = QLabel(self.Zgroupbox)
-        self.Zlabel.setObjectName(u"Zlabel")
+        self.Zlabel.setObjectName("Zlabel")
         self.Zlabel.setGeometry(QRect(80, 20, 91, 31))
         self.button_UI(MainWindow)
         self.stackedWidget.addWidget(self.page_3)
         self.finalizeUI(MainWindow)
 
-    #finalizing the ui setup
+    # finalizing the ui setup
     def finalizeUI(self, MainWindow):
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
@@ -249,44 +298,90 @@ class Ui_MainWindow(object):
         self.stackedWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-    #button interaction
-    def button_UI(self , MainWindow):
-        self.menuStartButton.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
-        self.NextButton_Page_2.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
-        self.BacktoMenuButton.clicked.connect(lambda: backtomenudialog.Ui_Dialog_Confirm.show_dialog_confirm(MainWindow, self.stackedWidget))
+    # button interaction
+    def button_UI(self, MainWindow):
+        self.menuStartButton.clicked.connect(
+            lambda: self.stackedWidget.setCurrentIndex(1)
+        )
+        self.NextButton_Page_2.clicked.connect(
+            lambda: self.stackedWidget.setCurrentIndex(2)
+        )
+        self.BacktoMenuButton.clicked.connect(
+            lambda: backtomenudialog.Ui_Dialog_Confirm.show_dialog_confirm(
+                MainWindow, self.stackedWidget
+            )
+        )
         self.FilePathButton.clicked.connect(self.browsefilesdirectory)
         self.BackButton.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
-        self.NextButton_Page_3.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(3))
-        self.seq1Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq1Button, self.NextButton_Page_3 , self.Seqlabel))
-        self.seq2Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq2Button, self.NextButton_Page_3 , self.Seqlabel))
-        self.seq3Button.clicked.connect(lambda: SequenceData.loadseqdata.on_selection_sequence(self.seq3Button, self.NextButton_Page_3 , self.Seqlabel))
-        self.NextButton_Page_3.clicked.connect(lambda: Createmesh.createMesh.createmesh(self,self.file_path , self.renderWindowInteractor, self.Ylabel, self.Xlabel,self.Xlabel_2, 
-                                                                                        self.Ylabel_2, self.Zlabel))
-    #when selected from the file
+        self.NextButton_Page_3.clicked.connect(
+            lambda: self.stackedWidget.setCurrentIndex(3)
+        )
+        self.seq1Button.clicked.connect(
+            lambda: SequenceData.loadseqdata.on_selection_sequence(
+                self.seq1Button, self.NextButton_Page_3, self.Seqlabel
+            )
+        )
+        self.seq2Button.clicked.connect(
+            lambda: SequenceData.loadseqdata.on_selection_sequence(
+                self.seq2Button, self.NextButton_Page_3, self.Seqlabel
+            )
+        )
+        self.seq3Button.clicked.connect(
+            lambda: SequenceData.loadseqdata.on_selection_sequence(
+                self.seq3Button, self.NextButton_Page_3, self.Seqlabel
+            )
+        )
+        self.NextButton_Page_3.clicked.connect(
+            lambda: Createmesh.createMesh.createmesh(
+                self,
+                self.file_path,
+                self.renderWindowInteractor,
+                self.Ylabel,
+                self.Xlabel,
+                self.Xlabel_2,
+                self.Ylabel_2,
+                self.Zlabel,
+            )
+        )
+
+    # when selected from the file
     def on_selection_changed(self, index):
         model = self.Selectivefilelistview.model()
         self.file_path = model.filePath(index)
         file = self.Selectivefilelistview.model().itemData(index)[0]
-        fileselectionmesh.FileSelectionMesh(self.horizontalLayout_2,self.horizontalLayout_4, self.file_path , self.plotterloader , self.plotterloader_2, 
-                                                     self.pyvistaframe , self.pyvistaframe_2, self.horizontalLayoutWidget, self.horizontalLayoutWidget_2)
-        
-        self.file = file.replace('.stl', '')
+        fileselectionmesh.FileSelectionMesh(
+            self.horizontalLayout_2,
+            self.horizontalLayout_4,
+            self.file_path,
+            self.plotterloader,
+            self.plotterloader_2,
+            self.pyvistaframe,
+            self.pyvistaframe_2,
+            self.horizontalLayoutWidget,
+            self.horizontalLayoutWidget_2,
+        )
+
+        self.file = file.replace(".stl", "")
         self.NextButton_Page_2.show()
 
         _translate = QtCore.QCoreApplication.translate
         self.Itemlabel.setText(_translate("MainWindow", "Product : " + str(self.file)))
-        self.Itemlabel_Page_3.setText(_translate("MainWindow", "Product: " + str(self.file)))
+        self.Itemlabel_Page_3.setText(
+            _translate("MainWindow", "Product: " + str(self.file))
+        )
 
-    #browse file directory
+    # browse file directory
     def browsefilesdirectory(self):
-        self.filepaths = QFileDialog.getExistingDirectory(None,"Choose Directory",self.filepaths)
+        self.filepaths = QFileDialog.getExistingDirectory(
+            None, "Choose Directory", self.filepaths
+        )
         model = QFileSystemModel()
         model.setRootPath(self.filepaths)
         model.setFilter(QDir.NoDotAndDotDot | QDir.Files)
         self.Selectivefilelistview.setModel(model)
         self.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
         self.Selectivefilelistview.setAlternatingRowColors(True)
-    
+
     # Connect close event of the main window to a cleanup function
     def closeEvent(self, event):
         self.horizontalLayoutWidget.close()
@@ -313,13 +408,20 @@ class Ui_MainWindow(object):
         self.verticalLayoutWidget.close()
         event.accept()
 
-    #translate UI Text
+    # translate UI Text
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "mainframe"))
-        self.QTitle.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:36pt;\">GREYFORM UI</span></p></body></html>"))
+        self.QTitle.setText(
+            _translate(
+                "MainWindow",
+                '<html><head/><body><p><span style=" font-size:36pt;">GREYFORM UI</span></p></body></html>',
+            )
+        )
         self.menuStartButton.setText(_translate("MainWindow", "Click to Continue"))
-        self.menuCloseButton.setText(_translate("MainWindow", "Click to Close the Window"))
+        self.menuCloseButton.setText(
+            _translate("MainWindow", "Click to Close the Window")
+        )
         self.NextButton_Page_2.setText(_translate("MainWindow", "Next"))
         self.BacktoMenuButton.setText(_translate("MainWindow", "Back To Menu"))
         self.FilePathButton.setText(_translate("MainWindow", "File_Path"))
@@ -341,10 +443,14 @@ class Ui_MainWindow(object):
         self.Xlabel_2.setText(_translate("MainWindow", "0"))
         self.titleYlabel_2.setText(_translate("MainWindow", "Height:"))
         self.Ylabel_2.setText(_translate("MainWindow", "0"))
-        self.displaybeforelabel.setText(_translate("MainWindow", "Mesh Camera Dimensions"))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", "Click Position", None))
+        self.displaybeforelabel.setText(
+            _translate("MainWindow", "Mesh Camera Dimensions")
+        )
+        self.label_2.setText(
+            QCoreApplication.translate("MainWindow", "Click Position", None)
+        )
         self.Zgroupbox.setTitle("")
-        self.titleZlabel_3.setText(QCoreApplication.translate("MainWindow", "Length:", None))
+        self.titleZlabel_3.setText(
+            QCoreApplication.translate("MainWindow", "Length:", None)
+        )
         self.Zlabel.setText(QCoreApplication.translate("MainWindow", "0", None))
-
-

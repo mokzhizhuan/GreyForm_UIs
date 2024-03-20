@@ -1,5 +1,14 @@
-from PyQt5 import  QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QDialog, QVBoxLayout, QLabel, QWidget 
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QPushButton,
+    QDialog,
+    QVBoxLayout,
+    QLabel,
+    QWidget,
+)
+
 
 class Ui_Dialog_Close(QMainWindow):
     def show_dialog_close(self):
@@ -22,11 +31,14 @@ class Ui_Dialog_Close(QMainWindow):
         buttonBox = QtWidgets.QDialogButtonBox()
         buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 32))
         buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
-        buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Cancel|QtWidgets.QDialogButtonBox.StandardButton.Ok)
+        buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.StandardButton.Cancel
+            | QtWidgets.QDialogButtonBox.StandardButton.Ok
+        )
         buttonBox.setObjectName("buttonBox")
         buttonBox.accepted.connect(dialog.close)
         buttonBox.accepted.connect(self.close)
-        
+
         buttonBox.rejected.connect(dialog.close)
         dialog_layout.addWidget(buttonBox)
 
