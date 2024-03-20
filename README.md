@@ -1,4 +1,4 @@
-Install System Commands based on python libraries:<br>
+Install python libraries using system commands:<br>
 pip/pip3 install pyvistaqt <br>
 pip/pip3 install ifcopenshell <br>
 pip/pip3 install vtk <br>
