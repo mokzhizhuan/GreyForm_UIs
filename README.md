@@ -13,8 +13,12 @@ Python 3.11 <br> <br>
 
 
 Steps on running the system:<br>
-Run your cmd or visual studio code on your file location:<br>
+Run your cmd on your file location:<br>
 cd file_path/GreyForm_UIs/GreyForm/Python_Application/<br>
+python/python3 mainapplication.py<br><br>
+
+For Visual Studio: 
+Open Folder to file_path/GreyForm_UIs/GreyForm/Python_Application/<br>
 python/python3 mainapplication.py<br><br>
 
 Main Classes:<br>                               
