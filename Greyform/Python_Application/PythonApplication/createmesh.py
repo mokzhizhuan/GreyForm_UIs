@@ -4,7 +4,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *  
 from PyQt5.QtGui import *
 import vtk
-from ipywidgets import interact
 from vtk import *
 import ifcopenshell
 import ifcopenshell.geom
