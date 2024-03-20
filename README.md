@@ -1,11 +1,14 @@
-Steps on running the system:
-Run your cmd or visual studio code on your file location:
-cd file_path/Python_Application/mainapplication.py
+Steps on running the system:<br>
+Run your cmd or visual studio code on your file location:<br>
+cd file_path/Python_Application/mainapplication.py<br><br>
 
-Main Classes:                               Sub Classes: 
-MainApplication > Mainframe(main classes) > createmesh > progressBarvtk > interactiveevent
-                                          > menu_confirm
-                                          > fileselectionmesh > progressBar
-                                          > menu_close
-                                          > setsequence
+Main Classes:<br>                               
+MainApplication > Mainframe(main classes) 
+
+Sub Classes:<br>
+createmesh > progressBarvtk > interactiveevent <br>
+menu_confirm <br>
+fileselectionmesh > progressBar <br>
+menu_close <br>
+setsequence
 
