@@ -14,40 +14,52 @@ import multiprocessing
 import PythonApplication.progressBar as Progress
 
 
-class FileSelectionMesh(QWidget):
+class FileSelectionMesh(QMainWindow):
+    def __init__(self, horizontalLayout, horizontalLayout_page2,  file_path, plotterloader , plotterloader_2 , pyvistaframe , pyvistaframe_2 , layoutWidget, layoutWidget_page2):
+        self.horizontalLayout = horizontalLayout
+        self.horizontalLayout_page2 = horizontalLayout_page2
+        self.plotterloader = plotterloader
+        self.plotterloader_2 = plotterloader_2
+        self.pyvistaframe = pyvistaframe
+        self.pyvistaframe_2 = pyvistaframe_2
+        self.layoutwidget = layoutWidget
+        self.layoutwidget_page2 = layoutWidget_page2
+        self.file_path = file_path
+        self.meshdata()
+    
     #load meshdata from file
-    def meshdata(self, horizontalLayout, horizontalLayout_page2,  file_path, plotterloader , plotterloader_2 , pyvistaframe , pyvistaframe_2 , layoutWidget, layoutWidget_page2):
+    def meshdata(self):
         #load glviewer in ifc
-        if "ifc" in file_path:
+        if "ifc" in self.file_path:
             self.viewer = gl.GLViewWidget()
             self.viewer_page2 = gl.GLViewWidget()
-            FileSelectionMesh.clearLayout(horizontalLayout)
-            FileSelectionMesh.clearLayout(horizontalLayout_page2) 
-            horizontalLayout.addWidget(self.viewer, 1)
-            horizontalLayout_page2.addWidget(self.viewer_page2, 1)
+            self.clearLayout() 
+            self.horizontalLayout.addWidget(self.viewer, 1)
+            self.horizontalLayout_page2.addWidget(self.viewer_page2, 1)
             #clear all item
             self.viewer.clear()
             self.viewer_page2.clear()
-            FileSelectionMesh.loadmeshinGLView(self, file_path)
+            FileSelectionMesh.loadmeshinGLView(self, self.file_path)
         else:#load mesh in pyvista from STL
             #clear mesh
-            FileSelectionMesh.clearLayout(horizontalLayout)
-            FileSelectionMesh.clearLayout(horizontalLayout_page2) 
-            fileinfo = QFileInfo(self.file_path)
-            plotterloader = FileSelectionMesh.loadpyvista(pyvistaframe , layoutWidget, plotterloader)
-            plotterloader_2 = FileSelectionMesh.loadpyvista(pyvistaframe_2 , layoutWidget_page2, plotterloader_2)
-            horizontalLayout.addWidget(plotterloader.interactor)
-            horizontalLayout_page2.addWidget(plotterloader_2.interactor)
+            self.clearLayout()
+            plotterloader = FileSelectionMesh.loadpyvista(self.pyvistaframe , self.layoutwidget, self.plotterloader)
+            plotterloader_2 = FileSelectionMesh.loadpyvista(self.pyvistaframe_2 , self.layoutwidget_page2, self.plotterloader_2)
+            self.horizontalLayout.addWidget(plotterloader.interactor)
+            self.horizontalLayout_page2.addWidget(plotterloader_2.interactor)
             plotterloader.clear()
             plotterloader_2.clear()
-            progressbarprogram = Progress.pythonProgressBar(60000, plotterloader, plotterloader_2, file_path)
+            progressbarprogram = Progress.pythonProgressBar(60000, plotterloader, plotterloader_2, self.file_path)
             progressbarprogram.exec_()
-            #Timer.singleShot(100000, lambda: FileSelectionMesh.add_mesh_later(plotterloader, plotterloader_2, file_path))
 
     #clear layout
-    def clearLayout(layout):
-        while layout.count():
-            child = layout.takeAt(0)
+    def clearLayout(self):
+        while self.horizontalLayout.count():
+            child = self.horizontalLayout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+        while self.horizontalLayout_page2.count():
+            child = self.horizontalLayout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
 
@@ -92,5 +104,17 @@ class FileSelectionMesh(QWidget):
         mesh = gl.GLMeshItem(meshdata=meshdata, smooth=True, drawFaces=False, drawEdges=True, edgeColor=(0, 1, 0, 1))
         self.viewer.addItem(mesh)
         self.viewer_page2.addItem(mesh)
+
+    def closeEvent(self, QCloseEvent):
+        super().closeEvent(QCloseEvent)
+        self.horizontalLayout.close()
+        self.horizontalLayout_page2.close()
+        self.pyvistaframe.close()
+        self.plotterloader.close()
+        self.plotterloader_2.close()
+        self.pyvistaframe_2.close()
+        self.plotterloader.GetRenderWindow().Finalize()
+        self.plotterloader_2.GetRenderWindow().Finalize()
+        
 
     

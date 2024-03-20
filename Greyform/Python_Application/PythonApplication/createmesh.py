@@ -1,4 +1,3 @@
-import sys
 from PyQt5 import QtCore, QtWidgets ,QtOpenGL, QtGui , uic
 from PyQt5.QtWidgets import * 
 from PyQt5.QtCore import *
@@ -22,12 +21,11 @@ class createMesh(QMainWindow):
         self.meshbounds = None
 
     #vtkrenderwindow
-    def createmesh(self, CurrentMesh, renderwindowinteractor , ylabel , xlabel, xlabelbefore, ylabelbefore, zlabelbefore, verticalLayoutWidget):
+    def createmesh(self, CurrentMesh, renderwindowinteractor , ylabel , xlabel, xlabelbefore, ylabelbefore, zlabelbefore):
         ren = vtk.vtkRenderer()
         renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         renderwindowinteractor.GetRenderWindow().AddRenderer(ren)
         self.renderwindowinteractor = renderwindowinteractor
-        self.vtkwidget = verticalLayoutWidget
         ren.UseHiddenLineRemovalOn()
         if "ifc" in CurrentMesh:
             polydataverts, polydatafaces = createMesh.loadmeshinGLView(self, CurrentMesh)
@@ -99,8 +97,13 @@ class createMesh(QMainWindow):
         return actor
     
     def closeEvent(self, event):
-        self.vtkWidget.Finalize()     ############################ important
-        self.renderwindowinteractor.TerminateApp()
+        super().closeEvent(QCloseEvent)
+        self.renderwindowinteractor.GetRenderWindow().MakeCurrent()
+        self.renderwindowinteractor.Finalize()     ############################ important
+        self.renderwindowinteractor.GetRenderWindow().ClearInRenderStatus()
+        self.renderwindowinteractor.GetRenderWindow().RemoveAllObservers()
+        self.renderwindowinteractor.GetRenderWindow().Finalize()
+        self.renderwindowinteractor.GetRenderWindow().GetInteractor().TerminateApp()
 
 
 

@@ -1,4 +1,3 @@
-import sys
 from PyQt5 import  QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QDialog, QVBoxLayout, QLabel, QWidget 
 
@@ -33,13 +32,3 @@ class Ui_Dialog_Close(QMainWindow):
 
         # Show the dialog as a modal dialog (blocks the main window)
         dialog.exec_()
-
-    def closeEvent(self, event):
-        self.horizontalLayoutWidget.close()
-        self.horizontalLayoutWidget_2.close()
-        self.pyvistaframe.close()
-        self.plotterloader.close()
-        self.plotterloader_2.close()
-        self.pyvistaframe_2.close()
-        self.vtkframe.close()
-        self.renderWindowInteractor.close()

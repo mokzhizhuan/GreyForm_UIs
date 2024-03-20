@@ -12,4 +12,3 @@ class loadseqdata(object):
         buttonnextpage.show()
         _translate = QtCore.QCoreApplication.translate
         label.setText(_translate("MainWindow", "Sequence: " + str(dataseqtext)))
-        return dataseqtext

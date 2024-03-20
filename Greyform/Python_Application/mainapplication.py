@@ -9,7 +9,7 @@ class Ui_MainWindow(QMainWindow):
     def __init__(self , parent=None):
         super(Ui_MainWindow, self).__init__(parent)
         self.ui = mainframe.Ui_MainWindow()
-        self.ui.setupUi(self)
+        self.ui.setupUi_mainWindow(self)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

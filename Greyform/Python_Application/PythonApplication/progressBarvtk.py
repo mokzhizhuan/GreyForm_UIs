@@ -1,4 +1,3 @@
-import sys
 from PyQt5 import  QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QDialog, QProgressBar, QLabel
 from PyQt5.QtCore import QTimer
