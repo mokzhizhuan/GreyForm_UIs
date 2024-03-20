@@ -32,3 +32,5 @@ fileselectionmesh > progressBar <br>
 menu_close <br>
 setsequence
 
+Loading the STL link , using the STL file extension.
+This program only load STL file for the frames. 
