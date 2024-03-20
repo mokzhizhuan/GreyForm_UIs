@@ -30,7 +30,7 @@ createmesh > progressBarvtk > interactiveevent <br>
 menu_confirm <br>
 fileselectionmesh > progressBar <br>
 menu_close <br>
-setsequence
+setsequence <br><br>
 
-Loading the STL link , using the STL file extension.
+Loading the STL link , using the STL file extension. <br>
 This program only load STL file for the frames. 
