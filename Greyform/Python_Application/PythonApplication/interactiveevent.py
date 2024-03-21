@@ -25,6 +25,7 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
     ):
         self.AddObserver("LeftButtonPressEvent", self.leftButtonPressEvent)
         self.AddObserver("RightButtonPressEvent", self.RightButtonPressEvent)
+        self.AddObserver("MiddleButtonPressEvent", self.MiddleButtonPressEvent)
         self.selected_cells = []
         self.defaultposition = [0, 0, 1]
         ren.ResetCamera()
@@ -39,11 +40,15 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         self.polys = polys
         self.reader = reader
         self.actor = None
+        self.pointx = []
+        self.pointz = []
+        self.pointy = []
         self.renderwindowinteractors.GetRenderWindow().Render()
         _translate = QtCore.QCoreApplication.translate
         self.xlabelbefore = xlabelbefore
         self.ylabelbefore = ylabelbefore
         self.zlabelbefore = zlabelbefore
+        self.points = []
         xlabelbefore.setText(
             _translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[0])))
         )
@@ -143,31 +148,49 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         self.AddObserver("KeyPressEvent", self.KeyPressed)
         self.OnRightButtonDown()
 
-    def setOutsideView(self):
-        # Calculate the bounding box of the mesh
-        center = [
-            (self.meshbound[0] + self.meshbound[1]) / 2,
-            (self.meshbound[2] + self.meshbound[3]) / 2,
-            (self.meshbound[4] + self.meshbound[5]) / 2,
-        ]
-        camera = self.render.GetActiveCamera()
-        # Set camera position and focal point to show an outside view
-        camera.SetPosition(
-            center[0],
-            center[1],
-            self.meshbound[5] + 2 * (self.meshbound[5] - self.meshbound[4]),
-        )
-        camera.SetFocalPoint(center)
-        _translate = QtCore.QCoreApplication.translate
-        self.xlabelbefore.setText(
-            _translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[0])))
-        )
-        self.ylabelbefore.setText(
-            _translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[1])))
-        )
-        self.zlabelbefore.setText(
-            _translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[2])))
-        )
+    def MiddleButtonPressEvent(self, obj, event):
+        clickPos = self.GetInteractor().GetEventPosition()
+        picker = vtk.vtkPropPicker()
+        picker.Pick(clickPos[0], clickPos[1], 0, self.render)
+        pickedPos = picker.GetPickPosition()
+        if len(self.points) < 2:
+            self.points.append(pickedPos)
+            print("Point", len(self.points), "picked at:", pickedPos)
+
+            if len(self.points) == 2:
+                print("Two points picked:", self.points)
+                self.createCube()
+                # Do whatever you want with the points here
+        else:
+            self.points = []  # Reset points if more than two are picked
+
+        self.OnMiddleButtonDown()
+
+    def createCube(self):
+        if len(self.points) == 2:
+            cubeSource = vtk.vtkCubeSource()
+            cubeSource.SetCenter(
+                (self.points[0][0] + self.points[1][0]) / 2,
+                (self.points[0][1] + self.points[1][1]) / 2,
+                (self.points[0][2] + self.points[1][2]) / 2,
+            )
+            if self.points[1][2] > self.points[0][2]:
+                cubeSource.SetXLength(abs(self.points[1][0] - self.points[0][0]))
+                cubeSource.SetYLength(abs(self.points[1][1] - self.points[0][1]))
+                cubeSource.SetZLength(abs(self.points[1][2] - self.points[0][2]))
+            else:
+                cubeSource.SetXLength(abs(self.points[0][0] - self.points[1][0]))
+                cubeSource.SetYLength(abs(self.points[0][1] - self.points[1][1]))
+                cubeSource.SetZLength(abs(self.points[0][2] - self.points[1][2]))
+
+            cubeMapper = vtk.vtkPolyDataMapper()
+            cubeMapper.SetInputConnection(cubeSource.GetOutputPort())
+
+            cubeActor = vtk.vtkActor()
+            cubeActor.SetMapper(cubeMapper)
+            cubeActor.GetProperty().SetColor(1, 0, 0)  # Red color
+            self.render.AddActor(cubeActor)
+            self.renderwindowinteractors.GetRenderWindow().Render()
 
     def KeyPressed(self, obj, event):
         key = self.renderwindowinteractors.GetKeySym()
