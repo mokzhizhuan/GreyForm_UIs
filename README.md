@@ -11,13 +11,14 @@ Extendsion Used:<br>
 QtPython <br>
 Python 3.11 <br> <br>
 
+UI_Drawinng is included. <br><br>
 
 Steps on running the system:<br>
 Run your cmd on your file location:<br>
 cd file_path/GreyForm_UIs/GreyForm/Python_Application/<br>
 python/python3 mainapplication.py<br><br>
 
-For Visual Studio: 
+For Visual Studio: <br>
 Open Folder to file_path/GreyForm_UIs/GreyForm/Python_Application/<br>
 python/python3 mainapplication.py<br><br>
 
@@ -29,5 +30,7 @@ createmesh > progressBarvtk > interactiveevent <br>
 menu_confirm <br>
 fileselectionmesh > progressBar <br>
 menu_close <br>
-setsequence
+setsequence <br><br>
 
+Loading the STL link , using the STL file extension. <br>
+This program only load STL file for the frames. 
