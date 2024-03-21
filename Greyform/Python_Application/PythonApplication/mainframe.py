@@ -75,9 +75,6 @@ class Ui_MainWindow(object):
         self.menuCloseButton.setGeometry(QtCore.QRect(1000, 980, 240, 25))
         self.menuCloseButton.setCheckable(False)
         self.menuCloseButton.setObjectName("menuStartButton")
-        self.menuCloseButton.clicked.connect(
-            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(MainWindow)
-        )
         self.stackedWidget.addWidget(self.mainmenu)
         self.setupUi_Page1(MainWindow)
 
@@ -244,9 +241,9 @@ class Ui_MainWindow(object):
         ), self.BackButton_Page_2.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(2)
         )
-        self.ConfirmButtton = QtWidgets.QPushButton(parent=self.page_3)
-        self.ConfirmButtton.setGeometry(QtCore.QRect(430, 980, 80, 25))
-        self.ConfirmButtton.setObjectName("ConfirmButton")
+        self.ConfirmButton = QtWidgets.QPushButton(parent=self.page_3)
+        self.ConfirmButton.setGeometry(QtCore.QRect(430, 980, 80, 25))
+        self.ConfirmButton.setObjectName("ConfirmButton")
         self.Itemlabel_Page_3 = QtWidgets.QLabel(parent=self.page_3)
         self.Itemlabel_Page_3.setGeometry(QtCore.QRect(480, 910, 751, 21))
         self.Itemlabel_Page_3.setObjectName("Itemlabel_Page_3")
@@ -286,8 +283,28 @@ class Ui_MainWindow(object):
         self.Zlabel = QLabel(self.Zgroupbox)
         self.Zlabel.setObjectName("Zlabel")
         self.Zlabel.setGeometry(QRect(80, 20, 91, 31))
-        self.button_UI(MainWindow)
         self.stackedWidget.addWidget(self.page_3)
+        self.setupUi_Page4(MainWindow)
+
+    # Page 4 UI setup
+    def setupUi_Page4(self, MainWindow):
+        self.page_4 = QWidget()
+        self.page_4.setObjectName("page_4")
+        self.HomeButton = QPushButton(self.page_4)
+        self.HomeButton.setObjectName("HomeButton")
+        self.HomeButton.setGeometry(QRect(150, 470, 501, 271))
+        self.CloseButton = QPushButton(self.page_4)
+        self.CloseButton.setObjectName("CloseButton")
+        self.CloseButton.setGeometry(QRect(150, 770, 501, 271))
+        self.EnableRobotButton = QPushButton(self.page_4)#this one not confirmed must clarify
+        self.EnableRobotButton.setObjectName("RobotButton")
+        self.EnableRobotButton.setGeometry(QRect(1200, 470, 501, 271))
+        self.ConfirmackButton = QPushButton(self.page_4)
+        #using the confirm dialog button to confirm the marking. Basically finalize the marking.
+        self.ConfirmackButton.setObjectName("ConfirmButton")
+        self.ConfirmackButton.setGeometry(QRect(1200, 780, 501, 271))
+        self.stackedWidget.addWidget(self.page_4)
+        self.button_UI(MainWindow)
         self.finalizeUI(MainWindow)
 
     # finalizing the ui setup
@@ -304,6 +321,9 @@ class Ui_MainWindow(object):
     def button_UI(self, MainWindow):
         self.menuStartButton.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(1)
+        )
+        self.menuCloseButton.clicked.connect(
+            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(MainWindow)
         )
         self.NextButton_Page_2.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(2)
@@ -344,6 +364,16 @@ class Ui_MainWindow(object):
                 self.Ylabel_2,
                 self.Zlabel,
             )
+        )
+        self.ConfirmButton.clicked.connect(
+            lambda: self.stackedWidget.setCurrentIndex(4)
+        )
+        self.HomeButton.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        self.CloseButton.clicked.connect(
+            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(MainWindow)
+        )
+        self.ConfirmackButton.clicked.connect(
+            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(MainWindow)
         )
 
     # when selected from the file
@@ -455,7 +485,7 @@ class Ui_MainWindow(object):
         self.titleXlabel.setText(_translate("MainWindow", "Width:"))
         self.Xlabel.setText(_translate("MainWindow", "0"))
         self.BackButton_Page_2.setText(_translate("MainWindow", "Back"))
-        self.ConfirmButtton.setText(_translate("MainWindow", "Confirm"))
+        self.ConfirmButton.setText(_translate("MainWindow", "Confirm"))
         self.Itemlabel_Page_3.setText(_translate("MainWindow", "Product:"))
         self.Seqlabel.setText(_translate("MainWindow", "Sequence:"))
         self.titleXlabel_2.setText(_translate("MainWindow", "Width:"))
@@ -473,3 +503,13 @@ class Ui_MainWindow(object):
             QCoreApplication.translate("MainWindow", "Length:", None)
         )
         self.Zlabel.setText(QCoreApplication.translate("MainWindow", "0", None))
+        self.HomeButton.setText(QCoreApplication.translate("MainWindow", "Home", None))
+        self.EnableRobotButton.setText(
+            QCoreApplication.translate("MainWindow", "Enable Robot", None)
+        )
+        self.ConfirmackButton.setText(
+            QCoreApplication.translate("MainWindow", "Acknowledge", None)
+        )
+        self.CloseButton.setText(
+            QCoreApplication.translate("MainWindow", "Abort/Close", None)
+        )

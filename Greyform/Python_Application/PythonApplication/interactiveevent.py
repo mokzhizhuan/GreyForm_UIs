@@ -175,11 +175,11 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
                 (self.points[0][2] + self.points[1][2]) / 2,
             )
             if self.points[1][2] > self.points[0][2]:
-                cubeSource.SetXLength(abs(self.points[1][0] - self.points[0][0]))
+                cubeSource.SetXLength(40)
                 cubeSource.SetYLength(abs(self.points[1][1] - self.points[0][1]))
                 cubeSource.SetZLength(abs(self.points[1][2] - self.points[0][2]))
             else:
-                cubeSource.SetXLength(abs(self.points[0][0] - self.points[1][0]))
+                cubeSource.SetXLength(40)
                 cubeSource.SetYLength(abs(self.points[0][1] - self.points[1][1]))
                 cubeSource.SetZLength(abs(self.points[0][2] - self.points[1][2]))
 
