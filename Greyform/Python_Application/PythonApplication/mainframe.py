@@ -9,6 +9,8 @@ import PythonApplication.createmesh as Createmesh
 import PythonApplication.menuconfirm as backtomenudialog
 import PythonApplication.menu_close as closewindow
 from pyvistaqt import QtInteractor
+import pyvista
+import vtk
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import os
 
@@ -384,12 +386,19 @@ class Ui_MainWindow(object):
 
     # Connect close event of the main window to a cleanup function
     def closeEvent(self, event):
+        self.clearLayout()
         self.horizontalLayoutWidget.close()
         self.horizontalLayoutWidget_2.close()
         self.pyvistaframe.close()
         self.plotterloader.GetRenderWindow().ClearInRenderStatus()
         self.plotterloader.GetRenderWindow().RemoveAllObservers()
         self.plotterloader.GetRenderWindow().MakeCurrent()
+        self.plotterloader.interactor.Finalize()
+        self.plotterloader_2.interactor.Finalize()
+        self.plotterloader.interactor.close()
+        self.plotterloader_2.interactor.close()
+        self.plotterloader.Finalize()
+        self.plotterloader_2.Finalize()
         self.plotterloader_2.GetRenderWindow().Finalize()
         self.plotterloader_2.GetRenderWindow().ClearInRenderStatus()
         self.plotterloader_2.GetRenderWindow().RemoveAllObservers()
@@ -407,6 +416,16 @@ class Ui_MainWindow(object):
         self.renderWindowInteractor.GetRenderWindow().GetInteractor().TerminateApp()
         self.verticalLayoutWidget.close()
         event.accept()
+
+    def clearLayout(self):
+        while self.horizontalLayout_2.count():
+            child = self.horizontalLayout_2.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
+        while self.horizontalLayout_4.count():
+            child = self.horizontalLayout_4.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
 
     # translate UI Text
     def retranslateUi(self, MainWindow):

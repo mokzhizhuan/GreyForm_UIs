@@ -108,7 +108,6 @@ class pythonProgressBar(QDialog):
             self.reader,
         )
         self.renderwindowinteractor.SetInteractorStyle(camera)
-        self.renderwindowinteractor.SetInteractorStyle(camera)
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
