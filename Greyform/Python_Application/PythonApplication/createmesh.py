@@ -21,6 +21,7 @@ class createMesh(QMainWindow):
     # vtkrenderwindow
     def createmesh(
         self,
+        ren,
         CurrentMesh,
         renderwindowinteractor,
         ylabel,
@@ -29,10 +30,8 @@ class createMesh(QMainWindow):
         ylabelbefore,
         zlabelbefore,
     ):
-        ren = vtk.vtkRenderer()
         renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         renderwindowinteractor.GetRenderWindow().AddRenderer(ren)
-        self.renderwindowinteractor = renderwindowinteractor
         ren.UseHiddenLineRemovalOn()
         if "ifc" in CurrentMesh:
             polydataverts, polydatafaces = createMesh.loadmeshinGLView(
