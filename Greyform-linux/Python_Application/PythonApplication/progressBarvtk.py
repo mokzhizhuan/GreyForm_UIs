@@ -16,6 +16,9 @@ import PythonApplication.interactiveevent as events
 from vtkmodules.vtkCommonColor import vtkNamedColors
 import numpy as np
 from stl import mesh
+import gc
+
+gc.collect()
 
 
 # progress bar to load the vtk frame from the stl

@@ -29,6 +29,6 @@
     "window.zoomLevel": 1,
     "git.autofetch": true,
     "explorer.confirmPasteNative": false,
-    "ros.distro": "noetic"
-    
+    "ros.distro": "noetic",
+    "terminal.integrated.gpuAcceleration": "off",
 }

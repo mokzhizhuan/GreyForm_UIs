@@ -43,7 +43,7 @@ class createMesh(QMainWindow):
             polydata.SetPolys(polydatafaces)
         else:
             progressbarprogram = progressvtk.pythonProgressBar(
-                60000,
+                100000,
                 CurrentMesh,
                 ren,
                 renderwindowinteractor,
