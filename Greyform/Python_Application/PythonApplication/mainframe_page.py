@@ -9,7 +9,7 @@ import PythonApplication.mainframe_part2 as mainframe_part2
 from pyvistaqt import QtInteractor
 import os
 
-
+#main frame part 2
 class Ui_MainWindow(object):
     def __init__(self, MainWindow, stackedwidgetpage):
         self.filepaths = os.getcwd()

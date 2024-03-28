@@ -13,6 +13,7 @@ from PyQt5.QtCore import QTimer
 import pyvista as pv
 
 
+# progress bar to load the imported stl to pyvista or gl view widget
 class pythonProgressBar(QDialog):
     def __init__(self, value, plotterloader, plotterloader_2, file_path):
         super().__init__()

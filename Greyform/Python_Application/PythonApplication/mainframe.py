@@ -12,7 +12,7 @@ from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import os
 
-
+#main frame part 1
 class Ui_MainWindow(object):
     def __init__(self):
         self.filepaths = os.getcwd()

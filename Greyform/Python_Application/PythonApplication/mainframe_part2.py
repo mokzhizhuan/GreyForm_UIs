@@ -10,7 +10,7 @@ from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import vtk
 
-
+#main frame part 3
 class Ui_MainWindow(object):
     def __init__(
         self,

@@ -13,6 +13,7 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 import PythonApplication.progressBarvtk as progressvtk
 
 
+# create the imported stl mesh in vtk frame
 class createMesh(QMainWindow):
     def __init__(self):
         self.reader = None
@@ -37,7 +38,7 @@ class createMesh(QMainWindow):
             polydataverts, polydatafaces = createMesh.loadmeshinGLView(
                 self, CurrentMesh
             )
-            polydata = vtkPolyData()
+            polydata = vtk.vtkPolyData()
             polydata.SetPoints(polydataverts)
             polydata.SetPolys(polydatafaces)
         else:

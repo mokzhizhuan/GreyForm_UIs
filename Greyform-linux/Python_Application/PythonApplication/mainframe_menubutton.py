@@ -7,8 +7,10 @@ import PythonApplication.menu_close as closewindow
 import PythonApplication.menu_confirmack as confirmack
 from pyvistaqt import QtInteractor
 import PythonApplication.enable_robot as robotenabler
+import PythonApplication.mainframe_setting as setting
 
-#main frame part 4
+
+# main frame part 4
 class Ui_MainWindow(object):
     def __init__(self, stackedwidgetpage, MainWindow):
         self.stackedWidget = stackedwidgetpage
@@ -43,7 +45,11 @@ class Ui_MainWindow(object):
         self.MarkingButton.setObjectName("MarkingButton")
         self.MarkingButton.setGeometry(QRect(650, 70, 500, 270))
         self.MarkingButton.setFont(font2)
+        self.SettingButton = QPushButton(self.page_4)
+        self.SettingButton.setObjectName("SettingButton")
+        self.SettingButton.setGeometry(QRect(1810, 20, 89, 25))
         self.stackedWidget.addWidget(self.page_4)
+        setting.Ui_MainWindow(self.stackedWidget, MainWindow)
         self.button_UI(MainWindow)
         self.finalizeUI(MainWindow)
 
@@ -65,6 +71,9 @@ class Ui_MainWindow(object):
         self.EnableRobotButton.clicked.connect(
             lambda: robotenabler.EnableRobotInterpreter()
         )
+        self.SettingButton.clicked.connect(
+            lambda: self.stackedWidget.setCurrentIndex(5)
+        )
 
     def retranslateUi(self, MainWindow):
         self.HomeButton.setText(QCoreApplication.translate("MainWindow", "Home", None))
@@ -79,4 +88,7 @@ class Ui_MainWindow(object):
         )
         self.MarkingButton.setText(
             QCoreApplication.translate("MainWindow", "Back to Marking", None)
+        )
+        self.SettingButton.setText(
+            QCoreApplication.translate("MainWindow", "Setting", None)
         )

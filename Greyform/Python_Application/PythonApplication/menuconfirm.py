@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-
+#menu dialog to go back to the menu
 class Ui_Dialog_Confirm(QMainWindow):
     def show_dialog_confirm(self, stacked_widget):
         # Create a QDialog instance

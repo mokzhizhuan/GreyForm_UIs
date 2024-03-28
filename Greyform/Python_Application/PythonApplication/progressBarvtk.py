@@ -16,6 +16,7 @@ import PythonApplication.interactiveevent as events
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
 
+# progress bar to load the vtk frame from the stl
 class pythonProgressBar(QDialog):
     def __init__(
         self,

@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-
+#menu dialog to confirm the robot marking
 class Ui_Dialog_ConfirmAck(QMainWindow):
     def show_dialog_ConfirmAck(self):
         # Create a QDialog instance

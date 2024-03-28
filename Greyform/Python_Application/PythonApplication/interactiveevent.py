@@ -8,6 +8,10 @@ from vtk import *
 import PythonApplication.middlebuttoninteractor as middlebuttoninteractor
 
 
+# insert interactive event for the stl mesh , left click is for moving the stl ,
+# right click is to insert the actor in the room view , room view only include up down left and right and left click to move the object
+# middle click is to insert an object tht was marked
+# l key is to remove the actor in the room view and set the mesh to the original position
 class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
     def __init__(
         self,
@@ -24,8 +28,11 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         reader,
         parent=None,
     ):
+        self.movement = None
         self.AddObserver("LeftButtonPressEvent", self.leftButtonPressEvent)
-        self.AddObserver("RightButtonPressEvent", self.RightButtonPressEvent)
+        self.addactor = self.AddObserver(
+            "RightButtonPressEvent", self.RightButtonPressEvent
+        )
         self.defaultposition = [0, 0, 1]
         ren.ResetCamera()
         camera = ren.GetActiveCamera()
@@ -33,11 +40,8 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         self.ylabels = ylabel
         self.render = ren
         self.renderwindowinteractors = renderwindowinteractor
-        middlebuttonobserver = middlebuttoninteractor.MiddleButtonPressed(
+        self.middlebuttonobserver = middlebuttoninteractor.MiddleButtonPressed(
             self, self.render, self.renderwindowinteractors
-        )
-        self.AddObserver(
-            "MiddleButtonPressEvent", middlebuttonobserver.MiddleButtonPressEvent
         )
         self.meshbound = meshbounds
         self.mesh = polydata
@@ -105,10 +109,6 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
             (self.meshbound[2] + self.meshbound[3]) / 2,
             (self.meshbound[4] + self.meshbound[5]) / 2,
         ]
-        picker = vtk.vtkPropPicker()
-        # Click position is mostly 2d coordination x and y axis
-        picker.Pick(80, center[1], center[2], self.render)
-        world_pos = picker.GetPickPosition()
         self.actor = self.create_cube_actor()
         self.actor.SetPosition(80, center[1], center[2])
         self.actor.SetOrientation(
@@ -132,7 +132,11 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         self.zlabelbefore.setText(
             _translate("MainWindow", str("{0:.2f}".format(camera.GetPosition()[2])))
         )
-        self.AddObserver("KeyPressEvent", self.KeyPressed)
+        self.insertshapeevent = self.AddObserver(
+            "MiddleButtonPressEvent", self.middlebuttonobserver.MiddleButtonPressEvent
+        )
+        self.movement = self.AddObserver("KeyPressEvent", self.KeyPressed)
+        self.RemoveObserver(self.addactor)
         self.OnRightButtonDown()
 
     def KeyPressed(self, obj, event):
@@ -147,6 +151,9 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         if key in "l":
             self.render.ResetCamera()
             self.render.RemoveActor(self.actor)
+            self.RemoveObserver(self.movement)
+            self.RemoveObserver(self.insertshapeevent)
+            self.AddObserver("RightButtonPressEvent", self.RightButtonPressEvent)
             self.renderwindowinteractors.GetRenderWindow().Render()
             return  # return to its original position
         elif key in "Up":

@@ -5,6 +5,11 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
+# this class is to scan the marking but for now it inserted a shape
+"""For this implementation, the robot will scan the object and convert it to an stl object
+read the stl image using vtk plugin and send it to the vtk frame as an actor , 
+set the position where it mark with xyz coordinates and inserted in the vtkframe"""
+
 
 class MiddleButtonPressed(object):
     def __init__(self, interactor_style, render, renderwindowinteractors):
@@ -27,11 +32,20 @@ class MiddleButtonPressed(object):
             print("Point", len(self.points), "picked at:", self.pickerround)
             self.pickerround = []
             if len(self.pointstorage) == 0:
-                if len(self.points) == 2:
+                if (
+                    len(self.points) == 2
+                    and self.points[0][0] == self.points[1][0]
+                    and self.points[0][1] == self.points[1][1]
+                ):
                     print("Two points picked:", self.points)
                     self.pointstorage.append(self.points)
                     print(self.pointstorage)
                     self.createCube()
+                elif len(self.points) == 2:
+                    self.points.remove(self.points[1])
+                    print(
+                        "Error for the 2nd marking sequence , the 2nd marking sequence must be the same x, y axis. Please try again."
+                    )
             elif (
                 len(self.pointstorage) != 0
                 and self.pointstorage[0][0][0] == self.points[0][0]
@@ -46,21 +60,23 @@ class MiddleButtonPressed(object):
                     print("Two points picked:", self.points)
                     self.pointstorage.append(self.points)
                     print(self.pointstorage)
+                    #shape insertion method , temporary method
                     self.createCube()
                 elif len(self.points) == 2:
                     self.points.remove(self.points[1])
                     print(
                         "Error for the 2nd marking sequence , the 2nd marking sequence must be the same x, y axis. Please try again"
-                    )
+                    )#print error
             else:
+                #reset as 0 array for the variable
                 self.points = []
                 print(
                     "Error marking sequence must be the same x, y axis. Please try again"
-                )
-                # Do whatever you want with the points here
+                )#print error
         else:
+            # Reset points if more than two are picked
             self.pickerround = []
-            self.points = []  # Reset points if more than two are picked
+            self.points = []  
 
         self.interactor_style.OnMiddleButtonDown()
         return

@@ -3,11 +3,14 @@
     "terminal.integrated.tabs.defaultIcon": "debug-console",
     "python.defaultInterpreterPath": "C:\\Users\\MokZhiZhuan\\AppData\\Local\\Microsoft\\WindowsApps\\python3.11.exe",
     "python.autoComplete.extraPaths": [
-        
+        "<pc-name>/<ws-name>/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages",
         "C:\\Users\\YourUserNameHere\\AppData\\Local\\Programs\\Python\\Python310\\Lib\\site-packages",
     ],
     "python.analysis.extraPaths": [
-        "C:\\Users\\YourUserNameHere\\AppData\\Local\\Programs\\Python\\Python310\\Lib\\site-packages"
+        "C:\\Users\\YourUserNameHere\\AppData\\Local\\Programs\\Python\\Python310\\Lib\\site-packages",
+        "/home/MokZhiZhuan/MokZhiZhuan/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
     ],
     "files.autoSave": "afterDelay",
     "workbench.colorTheme": "Alex's Dark Theme",
@@ -23,7 +26,9 @@
             "source.organizeImports": "explicit"
         },
     },
+    
     "window.zoomLevel": 1,
     "git.autofetch": true,
     "explorer.confirmPasteNative": false,
+    "ros.distro" : "noetic",
 }

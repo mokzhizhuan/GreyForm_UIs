@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import *
 from PythonApplication import mainframe
 
 
+# main application to execute the main frame
 class Ui_MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(Ui_MainWindow, self).__init__(parent)

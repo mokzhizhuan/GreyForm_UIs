@@ -14,7 +14,7 @@ import multiprocessing
 import PythonApplication.progressBar as Progress
 
 
-
+#load pyvista in the frame
 class FileSelectionMesh(QMainWindow):
     def __init__(
         self,
