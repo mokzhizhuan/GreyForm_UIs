@@ -1,4 +1,5 @@
-Install python libraries using system commands:<br>
+Install python libraries using system commands<br>
+(For linux is sudo):<br>
 pip/pip3 install pyvistaqt <br>
 pip/pip3 install ifcopenshell <br>
 pip/pip3 install vtk <br>
@@ -6,10 +7,8 @@ pip/pip3 install PyQt5 <br>
 pip/pip3 install multiprocess <br>
 pip/pip3 install pyqtgraph <br>
 pip/pip3 install OpenGL <br>
-Enable robot function(I will implement later): <br>
-pip/pip3 install pyautogui <br>
-pip/pip3 install pyserial<br>
-
+pip/pip3 install numpy-stl<br>
+Enable robot function(I will implement later) : <br>
 ##
 
 Extendsion Used:<br>
@@ -29,7 +28,7 @@ python/python3 mainapplication.py
 
 ##
 Main Classes:<br>                               
-MainApplication > Mainframe(main classes) 
+MainApplication > Mainframe(main classes, consist of 6 pages) > Starting Menu > File Selection Mesh > Sequence Selection > Marking UI > Marking Button Ui > Setting UI
 
 ##
 Sub Classes:<br>
@@ -38,6 +37,7 @@ menu_confirm <br>
 fileselectionmesh > progressBar <br>
 menu_close <br>
 setsequence 
+enable_robot
 
 ##
 Loading the STL link , using the STL file extension. <br>
