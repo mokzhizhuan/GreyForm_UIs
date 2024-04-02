@@ -4,6 +4,12 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.mainframe_menubutton as buttons_ros
+from pywifi import PyWiFi, const
+import PythonApplication.serveraddress as server
+import PythonApplication.reset as closewindow
+import socket
+from PyQt5.QtNetwork import QTcpServer, QHostAddress
+import PythonApplication.login as Login
 
 
 # main frame part 5 setting
@@ -21,7 +27,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2 = QVBoxLayout(self.verticalLayoutWidget_2)
         self.verticalLayout_2.setSpacing(7)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 1)
         self.labelsetting = QLabel(self.verticalLayoutWidget_2)
         self.labelsetting.setObjectName("label")
         sizePolicy3 = QSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
@@ -116,11 +122,66 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3.addLayout(self.verticalLayout_4)
 
-        self.label_3 = QLabel(self.verticalLayoutWidget_2)
-        self.label_3.setObjectName("label_3")
+        self.verticalLayout_11 = QVBoxLayout()
+        self.verticalLayout_11.setObjectName("verticalLayout_11")
 
-        self.horizontalLayout_3.addWidget(self.label_3)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_11)
+        self.interface_label = QLabel(MainWindow)
+        self.interface_label.setGeometry(10, 10, 400, 20)
+        self.verticalLayout_11.addWidget(self.interface_label)
+        self.treeWidget = QTreeWidget(MainWindow)
+        self.treeWidget.setHeaderLabels(["SSID", "Signal Strength"])
+        self.wifi = PyWiFi()
+        self.interface = self.wifi.interfaces()[0]
+        self.refreshWiFiList()
+        self.verticalLayout_11.addWidget(self.treeWidget)
+        self.ip_label = QLabel(MainWindow)
+        self.ip_label.setGeometry(10, 10, 380, 80)
+        self.ip_label.setAlignment(Qt.AlignCenter)
+        self.ip_label.setStyleSheet("font-size: 20px;")
 
+        self.titlelabel = QLabel()
+        self.verticalLayout_11.addWidget(self.titlelabel)
+        self.titlelabel.hide()
+
+        self.info_label = QLabel()
+        self.verticalLayout_11.addWidget(self.info_label)
+        self.info_label.hide()
+
+        self.version_label = QLabel()
+        self.verticalLayout_11.addWidget(self.version_label)
+        self.version_label.hide()
+
+        self.author_label = QLabel()
+        self.author_label.hide()
+
+        self.verticalLayout_11.addWidget(self.author_label)
+        self.ip_label.hide()
+        self.verticalLayout_11.addWidget(self.ip_label)
+
+        self.host = QLabel()
+        self.verticalLayout_11.addWidget(self.host)
+        self.host.hide()
+
+        self.port = QLabel()
+        self.verticalLayout_11.addWidget(self.port)
+        self.port.hide()
+
+        self.accountinfo = [{"Email": "admin@gmail.com", "Pass": "pass"}]
+        self.userlabel = QLabel()
+        self.userlabel.hide()
+        self.verticalLayout_11.addWidget(self.userlabel)
+        self.loginwidget = QtWidgets.QStackedWidget()
+        loginwindow = Login.Login(self.accountinfo, self.loginwidget, self.userlabel)
+        self.loginwidget.addWidget(loginwindow)
+        self.loginwidget.setFixedWidth(480)
+        self.loginwidget.setFixedHeight(620)
+        self.verticalLayout_11.addWidget(self.loginwidget)
+        self.loginwidget.hide()
+
+        self.restartwidget = closewindow.RestartCloseWidget()
+        self.verticalLayout_11.addWidget(self.restartwidget)
+        self.restartwidget.hide()
         self.verticalLayout_2.addLayout(self.horizontalLayout_3)
 
         self.verticalLayout_2.setStretch(1, 1)
@@ -135,6 +196,111 @@ class Ui_MainWindow(object):
         self.MarkingButton.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(4)
         )
+        self.WifiButton.clicked.connect(self.showwifisetting)
+        self.serviceIPAddressButton.clicked.connect(self.showipaddress)
+        self.AboutButton.clicked.connect(self.showaboutpage)
+        self.PowerButton.clicked.connect(self.showrestartui)
+        self.ServicesButton.clicked.connect(self.showservicespage)
+        self.UserButton.clicked.connect(self.showuserinfo)
+
+    def showwifisetting(self):
+        self.treeWidget.show()
+        self.interface_label.show()
+        self.ip_label.hide()
+        self.titlelabel.hide()
+        self.info_label.hide()
+        self.version_label.hide()
+        self.author_label.hide()
+        self.host.hide()
+        self.port.hide()
+        self.loginwidget.hide()
+        self.restartwidget.hide()
+
+    def showipaddress(self):
+        self.treeWidget.hide()
+        self.interface_label.hide()
+        self.ip_label.show()
+        self.titlelabel.hide()
+        self.info_label.hide()
+        self.version_label.hide()
+        self.author_label.hide()
+        self.host.hide()
+        self.port.hide()
+        self.userlabel.hide()
+        self.loginwidget.hide()
+        self.restartwidget.hide()
+
+    def showaboutpage(self):
+        self.treeWidget.hide()
+        self.interface_label.hide()
+        self.ip_label.hide()
+        self.titlelabel.show()
+        self.info_label.show()
+        self.version_label.show()
+        self.author_label.show()
+        self.host.hide()
+        self.port.hide()
+        self.userlabel.hide()
+        self.loginwidget.hide()
+        self.restartwidget.hide()
+
+    def showservicespage(self):
+        self.treeWidget.hide()
+        self.interface_label.hide()
+        self.ip_label.hide()
+        self.titlelabel.hide()
+        self.info_label.hide()
+        self.version_label.hide()
+        self.author_label.hide()
+        self.host.show()
+        self.port.show()
+        self.userlabel.hide()
+        self.loginwidget.hide()
+        self.restartwidget.hide()
+
+    def showuserinfo(self):
+        self.treeWidget.hide()
+        self.interface_label.hide()
+        self.ip_label.hide()
+        self.titlelabel.hide()
+        self.info_label.hide()
+        self.version_label.hide()
+        self.author_label.hide()
+        self.host.hide()
+        self.port.hide()
+        self.userlabel.show()
+        self.loginwidget.show()
+        self.restartwidget.hide()
+
+    def showrestartui(self):
+        self.treeWidget.hide()
+        self.interface_label.hide()
+        self.ip_label.hide()
+        self.titlelabel.hide()
+        self.info_label.hide()
+        self.version_label.hide()
+        self.author_label.hide()
+        self.host.hide()
+        self.port.hide()
+        self.userlabel.hide()
+        self.loginwidget.hide()
+        self.restartwidget.show()
+
+    def refreshWiFiList(self):
+        networks = self.interface.scan_results()
+        self.treeWidget.clear()
+        ssid = networks[0].ssid
+        signal_strength = networks[0].signal
+        item = QTreeWidgetItem([ssid, str(signal_strength)])
+        self.treeWidget.addTopLevelItem(item)
+
+        interface_info = f"Interface: {self.interface.name()}"
+        self.interface_label.setText(interface_info)
+
+    def get_ip_address(self):
+        # Get the IP address of the local machine
+        ip_address = socket.gethostbyname(socket.gethostname())
+        return ip_address
 
     def retranslateUi(self, MainWindow):
         self.labelsetting.setText(
@@ -157,4 +323,13 @@ class Ui_MainWindow(object):
         self.MarkingButton.setText(
             QCoreApplication.translate("MainWindow", "Back to Marking Menu", None)
         )
-        self.label_3.setText("")
+        ip_address = self.get_ip_address()
+        self.ip_label.setText(f"IP Address: {ip_address}")
+        self.titlelabel.setText("<h1>About My Application</h1>")
+        self.info_label.setText("This is a Robot Marking Application program")
+        self.version_label.setText("Version: 1.0")
+        self.author_label.setText("Created by Mok Zhi Zhuan")
+        servers = server.MyServer()
+        self.host.setText(f"Host: {servers.serverAddress().toString()}")
+        self.port.setText(f"Port: {servers.serverPort()}")
+        self.userlabel.setText(f"<h2>User: {self.accountinfo[0]['Email']}</h2>")

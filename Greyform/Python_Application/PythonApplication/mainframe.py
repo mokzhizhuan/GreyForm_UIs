@@ -14,12 +14,6 @@ import os
 
 #main frame part 1
 class Ui_MainWindow(object):
-    def __init__(self):
-        self.filepaths = os.getcwd()
-        self.file = None
-        self.file_path = None
-        self.MainWindow = None
-
     # Main Window starting setup
     def setupUi_mainWindow(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
