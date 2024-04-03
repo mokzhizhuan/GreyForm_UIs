@@ -80,17 +80,17 @@ class Setting(QWidget):
         self.settingform.serviceIPAddressButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(1)
         )
-        self.settingform.AboutButton.clicked.connect(
-            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(4)
-        )
-        self.settingform.PowerButton.clicked.connect(
-            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(5)
-        )
         self.settingform.ServicesButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(2)
         )
         self.settingform.UserButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(3)
+        )
+        self.settingform.AboutButton.clicked.connect(
+            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(4)
+        )
+        self.settingform.PowerButton.clicked.connect(
+            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(5)
         )
 
     def refreshWiFiList(self):
