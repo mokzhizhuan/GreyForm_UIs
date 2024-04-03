@@ -61,7 +61,19 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setSpacing(7)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 1)
-        self.settingpageuipage = setting.Setting(self.stackedWidget)
+        self.verticalLayoutWidget_2.setStyleSheet(
+            "QWidget#verticalLayoutWidget_2 { border: 2px solid black; }"
+        )
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.verticalLayoutWidget_2.sizePolicy().hasHeightForWidth()
+        )
+        self.settingpageuipage = setting.Setting(self.stackedWidget, MainWindow)
         self.verticalLayout_2.addWidget(self.settingpageuipage)
         self.stackedWidget.addWidget(self.settingpage)
         self.button_UI(MainWindow)

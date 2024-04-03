@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>SettingForm</class>
+ <widget class="QWidget" name="SettingForm">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -10,8 +10,14 @@
     <height>796</height>
    </rect>
   </property>
+   <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>SettingForm</string>
   </property>
   <widget class="QLabel" name="labeltitlsetting">
    <property name="geometry">
@@ -139,7 +145,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Back to Marking</string>
+    <string>Back to Marking Menu</string>
    </property>
   </widget>
   <widget class="QStackedWidget" name="stackedWidgetsetting">
@@ -151,6 +157,7 @@
      <height>671</height>
     </rect>
    </property>
+   <widget class="QWidget" name="settingHomepage"/>
    <widget class="QWidget" name="wifipage"/>
    <widget class="QWidget" name="serviceipaddresspage"/>
    <widget class="QWidget" name="servicespage"/>

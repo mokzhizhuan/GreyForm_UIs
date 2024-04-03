@@ -12,19 +12,20 @@ import PythonApplication.login as Login
 
 
 class Setting(QWidget):
-    def __init__(self, stackedwidgetpage):
+    def __init__(self, stackedwidgetpage, MainWindow):
         super(Setting, self).__init__()
         self.stackedWidget = stackedwidgetpage
         self.settingform = uic.loadUi("UI_Design/setting.ui", self)
+        self.MainWindow = MainWindow
         self.setupUi()
 
     def setupUi(self):
         self.interface_label = QLabel(self.settingform.wifipage)
-        self.interface_label.setGeometry(10, 10, 400, 20)
+        self.interface_label.setGeometry(10, 10, 400, 40)
 
         self.treeWidget = QTreeWidget(self.settingform.wifipage)
 
-        self.treeWidget.setGeometry(10, 50, 400, 80)
+        self.treeWidget.setGeometry(10, 80, 400, 80)
         self.treeWidget.setHeaderLabels(["SSID", "Signal Strength"])
         self.wifi = PyWiFi()
         self.interface = self.wifi.interfaces()[0]
@@ -39,30 +40,30 @@ class Setting(QWidget):
         self.titlelabel.setGeometry(10, 10, 400, 40)
 
         self.info_label = QLabel(self.settingform.AboutPage)
-        self.info_label.setGeometry(10, 60, 400, 20)
+        self.info_label.setGeometry(10, 60, 400, 40)
 
         self.version_label = QLabel(self.settingform.AboutPage)
-        self.version_label.setGeometry(10, 100, 400, 20)
+        self.version_label.setGeometry(10, 130, 400, 40)
 
         self.author_label = QLabel(self.settingform.AboutPage)
-        self.author_label.setGeometry(10, 140, 400, 20)
+        self.author_label.setGeometry(10, 190, 400, 40)
 
         self.host = QLabel(self.settingform.servicespage)
-        self.host.setGeometry(10, 10, 400, 20)
+        self.host.setGeometry(10, 10, 400, 40)
 
         self.port = QLabel(self.settingform.servicespage)
 
-        self.port.setGeometry(10, 40, 400, 20)
+        self.port.setGeometry(10, 60, 400, 20)
         self.accountinfo = [{"Email": "admin@gmail.com", "Pass": "pass"}]
         self.userlabel = QLabel(self.settingform.UserPage)
-        self.userlabel.setGeometry(10, 10, 400, 20)
+        self.userlabel.setGeometry(10, 10, 400, 40)
 
         self.loginwidget = QtWidgets.QStackedWidget(self.settingform.UserPage)
         loginwindow = Login.Login(self.accountinfo, self.loginwidget, self.userlabel)
         self.loginwidget.addWidget(loginwindow)
-        self.loginwidget.setGeometry(10, 50, 480, 620)
+        self.loginwidget.setGeometry(10, 70, 480, 620)
 
-        self.restartwidgetwindow = closewindow.RestartCloseWidget()
+        self.restartwidgetwindow = closewindow.RestartCloseWidget(self.MainWindow)
         self.restartwidget = QtWidgets.QStackedWidget(
             self.settingform.RestartPowerOffPage
         )
@@ -72,25 +73,28 @@ class Setting(QWidget):
 
     def button_UI(self):
         self.settingform.MarkingbackButton.clicked.connect(
+            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(0)
+        )
+        self.settingform.MarkingbackButton.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(4)
         )
         self.settingform.WifiButton.clicked.connect(
-            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(0)
-        )
-        self.settingform.serviceIPAddressButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(1)
         )
-        self.settingform.ServicesButton.clicked.connect(
+        self.settingform.serviceIPAddressButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(2)
         )
-        self.settingform.UserButton.clicked.connect(
+        self.settingform.ServicesButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(3)
         )
-        self.settingform.AboutButton.clicked.connect(
+        self.settingform.UserButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(4)
         )
-        self.settingform.PowerButton.clicked.connect(
+        self.settingform.AboutButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(5)
+        )
+        self.settingform.PowerButton.clicked.connect(
+            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(6)
         )
 
     def refreshWiFiList(self):
@@ -111,12 +115,18 @@ class Setting(QWidget):
 
     def retranslateUi(self):
         ip_address = self.get_ip_address()
+        self.interface_label.setStyleSheet("font: 15px")
         self.ip_label.setText(f"IP Address: {ip_address}")
         self.titlelabel.setText("<h1>About My Application</h1>")
         self.info_label.setText("This is a Robot Marking Application program")
+        self.info_label.setStyleSheet("font: 15px")
         self.version_label.setText("Version: 1.0")
+        self.version_label.setStyleSheet("font: 15px")
         self.author_label.setText("Created by Mok Zhi Zhuan")
+        self.author_label.setStyleSheet("font: 15px")
         servers = server.MyServer()
         self.host.setText(f"Host: {servers.serverAddress().toString()}")
+        self.host.setStyleSheet("font: 15px")
         self.port.setText(f"Port: {servers.serverPort()}")
+        self.port.setStyleSheet("font: 15px")
         self.userlabel.setText(f"<h2>User: {self.accountinfo[0]['Email']}</h2>")

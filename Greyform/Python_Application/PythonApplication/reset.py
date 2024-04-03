@@ -1,11 +1,19 @@
 import sys
 import os
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QMessageBox
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import (
+    QApplication,
+    QWidget,
+    QVBoxLayout,
+    QPushButton,
+    QMessageBox,
+)
 
 
 class RestartCloseWidget(QWidget):
-    def __init__(self):
+    def __init__(self, MainWindow):
         super().__init__()
+        self.MainWindow = MainWindow
         self.initUI()
 
     def initUI(self):
@@ -41,7 +49,7 @@ class RestartCloseWidget(QWidget):
             QMessageBox.No,
         )
         if reply == QMessageBox.Yes:
-            self.close()
+            self.MainWindow.close()
 
     def restart(self):
         python = sys.executable

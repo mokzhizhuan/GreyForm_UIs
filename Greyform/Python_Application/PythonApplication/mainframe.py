@@ -15,9 +15,6 @@ import os
 
 # main frame part 1
 class Ui_MainWindow(object):
-    def ___init___(self):
-        self.MainWindow = None
-
     # Main Window starting setup
     def setupUi_mainWindow(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
