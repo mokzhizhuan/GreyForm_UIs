@@ -7,7 +7,7 @@ import PythonApplication.menu_close as closewindow
 import PythonApplication.menu_confirmack as confirmack
 from pyvistaqt import QtInteractor
 import PythonApplication.enable_robot as robotenabler
-import PythonApplication.mainframe_setting as setting
+import PythonApplication.setting as setting
 
 
 # main frame part 4
@@ -49,7 +49,21 @@ class Ui_MainWindow(object):
         self.SettingButton.setObjectName("SettingButton")
         self.SettingButton.setGeometry(QRect(1810, 20, 89, 25))
         self.stackedWidget.addWidget(self.page_4)
-        setting.Ui_MainWindow(self.stackedWidget, MainWindow)
+        self.setupUi_Page5(MainWindow)
+
+    def setupUi_Page5(self, MainWindow):
+        self.settingpage = QWidget()
+        self.settingpage.setObjectName("settingpage")
+        self.verticalLayoutWidget_2 = QWidget(self.settingpage)
+        self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
+        self.verticalLayoutWidget_2.setGeometry(QRect(60, 30, 1721, 941))
+        self.verticalLayout_2 = QVBoxLayout(self.verticalLayoutWidget_2)
+        self.verticalLayout_2.setSpacing(7)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 1)
+        self.settingpageuipage = setting.Setting(self.stackedWidget)
+        self.verticalLayout_2.addWidget(self.settingpageuipage)
+        self.stackedWidget.addWidget(self.settingpage)
         self.button_UI(MainWindow)
         self.finalizeUI(MainWindow)
 

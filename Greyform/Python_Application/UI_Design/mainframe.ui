@@ -69,7 +69,7 @@
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QPushButton" name="continueButton">
+     <widget class="QPushButton" name="menuStartButton">
       <property name="geometry">
        <rect>
         <x>720</x>
@@ -85,7 +85,7 @@
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QPushButton" name="closewindowButton">
+     <widget class="QPushButton" name="menuCloseButton">
       <property name="geometry">
        <rect>
         <x>1000</x>
@@ -119,7 +119,7 @@
        </rect>
       </property>
      </widget>
-     <widget class="QPushButton" name="NextButton_3">
+     <widget class="QPushButton" name="NextButton_Page_2">
       <property name="geometry">
        <rect>
         <x>360</x>
@@ -194,7 +194,7 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <widget class="QLabel" name="Itemlabel">
+     <widget class="QLabel" name="Itemlabel_Page_2">
       <property name="geometry">
        <rect>
         <x>450</x>
@@ -207,7 +207,7 @@
        <string>Product :</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="BackButton">
+     <widget class="QPushButton" name="BackButton_Page_1">
       <property name="geometry">
        <rect>
         <x>220</x>
@@ -220,7 +220,7 @@
        <string>Back</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="NextButton">
+     <widget class="QPushButton" name="NextButton_Page_3">
       <property name="geometry">
        <rect>
         <x>100</x>
@@ -273,7 +273,7 @@
        <string>Sequence 1</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="seq2Button_3">
+     <widget class="QPushButton" name="seq2Button">
       <property name="geometry">
        <rect>
         <x>100</x>
@@ -401,7 +401,7 @@
        </property>
       </widget>
      </widget>
-     <widget class="QPushButton" name="BackButton_2">
+     <widget class="QPushButton" name="BackButton_Page_2">
       <property name="geometry">
        <rect>
         <x>590</x>
@@ -414,7 +414,7 @@
        <string>Back</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="NextButton_2">
+     <widget class="QPushButton" name="Confirmbutton">
       <property name="geometry">
        <rect>
         <x>430</x>
@@ -427,7 +427,7 @@
        <string>Next</string>
       </property>
      </widget>
-     <widget class="QLabel" name="Itemlabel_2">
+     <widget class="QLabel" name="Itemlabel_Page_3">
       <property name="geometry">
        <rect>
         <x>480</x>
@@ -623,7 +623,7 @@
        <string>Enable Robot</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="ConfirmButton">
+     <widget class="QPushButton" name="ConfirmackButton">
       <property name="geometry">
        <rect>
         <x>950</x>
@@ -641,7 +641,7 @@
        <string>Acknowledge</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_5">
+     <widget class="QPushButton" name="CloseButton">
       <property name="geometry">
        <rect>
         <x>130</x>
@@ -796,7 +796,7 @@
                      <item>
                       <layout class="QVBoxLayout" name="verticalLayout_9">
                        <item>
-                        <widget class="QPushButton" name="MarkingButton_2">
+                        <widget class="QPushButton" name="MarkingbackUIButton">
                          <property name="text">
                           <string>Back to Marking</string>
                          </property>

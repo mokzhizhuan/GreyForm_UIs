@@ -12,8 +12,12 @@ from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import os
 
-#main frame part 1
+
+# main frame part 1
 class Ui_MainWindow(object):
+    def ___init___(self):
+        self.MainWindow = None
+
     # Main Window starting setup
     def setupUi_mainWindow(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -44,6 +48,7 @@ class Ui_MainWindow(object):
         )
         self.stackedWidget.setSizePolicy(sizePolicy)
         self.stackedWidget.setObjectName("stackedWidget")
+
         self.setupUi_Menu(MainWindow)
 
     # Main menu Ui Setup
