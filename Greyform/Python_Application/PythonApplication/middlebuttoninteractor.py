@@ -12,13 +12,16 @@ set the position where it mark with xyz coordinates and inserted in the vtkframe
 
 
 class MiddleButtonPressed(object):
-    def __init__(self, interactor_style, render, renderwindowinteractors):
+    def __init__(
+        self, interactor_style, render, renderwindowinteractors, append_filterpolydata
+    ):
         self.interactor_style = interactor_style
         self.render = render
         self.renderwindowinteractors = renderwindowinteractors
         self.points = []
         self.pointstorage = []
         self.pickerround = []
+        self.append_filterpolydata = append_filterpolydata
 
     def MiddleButtonPressEvent(self, obj, event):
         clickPos = self.interactor_style.GetInteractor().GetEventPosition()
@@ -30,74 +33,95 @@ class MiddleButtonPressed(object):
         if len(self.points) < 2:
             self.points.append(self.pickerround)
             print("Point", len(self.points), "picked at:", self.pickerround)
+            self.createCube()
             self.pickerround = []
             if len(self.pointstorage) == 0:
                 if (
                     len(self.points) == 2
-                    and self.points[0][0] == self.points[1][0]
-                    and self.points[0][1] == self.points[1][1]
+                    and (
+                        (
+                            self.points[1][0] <= self.points[0][0] + 3
+                            and self.points[1][0] >= self.points[0][0] - 3
+                        )
+                        and (
+                            self.points[1][1] <= self.points[0][1] + 3
+                            and self.points[1][1] >= self.points[0][1] - 3
+                        )
+                    )
+                    or (
+                        len(self.points) == 2
+                        and (
+                            self.points[1][0] <= self.points[0][0] + 3
+                            and self.points[1][0] >= self.points[0][0] - 3
+                        )
+                        and (
+                            self.points[1][2] <= self.points[0][2] + 3
+                            and self.points[1][2] >= self.points[0][2] - 3
+                        )
+                    )
                 ):
                     print("Two points picked:", self.points)
                     self.pointstorage.append(self.points)
+
                     print(self.pointstorage)
-                    self.createCube()
                 elif len(self.points) == 2:
                     self.points.remove(self.points[1])
+                    self.render.RemoveActor(self.crossActor)
+                    self.append_filterpolydata.RemoveInputData(
+                        self.crossActor.GetMapper().GetInput()
+                    )
                     print(
                         "Error for the 2nd marking sequence , the 2nd marking sequence must be the same x, y axis. Please try again."
                     )
-            elif (
-                len(self.pointstorage) != 0
-                and self.pointstorage[0][0][0] == self.points[0][0]
-                and self.pointstorage[0][0][1] == self.points[0][1]
-            ):
-                if (
-                    len(self.pointstorage) != 0
-                    and len(self.points) == 2
-                    and self.pointstorage[0][0][0] == self.points[1][0]
-                    and self.pointstorage[0][0][1] == self.points[1][1]
-                ):
-                    print("Two points picked:", self.points)
-                    self.pointstorage.append(self.points)
-                    print(self.pointstorage)
-                    #shape insertion method , temporary method
-                    self.createCube()
-                elif len(self.points) == 2:
-                    self.points.remove(self.points[1])
-                    print(
-                        "Error for the 2nd marking sequence , the 2nd marking sequence must be the same x, y axis. Please try again"
-                    )#print error
-            else:
-                #reset as 0 array for the variable
-                self.points = []
-                print(
-                    "Error marking sequence must be the same x, y axis. Please try again"
-                )#print error
-        else:
-            # Reset points if more than two are picked
-            self.pickerround = []
-            self.points = []  
 
         self.interactor_style.OnMiddleButtonDown()
         return
 
     def createCube(self):
-        if len(self.points) == 2:
-            cubeSource = vtk.vtkCubeSource()
-            cubeSource.SetCenter(
-                (self.points[0][0] + self.points[1][0]) / 2,
-                (self.points[0][1] + self.points[1][1]) / 2,
-                (self.points[0][2] + self.points[1][2]) / 2,
-            )
-            cubeSource.SetXLength(40)
-            cubeSource.SetYLength(40)
-            cubeSource.SetZLength(abs(self.points[1][2] - self.points[0][2]))
+        # Define the size of the cross
+        size_yz = 40
+        size_x = 1
 
-            cubeMapper = vtk.vtkPolyDataMapper()
-            cubeMapper.SetInputConnection(cubeSource.GetOutputPort())
+        # Create points for the cross shape
+        points = vtk.vtkPoints()
+        points.InsertNextPoint(0, 0, 0)                  # Center point
+        points.InsertNextPoint(0, size_yz/2, 0)          # Top point
+        points.InsertNextPoint(0, -size_yz/2, 0)         # Bottom point
+        points.InsertNextPoint(0, 0, size_yz/2)          # Front point
+        points.InsertNextPoint(0, 0, -size_yz/2)         # Back point
 
-            cubeActor = vtk.vtkActor()
-            cubeActor.SetMapper(cubeMapper)
-            cubeActor.GetProperty().SetColor(1, 0, 0)  # Red color
-            self.render.AddActor(cubeActor)
-            self.renderwindowinteractors.GetRenderWindow().Render()
+        # Create lines to connect the points
+        lines = vtk.vtkCellArray()
+        # Y-axis lines
+        lines.InsertNextCell(2)
+        lines.InsertCellPoint(0)
+        lines.InsertCellPoint(1)
+        lines.InsertNextCell(2)
+        lines.InsertCellPoint(0)
+        lines.InsertCellPoint(2)
+        # Z-axis lines
+        lines.InsertNextCell(2)
+        lines.InsertCellPoint(0)
+        lines.InsertCellPoint(3)
+        lines.InsertNextCell(2)
+        lines.InsertCellPoint(0)
+        lines.InsertCellPoint(4)
+
+        # Create a polydata to hold the points and lines
+        self.polydata = vtk.vtkPolyData()
+        self.polydata.SetPoints(points)
+        self.polydata.SetLines(lines)
+
+        self.crossMapper = vtk.vtkPolyDataMapper()
+        self.crossMapper.SetInputData(self.polydata)
+
+        self.crossActor = vtk.vtkActor()
+        self.crossActor.SetPosition(
+            self.pickerround[0], self.pickerround[1], self.pickerround[2]
+        )
+        self.crossActor.GetProperty().SetLineWidth(40)  # Set line width to 40 points
+        self.crossActor.SetMapper(self.crossMapper)
+        self.crossActor.GetProperty().SetColor(1, 0, 0)  # Red color
+        self.render.AddActor(self.crossActor)
+        self.append_filterpolydata.AddInputData(self.crossActor.GetMapper().GetInput())
+        self.renderwindowinteractors.GetRenderWindow().Render()

@@ -100,7 +100,6 @@ class Ui_MainWindow(object):
     # translate UI Text
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "mainframe"))
         self.QTitle.setText(
             _translate(
                 "MainWindow",

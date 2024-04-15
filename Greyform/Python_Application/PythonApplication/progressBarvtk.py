@@ -29,6 +29,7 @@ class pythonProgressBar(QDialog):
         zlabelbefore,
         xlabel,
         ylabel,
+        append_filterpolydata
     ):
         super().__init__()
         progress_layout = QVBoxLayout()
@@ -54,6 +55,7 @@ class pythonProgressBar(QDialog):
         self.zlabelbefore = zlabelbefore
         self.xlabels = xlabel
         self.ylabels = ylabel
+        self.append_filterpolydata = append_filterpolydata
         self.ren.SetBackground(255, 255, 255)
         QTimer.singleShot(self.value, self.loadStl)
 
@@ -107,6 +109,7 @@ class pythonProgressBar(QDialog):
             actor,
             polydata,
             self.reader,
+            self.append_filterpolydata
         )
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.renderwindowinteractor.GetRenderWindow().Render()
@@ -140,4 +143,6 @@ class pythonProgressBar(QDialog):
         actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d("LightSteelBlue"))
         actor.GetProperty().SetSpecular(0.3)
         actor.GetProperty().SetSpecularPower(60.0)
+        self.append_filterpolydata.AddInputData(actor.GetMapper().GetInput())
+        self.append_filterpolydata.Update()
         return actor

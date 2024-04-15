@@ -12,9 +12,11 @@ import PythonApplication.setting as setting
 
 # main frame part 4
 class Ui_MainWindow(object):
-    def __init__(self, stackedwidgetpage, MainWindow):
+    def __init__(self, stackedwidgetpage, MainWindow, append_filter):
         self.stackedWidget = stackedwidgetpage
+        self.append_filter = append_filter
         self.setupUi_Page4(MainWindow)
+
 
     # Page 4 UI setup
     def setupUi_Page4(self, MainWindow):
@@ -51,6 +53,7 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.page_4)
         self.setupUi_Page5(MainWindow)
 
+    # Page 5 UI setup
     def setupUi_Page5(self, MainWindow):
         self.settingpage = QWidget()
         self.settingpage.setObjectName("settingpage")
@@ -73,7 +76,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(
             self.verticalLayoutWidget_2.sizePolicy().hasHeightForWidth()
         )
-        self.settingpageuipage = setting.Setting(self.stackedWidget, MainWindow)
+        self.settingpageuipage = setting.Setting(self.stackedWidget, MainWindow)#insert setting
         self.verticalLayout_2.addWidget(self.settingpageuipage)
         self.stackedWidget.addWidget(self.settingpage)
         self.button_UI(MainWindow)
@@ -89,7 +92,7 @@ class Ui_MainWindow(object):
             lambda: closewindow.Ui_Dialog_Close.show_dialog_close(MainWindow)
         )
         self.ConfirmackButton.clicked.connect(
-            lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(MainWindow)
+            lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(MainWindow, self.append_filter)
         )
         self.MarkingButton.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(3)

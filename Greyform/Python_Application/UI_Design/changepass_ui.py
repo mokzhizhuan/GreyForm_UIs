@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'login.ui'
+## Form generated from reading UI file 'changepass.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.6.2
 ##
@@ -26,28 +26,24 @@ class Ui_Dialog(object):
         Dialog.setStyleSheet(u"background-color: rgb(54, 54, 54);")
         self.label = QLabel(Dialog)
         self.label.setObjectName(u"label")
-        self.label.setGeometry(QRect(190, 50, 121, 71))
+        self.label.setGeometry(QRect(100, 50, 300, 71))
         self.label.setStyleSheet(u"color:rgb(225, 225, 225); font-size:28pt;")
-        self.password = QLineEdit(Dialog)
-        self.password.setObjectName(u"password")
-        self.password.setGeometry(QRect(170, 260, 241, 51))
-        self.password.setStyleSheet(u"font-size:14pt; color:rgb(243, 243, 243)")
         self.label_3 = QLabel(Dialog)
         self.label_3.setObjectName(u"label_3")
-        self.label_3.setGeometry(QRect(40, 270, 111, 31))
+        self.label_3.setGeometry(QRect(40, 260, 111, 31))
         self.label_3.setStyleSheet(u"font-size:15pt; color:rgb(255, 0, 127)")
-        self.loginbutton = QPushButton(Dialog)
-        self.loginbutton.setObjectName(u"loginbutton")
-        self.loginbutton.setGeometry(QRect(270, 390, 141, 41))
-        self.loginbutton.setStyleSheet(u"background-color: rgb(167, 168, 167); font-size:14pt; color:rgb(255, 255, 255)")
-        self.label_4 = QLabel(Dialog)
-        self.label_4.setObjectName(u"label_4")
-        self.label_4.setGeometry(QRect(180, 350, 171, 16))
-        self.label_4.setStyleSheet(u"color:rgb(255, 255, 255)")
+        self.password = QLineEdit(Dialog)
+        self.password.setObjectName(u"password")
+        self.password.setGeometry(QRect(200, 260, 241, 51))
+        self.password.setStyleSheet(u"font-size:14pt; color:rgb(243, 243, 243)")
         self.changepassbutton = QPushButton(Dialog)
         self.changepassbutton.setObjectName(u"changepassbutton")
-        self.changepassbutton.setGeometry(QRect(320, 340, 93, 28))
-        self.changepassbutton.setStyleSheet(u"color:rgb(255, 255, 255)")
+        self.changepassbutton.setGeometry(QRect(270, 420, 180, 41))
+        self.changepassbutton.setStyleSheet(u"background-color: rgb(167, 168, 167); font-size:14pt; color:rgb(255, 255, 255)")
+        self.backbutton = QPushButton(Dialog)
+        self.backbutton.setObjectName(u"backbutton")
+        self.backbutton.setGeometry(QRect(80, 420, 140, 40))
+        self.backbutton.setStyleSheet(u"background-color: rgb(167, 168, 167); font-size:14pt; color:rgb(255, 255, 255)")
 
         self.retranslateUi(Dialog)
 
@@ -55,12 +51,11 @@ class Ui_Dialog(object):
     # setupUi
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Dialog", None))
-        self.label.setText(QCoreApplication.translate("Dialog", u"Login", None))
-        self.password.setText("")
+        Dialog.setWindowTitle(QCoreApplication.translate("Dialog", u"Change Password", None))
+        self.label.setText(QCoreApplication.translate("Dialog", u"Change Password", None))
         self.label_3.setText(QCoreApplication.translate("Dialog", u"Password", None))
-        self.loginbutton.setText(QCoreApplication.translate("Dialog", u"Login", None))
-        self.label_4.setText(QCoreApplication.translate("Dialog", u"Forgot Password?", None))
+        self.password.setText("")
         self.changepassbutton.setText(QCoreApplication.translate("Dialog", u"Change Password", None))
+        self.backbutton.setText(QCoreApplication.translate("Dialog", u"Back", None))
     # retranslateUi
 

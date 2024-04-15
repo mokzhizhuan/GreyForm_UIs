@@ -26,6 +26,7 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         polydata,
         polys,
         reader,
+        append_filterpolydata,
         parent=None,
     ):
         self.movement = None
@@ -41,13 +42,15 @@ class myInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
         self.render = ren
         self.renderwindowinteractors = renderwindowinteractor
         self.middlebuttonobserver = middlebuttoninteractor.MiddleButtonPressed(
-            self, self.render, self.renderwindowinteractors
+            self,
+            self.render,
+            self.renderwindowinteractors,
+            append_filterpolydata,
         )
         self.meshbound = meshbounds
         self.mesh = polydata
         self.polys = polys
         self.reader = reader
-        self.actor = None
         self.renderwindowinteractors.GetRenderWindow().Render()
         _translate = QtCore.QCoreApplication.translate
         self.xlabelbefore = xlabelbefore

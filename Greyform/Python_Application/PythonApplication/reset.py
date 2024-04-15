@@ -1,13 +1,17 @@
 import sys
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QApplication,
     QWidget,
+    QHBoxLayout,
     QVBoxLayout,
     QPushButton,
     QMessageBox,
+    QSizePolicy,
 )
+from PyQt5.QtGui import *
 
 
 class RestartCloseWidget(QWidget):
@@ -17,17 +21,20 @@ class RestartCloseWidget(QWidget):
         self.initUI()
 
     def initUI(self):
-        layout = QVBoxLayout()
+
+        button_layout = QHBoxLayout()
 
         restart_btn = QPushButton("Restart App", self)
+        restart_btn.setFont(QFont("Arial", 18))
         restart_btn.clicked.connect(self.show_restart_dialog)
-        layout.addWidget(restart_btn)
+        button_layout.addWidget(restart_btn)
 
         close_btn = QPushButton("Close App", self)
+        close_btn.setFont(QFont("Arial", 18))
         close_btn.clicked.connect(self.show_close_dialog)
-        layout.addWidget(close_btn)
+        button_layout.addWidget(close_btn)
 
-        self.setLayout(layout)
+        self.setLayout(button_layout)
 
     def show_restart_dialog(self):
         reply = QMessageBox.question(

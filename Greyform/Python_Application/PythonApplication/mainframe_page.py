@@ -9,7 +9,8 @@ import PythonApplication.mainframe_part2 as mainframe_part2
 from pyvistaqt import QtInteractor
 import os
 
-#main frame part 2
+
+# main frame part 2
 class Ui_MainWindow(object):
     def __init__(self, MainWindow, stackedwidgetpage):
         self.filepaths = os.getcwd()
@@ -34,7 +35,6 @@ class Ui_MainWindow(object):
         self.Selectivefilelistview = QtWidgets.QListView(parent=self.page)
         self.Selectivefilelistview.setGeometry(QtCore.QRect(100, 80, 431, 861))
         self.Selectivefilelistview.setObjectName("Selectivefilelistview")
-        self.Selectivefilelistview.clicked.connect(self.on_selection_changed)
         self.NextButton_Page_2 = QtWidgets.QPushButton(parent=self.page)
         self.NextButton_Page_2.setGeometry(QtCore.QRect(400, 980, 101, 25))
         self.NextButton_Page_2.setObjectName("NextButton_Page_2")
@@ -129,6 +129,7 @@ class Ui_MainWindow(object):
 
     # button interaction
     def button_UI(self, MainWindow):
+        self.Selectivefilelistview.clicked.connect(self.on_selection_changed)
         self.NextButton_Page_2.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(2)
         )
@@ -161,6 +162,7 @@ class Ui_MainWindow(object):
 
         _translate = QtCore.QCoreApplication.translate
         self.Itemlabel.setText(_translate("MainWindow", "Product : " + str(self.file)))
+        self.Itemlabel.setStyleSheet("font: 15px")
         mainframe_part2.Ui_MainWindow(
             self.file_path,
             self.stackedWidget,

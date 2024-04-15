@@ -8,14 +8,16 @@ from PyQt5.QtWidgets import (
     QLabel,
     QWidget,
 )
+import vtk
 
-#menu dialog to confirm the robot marking
+
+# menu dialog to confirm the robot marking
 class Ui_Dialog_ConfirmAck(QMainWindow):
-    def show_dialog_ConfirmAck(self):
+    def show_dialog_ConfirmAck(self, append_filter):
         # Create a QDialog instance
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Dialog Box")
-        dialog.resize(400, 300)
+        self.dialog = QDialog(self)
+        self.dialog.setWindowTitle("Dialog Box")
+        self.dialog.resize(400, 300)
         # Create a label with a mes sage
         label = QLabel("Are you sure you want to finalize the marking?")
         label.setGeometry(QtCore.QRect(100, 40, 171, 31))
@@ -24,9 +26,9 @@ class Ui_Dialog_ConfirmAck(QMainWindow):
         # Create a layout for the dialog
         dialog_layout = QVBoxLayout()
         dialog_layout.addWidget(label)
-
+        self.append_filter = append_filter
         # Set the layout for the dialog
-        dialog.setLayout(dialog_layout)
+        self.dialog.setLayout(dialog_layout)
 
         buttonBox = QtWidgets.QDialogButtonBox()
         buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 32))
@@ -36,11 +38,19 @@ class Ui_Dialog_ConfirmAck(QMainWindow):
             | QtWidgets.QDialogButtonBox.StandardButton.Ok
         )
         buttonBox.setObjectName("buttonBox")
-        buttonBox.accepted.connect(dialog.close)
-        buttonBox.accepted.connect(self.close)
+        buttonBox.accepted.connect(lambda: Ui_Dialog_ConfirmAck.appendasSTL(self))
 
-        buttonBox.rejected.connect(dialog.close)
+        buttonBox.rejected.connect(self.dialog.close)
         dialog_layout.addWidget(buttonBox)
 
         # Show the dialog as a modal dialog (blocks the main window)
-        dialog.exec_()
+        self.dialog.exec_()
+
+    def appendasSTL(self):
+        # Write initial STL file
+        #stl_writer = vtk.vtkSTLWriter()
+        #stl_writer.SetFileName("output.stl")
+        #stl_writer.SetInputData(self.append_filter.GetOutput())
+        #stl_writer.Write()
+        self.dialog.close()
+        self.close()

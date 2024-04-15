@@ -19,9 +19,13 @@ class Setting(QWidget):
         self.MainWindow = MainWindow
         self.setupUi()
 
+    # setup ui setting from the page
     def setupUi(self):
         self.interface_label = QLabel(self.settingform.wifipage)
         self.interface_label.setGeometry(10, 10, 400, 40)
+
+        self.settingform.maintitlelabel.show()
+        self.settingform.maintitlelabel.setText("Home Setting")
 
         self.treeWidget = QTreeWidget(self.settingform.wifipage)
 
@@ -53,21 +57,26 @@ class Setting(QWidget):
 
         self.port = QLabel(self.settingform.servicespage)
 
-        self.port.setGeometry(10, 60, 400, 20)
-        self.accountinfo = [{"Email": "admin@gmail.com", "Pass": "pass"}]
+        self.port.setGeometry(10, 60, 400, 40)
+        self.accountinfo = [{"UserID": "admin", "Pass": "pass"}]
         self.userlabel = QLabel(self.settingform.UserPage)
         self.userlabel.setGeometry(10, 10, 400, 40)
 
+        self.file = []
         self.loginwidget = QtWidgets.QStackedWidget(self.settingform.UserPage)
-        loginwindow = Login.Login(self.accountinfo, self.loginwidget, self.userlabel)
+        loginwindow = Login.Login(
+            self.accountinfo, self.loginwidget, self.userlabel, self.file
+        )
         self.loginwidget.addWidget(loginwindow)
-        self.loginwidget.setGeometry(10, 70, 480, 620)
+        self.loginwidget.setGeometry(10, 70, 700, 800)
 
         self.restartwidgetwindow = closewindow.RestartCloseWidget(self.MainWindow)
+        self.restartwidgetwindow.show()
         self.restartwidget = QtWidgets.QStackedWidget(
             self.settingform.RestartPowerOffPage
         )
         self.restartwidget.addWidget(self.restartwidgetwindow)
+        self.restartwidget.setGeometry(150, 460, 300, 200)
         self.button_UI()
         self.retranslateUi()
 
@@ -75,27 +84,67 @@ class Setting(QWidget):
         self.settingform.MarkingbackButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(0)
         )
+        self.settingform.MarkingbackButton.clicked.connect(self.homepages)
         self.settingform.MarkingbackButton.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(4)
         )
         self.settingform.WifiButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(1)
         )
+
+        self.settingform.WifiButton.clicked.connect(self.wifipages)
         self.settingform.serviceIPAddressButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(2)
+        )
+        self.settingform.serviceIPAddressButton.clicked.connect(
+            self.serviceIPAddresspages
         )
         self.settingform.ServicesButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(3)
         )
+        self.settingform.ServicesButton.clicked.connect(self.Servicespages)
         self.settingform.UserButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(4)
         )
+        self.settingform.UserButton.clicked.connect(self.Userpages)
         self.settingform.AboutButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(5)
         )
+        self.settingform.AboutButton.clicked.connect(self.Aboutpages)
         self.settingform.PowerButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(6)
         )
+        self.settingform.PowerButton.clicked.connect(self.Powerpages)
+
+    def homepages(self):
+        self.settingform.maintitlelabel.show()
+        self.settingform.maintitlelabel.setText("Home Setting")
+
+    def wifipages(self):
+        self.settingform.maintitlelabel.show()
+        self.settingform.maintitlelabel.setText("Wifi Setting")
+
+    def serviceIPAddresspages(self):
+        self.settingform.maintitlelabel.show()
+        self.settingform.maintitlelabel.setText("Services IP Address Setting")
+
+    def Servicespages(self):
+        self.settingform.maintitlelabel.show()
+        self.settingform.maintitlelabel.setText("Services Setting")
+
+    def Userpages(self):
+        self.settingform.maintitlelabel.show()
+        self.settingform.maintitlelabel.setText(
+            "User Administration Localization Setting"
+        )
+
+    def Aboutpages(self):
+        self.settingform.maintitlelabel.show()
+        self.settingform.maintitlelabel.setText("About Setting")
+
+    def Powerpages(self):
+        self.settingform.maintitlelabel.show()
+        self.settingform.maintitlelabel.setText("Power Setting")
 
     def refreshWiFiList(self):
         networks = self.interface.scan_results()
@@ -117,6 +166,7 @@ class Setting(QWidget):
         ip_address = self.get_ip_address()
         self.interface_label.setStyleSheet("font: 15px")
         self.ip_label.setText(f"IP Address: {ip_address}")
+        self.ip_label.setStyleSheet("font: 15px")
         self.titlelabel.setText("<h1>About My Application</h1>")
         self.info_label.setText("This is a Robot Marking Application program")
         self.info_label.setStyleSheet("font: 15px")
@@ -129,4 +179,4 @@ class Setting(QWidget):
         self.host.setStyleSheet("font: 15px")
         self.port.setText(f"Port: {servers.serverPort()}")
         self.port.setStyleSheet("font: 15px")
-        self.userlabel.setText(f"<h2>User: {self.accountinfo[0]['Email']}</h2>")
+        self.userlabel.setText(f"<h2>User: {self.accountinfo[0]['UserID']}</h2>")
