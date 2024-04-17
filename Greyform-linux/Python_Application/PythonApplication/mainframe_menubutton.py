@@ -7,13 +7,14 @@ import PythonApplication.menu_close as closewindow
 import PythonApplication.menu_confirmack as confirmack
 from pyvistaqt import QtInteractor
 import PythonApplication.enable_robot as robotenabler
-import PythonApplication.mainframe_setting as setting
+import PythonApplication.setting as setting
 
 
 # main frame part 4
 class Ui_MainWindow(object):
-    def __init__(self, stackedwidgetpage, MainWindow):
+    def __init__(self, stackedwidgetpage, MainWindow, append_filter):
         self.stackedWidget = stackedwidgetpage
+        self.append_filter = append_filter
         self.setupUi_Page4(MainWindow)
 
     # Page 4 UI setup
@@ -49,7 +50,36 @@ class Ui_MainWindow(object):
         self.SettingButton.setObjectName("SettingButton")
         self.SettingButton.setGeometry(QRect(1810, 20, 89, 25))
         self.stackedWidget.addWidget(self.page_4)
-        setting.Ui_MainWindow(self.stackedWidget, MainWindow)
+        self.setupUi_Page5(MainWindow)
+
+    # Page 5 UI setup
+    def setupUi_Page5(self, MainWindow):
+        self.settingpage = QWidget()
+        self.settingpage.setObjectName("settingpage")
+        self.verticalLayoutWidget_2 = QWidget(self.settingpage)
+        self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
+        self.verticalLayoutWidget_2.setGeometry(QRect(60, 30, 1721, 941))
+        self.verticalLayout_2 = QVBoxLayout(self.verticalLayoutWidget_2)
+        self.verticalLayout_2.setSpacing(7)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 1)
+        self.verticalLayoutWidget_2.setStyleSheet(
+            "QWidget#verticalLayoutWidget_2 { border: 2px solid black; }"
+        )
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.verticalLayoutWidget_2.sizePolicy().hasHeightForWidth()
+        )
+        self.settingpageuipage = setting.Setting(
+            self.stackedWidget, MainWindow
+        )  # insert setting
+        self.verticalLayout_2.addWidget(self.settingpageuipage)
+        self.stackedWidget.addWidget(self.settingpage)
         self.button_UI(MainWindow)
         self.finalizeUI(MainWindow)
 
@@ -63,7 +93,9 @@ class Ui_MainWindow(object):
             lambda: closewindow.Ui_Dialog_Close.show_dialog_close(MainWindow)
         )
         self.ConfirmackButton.clicked.connect(
-            lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(MainWindow)
+            lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(
+                MainWindow, self.append_filter
+            )
         )
         self.MarkingButton.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(3)

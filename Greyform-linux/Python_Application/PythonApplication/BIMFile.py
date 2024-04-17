@@ -43,7 +43,7 @@ class BimfileInterpretor(QWidget):
         self.form.deletelistView.clicked.connect(self.removeSelectedText)
 
     def login(self):
-        LoginUI = Login.Login(self.accountinfo, self.widget, self.userlabel, self.file)
+        LoginUI = Login.Login(self.accountinfo, self.widget, self.userlabel)
         self.widget.addWidget(LoginUI)
         self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
 

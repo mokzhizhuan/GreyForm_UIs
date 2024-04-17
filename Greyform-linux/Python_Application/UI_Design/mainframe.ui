@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>mainframe</string>
+   <string>GreyForm</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -20,7 +20,7 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
-   <widget class="QStackedWidget" name="stackedWidget">
+   <widget class="QStackedWidget" name="mainstackedWidget">
     <property name="geometry">
      <rect>
       <x>-10</x>
@@ -35,8 +35,13 @@
       <verstretch>0</verstretch>
      </sizepolicy>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="mainmenu">
      <property name="sizePolicy">
@@ -64,10 +69,10 @@
        <set>Qt::AlignCenter</set>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_2">
+     <widget class="QPushButton" name="menuStartButton">
       <property name="geometry">
        <rect>
-        <x>870</x>
+        <x>720</x>
         <y>980</y>
         <width>240</width>
         <height>25</height>
@@ -75,6 +80,22 @@
       </property>
       <property name="text">
        <string>Click to Continue</string>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="menuCloseButton">
+      <property name="geometry">
+       <rect>
+        <x>1000</x>
+        <y>980</y>
+        <width>240</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Click to Close the Window</string>
       </property>
       <property name="checkable">
        <bool>false</bool>
@@ -98,7 +119,7 @@
        </rect>
       </property>
      </widget>
-     <widget class="QPushButton" name="NextButton_3">
+     <widget class="QPushButton" name="NextButton_Page_2">
       <property name="geometry">
        <rect>
         <x>360</x>
@@ -173,7 +194,7 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <widget class="QLabel" name="Itemlabel">
+     <widget class="QLabel" name="Itemlabel_Page_2">
       <property name="geometry">
        <rect>
         <x>450</x>
@@ -186,7 +207,7 @@
        <string>Product :</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="BackButton">
+     <widget class="QPushButton" name="BackButton_Page_1">
       <property name="geometry">
        <rect>
         <x>220</x>
@@ -199,7 +220,7 @@
        <string>Back</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="NextButton">
+     <widget class="QPushButton" name="NextButton_Page_3">
       <property name="geometry">
        <rect>
         <x>100</x>
@@ -243,11 +264,16 @@
         <height>171</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>30</pointsize>
+       </font>
+      </property>
       <property name="text">
        <string>Sequence 1</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="seq2Button_3">
+     <widget class="QPushButton" name="seq2Button">
       <property name="geometry">
        <rect>
         <x>100</x>
@@ -255,6 +281,11 @@
         <width>281</width>
         <height>171</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>30</pointsize>
+       </font>
       </property>
       <property name="text">
        <string>Sequence 2</string>
@@ -268,6 +299,11 @@
         <width>281</width>
         <height>171</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>30</pointsize>
+       </font>
       </property>
       <property name="text">
        <string>Sequence 3</string>
@@ -365,7 +401,7 @@
        </property>
       </widget>
      </widget>
-     <widget class="QPushButton" name="BackButton_2">
+     <widget class="QPushButton" name="BackButton_Page_2">
       <property name="geometry">
        <rect>
         <x>590</x>
@@ -378,7 +414,7 @@
        <string>Back</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="NextButton_2">
+     <widget class="QPushButton" name="Confirmbutton">
       <property name="geometry">
        <rect>
         <x>430</x>
@@ -391,7 +427,7 @@
        <string>Next</string>
       </property>
      </widget>
-     <widget class="QLabel" name="Itemlabel_2">
+     <widget class="QLabel" name="Itemlabel_Page_3">
       <property name="geometry">
        <rect>
         <x>480</x>
@@ -548,6 +584,247 @@
       <property name="text">
        <string>After Display</string>
       </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_4">
+     <widget class="QPushButton" name="HomeButton">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>410</y>
+        <width>481</width>
+        <height>271</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>40</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Home</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="EnableRobotButton">
+      <property name="geometry">
+       <rect>
+        <x>960</x>
+        <y>410</y>
+        <width>481</width>
+        <height>271</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>40</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Enable Robot</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="ConfirmackButton">
+      <property name="geometry">
+       <rect>
+        <x>950</x>
+        <y>760</y>
+        <width>481</width>
+        <height>271</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>40</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Acknowledge</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="CloseButton">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>740</y>
+        <width>481</width>
+        <height>271</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>40</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Abort/Close</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="MarkingButton">
+      <property name="geometry">
+       <rect>
+        <x>550</x>
+        <y>70</y>
+        <width>481</width>
+        <height>271</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>40</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Back to Marking</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="SettingButton">
+      <property name="geometry">
+       <rect>
+        <x>1810</x>
+        <y>20</y>
+        <width>89</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Setting</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="settingpage">
+     <widget class="QWidget" name="verticalLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>60</x>
+        <y>30</y>
+        <width>1721</width>
+        <height>941</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,1">
+       <property name="spacing">
+        <number>7</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="labeltitlsetting">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>20</pointsize>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Settings</string>
+         </property>
+         <property name="textFormat">
+          <enum>Qt::AutoText</enum>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <item>
+            <widget class="QPushButton" name="WifiButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Wifi</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_5">
+             <item>
+              <widget class="QPushButton" name="serviceIPAddressButton">
+               <property name="text">
+                <string>Service IP Address</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_6">
+               <item>
+                <widget class="QPushButton" name="ServicesButton">
+                 <property name="text">
+                  <string>Services</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_3">
+                 <item>
+                  <widget class="QPushButton" name="UserButton">
+                   <property name="text">
+                    <string>User</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <layout class="QVBoxLayout" name="verticalLayout_7">
+                   <item>
+                    <widget class="QPushButton" name="PowerButton">
+                     <property name="text">
+                      <string>Power/ShutDown/Restart</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <layout class="QVBoxLayout" name="verticalLayout_8">
+                     <item>
+                      <widget class="QPushButton" name="AboutButton">
+                       <property name="text">
+                        <string>About</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <layout class="QVBoxLayout" name="verticalLayout_9">
+                       <item>
+                        <widget class="QPushButton" name="MarkingbackUIButton">
+                         <property name="text">
+                          <string>Back to Marking</string>
+                         </property>
+                        </widget>
+                       </item>
+                       <item>
+                        <layout class="QVBoxLayout" name="verticalLayout_10"/>
+                       </item>
+                      </layout>
+                     </item>
+                    </layout>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_11"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
      </widget>
     </widget>
    </widget>

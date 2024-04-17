@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-# this class is to scan the marking but for now it inserted a shape
+# this class is to scan the marking but for now it inserted a shape for the point of an object
 """For this implementation, the robot will scan the object and convert it to an stl object
 read the stl image using vtk plugin and send it to the vtk frame as an actor , 
 set the position where it mark with xyz coordinates and inserted in the vtkframe"""
@@ -28,11 +28,26 @@ class MiddleButtonPressed(object):
         picker = vtk.vtkPropPicker()
         picker.Pick(clickPos[0], clickPos[1], 0, self.render)
         pickedPos = picker.GetPickPosition()
+        # Create a QMessageBox
+        msg_box = QMessageBox()
+
+        # Apply a stylesheet to the QMessageBox
+        msg_box.setStyleSheet(
+            "QLabel{color: red;} QPushButton{ width: 100px; font-size: 16px; }"
+        )
         for i in range(len(pickedPos)):
             self.pickerround.append(round(picker.GetPickPosition()[i]))
         if len(self.points) < 2:
             self.points.append(self.pickerround)
-            print("Point", len(self.points), "picked at:", self.pickerround)
+            msg_box.setWindowTitle("Success")
+            msg_box.setIcon(QMessageBox.Information)
+            msg_box.setWindowTitle("Success")
+            points_text = ", ".join(
+                str(point) for point in self.pickerround
+            )  # Format list of points into a string
+            message = f"Point {len(self.points)} picked at: {points_text}"
+            msg_box.setText(message)
+            msg_box.setDefaultButton(QMessageBox.Ok)
             self.createCube()
             self.pickerround = []
             if len(self.pointstorage) == 0:
@@ -60,19 +75,40 @@ class MiddleButtonPressed(object):
                         )
                     )
                 ):
-                    print("Two points picked:", self.points)
-                    self.pointstorage.append(self.points)
+                    msg_box.setIcon(QMessageBox.Information)
+                    msg_box.setWindowTitle("Success")
+                    points_text = ", ".join(
+                        str(point) for point in self.points
+                    )  # Format list of points into a string
+                    message = f"Two points picked: {points_text}"
+                    msg_box.setText(message)
+                    msg_box.setDefaultButton(QMessageBox.Ok)
 
-                    print(self.pointstorage)
+                    # Show the message box
+                    msg_box.exec_()
+                    self.pointstorage.append(self.points)
+                    points_texts = ", ".join(
+                        str(point) for point in self.pointstorage
+                    ) 
+                    message = f"{points_texts}"
+                    msg_box.setText(message)
+                    msg_box.setDefaultButton(QMessageBox.Ok)
                 elif len(self.points) == 2:
                     self.points.remove(self.points[1])
                     self.render.RemoveActor(self.crossActor)
                     self.append_filterpolydata.RemoveInputData(
                         self.crossActor.GetMapper().GetInput()
                     )
-                    print(
-                        "Error for the 2nd marking sequence , the 2nd marking sequence must be the same x, y axis. Please try again."
+                    # Set the icon, title, text and buttons for the message box
+                    msg_box.setIcon(QMessageBox.Warning)
+                    msg_box.setWindowTitle("Error")
+                    msg_box.setText(
+                        "Error for the 2nd marking sequence , the 2nd marking sequence must be the same x, y axis or x , z axis. Please try again."
                     )
+                    msg_box.setStandardButtons(QMessageBox.Ok)
+
+                    # Show the message box
+                    msg_box.exec_()
 
         self.interactor_style.OnMiddleButtonDown()
         return
@@ -84,11 +120,11 @@ class MiddleButtonPressed(object):
 
         # Create points for the cross shape
         points = vtk.vtkPoints()
-        points.InsertNextPoint(0, 0, 0)                  # Center point
-        points.InsertNextPoint(0, size_yz/2, 0)          # Top point
-        points.InsertNextPoint(0, -size_yz/2, 0)         # Bottom point
-        points.InsertNextPoint(0, 0, size_yz/2)          # Front point
-        points.InsertNextPoint(0, 0, -size_yz/2)         # Back point
+        points.InsertNextPoint(0, 0, 0)  # Center point
+        points.InsertNextPoint(0, size_yz / 2, 0)  # Top point
+        points.InsertNextPoint(0, -size_yz / 2, 0)  # Bottom point
+        points.InsertNextPoint(0, 0, size_yz / 2)  # Front point
+        points.InsertNextPoint(0, 0, -size_yz / 2)  # Back point
 
         # Create lines to connect the points
         lines = vtk.vtkCellArray()

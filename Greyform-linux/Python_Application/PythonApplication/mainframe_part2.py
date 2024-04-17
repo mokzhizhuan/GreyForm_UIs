@@ -30,6 +30,7 @@ class Ui_MainWindow(object):
         self.seq1Button = seq1Button
         self.seq2Button = seq2Button
         self.seq3Button = seq3Button
+        self.append_filter = vtk.vtkAppendPolyData()
         self.renderer = vtk.vtkRenderer()
         self.setupUi_Page3(MainWindow)
 
@@ -138,7 +139,7 @@ class Ui_MainWindow(object):
         self.Zlabel.setObjectName("Zlabel")
         self.Zlabel.setGeometry(QRect(80, 20, 91, 31))
         self.stackedWidget.addWidget(self.page_3)
-        buttons_ros.Ui_MainWindow(self.stackedWidget, MainWindow)
+        buttons_ros.Ui_MainWindow(self.stackedWidget, MainWindow, self.append_filter)
         self.button_UI(MainWindow)
         self.finalizeUI(MainWindow)
 
@@ -176,6 +177,7 @@ class Ui_MainWindow(object):
                 self.Xlabel_2,
                 self.Ylabel_2,
                 self.Zlabel,
+                self.append_filter
             )
         )
         self.ConfirmButton.clicked.connect(
