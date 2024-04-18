@@ -39,15 +39,7 @@ class MiddleButtonPressed(object):
             self.pickerround.append(round(picker.GetPickPosition()[i]))
         if len(self.points) < 2:
             self.points.append(self.pickerround)
-            msg_box.setWindowTitle("Success")
-            msg_box.setIcon(QMessageBox.Information)
-            msg_box.setWindowTitle("Success")
-            points_text = ", ".join(
-                str(point) for point in self.pickerround
-            )  # Format list of points into a string
-            message = f"Point {len(self.points)} picked at: {points_text}"
-            msg_box.setText(message)
-            msg_box.setDefaultButton(QMessageBox.Ok)
+            print(f"Point {len(self.points)} picked at: {self.pickerround}")
             self.createCube()
             self.pickerround = []
             if len(self.pointstorage) == 0:
@@ -87,12 +79,8 @@ class MiddleButtonPressed(object):
                     # Show the message box
                     msg_box.exec_()
                     self.pointstorage.append(self.points)
-                    points_texts = ", ".join(
-                        str(point) for point in self.pointstorage
-                    ) 
-                    message = f"{points_texts}"
-                    msg_box.setText(message)
-                    msg_box.setDefaultButton(QMessageBox.Ok)
+                    points_texts = ", ".join(str(point) for point in self.pointstorage)
+                    print(f"{points_texts}")
                 elif len(self.points) == 2:
                     self.points.remove(self.points[1])
                     self.render.RemoveActor(self.crossActor)
@@ -116,7 +104,6 @@ class MiddleButtonPressed(object):
     def createCube(self):
         # Define the size of the cross
         size_yz = 40
-        size_x = 1
 
         # Create points for the cross shape
         points = vtk.vtkPoints()
