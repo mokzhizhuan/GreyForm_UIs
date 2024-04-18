@@ -39,6 +39,15 @@ fileselectionmesh > progressBar <br>
 menu_close <br>
 setsequence 
 enable_robot
+setting UI > Wifi <br>
+           > About <br>
+           > Service IP Address <br>
+           > Services <br>
+           > User Account <br> > Change Password Page <br>
+                               > Upload Home BIM File > Upload BIM File > Localization File Progress UI > Select Localization Marking > Marking Completed <br>
+                                                      > Delete BIM FIle 
+           > Restart/Shutdown <br>
+           > About <br>
 
 ##
 Loading the STL link , using the STL file extension. <br>
