@@ -13,6 +13,8 @@ from PyQt5.QtCore import QTimer
 import pyvista as pv
 import numpy as np
 from stl import mesh
+import vtk
+import meshio
 
 
 # progress bar to load the imported stl to pyvista or gl view widget
@@ -60,11 +62,38 @@ class pythonProgressBar(QDialog):
 
     def add_mesh_later(self):
         self.update_progress()
-        meshs = mesh.Mesh.from_file(self.filepath)
-        shape = meshs.points.shape
-        points = meshs.points.reshape(-1, 3)
-        faces = np.arange(points.shape[0]).reshape(-1, 3)
-        meshsplot = pv.PolyData(points, faces)
+        meshs = meshio.read(self.filepath)
+        offset = []
+        cells = []
+        cell_types = []
+
+        for cell_block in meshs.cells:
+            cell_type = cell_block.type
+            cell_data = cell_block.data
+            num_points_per_cell = cell_data.shape[1]
+            offsets = np.arange(
+                start=num_points_per_cell,
+                stop=num_points_per_cell * (len(cell_data) + 1),
+                step=num_points_per_cell,
+            )
+            offset.append(offsets)
+            cells.append(
+                np.hstack(
+                    (np.full((len(cell_data), 1), num_points_per_cell), cell_data)
+                ).flatten()
+            )
+            cell_types.append(cell_type)
+
+        # Now, we should concatenate all the cells data if there are multiple cell types
+        if len(cells) > 1:
+            vtk_cells = np.concatenate(cells)
+            vtk_offsets = np.concatenate(offset)
+        else:
+            vtk_cells = cells[0]
+            vtk_offsets = offset[0]
+
+        # Create PyVista mesh
+        meshsplot = pv.PolyData(meshs.points, vtk_cells)
         self.loader.add_mesh(
             meshsplot,
             color=(230, 230, 250),
