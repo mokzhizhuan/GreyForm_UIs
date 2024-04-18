@@ -1,5 +1,5 @@
 Install python libraries using system commands<br>
-(For linux is sudo):<br>
+(For linux is sudo(admin pricileges):<br>
 pip/pip3 install pyvistaqt <br>
 pip/pip3 install ifcopenshell <br>
 pip/pip3 install vtk <br>
@@ -8,12 +8,14 @@ pip/pip3 install multiprocess <br>
 pip/pip3 install pyqtgraph <br>
 pip/pip3 install OpenGL <br>
 pip/pip3 install numpy-stl<br>
+pip/pip3 install meshio<br>
 Enable robot function(I will implement later) : <br>
 ##
 
 Extendsion Used:<br>
 QtPython <br>
-Python 3.11 <br> <br>
+Python 3.11 <br> 
+Python 3.10(linux) <br><br>
 
 UI_Drawinng is included.
 ##
@@ -38,6 +40,15 @@ fileselectionmesh > progressBar <br>
 menu_close <br>
 setsequence 
 enable_robot
+setting UI > Wifi <br>
+           > About <br>
+           > Service IP Address <br>
+           > Services <br>
+           > User Account <br> > Change Password Page <br>
+                               > Upload Home BIM File > Upload BIM File > Localization File Progress UI > Select Localization Marking > Marking Completed <br>
+                                                      > Delete BIM FIle 
+           > Restart/Shutdown <br>
+           > About <br>
 
 ##
 Loading the STL link , using the STL file extension. <br>
