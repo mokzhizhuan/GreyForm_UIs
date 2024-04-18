@@ -14,7 +14,8 @@ Enable robot function(I will implement later) : <br>
 
 Extendsion Used:<br>
 QtPython <br>
-Python 3.11 <br> <br>
+Python 3.11 <br> 
+Python 3.10(linux) <br><br>
 
 UI_Drawinng is included.
 ##
