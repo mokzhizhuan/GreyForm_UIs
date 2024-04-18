@@ -1,5 +1,5 @@
 Install python libraries using system commands<br>
-(For linux is sudo):<br>
+(For linux is sudo(admin pricileges):<br>
 pip/pip3 install pyvistaqt <br>
 pip/pip3 install ifcopenshell <br>
 pip/pip3 install vtk <br>
@@ -8,6 +8,7 @@ pip/pip3 install multiprocess <br>
 pip/pip3 install pyqtgraph <br>
 pip/pip3 install OpenGL <br>
 pip/pip3 install numpy-stl<br>
+pip/pip3 install meshio<br>
 Enable robot function(I will implement later) : <br>
 ##
 
