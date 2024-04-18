@@ -97,6 +97,8 @@ class MiddleButtonPressed(object):
 
                     # Show the message box
                     msg_box.exec_()
+        else:
+            self.points = []
 
         self.interactor_style.OnMiddleButtonDown()
         return
