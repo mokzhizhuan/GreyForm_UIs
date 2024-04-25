@@ -16,11 +16,13 @@ class Ui_Dialog_Confirm(QMainWindow):
         dialog = QDialog(self)
         dialog.setWindowTitle("Dialog Box")
         dialog.resize(400, 300)
-        # Create a label with a mes sage
+
+        # Create a label with a message
         label = QLabel("Are you sure you want to go back to the menu?")
         label.setGeometry(QtCore.QRect(100, 40, 171, 31))
         label.setWordWrap(True)
         label.setObjectName("label")
+        
         # Create a layout for the dialog
         dialog_layout = QVBoxLayout()
         dialog_layout.addWidget(label)

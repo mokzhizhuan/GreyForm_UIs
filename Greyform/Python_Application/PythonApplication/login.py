@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
 import PythonApplication.BIMFile as BIMfile
 
 
+# user login function will include profile also later
 class Login(QDialog):
     def __init__(self, accountinfo, widget, userlabel, file):
         super(Login, self).__init__()
@@ -18,6 +19,7 @@ class Login(QDialog):
         self.password.returnPressed.connect(self.loginfunction)
         self.changepassbutton.clicked.connect(self.changepassword)
 
+    # login success or fail
     def loginfunction(self):
         password = self.form.password.text()
         counter = 0
@@ -25,13 +27,20 @@ class Login(QDialog):
             if self.accountinfo[acc]["Pass"] == password:
                 counter = counter + 1
         if counter == 1:
-            Bimfiles = BIMfile.BimfileInterpretor(
+            """Bimfiles = BIMfile.BimfileInterpretor(
                 self.accountinfo, self.widget, self.userlabel, self.file
             )
             self.widget.addWidget(Bimfiles)
-            self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
+            self.widget.setCurrentIndex(self.widget.currentIndex() + 1)"""
+            message_box = QMessageBox()
+            message_box.setIcon(QMessageBox.Information)
+            message_box.setWindowTitle("Success")
+            message_box.setText("Login Success")
+            message_box.setStandardButtons(QMessageBox.Ok)
+            # Show the message box and wait for a response
+            response = message_box.exec_()
         else:
-            # Create a QMessageBox
+            # warning message box
             msg_box = QMessageBox()
 
             # Apply a stylesheet to the QMessageBox
@@ -50,6 +59,7 @@ class Login(QDialog):
             # Show the message box
             msg_box.exec_()
 
+    # access to change pass ui
     def changepassword(self):
         ChangePassword = ChangePass(
             self.accountinfo, self.widget, self.userlabel, self.file
@@ -58,6 +68,7 @@ class Login(QDialog):
         self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
 
 
+# change password.
 class ChangePass(QDialog):
     def __init__(self, accountinfo, widget, userlabel, file):
         super(ChangePass, self).__init__()
@@ -71,11 +82,12 @@ class ChangePass(QDialog):
         self.userlabel = userlabel
         self.file = file
 
+    # change pass ui
     def changepassfunction(self):
         password = self.form.password.text()
         if password != self.accountinfo[0]["Pass"]:
             self.accountinfo[0]["Pass"] = password
-            login = Login(self.accountinfo, self.widget, self.userlabel , self.file)
+            login = Login(self.accountinfo, self.widget, self.userlabel, self.file)
             self.widget.addWidget(login)
             self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
         else:
@@ -98,6 +110,7 @@ class ChangePass(QDialog):
             # Show the message box
             msg_box.exec_()
 
+    # back to login ui
     def backtologin(self):
         login = Login(self.accountinfo, self.widget, self.userlabel, self.file)
         self.widget.addWidget(login)

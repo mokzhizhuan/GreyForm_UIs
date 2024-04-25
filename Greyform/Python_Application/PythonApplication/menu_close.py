@@ -16,11 +16,13 @@ class Ui_Dialog_Close(QMainWindow):
         dialog = QDialog(self)
         dialog.setWindowTitle("Dialog Box")
         dialog.resize(400, 300)
-        # Create a label with a mes sage
+
+        # Create a label with a message
         label = QLabel("Are you sure you want to close the window??")
         label.setGeometry(QtCore.QRect(100, 40, 171, 31))
         label.setWordWrap(True)
         label.setObjectName("label")
+
         # Create a layout for the dialog
         dialog_layout = QVBoxLayout()
         dialog_layout.addWidget(label)
@@ -28,6 +30,7 @@ class Ui_Dialog_Close(QMainWindow):
         # Set the layout for the dialog
         dialog.setLayout(dialog_layout)
 
+        #buttons
         buttonBox = QtWidgets.QDialogButtonBox()
         buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 32))
         buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)

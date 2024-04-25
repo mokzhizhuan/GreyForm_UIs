@@ -121,7 +121,7 @@ class Ui_SettingForm(object):
         self.UserButton.setText(QCoreApplication.translate("SettingForm", u"User", None))
         self.PowerButton.setText(QCoreApplication.translate("SettingForm", u"ShutDown/Restart", None))
         self.AboutButton.setText(QCoreApplication.translate("SettingForm", u"About", None))
-        self.MarkingbackButton.setText(QCoreApplication.translate("SettingForm", u"Back to Marking", None))
+        self.MarkingbackButton.setText(QCoreApplication.translate("SettingForm", u"Back to Marking Button UI", None))
         self.maintitlelabel.setText("")
     # retranslateUi
 

@@ -166,7 +166,7 @@
     <string notr="true">font-size:18pt; </string>
    </property>
    <property name="text">
-    <string>Back to Marking</string>
+    <string>Back to Marking Button UI</string>
    </property>
   </widget>
   <widget class="QStackedWidget" name="stackedWidgetsetting">

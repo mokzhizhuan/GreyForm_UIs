@@ -9,7 +9,6 @@ import PythonApplication.mainframe_menubutton as buttons_ros
 from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import vtk
-import numpy as np
 
 #main frame part 3
 class Ui_MainWindow(object):
@@ -140,10 +139,11 @@ class Ui_MainWindow(object):
         self.Zlabel.setObjectName("Zlabel")
         self.Zlabel.setGeometry(QRect(80, 20, 91, 31))
         self.stackedWidget.addWidget(self.page_3)
-        buttons_ros.Ui_MainWindow(self.stackedWidget, MainWindow, self.append_filter)
+        buttons_ros.Ui_MainWindow(self.stackedWidget, MainWindow, self.append_filter)#page 4
         self.button_UI(MainWindow)
         self.finalizeUI(MainWindow)
-
+   
+   #finalization
     def finalizeUI(self, MainWindow):
         self.retranslateUi(MainWindow)
 
@@ -186,6 +186,7 @@ class Ui_MainWindow(object):
             lambda: self.stackedWidget.setCurrentIndex(4)
         )
 
+    # Connect close event of the main window to a cleanup function for vtk
     def closeEvent(self, event):
         self.vtkframe.close()
         self.renderWindowInteractor.GetRenderWindow().MakeCurrent()
@@ -197,6 +198,7 @@ class Ui_MainWindow(object):
         self.verticalLayoutWidget.close()
         event.accept()
 
+    #add text
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         self.seq1Button.setText(_translate("MainWindow", "Sequence 1"))

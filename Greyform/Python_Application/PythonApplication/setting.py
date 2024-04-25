@@ -21,6 +21,7 @@ class Setting(QWidget):
 
     # setup ui setting from the page
     def setupUi(self):
+        #wifi
         self.interface_label = QLabel(self.settingform.wifipage)
         self.interface_label.setGeometry(10, 10, 400, 40)
 
@@ -35,11 +36,13 @@ class Setting(QWidget):
         self.interface = self.wifi.interfaces()[0]
         self.refreshWiFiList()
 
+        #setting ip address
         self.ip_label = QLabel(self.settingform.serviceipaddresspage)
         self.ip_label.setGeometry(10, 10, 380, 80)
         self.ip_label.setAlignment(Qt.AlignCenter)
         self.ip_label.setStyleSheet("font-size: 20px;")
 
+        #setting about page
         self.titlelabel = QLabel(self.settingform.AboutPage)
         self.titlelabel.setGeometry(10, 10, 400, 40)
 
@@ -52,6 +55,7 @@ class Setting(QWidget):
         self.author_label = QLabel(self.settingform.AboutPage)
         self.author_label.setGeometry(10, 190, 400, 40)
 
+        #setting services
         self.host = QLabel(self.settingform.servicespage)
         self.host.setGeometry(10, 10, 400, 40)
 
@@ -62,6 +66,7 @@ class Setting(QWidget):
         self.userlabel = QLabel(self.settingform.UserPage)
         self.userlabel.setGeometry(10, 10, 400, 40)
 
+        #User info login
         self.file = []
         self.loginwidget = QtWidgets.QStackedWidget(self.settingform.UserPage)
         loginwindow = Login.Login(
@@ -70,6 +75,7 @@ class Setting(QWidget):
         self.loginwidget.addWidget(loginwindow)
         self.loginwidget.setGeometry(10, 70, 700, 800)
 
+        #power and restart
         self.restartwidgetwindow = closewindow.RestartCloseWidget(self.MainWindow)
         self.restartwidgetwindow.show()
         self.restartwidget = QtWidgets.QStackedWidget(
@@ -80,6 +86,7 @@ class Setting(QWidget):
         self.button_UI()
         self.retranslateUi()
 
+    #button interaction page
     def button_UI(self):
         self.settingform.MarkingbackButton.clicked.connect(
             lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(0)
@@ -116,6 +123,7 @@ class Setting(QWidget):
         )
         self.settingform.PowerButton.clicked.connect(self.Powerpages)
 
+    #ui button setting
     def homepages(self):
         self.settingform.maintitlelabel.show()
         self.settingform.maintitlelabel.setText("Home Setting")
@@ -146,6 +154,7 @@ class Setting(QWidget):
         self.settingform.maintitlelabel.show()
         self.settingform.maintitlelabel.setText("Power Setting")
 
+    #detect WIFI
     def refreshWiFiList(self):
         networks = self.interface.scan_results()
         self.treeWidget.clear()
@@ -157,11 +166,13 @@ class Setting(QWidget):
         interface_info = f"Interface: {self.interface.name()}"
         self.interface_label.setText(interface_info)
 
+    #detect ip address
     def get_ip_address(self):
         # Get the IP address of the local machine
         ip_address = socket.gethostbyname(socket.gethostname())
         return ip_address
 
+    #add text
     def retranslateUi(self):
         ip_address = self.get_ip_address()
         self.interface_label.setStyleSheet("font: 15px")

@@ -7,6 +7,7 @@ import sys
 from PythonApplication import mainframe
 
 
+# load the mainwindow application
 class Ui_MainWindow(QMainWindow):
     def __init__(self):
         super(Ui_MainWindow, self).__init__()

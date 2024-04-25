@@ -9,6 +9,8 @@ import os
 import PythonApplication.login as loginuiadmins
 
 
+# localise for bim file, still undergo research for the calibration and localisation.
+# Right now I only include animation for the loader
 class localisationInterpretor(QWidget):
     def __init__(self, accountinfo, widget, userlabel, filename):
         super(localisationInterpretor, self).__init__()
@@ -19,6 +21,7 @@ class localisationInterpretor(QWidget):
         self.userlabel = userlabel
         self.localizationloading()
 
+    # home ui
     def localizationloading(self):
         self.form.stackedWidget_localisation.setCurrentIndex(0)
         self.font = QFont()
@@ -36,6 +39,7 @@ class localisationInterpretor(QWidget):
         self.form.backtologinbutton.clicked.connect(self.loginpages)
         self.form.modellocaliselistview.clicked.connect(self.modelselected)
 
+    # upload BIM pages
     def uploadpages(self):
         Bimfiles = Bimfile.BimfileInterpretor(
             self.accountinfo, self.widget, self.userlabel, self.filename
@@ -43,6 +47,7 @@ class localisationInterpretor(QWidget):
         self.widget.addWidget(Bimfiles)
         self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
 
+    # back to admin login
     def loginpages(self):
         Loginuiadmin = loginuiadmins.Login(
             self.accountinfo, self.widget, self.userlabel, self.filename
@@ -50,6 +55,7 @@ class localisationInterpretor(QWidget):
         self.widget.addWidget(Loginuiadmin)
         self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
 
+    # file model selected
     def modelselected(self, index):
         model = self.form.modellocaliselistview.model()
         if index.isValid():
@@ -89,11 +95,13 @@ class localisationInterpretor(QWidget):
         self.form.selectmarkingbutton.hide()
         self.form.cancelbutton_2.hide()
 
+    # select marking
     def onItemClicked(self, item):
         item_text = item.model().data(item, Qt.DisplayRole)
         self.item = item_text
         self.form.selectmarkingbutton.clicked.connect(self.selectedmarking)
 
+    # marking is selected
     def selectedmarking(self):
         self.form.markinglabelselected.setText(str(self.item) + " selected")
         self.form.markinglabelselected.show()
@@ -105,6 +113,7 @@ class localisationInterpretor(QWidget):
         self.form.markingstartbutton.clicked.connect(self.markingprocess)
         self.form.redoprocessbutton.clicked.connect(self.selectpages)
 
+    # makring process ui
     def markingprocess(self):
         self.form.stackedWidget_localisation.setCurrentIndex(2)
         self.form.localisationlabelselected.setText(
@@ -138,11 +147,13 @@ class localisationInterpretor(QWidget):
         )  # 10 seconds before starting
         self.form.cancelloadButton.clicked.connect(self.selectpages)
 
+    # localise animation
     def start_text_animation_local(self):
         if self.current_text_index_local < len(self.localtexts):
             self.show_next_letter_local()
             self.letter_timer_local.start(200)  # Speed of letters appearing
 
+    # localize page animation
     def show_next_letter_local(self):
         text = None
         if self.current_text_index_local <= 1:
@@ -164,7 +175,7 @@ class localisationInterpretor(QWidget):
         # Check if the entire text has been displayed
         if self.letter_index_local >= len(text):
             self.letter_timer_local.stop()
-            # If it's the first text, prepare to start the second after a delay
+            # If it's the first text, prepare to start the second after a delay , etc
             if self.current_text_index_local < len(self.localtexts):
                 self.current_text_index_local += 1
                 self.letter_index_local = 0
@@ -181,11 +192,13 @@ class localisationInterpretor(QWidget):
                     10000, self.start_text_animation_local
                 )  # 10 seconds before the second text starts
 
+    # animation
     def start_text_animation_mark(self):
         if self.current_text_index_mark < len(self.marktexts):
             self.show_next_letter_mark()
             self.letter_timer_mark.start(200)  # Speed of letters appearing
 
+    # marking page animation
     def show_next_letter_mark(self):
         text = None
         if self.current_text_index_mark <= 1:

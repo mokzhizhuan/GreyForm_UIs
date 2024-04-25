@@ -8,7 +8,7 @@ from pyvistaqt import QtInteractor
 import PythonApplication.progressBar as Progress
 
 
-#load pyvista in the frame
+# load pyvista in the frame
 class FileSelectionMesh(QMainWindow):
     def __init__(
         self,
@@ -36,7 +36,6 @@ class FileSelectionMesh(QMainWindow):
     # load meshdata from file
     def meshdata(self):
         # clear mesh
-        self.clearLayout()
         self.horizontalLayout.addWidget(self.plotterloader.interactor)
         self.horizontalLayout_page2.addWidget(self.plotterloader_2.interactor)
         progressbarprogram = Progress.pythonProgressBar(
@@ -44,25 +43,4 @@ class FileSelectionMesh(QMainWindow):
         )
         progressbarprogram.exec_()
 
-    # clear layout
-    def clearLayout(self):
-        while self.horizontalLayout.count():
-            child = self.horizontalLayout.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
-        while self.horizontalLayout_page2.count():
-            child = self.horizontalLayout_page2.takeAt(0)
-            if child.widget():
-                child.widget().deleteLater()
 
-    
-    def closeEvent(self, QCloseEvent):
-        super().closeEvent(QCloseEvent)
-        self.horizontalLayout.close()
-        self.horizontalLayout_page2.close()
-        self.pyvistaframe.close()
-        self.plotterloader.close()
-        self.plotterloader_2.close()
-        self.pyvistaframe_2.close()
-        self.plotterloader.GetRenderWindow().Finalize()
-        self.plotterloader_2.GetRenderWindow().Finalize()

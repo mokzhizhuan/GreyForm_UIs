@@ -9,6 +9,7 @@ import os
 import PythonApplication.localise as localisewin
 
 
+# custom file info for file path
 class CustomFileSystemModel(QFileSystemModel):
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and index.isValid():
@@ -20,6 +21,7 @@ class CustomFileSystemModel(QFileSystemModel):
         return super().data(index, role)
 
 
+# bim file system file upload
 class BimfileInterpretor(QWidget):
     def __init__(self, accountinfo, widget, userlabel, file):
         super(BimfileInterpretor, self).__init__()
@@ -33,6 +35,7 @@ class BimfileInterpretor(QWidget):
         self.dest_model = QStringListModel()
         self.buttonUI()
 
+    # button interaction
     def buttonUI(self):
         self.form.BacktoLoginButton.clicked.connect(self.login)
         self.form.ExitButton.clicked.connect(self.localize)
@@ -42,15 +45,18 @@ class BimfileInterpretor(QWidget):
         self.form.UploadconfirmButton.clicked.connect(self.Uploadcompleted)
         self.form.deletelistView.clicked.connect(self.removeSelectedText)
 
+    # back to login
     def login(self):
         LoginUI = Login.Login(self.accountinfo, self.widget, self.userlabel, self.file)
         self.widget.addWidget(LoginUI)
         self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
 
+    # upload file ui
     def uploadfile(self):
         self.form.stackedWidgetbimfile.setCurrentIndex(1)
         self.form.FilePathButton.clicked.connect(self.browsefilesdirectory)
 
+    # delete bim file ui in the list view
     def deletefile(self):
         self.form.stackedWidgetbimfile.setCurrentIndex(3)
         self.dest_model = QStringListModel()
@@ -60,7 +66,9 @@ class BimfileInterpretor(QWidget):
         self.form.deletelistView.setModel(self.dest_model)
         for i in range(len(self.file)):
             self.dest_model.insertRows(self.dest_model.rowCount(), 1)
-            self.dest_model.setData(self.dest_model.index(self.dest_model.rowCount() - 1), self.file[i])
+            self.dest_model.setData(
+                self.dest_model.index(self.dest_model.rowCount() - 1), self.file[i]
+            )
 
     # browse file directory
     def browsefilesdirectory(self):
@@ -92,6 +100,7 @@ class BimfileInterpretor(QWidget):
             self.form.uploadlistView.setModel(model)
             self.form.uploadlistView.show()
 
+    # upload selection
     def on_selection_changed(self, index):
         model = self.form.uploadlistView.model()
         self.file_path = model.filePath(index)
@@ -102,17 +111,22 @@ class BimfileInterpretor(QWidget):
         self.form.modeltextEdit.setReadOnly(True)
         self.form.modeltextEdit.setPlainText(self.files)
 
+    # upload ui is completed
     def Uploadcompleted(self):
         self.form.stackedWidgetbimfile.setCurrentIndex(2)
         self.form.deletelistView.setModel(self.dest_model)
         for i in range(len(self.file)):
             self.dest_model.insertRows(self.dest_model.rowCount(), 1)
-            self.dest_model.setData(self.dest_model.index(self.dest_model.rowCount() - 1), self.file[i])
+            self.dest_model.setData(
+                self.dest_model.index(self.dest_model.rowCount() - 1), self.file[i]
+            )
 
+    # delete bim file in the list view
     def removeSelectedText(self):
         self.selected_indexes = self.form.deletelistView.selectedIndexes()
         self.form.DeleteconfirmButton.clicked.connect(self.removelist)
 
+    # delete completed
     def removelist(self):
         rows_to_remove = [index.row() for index in self.selected_indexes]
         self.dest_model = self.form.deletelistView.model()
@@ -120,9 +134,28 @@ class BimfileInterpretor(QWidget):
             self.dest_model.removeRow(row)
         self.form.stackedWidgetbimfile.setCurrentIndex(4)
 
+    # back to localize
     def localize(self):
-        localise = localisewin.localisationInterpretor(
-            self.accountinfo, self.widget, self.userlabel, self.file
-        )
-        self.widget.addWidget(localise)
-        self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
+        if self.file:
+            localise = localisewin.localisationInterpretor(
+                self.accountinfo, self.widget, self.userlabel, self.file
+            )
+            self.widget.addWidget(localise)
+            self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
+        else:
+            # warning
+            msg_box = QMessageBox()
+
+            # Apply a stylesheet to the QMessageBox
+            msg_box.setStyleSheet(
+                "QLabel{color: red;} QPushButton{ width: 100px; font-size: 16px; }"
+            )
+
+            # Set the icon, title, text and buttons for the message box
+            msg_box.setIcon(QMessageBox.Warning)
+            msg_box.setWindowTitle("Error")
+            msg_box.setText("Please include the bim file for the UI.")
+            msg_box.setStandardButtons(QMessageBox.Ok)
+
+            # Show the message box
+            msg_box.exec_()

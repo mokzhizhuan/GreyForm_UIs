@@ -124,6 +124,7 @@ class Ui_MainWindow(object):
         self.button_UI(MainWindow)
         self.finalizeUI(MainWindow)
 
+    #finalization
     def finalizeUI(self, MainWindow):
         self.retranslateUi(MainWindow)
 
@@ -141,6 +142,7 @@ class Ui_MainWindow(object):
         self.FilePathButton.clicked.connect(self.browsefilesdirectory)
         self.BackButton.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
 
+    # file selection when clicked
     def on_selection_changed(self, index):
         model = self.Selectivefilelistview.model()
         self.file_path = model.filePath(index)
@@ -172,7 +174,7 @@ class Ui_MainWindow(object):
             self.seq1Button,
             self.seq2Button,
             self.seq3Button,
-        )
+        )#page 3 UI
 
     # browse file directory
     def browsefilesdirectory(self):
@@ -197,6 +199,7 @@ class Ui_MainWindow(object):
         self.pyvistaframe_2.close()
         event.accept()
 
+    #clean layout
     def clearLayout(self):
         while self.horizontalLayout_2.count():
             child = self.horizontalLayout_2.takeAt(0)
@@ -207,6 +210,7 @@ class Ui_MainWindow(object):
             if child.widget():
                 child.widget().deleteLater()
 
+    #add text
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         self.NextButton_Page_2.setText(_translate("MainWindow", "Next"))

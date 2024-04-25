@@ -18,7 +18,8 @@ class Ui_Dialog_ConfirmAck(QMainWindow):
         self.dialog = QDialog(self)
         self.dialog.setWindowTitle("Dialog Box")
         self.dialog.resize(400, 300)
-        # Create a label with a mes sage
+
+        # Create a label with a message
         label = QLabel("Are you sure you want to finalize the marking?")
         label.setGeometry(QtCore.QRect(100, 40, 171, 31))
         label.setWordWrap(True)
@@ -46,6 +47,7 @@ class Ui_Dialog_ConfirmAck(QMainWindow):
         # Show the dialog as a modal dialog (blocks the main window)
         self.dialog.exec_()
 
+    #finalize output , will fix it after ros research. this is a rough idea.
     def appendasSTL(self):
         # Write initial STL file
         #stl_writer = vtk.vtkSTLWriter()

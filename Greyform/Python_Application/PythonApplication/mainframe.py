@@ -74,7 +74,7 @@ class Ui_MainWindow(object):
         self.menuCloseButton.setCheckable(False)
         self.menuCloseButton.setObjectName("menuStartButton")
         self.stackedWidget.addWidget(self.mainmenu)
-        mainframe_Pagefile.Ui_MainWindow(MainWindow, self.stackedWidget)
+        mainframe_Pagefile.Ui_MainWindow(MainWindow, self.stackedWidget)  # page 2
         self.button_UI(MainWindow)
         self.finalizeUI(MainWindow)
 
@@ -103,7 +103,7 @@ class Ui_MainWindow(object):
         self.QTitle.setText(
             _translate(
                 "MainWindow",
-                '<html><head/><body><p><span style=" font-size:36pt;">GREYFORM UI</span></p></body></html>',
+                '<html><head/><body><p><span style=" font-size:36pt;">Automated PBU Robot UI</span></p></body></html>',
             )
         )
         self.menuStartButton.setText(_translate("MainWindow", "Click to Continue"))

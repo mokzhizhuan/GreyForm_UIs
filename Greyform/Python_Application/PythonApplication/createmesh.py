@@ -11,10 +11,6 @@ import PythonApplication.progressBarvtk as progressvtk
 
 # create the imported stl mesh in vtk frame
 class createMesh(QMainWindow):
-    def __init__(self):
-        self.reader = None
-        self.meshbounds = None
-
     # vtkrenderwindow
     def createmesh(
         self,
@@ -32,10 +28,12 @@ class createMesh(QMainWindow):
         renderwindowinteractor.GetRenderWindow().AddRenderer(ren)
         ren.UseHiddenLineRemovalOn()
         # Check if the render window has been rendered
-        rendered = renderwindowinteractor.GetRenderWindow().GetNeverRendered()
-        if rendered:
+        rendered = (
+            renderwindowinteractor.GetRenderWindow().GetNeverRendered()
+        )  # not rendered
+        if rendered:  # not render will load the ui
             progressbarprogram = progressvtk.pythonProgressBar(
-                60000,
+                80000,
                 CurrentMesh,
                 ren,
                 renderwindowinteractor,
@@ -48,4 +46,4 @@ class createMesh(QMainWindow):
             )
             progressbarprogram.exec_()
         else:
-            return
+            return  # skip the loading bar progress

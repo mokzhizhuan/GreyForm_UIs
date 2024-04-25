@@ -82,6 +82,7 @@ class Ui_MainWindow(object):
         self.button_UI(MainWindow)
         self.finalizeUI(MainWindow)
 
+    #finalization
     def finalizeUI(self, MainWindow):
         self.retranslateUi(MainWindow)
 
@@ -104,6 +105,7 @@ class Ui_MainWindow(object):
             lambda: self.stackedWidget.setCurrentIndex(5)
         )
 
+    #add text
     def retranslateUi(self, MainWindow):
         self.HomeButton.setText(QCoreApplication.translate("MainWindow", "Home", None))
         self.EnableRobotButton.setText(

@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import *
 
-
+#restart app or shutdown.
 class RestartCloseWidget(QWidget):
     def __init__(self, MainWindow):
         super().__init__()
@@ -58,6 +58,7 @@ class RestartCloseWidget(QWidget):
         if reply == QMessageBox.Yes:
             self.MainWindow.close()
 
+    #restart method
     def restart(self):
         python = sys.executable
         os.execl(python, python, *sys.argv)
