@@ -42,6 +42,7 @@ class pythonProgressBar(QDialog):
         label.setObjectName("label")
 
         # variable for loading bar ui
+        self.defaultposition = [0, 0, 1]
         self.reader = vtk.vtkSTLReader()
         self.meshbounds = None
         self.progress_bar = QProgressBar(self)
@@ -52,13 +53,14 @@ class pythonProgressBar(QDialog):
         self.polydata = polydata
         self.ren = ren
         self.renderwindowinteractor = renderwindowinteractor
+        self.renderwindowinteractor.GetRenderWindow().AddRenderer(self.ren)
         self.xlabelbefore = xlabelbefore
         self.ylabelbefore = ylabelbefore
         self.zlabelbefore = zlabelbefore
         self.xlabels = xlabel
         self.ylabels = ylabel
         self.append_filterpolydata = append_filterpolydata
-        self.ren.SetBackground(255, 255, 255)
+        self.ren.SetBackground(1, 1, 1)
         self.start_progress()
         # timer layout for the dialog
         self.timer = QTimer(self)
@@ -87,8 +89,26 @@ class pythonProgressBar(QDialog):
         self.reader.SetFileName(self.polydata)
         self.reader.Update()
         polydata = self.reader.GetOutput()
-        actor, boundarypolydata = self.polyDataToActor(polydata)
+        actor = self.polyDataToActor(polydata)
+        center = [
+            (self.meshbounds[0] + self.meshbounds[1]) / 2,
+            (self.meshbounds[2] + self.meshbounds[3]) / 2,
+            (self.meshbounds[4] + self.meshbounds[5]) / 2,
+        ]
+        self.cubeactor = self.create_cube_actor()
+        self.cameraactor = self.create_cube_actor()
+        self.cubeactor.SetPosition(80, center[1], center[2])
+        self.cubeactor.SetOrientation(
+            self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
+        )
+        self.cameraactor.SetPosition(80, center[1], center[2])
+        self.cameraactor.SetOrientation(
+            self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
+        )
+        self.ren.AddActor(self.cameraactor)
+        self.ren.AddActor(self.cubeactor)
         self.ren.AddActor(actor)
+        self.oldcamerapos = self.cubeactor.GetPosition()
         camera = events.myInteractorStyle(
             self.xlabels,
             self.ylabels,
@@ -102,75 +122,59 @@ class pythonProgressBar(QDialog):
             polydata,
             self.reader,
             self.append_filterpolydata,
+            self.cubeactor,
+            self.cameraactor,
+            self.oldcamerapos,
         )
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
         self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
         self.ren.GetActiveCamera().SetViewUp(0, 0, 1)
+        self.ren.ResetCameraClippingRange()
         self.ren.ResetCamera()
-        self.renderwindowinteractor.GetRenderWindow().AddRenderer(self.ren)
         self.renderwindowinteractor.GetRenderWindow().Render()
-        self.renderwindowinteractor.Initialize()
-        self.renderwindowinteractor.Start()
         self.renderwindowinteractor.GetRenderWindow().Finalize()
         self.renderwindowinteractor.GetRenderWindow().SetSize(1600, 800)
         self.renderwindowinteractor.GetRenderWindow().Render()
+        self.renderwindowinteractor.Initialize()
+        self.renderwindowinteractor.Start()
         self.close()
+
+    def create_cube_actor(self):
+        self.cube_source = vtk.vtkCubeSource()
+        self.cube_mapper = vtk.vtkPolyDataMapper()
+        self.cube_mapper.SetInputConnection(self.cube_source.GetOutputPort())
+        self.cube_mapper.ScalarVisibilityOff()
+        self.cube_actor = vtk.vtkActor()
+        self.cube_actor.SetMapper(self.cube_mapper)
+        self.cube_actor.GetProperty().BackfaceCullingOn()
+        self.cube_actor.GetProperty().FrontfaceCullingOn()
+        self.cube_actor.GetProperty().SetOpacity(0.0)
+        return self.cube_actor
 
     # set mesh as actor in vtk frame
     def polyDataToActor(self, polydata):
         """Wrap the provided vtkPolyData object in a mapper and an actor, returning
         the actor."""
         mapper = vtk.vtkPolyDataMapper()
-        boundarymapper = vtk.vtkPolyDataMapper()
-        if vtk.VTK_MAJOR_VERSION <= 5:
-            mapper.SetInput(self.reader.GetOutput())
-            mapper.SetInput(polydata)
-        else:
-            mapper.SetInputConnection(self.reader.GetOutputPort())
+        mapper.SetInputConnection(self.reader.GetOutputPort())
         actor = vtk.vtkActor()
-        boundaryCells = self.polydataboundary(polydata)
         actor.SetMapper(mapper)
         actor.GetProperty().SetRepresentationToSurface()
-        boundaryPolyData = vtk.vtkPolyData()
-        boundaryPolyData.SetPoints(boundaryCells.GetOutput().GetPoints())
-        boundaryPolyData.SetStrips(boundaryCells.GetOutput().GetLines())
-        boundarymapper.SetInputData(boundaryPolyData)
-        boundaryactor = vtk.vtkActor()
-        boundaryactor.SetMapper(boundarymapper)
-        print(boundaryactor.GetBounds())
         self.meshbounds = []
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
         # color RGB must be /255 for Red, Green , blue color code
         actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
         actor.GetProperty().SetDiffuse(0.8)
+        actor.SetPosition(0, 0, 0)
         colorsd = vtkNamedColors()
         actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d("LightSteelBlue"))
         actor.GetProperty().SetSpecular(0.3)
         actor.GetProperty().SetSpecularPower(60.0)
+        actor.GetProperty().BackfaceCullingOn()
+        actor.GetProperty().FrontfaceCullingOn()
         actor.SetOrientation(1, 0, 0)
         self.append_filterpolydata.AddInputData(actor.GetMapper().GetInput())
         self.append_filterpolydata.Update()
-        return actor, boundaryPolyData
-
-    def polydataboundary(self, polydata):
-        # Extract edges
-        edgeExtractor = vtk.vtkExtractEdges()
-        edgeExtractor.SetInputData(self.reader.GetOutput())
-        edgeExtractor.Update()
-
-        # Get the boundary edges
-        boundaryEdges = vtk.vtkFeatureEdges()
-        boundaryEdges.SetInputData(edgeExtractor.GetOutput())
-        boundaryEdges.BoundaryEdgesOn()
-        boundaryEdges.NonManifoldEdgesOff()
-        boundaryEdges.FeatureEdgesOff()
-        boundaryEdges.ManifoldEdgesOff()
-        boundaryEdges.Update()
-
-        # Get the boundary cells
-        boundaryCells = vtk.vtkStripper()
-        boundaryCells.SetInputData(boundaryEdges.GetOutput())
-        boundaryCells.Update()
-        return boundaryCells
+        return actor

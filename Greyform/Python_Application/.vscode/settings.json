@@ -39,4 +39,5 @@
     
         "install/setup.bat"
     ],
+    "python.REPL.enableREPLSmartSend": false,
 }
