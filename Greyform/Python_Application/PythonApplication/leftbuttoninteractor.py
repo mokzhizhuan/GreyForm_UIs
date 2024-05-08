@@ -22,13 +22,14 @@ class LeftInteractorStyle(object):
         cubeactor,
         cameraactor,
         camdisplay,
+        spaceseperation,
     ):
-        self.movement = None
         self.interactor_style = interactor_style
         self.cameraactor = cameraactor
         self.xlabels = xlabel
         self.ylabels = ylabel
         self.render = ren
+        self.spaceseperation = spaceseperation
         self.renderwindowinteractor = renderwindowinteractor
         self.meshbound = meshbounds
         self.mesh = polydata
@@ -57,7 +58,7 @@ class LeftInteractorStyle(object):
             1, self.mesh.GetMatrix()
         )  # Static object transform
         # Set up the collision filter
-        self.collisionFilter.SetCollisionModeToAllContacts()
+        self.collisionFilter.SetCollisionModeToHalfContacts()
         self.collisionFilter.GenerateScalarsOn()
         self.leftbuttoninteraction = False
         self.renderwindowinteractor.GetRenderWindow().Render()
@@ -75,17 +76,14 @@ class LeftInteractorStyle(object):
     def leftButtonPressEvent(self, obj, event):
         self.leftbuttoninteraction = True
         clickPos = self.renderwindowinteractor.GetEventPosition()  # <<<-----<
-        self.xlabels.setText(
-            self._translate("MainWindow", str("{0:.2f}".format(clickPos[0])))
-        )
-        self.ylabels.setText(
-            self._translate("MainWindow", str("{0:.2f}".format(clickPos[1])))
-        )
+        self.displayclickpostext(clickPos)
         self.current_zoom_factor = 1.0
         self.interactor_style.OnLeftButtonDown()
 
     def mouse_move(self, obj, event):
+        clickPos = self.renderwindowinteractor.GetEventPosition()
         if self.leftbuttoninteraction is True:
+            self.displayclickpostext(clickPos)
             camera = self.render.GetActiveCamera()
             camera_pos = camera.GetPosition()
             self.cameraactor.SetPosition(camera_pos)
@@ -94,34 +92,19 @@ class LeftInteractorStyle(object):
             self.renderwindowinteractor.GetRenderWindow().Render()
             if (
                 num_contacts > 0
-                or self.meshbound[0] + 70 >= camera_pos[0] <= self.meshbound[1] - 70
-                or self.meshbound[2] + 70 >= camera_pos[1] <= self.meshbound[3] - 70
-                or 0 >= camera_pos[2] <= self.meshbound[5] - 70
+                or self.meshbound[0] >= camera_pos[0] <= self.meshbound[1]
+                or self.meshbound[2] >= camera_pos[1] <= self.meshbound[3]
+                or 0 >= camera_pos[2] <= self.meshbound[5]
             ):
                 camera.SetPosition(self.cubeactor.GetPosition())
-                self.cameraactor.SetPosition(self.cubeactor.GetPosition())
-                camera.SetViewUp(
-                    self.defaultposition[0],
-                    self.defaultposition[1],
-                    self.defaultposition[2],
+                self.cameraactor.SetPosition(
+                    self.cubeactor.GetPosition()[0],
+                    self.cubeactor.GetPosition()[1] - self.spaceseperation,
+                    self.cubeactor.GetPosition()[2] - self.spaceseperation,
                 )
-                self.render.ResetCameraClippingRange()
-                self.renderwindowinteractor.GetRenderWindow().Render()
-            self.xlabelbefore.setText(
-                self._translate(
-                    "MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))
-                )
-            )
-            self.ylabelbefore.setText(
-                self._translate(
-                    "MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))
-                )
-            )
-            self.zlabelbefore.setText(
-                self._translate(
-                    "MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))
-                )
-            )
+                self.camsetvieworientation(camera)
+                self.refresh()
+            self.displaytext(camera)
             self.interactor_style.OnMouseMove()
 
     def left_button_release(self, obj, event):
@@ -131,29 +114,15 @@ class LeftInteractorStyle(object):
         self.leftbuttoninteraction = False
         camera = self.render.GetActiveCamera()
         camera.SetPosition(self.displayoldpos)
-        camera.SetViewUp(
-            self.defaultposition[0],
-            self.defaultposition[1],
-            self.defaultposition[2],
-        )
-        self.render.ResetCameraClippingRange()
-        self.renderwindowinteractor.GetRenderWindow().Render()
+        self.camsetvieworientation(camera)
+        self.refresh()
 
     def mouse_wheel_forward(self, obj, event):
         if self.current_zoom_factor * 1.02 <= self.max_zoom_in_factor:
             self.current_zoom_factor *= 1.02
             camera = self.render.GetActiveCamera()
             camera.Zoom(1.02)  # Zoom in
-            camera_pos = camera.GetPosition()
-            self.xlabelbefore.setText(
-                self._translate("MainWindow", str("{0:.2f}".format(camera_pos[0])))
-            )
-            self.ylabelbefore.setText(
-                self._translate("MainWindow", str("{0:.2f}".format(camera_pos[1])))
-            )
-            self.zlabelbefore.setText(
-                self._translate("MainWindow", str("{0:.2f}".format(camera_pos[2])))
-            )
+            self.displaytext(camera)
         self.interactor_style.OnMouseWheelForward()
 
     def mouse_wheel_backward(self, obj, event):
@@ -164,34 +133,51 @@ class LeftInteractorStyle(object):
             camera_pos = camera.GetPosition()
             self.renderwindowinteractor.GetRenderWindow().Render()
             if (
-                self.meshbound[0] >= camera_pos[0]
-                or self.meshbound[2] >= camera_pos[1]
-                or self.meshbound[4] >= camera_pos[2]
+                self.meshbound[0] >= camera_pos[0] <= self.meshbound[1]
+                or self.meshbound[2] >= camera_pos[1] <= self.meshbound[3]
+                or self.meshbound[4] >= camera_pos[2] <= self.meshbound[5]
             ):
                 camera.SetPosition(self.cubeactor.GetPosition())
-                camera.SetViewUp(
-                    self.defaultposition[0],
-                    self.defaultposition[1],
-                    self.defaultposition[2],
-                )
+                self.camsetvieworientation(camera)
                 self.current_zoom_factor = 1.0
                 camera_pos = camera.GetPosition()
                 self.collisionFilter.Update()
-                self.render.ResetCameraClippingRange()
-                self.renderwindowinteractor.GetRenderWindow().Render()
-            self.xlabelbefore.setText(
-                self._translate(
-                    "MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))
-                )
-            )
-            self.ylabelbefore.setText(
-                self._translate(
-                    "MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))
-                )
-            )
-            self.zlabelbefore.setText(
-                self._translate(
-                    "MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))
-                )
-            )
+                self.refresh()
+            self.displaytext(camera)
         self.interactor_style.OnMouseWheelBackward()
+
+    def displayclickpostext(self, clickPos):
+        self.xlabels.setText(
+            self._translate("MainWindow", str("{0:.2f}".format(clickPos[0])))
+        )
+        self.ylabels.setText(
+            self._translate("MainWindow", str("{0:.2f}".format(clickPos[1])))
+        )
+
+    def displaytext(self, camera):
+        self.xlabelbefore.setText(
+            self._translate(
+                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))
+            )
+        )
+        self.ylabelbefore.setText(
+            self._translate(
+                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))
+            )
+        )
+        self.zlabelbefore.setText(
+            self._translate(
+                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))
+            )
+        )
+    
+    def camsetvieworientation(self, camera):
+        camera.SetViewUp(
+            self.defaultposition[0],
+            self.defaultposition[1],
+            self.defaultposition[2],
+        )
+
+    def refresh(self):
+        self.render.ResetCameraClippingRange()
+        self.renderwindowinteractor.GetRenderWindow().Render()

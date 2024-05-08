@@ -101,7 +101,10 @@ class pythonProgressBar(QDialog):
         self.cubeactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
         )
-        self.cameraactor.SetPosition(80, center[1], center[2])
+        spaceseperation = 50
+        self.cameraactor.SetPosition(
+            80, center[1] - spaceseperation, center[2] - spaceseperation
+        )
         self.cameraactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
         )
@@ -109,6 +112,20 @@ class pythonProgressBar(QDialog):
         self.ren.AddActor(self.cubeactor)
         self.ren.AddActor(actor)
         self.oldcamerapos = self.cubeactor.GetPosition()
+        self.collisionFilter = vtk.vtkCollisionDetectionFilter()
+        # Set up the collision filter
+        self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
+        self.collisionFilter.SetInputData(1, actor.GetMapper().GetInput())
+        self.collisionFilter.SetTransform(
+            0, vtk.vtkTransform()
+        )  # Moving object transform
+        self.collisionFilter.SetTransform(
+            1, vtk.vtkTransform()
+        )  # Static object transform
+        self.collisionFilter.SetMatrix(
+            0, self.cubeactor.GetMatrix()
+        )  # Static object transform
+        self.collisionFilter.SetMatrix(1, actor.GetMatrix())  # Static object transform
         camera = events.myInteractorStyle(
             self.xlabels,
             self.ylabels,
@@ -125,6 +142,8 @@ class pythonProgressBar(QDialog):
             self.cubeactor,
             self.cameraactor,
             self.oldcamerapos,
+            self.collisionFilter,
+            spaceseperation,
         )
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
@@ -142,6 +161,9 @@ class pythonProgressBar(QDialog):
 
     def create_cube_actor(self):
         self.cube_source = vtk.vtkCubeSource()
+        self.cube_source.SetXLength(10)
+        self.cube_source.SetYLength(10)
+        self.cube_source.SetZLength(10)
         self.cube_mapper = vtk.vtkPolyDataMapper()
         self.cube_mapper.SetInputConnection(self.cube_source.GetOutputPort())
         self.cube_mapper.ScalarVisibilityOff()
