@@ -2,6 +2,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import *
 import vtk
 from vtk import *
+import math
 
 
 class LeftInteractorStyle(object):
@@ -89,7 +90,7 @@ class LeftInteractorStyle(object):
             self.cameraactor.SetPosition(camera_pos)
             self.collisionFilter.Update()
             num_contacts = self.collisionFilter.GetNumberOfContacts()
-            self.renderwindowinteractor.GetRenderWindow().Render()
+            self.refresh()
             if (
                 num_contacts > 0
                 or self.meshbound[0] >= camera_pos[0] <= self.meshbound[1]
@@ -114,6 +115,7 @@ class LeftInteractorStyle(object):
         self.leftbuttoninteraction = False
         camera = self.render.GetActiveCamera()
         camera.SetPosition(self.displayoldpos)
+        self.current_zoom_factor = 1.0
         self.camsetvieworientation(camera)
         self.refresh()
 
@@ -122,20 +124,64 @@ class LeftInteractorStyle(object):
             self.current_zoom_factor *= 1.02
             camera = self.render.GetActiveCamera()
             camera.Zoom(1.02)  # Zoom in
+            camera_pos = camera.GetPosition()
+            self.cubeactor.SetPosition(camera_pos)
+            self.collisionFilter.Update()
             self.displaytext(camera)
         self.interactor_style.OnMouseWheelForward()
 
     def mouse_wheel_backward(self, obj, event):
+        zoom_factor = 0.98
         if self.current_zoom_factor * 0.98 >= self.min_zoom_out_factor:
             camera = self.render.GetActiveCamera()
-            camera.Zoom(0.98)  # Zoom out
+            position = [
+                camera.GetPosition()[0],
+                camera.GetPosition()[1],
+                camera.GetPosition()[2],
+            ]
+            focal_point = [
+                camera.GetFocalPoint()[0],
+                camera.GetFocalPoint()[1],
+                camera.GetFocalPoint()[2],
+            ]
+            camera.Zoom(zoom_factor)  # Zoom out
+            dx = position[0] - focal_point[0]
+            dy = position[1] - focal_point[1]
+            dz = position[2] - focal_point[2]
+            current_distance = math.sqrt(dx**2 + dy**2 + dz**2)
+
+            # Calculate the new distance by applying the zoom factor
+            new_distance = (
+                current_distance / zoom_factor
+            )  # Zooming out increases distance
+            # The difference in distance moved by the camera
+            distance_moved = abs(current_distance - new_distance)
             self.current_zoom_factor *= 0.98
-            camera_pos = camera.GetPosition()
-            self.renderwindowinteractor.GetRenderWindow().Render()
+            camera_pos = [
+                camera.GetPosition()[0],
+                camera.GetPosition()[1],
+                camera.GetPosition()[2],
+            ]
+            self.cameraactor.SetPosition(
+                camera_pos[0],
+                camera_pos[1] - self.spaceseperation,
+                camera_pos[2] - self.spaceseperation,
+            )
+            self.cubeactor.SetPosition(camera_pos)
+            self.collisionFilter.Update()
+            num_contacts = self.collisionFilter.GetNumberOfContacts()
+            self.refresh()
             if (
-                self.meshbound[0] >= camera_pos[0] <= self.meshbound[1]
-                or self.meshbound[2] >= camera_pos[1] <= self.meshbound[3]
-                or self.meshbound[4] >= camera_pos[2] <= self.meshbound[5]
+                num_contacts > 0
+                or self.meshbound[0] + distance_moved
+                >= camera_pos[0]
+                <= self.meshbound[1] - distance_moved
+                or self.meshbound[2] + distance_moved
+                >= camera_pos[1]
+                <= self.meshbound[3] - distance_moved
+                or self.meshbound[4] + distance_moved
+                >= camera_pos[2]
+                <= self.meshbound[5] - distance_moved
             ):
                 camera.SetPosition(self.cubeactor.GetPosition())
                 self.camsetvieworientation(camera)
@@ -143,6 +189,8 @@ class LeftInteractorStyle(object):
                 camera_pos = camera.GetPosition()
                 self.collisionFilter.Update()
                 self.refresh()
+                self.displaytext(camera)
+                return
             self.displaytext(camera)
         self.interactor_style.OnMouseWheelBackward()
 
@@ -170,7 +218,7 @@ class LeftInteractorStyle(object):
                 "MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))
             )
         )
-    
+
     def camsetvieworientation(self, camera):
         camera.SetViewUp(
             self.defaultposition[0],

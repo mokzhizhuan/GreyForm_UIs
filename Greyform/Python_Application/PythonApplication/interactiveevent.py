@@ -1,4 +1,3 @@
-from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from vtk import *
 import PythonApplication.middlebuttoninteractor as middlebuttoninteractor
@@ -89,7 +88,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()
         self.renderwindowinteractor.GetRenderWindow().Render()
-        self._translate = QtCore.QCoreApplication.translate
+        self._translate = QCoreApplication.translate
         self.xlabelbefore = xlabelbefore
         self.ylabelbefore = ylabelbefore
         self.zlabelbefore = zlabelbefore

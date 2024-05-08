@@ -7,7 +7,6 @@ import PythonApplication.leftbuttoninteractor as leftbuttoninteraction
 import PythonApplication.interactiveevent as mainInteraction
 import PythonApplication.storedisplay as displaystoring
 
-
 # interaction with room based on the cell picker
 class rightclickRoomInteract(object):
     def __init__(
