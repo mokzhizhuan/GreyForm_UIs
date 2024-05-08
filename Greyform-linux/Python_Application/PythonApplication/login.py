@@ -65,7 +65,6 @@ class ChangePass(QDialog):
         self.form.changepassbutton.clicked.connect(self.changepassfunction)
         self.form.backbutton.clicked.connect(self.backtologin)
         self.form.password.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.form.password.returnPressed.connect(self.changepassfunction)
         self.accountinfo = accountinfo
         self.widget = widget
         self.userlabel = userlabel
@@ -75,28 +74,13 @@ class ChangePass(QDialog):
         password = self.form.password.text()
         if password != self.accountinfo[0]["Pass"]:
             self.accountinfo[0]["Pass"] = password
-            login = Login(self.accountinfo, self.widget, self.userlabel , self.file)
+            login = Login(self.accountinfo, self.widget, self.userlabel)
             self.widget.addWidget(login)
             self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
         else:
-            # Create a QMessageBox
-            msg_box = QMessageBox()
-
-            # Apply a stylesheet to the QMessageBox
-            msg_box.setStyleSheet(
-                "QLabel{color: red;} QPushButton{ width: 100px; font-size: 16px; }"
-            )
-
-            # Set the icon, title, text and buttons for the message box
-            msg_box.setIcon(QMessageBox.Warning)
-            msg_box.setWindowTitle("Error")
-            msg_box.setText(
+            print(
                 "The Password that you inputed is the same as the password , please input the different password."
             )
-            msg_box.setStandardButtons(QMessageBox.Ok)
-
-            # Show the message box
-            msg_box.exec_()
 
     def backtologin(self):
         login = Login(self.accountinfo, self.widget, self.userlabel, self.file)

@@ -37,67 +37,51 @@ class MiddleButtonPressed(object):
         )
         for i in range(len(pickedPos)):
             self.pickerround.append(round(picker.GetPickPosition()[i]))
-        if len(self.points) < 2:
+        if len(self.points) < 2:#2nd marking
             self.points.append(self.pickerround)
             print(f"Point {len(self.points)} picked at: {self.pickerround}")
-            self.createCube()
+            self.createCube()  # 1st marking recorded
             self.pickerround = []
-            if len(self.pointstorage) == 0:
-                if (
+            if (
+                len(self.points) == 2
+                and (
+                    (
+                        self.points[1][0] <= self.points[0][0] + 3
+                        and self.points[1][0] >= self.points[0][0] - 3
+                    )
+                    and (
+                        self.points[1][1] <= self.points[0][1] + 3
+                        and self.points[1][1] >= self.points[0][1] - 3
+                    )
+                )
+                or (
                     len(self.points) == 2
                     and (
-                        (
-                            self.points[1][0] <= self.points[0][0] + 3
-                            and self.points[1][0] >= self.points[0][0] - 3
-                        )
-                        and (
-                            self.points[1][1] <= self.points[0][1] + 3
-                            and self.points[1][1] >= self.points[0][1] - 3
-                        )
+                        self.points[1][0] <= self.points[0][0] + 3
+                        and self.points[1][0] >= self.points[0][0] - 3
                     )
-                    or (
-                        len(self.points) == 2
-                        and (
-                            self.points[1][0] <= self.points[0][0] + 3
-                            and self.points[1][0] >= self.points[0][0] - 3
-                        )
-                        and (
-                            self.points[1][2] <= self.points[0][2] + 3
-                            and self.points[1][2] >= self.points[0][2] - 3
-                        )
+                    and (
+                        self.points[1][2] <= self.points[0][2] + 3
+                        and self.points[1][2] >= self.points[0][2] - 3
                     )
-                ):
-                    msg_box.setIcon(QMessageBox.Information)
-                    msg_box.setWindowTitle("Success")
-                    points_text = ", ".join(
-                        str(point) for point in self.points
-                    )  # Format list of points into a string
-                    message = f"Two points picked: {points_text}"
-                    msg_box.setText(message)
-                    msg_box.setDefaultButton(QMessageBox.Ok)
+                )
+            ):
+                points_text = ", ".join(
+                    str(point) for point in self.points
+                )  # Format list of points into a string
+                print(f"Two points picked: {points_text}")
 
-                    # Show the message box
-                    msg_box.exec_()
-                    self.pointstorage.append(self.points)
-                    points_texts = ", ".join(str(point) for point in self.pointstorage)
-                    print(f"{points_texts}")
-                elif len(self.points) == 2:
-                    self.points.remove(self.points[1])
-                    self.render.RemoveActor(self.crossActor)
-                    self.append_filterpolydata.RemoveInputData(
-                        self.crossActor.GetMapper().GetInput()
-                    )
-                    # Set the icon, title, text and buttons for the message box
-                    msg_box.setIcon(QMessageBox.Warning)
-                    msg_box.setWindowTitle("Error")
-                    msg_box.setText(
-                        "Error for the 2nd marking sequence , the 2nd marking sequence must be the same x, y axis or x , z axis. Please try again."
-                    )
-                    msg_box.setStandardButtons(QMessageBox.Ok)
-
-                    # Show the message box
-                    msg_box.exec_()
-        else:
+                self.pointstorage.append(self.points)
+            elif len(self.points) == 2:
+                self.points.remove(self.points[1])
+                self.render.RemoveActor(self.crossActor)
+                self.append_filterpolydata.RemoveInputData(
+                    self.crossActor.GetMapper().GetInput()
+                )
+                print(
+                    "Error for the 2nd marking sequence , the 2nd marking sequence must be the same x, y axis or x , z axis. Please try again."
+                )
+        else:#reset array
             self.points = []
 
         self.interactor_style.OnMiddleButtonDown()

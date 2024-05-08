@@ -34,7 +34,7 @@ class pythonProgressBar(QDialog):
         zlabelbefore,
         xlabel,
         ylabel,
-        append_filterpolydata
+        append_filterpolydata,
     ):
         super().__init__()
         progress_layout = QVBoxLayout()
@@ -43,6 +43,7 @@ class pythonProgressBar(QDialog):
         self.setLayout(progress_layout)
         label = QLabel("Graphics is loading , please wait.")
         label.setGeometry(QtCore.QRect(50, 30, 170, 30))
+        self.defaultposition =[0, 0, 1]
         label.setWordWrap(True)
         label.setObjectName("label")
         self.reader = vtk.vtkPolyData()
@@ -103,8 +104,42 @@ class pythonProgressBar(QDialog):
         self.reader.SetPoints(vtk_points)
         self.reader.SetPolys(vtk_faces)
         actor = self.polyDataToActor()
+        center = [
+            (self.meshbounds[0] + self.meshbounds[1]) / 2,
+            (self.meshbounds[2] + self.meshbounds[3]) / 2,
+            (self.meshbounds[4] + self.meshbounds[5]) / 2,
+        ]
+        self.cubeactor = self.create_cube_actor()
+        self.cameraactor = self.create_cube_actor()
+        self.cubeactor.SetPosition(80, center[1], center[2])
+        self.cubeactor.SetOrientation(
+            self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
+        )
+        spaceseperation = 50
+        self.cameraactor.SetPosition(
+            80, center[1] - spaceseperation, center[2] - spaceseperation
+        )
+        self.cameraactor.SetOrientation(
+            self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
+        )
         self.ren.AddActor(actor)
-
+        self.ren.AddActor(self.cameraactor)
+        self.ren.AddActor(self.cubeactor)
+        self.oldcamerapos = self.cubeactor.GetPosition()
+        self.collisionFilter = vtk.vtkCollisionDetectionFilter()
+        # Set up the collision filter
+        self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
+        self.collisionFilter.SetInputData(1, actor.GetMapper().GetInput())
+        self.collisionFilter.SetTransform(
+            0, vtk.vtkTransform()
+        )  # Moving object transform
+        self.collisionFilter.SetTransform(
+            1, vtk.vtkTransform()
+        )  # Static object transform
+        self.collisionFilter.SetMatrix(
+            0, self.cubeactor.GetMatrix()
+        )  # Static object transform
+        self.collisionFilter.SetMatrix(1, actor.GetMatrix())  # Static object transform
         camera = events.myInteractorStyle(
             self.xlabels,
             self.ylabels,
@@ -115,15 +150,41 @@ class pythonProgressBar(QDialog):
             self.ylabelbefore,
             self.zlabelbefore,
             actor,
+            self.polydata,
             self.reader,
-            self.append_filterpolydata
+            self.append_filterpolydata,
+            self.cubeactor,
+            self.cameraactor,
+            self.oldcamerapos,
+            self.collisionFilter,
+            spaceseperation,
         )
         self.renderwindowinteractor.SetInteractorStyle(camera)
+        self.ren.GetActiveCamera().SetPosition(0, -1, 0)
+        self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
+        self.ren.GetActiveCamera().SetViewUp(0, 0, 1)
+        self.ren.ResetCameraClippingRange()
+        self.ren.ResetCamera()
         self.renderwindowinteractor.GetRenderWindow().SetSize(1600, 800)
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
         self.close()
+
+    def create_cube_actor(self):
+        self.cube_source = vtk.vtkCubeSource()
+        self.cube_source.SetXLength(10)
+        self.cube_source.SetYLength(10)
+        self.cube_source.SetZLength(10)
+        self.cube_mapper = vtk.vtkPolyDataMapper()
+        self.cube_mapper.SetInputConnection(self.cube_source.GetOutputPort())
+        self.cube_mapper.ScalarVisibilityOff()
+        self.cube_actor = vtk.vtkActor()
+        self.cube_actor.SetMapper(self.cube_mapper)
+        self.cube_actor.GetProperty().BackfaceCullingOn()
+        self.cube_actor.GetProperty().FrontfaceCullingOn()
+        self.cube_actor.GetProperty().SetOpacity(0.0)
+        return self.cube_actor
 
     def polyDataToActor(self):
         """Wrap the provided vtkPolyData object in a mapper and an actor, returning
@@ -133,7 +194,6 @@ class pythonProgressBar(QDialog):
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
         actor.GetProperty().SetRepresentationToSurface()
-        print(actor.GetBounds())
         self.meshbounds = []
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
