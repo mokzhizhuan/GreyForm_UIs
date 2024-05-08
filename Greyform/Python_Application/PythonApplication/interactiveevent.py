@@ -9,6 +9,7 @@ import PythonApplication.storedisplay as displaystoring
 # right click is to insert the actor in the room view , right click for room interact shower and toilet
 # middle click is to insert an object tht was marked
 # l key is to remove the actor in the room view and set the mesh to the original position
+# m Key is to restore moving position <br>
 class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     def __init__(
         self,
