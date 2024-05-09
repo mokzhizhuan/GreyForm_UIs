@@ -145,7 +145,6 @@ class pythonProgressBar(QDialog):
             self.collisionFilter,
             spaceseperation,
         )
-        camera.SetMotionFactor(1)
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
         self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)

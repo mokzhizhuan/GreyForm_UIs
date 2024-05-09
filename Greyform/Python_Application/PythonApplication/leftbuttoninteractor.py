@@ -84,6 +84,7 @@ class LeftInteractorStyle(object):
     def mouse_move(self, obj, event):
         clickPos = self.renderwindowinteractor.GetEventPosition()
         if self.leftbuttoninteraction is True:
+            self.interactor_style.SetMotionFactor(5)
             self.displayclickpostext(clickPos)
             camera = self.render.GetActiveCamera()
             camera_pos = camera.GetPosition()
@@ -120,6 +121,7 @@ class LeftInteractorStyle(object):
         self.refresh()
 
     def mouse_wheel_forward(self, obj, event):
+        self.interactor_style.SetMotionFactor(1)
         if self.current_zoom_factor * 1.1 <= self.max_zoom_in_factor:
             self.current_zoom_factor *= 1.1
             camera = self.render.GetActiveCamera()
@@ -132,6 +134,7 @@ class LeftInteractorStyle(object):
         self.interactor_style.OnMouseWheelForward()
 
     def mouse_wheel_backward(self, obj, event):
+        self.interactor_style.SetMotionFactor(1)
         zoom_factor = 0.99
         if self.current_zoom_factor * 0.99 >= self.min_zoom_out_factor:
             camera = self.render.GetActiveCamera()
