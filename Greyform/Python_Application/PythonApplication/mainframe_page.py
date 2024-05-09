@@ -178,7 +178,9 @@ class Ui_MainWindow(object):
 
     # browse file directory
     def browsefilesdirectory(self):
-        self.filepaths = QFileDialog.getExistingDirectory(
+        dialog = QFileDialog(self.MainWindow)
+        dialog.resize(500,400)
+        self.filepaths = dialog.getExistingDirectory(
             None, "Choose Directory", self.filepaths
         )
         model = QFileSystemModel()
@@ -187,6 +189,7 @@ class Ui_MainWindow(object):
         self.Selectivefilelistview.setModel(model)
         self.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
         self.Selectivefilelistview.setAlternatingRowColors(True)
+    
 
     # Connect close event of the main window to a cleanup function
     def closeEvent(self, event):

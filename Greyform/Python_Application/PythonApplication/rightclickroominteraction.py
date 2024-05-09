@@ -44,7 +44,6 @@ class rightclickRoomInteract(object):
         self.mesh = polydata
         self.polys = polys
         self.reader = reader
-        self.actor_speed = 20
         self.cubeactor = cubeactor
         self.defaultposition = [0, 0, 1]
         self.center = [

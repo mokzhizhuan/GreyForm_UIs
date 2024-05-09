@@ -5,7 +5,8 @@ import PythonApplication.leftbuttoninteractor as leftbuttoninteraction
 import PythonApplication.rightclickroominteraction as roominteraction
 import PythonApplication.storedisplay as displaystoring
 
-# insert interactive event for the stl mesh , left click is for moving the stl , 
+
+# insert interactive event for the stl mesh , left click is for moving the stl ,
 # right click is to insert the actor in the room view , right click for room interact shower and toilet
 # middle click is to insert an object tht was marked
 # l key is to remove the actor in the room view and set the mesh to the original position
@@ -234,7 +235,11 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.old_actor_position = actor_position
             self.setcameraactor()
         else:
-            self.setcameraactor()
+            self.old_actor_position = [
+                self.cubeactor.GetPosition()[0],
+                self.cubeactor.GetPosition()[1],
+                self.cubeactor.GetPosition()[2],
+            ]
             if key == "Up":
                 self.old_actor_position[0] -= self.actor_speed * 2
             elif key == "Down":
