@@ -207,25 +207,74 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         if key == "n":
             self.leftbuttoninteraction.release()
         if key == "Up":
+            #actor will not go beyond the inside are of the mesh
             if actor_position[0] < (
-                self.meshbound[1] - self.actor_speed
+                self.meshbound[1] - self.actor_speed*2
             ):  # prevent shape max number
                 actor_position[0] += self.actor_speed
+                self.setcollision(actor_position, key, camera)
         elif key == "Down":
             if actor_position[0] > (
-                self.meshbound[0] + self.actor_speed
+                self.meshbound[0] + self.actor_speed*2
             ):  # prevent shape min number
                 actor_position[0] -= self.actor_speed
+                self.setcollision(actor_position, key, camera)
         elif key == "Left":
             if actor_position[1] < (
-                self.meshbound[3] - self.actor_speed
+                self.meshbound[3] - self.actor_speed*2
             ):  # prevent shape max number
                 actor_position[1] += self.actor_speed
+                self.setcollision(actor_position, key, camera)
         elif key == "Right":
             if actor_position[1] > (
-                self.meshbound[2] + self.actor_speed
+                self.meshbound[2] + self.actor_speed*2
             ):  # prevent shape min number
                 actor_position[1] -= self.actor_speed
+                self.setcollision(actor_position, key, camera)
+        # camera coordinates
+        self.displaystore.storedisplay()
+        self.displaytext(camera)
+
+    def displaytext(self, camera):
+        self.xlabelbefore.setText(
+            self._translate(
+                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))
+            )
+        )
+        self.ylabelbefore.setText(
+            self._translate(
+                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))
+            )
+        )
+        self.zlabelbefore.setText(
+            self._translate(
+                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))
+            )
+        )
+
+    #set orientation
+    def camsetvieworientation(self, camera):
+        camera.SetViewUp(
+            self.defaultposition[0],
+            self.defaultposition[1],
+            self.defaultposition[2],
+        )
+
+    #refresher
+    def refresh(self):
+        self.render.ResetCameraClippingRange()
+        self.renderwindowinteractor.GetRenderWindow().Render()
+
+    #set cam for refresh
+    def setcameraactor(self):
+        self.cameraactor.SetPosition(
+            self.old_actor_position[0],
+            self.old_actor_position[1] - self.spaceseperation,
+            self.old_actor_position[2] - self.spaceseperation,
+        )
+
+    #set collision for the actor to prevent moving the mesh to the outside area
+    def setcollision(self, actor_position, key , camera):
         self.cubeactor.SetPosition(actor_position)
         self.setcameraactor()
         camera.SetPosition(actor_position)
@@ -256,41 +305,3 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             actor_position = self.old_actor_position
             self.refresh()
             self.collisionFilter.Update()
-        # camera coordinates
-        self.displaystore.storedisplay()
-        self.displaytext(camera)
-
-    def displaytext(self, camera):
-        self.xlabelbefore.setText(
-            self._translate(
-                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))
-            )
-        )
-        self.ylabelbefore.setText(
-            self._translate(
-                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))
-            )
-        )
-        self.zlabelbefore.setText(
-            self._translate(
-                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))
-            )
-        )
-
-    def camsetvieworientation(self, camera):
-        camera.SetViewUp(
-            self.defaultposition[0],
-            self.defaultposition[1],
-            self.defaultposition[2],
-        )
-
-    def refresh(self):
-        self.render.ResetCameraClippingRange()
-        self.renderwindowinteractor.GetRenderWindow().Render()
-
-    def setcameraactor(self):
-        self.cameraactor.SetPosition(
-            self.old_actor_position[0],
-            self.old_actor_position[1] - self.spaceseperation,
-            self.old_actor_position[2] - self.spaceseperation,
-        )
