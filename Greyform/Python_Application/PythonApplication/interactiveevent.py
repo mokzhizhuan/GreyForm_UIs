@@ -5,7 +5,6 @@ import PythonApplication.leftbuttoninteractor as leftbuttoninteraction
 import PythonApplication.rightclickroominteraction as roominteraction
 import PythonApplication.storedisplay as displaystoring
 
-
 # insert interactive event for the stl mesh , left click is for moving the stl ,
 # right click is to insert the actor in the room view , right click for room interact shower and toilet
 # middle click is to insert an object tht was marked
@@ -30,7 +29,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         oldcamerapos,
         collisionFilter,
         spaceseperation,
-        parent=None,
     ):
         # starting initialize
         self.append_filterpolydata = append_filterpolydata
@@ -84,15 +82,13 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.old_actor_position = [80, self.center[1], self.center[2]]
         self.default_pos = [80, self.center[1], self.center[2]]
         self.collisionFilter = collisionFilter
-        self.collisionFilter.Update()
         self.old_actor_position = oldcamerapos
-        self.collisionFilter.SetCollisionModeToAllContacts()
-        self.collisionFilter.GenerateScalarsOn()
-        self.renderwindowinteractor.GetRenderWindow().Render()
+        self.refresh()
         self._translate = QCoreApplication.translate
         self.xlabelbefore = xlabelbefore
         self.ylabelbefore = ylabelbefore
         self.zlabelbefore = zlabelbefore
+        self.collisionFilter.Update()
         self.rightclickinteract = roominteraction.rightclickRoomInteract(
             self,
             xlabel,
@@ -150,7 +146,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.cubeactor.SetPosition(self.old_actor_position)
         self.camsetvieworientation(camera)
         self.render.SetActiveCamera(camera)  # insert and replace a new camera
-        # camera coordinates
         self.displaytext(camera)
         """self.markingevent = self.AddObserver(
             "MiddleButtonPressEvent", self.middlebuttonobserver.MiddleButtonPressEvent
@@ -231,10 +226,10 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             ):  # prevent shape min number
                 actor_position[1] -= self.actor_speed
                 self.setcollision(actor_position, key, camera)
-        # camera coordinates
         self.displaystore.storedisplay()
         self.displaytext(camera)
 
+    # displaycamtext
     def displaytext(self, camera):
         self.xlabelbefore.setText(
             self._translate(
@@ -252,7 +247,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             )
         )
 
-    # set
+    # set camera orientation
     def camsetvieworientation(self, camera):
         camera.SetViewUp(
             self.defaultposition[0],
@@ -284,7 +279,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         if num_contacts == 0:
             self.refresh()
             self.old_actor_position = actor_position
-            self.setcameraactor()
         else:
             self.old_actor_position = [
                 self.cubeactor.GetPosition()[0],

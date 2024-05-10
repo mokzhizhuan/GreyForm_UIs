@@ -43,7 +43,7 @@ class pythonProgressBar(QDialog):
         self.setLayout(progress_layout)
         label = QLabel("Graphics is loading , please wait.")
         label.setGeometry(QtCore.QRect(50, 30, 170, 30))
-        self.defaultposition =[0, 0, 1]
+        self.defaultposition = [0, 0, 1]
         label.setWordWrap(True)
         label.setObjectName("label")
         self.reader = vtk.vtkPolyData()
@@ -140,6 +140,8 @@ class pythonProgressBar(QDialog):
             0, self.cubeactor.GetMatrix()
         )  # Static object transform
         self.collisionFilter.SetMatrix(1, actor.GetMatrix())  # Static object transform
+        self.collisionFilter.SetCollisionModeToAllContacts()
+        self.collisionFilter.GenerateScalarsOn()
         camera = events.myInteractorStyle(
             self.xlabels,
             self.ylabels,

@@ -126,6 +126,8 @@ class pythonProgressBar(QDialog):
             0, self.cubeactor.GetMatrix()
         )  # Static object transform
         self.collisionFilter.SetMatrix(1, actor.GetMatrix())  # Static object transform
+        self.collisionFilter.SetCollisionModeToAllContacts()
+        self.collisionFilter.GenerateScalarsOn()
         camera = events.myInteractorStyle(
             self.xlabels,
             self.ylabels,
