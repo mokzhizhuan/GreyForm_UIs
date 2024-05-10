@@ -128,9 +128,33 @@ class LeftInteractorStyle(object):
         if self.current_zoom_factor * zoom_factor <= self.max_zoom_in_factor:
             self.current_zoom_factor *= zoom_factor
             camera = self.render.GetActiveCamera()
+            position = [
+                camera.GetPosition()[0],
+                camera.GetPosition()[1],
+                camera.GetPosition()[2],
+            ]
+            focal_point = [
+                camera.GetFocalPoint()[0],
+                camera.GetFocalPoint()[1],
+                camera.GetFocalPoint()[2],
+            ]
+            camera.Zoom(zoom_factor)  # Zoom out
+            dx = position[0] - focal_point[0]
+            dy = position[1] - focal_point[1]
+            dz = position[2] - focal_point[2]
+            current_distance = math.sqrt(dx**2 + dy**2 + dz**2)
+            # Calculate the new distance by applying the zoom factor
+            new_distance = (
+                current_distance / zoom_factor
+            )  # Zooming out increases distance
+            # The difference in distance moved by the camera
+            distance_moved = abs(current_distance - new_distance)
             camera.Zoom(zoom_factor)  # Zoom in
             self.setcamposition(camera)
             self.collisionFilter.Update()
+            num_contacts = self.collisionFilter.GetNumberOfContacts()
+            self.refresh()
+            self.setcollisiondetection(num_contacts, distance_moved , camera)
             self.displaytext(camera)
             self.refresh()
         self.interactor_style.OnMouseWheelForward()
@@ -162,36 +186,11 @@ class LeftInteractorStyle(object):
             # The difference in distance moved by the camera
             distance_moved = abs(current_distance - new_distance)
             self.current_zoom_factor *= zoom_factor
-            camera_pos = [
-                camera.GetPosition()[0],
-                camera.GetPosition()[1],
-                camera.GetPosition()[2],
-            ]
             self.setcamposition(camera)
             self.collisionFilter.Update()
             num_contacts = self.collisionFilter.GetNumberOfContacts()
             self.refresh()
-            if (
-                num_contacts > 0
-                or self.meshbound[0] + distance_moved
-                >= camera_pos[0]
-                <= self.meshbound[1] - distance_moved
-                or self.meshbound[2] + distance_moved
-                >= camera_pos[1]
-                <= self.meshbound[3] - distance_moved
-                or self.meshbound[4] + distance_moved
-                >= camera_pos[2]
-                <= self.meshbound[5] - distance_moved
-            ):
-                camera.SetPosition(self.cubeactor.GetPosition())
-                self.setcamposition(camera)
-                self.camsetvieworientation(camera)
-                self.current_zoom_factor = 1.0
-                camera_pos = camera.GetPosition()
-                self.collisionFilter.Update()
-                self.refresh()
-                self.displaytext(camera)
-                return
+            self.setcollisiondetection(num_contacts, distance_moved , camera)
             self.displaytext(camera)
             self.refresh()
         self.interactor_style.OnMouseWheelBackward()
@@ -238,3 +237,31 @@ class LeftInteractorStyle(object):
             camera.GetPosition()[1] - self.spaceseperation,
             camera.GetPosition()[2] - self.spaceseperation,
         )
+
+    def setcollisiondetection(self, num_contacts , distance_moved, camera):
+        camera_pos = [
+                camera.GetPosition()[0],
+                camera.GetPosition()[1],
+                camera.GetPosition()[2],
+            ]
+        if (
+                num_contacts > 0
+                or self.meshbound[0] + distance_moved
+                <= camera_pos[0]
+                >= self.meshbound[1] - distance_moved
+                or self.meshbound[2] + distance_moved
+                <= camera_pos[1]
+                >= self.meshbound[3] - distance_moved
+                or self.meshbound[4] + distance_moved
+                <= camera_pos[2]
+                >= self.meshbound[5] - distance_moved
+            ):
+                camera.SetPosition(self.cubeactor.GetPosition())
+                self.setcamposition(camera)
+                self.camsetvieworientation(camera)
+                self.current_zoom_factor = 1.0
+                camera_pos = camera.GetPosition()
+                self.collisionFilter.Update()
+                self.refresh()
+                self.displaytext(camera)
+                return
