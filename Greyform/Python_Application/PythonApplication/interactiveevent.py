@@ -29,6 +29,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         oldcamerapos,
         collisionFilter,
         spaceseperation,
+        center,
     ):
         # starting initialize
         self.append_filterpolydata = append_filterpolydata
@@ -55,11 +56,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.actor_speed = 20
         self.cubeactor = cubeactor
         self.defaultposition = [0, 0, 1]
-        self.center = [
-            (self.meshbound[0] + self.meshbound[1]) / 2,
-            (self.meshbound[2] + self.meshbound[3]) / 2,
-            (self.meshbound[4] + self.meshbound[5]) / 2,
-        ]
+        self.center = center
         self.oldcamerapos = oldcamerapos
         self.leftbuttoninteraction = leftbuttoninteraction.LeftInteractorStyle(
             self,
@@ -78,6 +75,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             cameraactor,
             self.oldcamerapos,
             spaceseperation,
+            center,
         )
         self.old_actor_position = [80, self.center[1], self.center[2]]
         self.default_pos = [80, self.center[1], self.center[2]]
@@ -88,7 +86,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.xlabelbefore = xlabelbefore
         self.ylabelbefore = ylabelbefore
         self.zlabelbefore = zlabelbefore
-        self.collisionFilter.Update()
         self.rightclickinteract = roominteraction.rightclickRoomInteract(
             self,
             xlabel,
@@ -109,6 +106,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.collisionFilter,
             spaceseperation,
             self.default_pos,
+            center,
         )
         self.displaystore = displaystoring.storage(
             xlabel,
@@ -129,6 +127,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.collisionFilter,
             spaceseperation,
             self.default_pos,
+            center,
         )
         self.displaytext(camera)
 
@@ -298,4 +297,3 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             camera.SetPosition(self.old_actor_position)
             actor_position = self.old_actor_position
             self.refresh()
-            self.collisionFilter.Update()

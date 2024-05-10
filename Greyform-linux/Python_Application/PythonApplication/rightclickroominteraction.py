@@ -31,6 +31,7 @@ class rightclickRoomInteract(object):
         collisionFilter,
         spaceseperation,
         default_pos,
+        center,
     ):
         # starting initialize
         self.interactor_style = interactor_style
@@ -48,6 +49,7 @@ class rightclickRoomInteract(object):
         self.polys = polys
         self.reader = reader
         self.cubeactor = cubeactor
+        self.center = center
         self.defaultposition = [0, 0, 1]
         self.center = [
             (self.meshbound[0] + self.meshbound[1]) / 2,
@@ -80,6 +82,7 @@ class rightclickRoomInteract(object):
             self.collisionFilter,
             spaceseperation,
             self.default_pos,
+            center
         )
         self.displaytext(camera)
 

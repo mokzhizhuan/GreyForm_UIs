@@ -29,6 +29,7 @@ class storage(object):
         collisionFilter,
         spaceseperation,
         default_pos,
+        center,
     ):
         # starting initialize
         self.movement = None
@@ -55,6 +56,7 @@ class storage(object):
         self.ylabelbefore = ylabelbefore
         self.zlabelbefore = zlabelbefore
         self.collisionFilter = collisionFilter
+        self.center = center
 
     def storedisplay(self):
         self.oldcamerapos = [
@@ -80,4 +82,5 @@ class storage(object):
             self.oldcamerapos,
             self.collisionFilter,
             self.spaceseperation,
+            self.center
         )

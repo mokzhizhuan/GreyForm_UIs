@@ -24,6 +24,7 @@ class LeftInteractorStyle(object):
         cameraactor,
         camdisplay,
         spaceseperation,
+        center,
     ):
         self.interactor_style = interactor_style
         self.cameraactor = cameraactor
@@ -38,11 +39,7 @@ class LeftInteractorStyle(object):
         self.reader = reader
         self.cubeactor = cubeactor
         self.defaultposition = [0, 0, 1]
-        self.center = [
-            (self.meshbound[0] + self.meshbound[1]) / 2,
-            (self.meshbound[2] + self.meshbound[3]) / 2,
-            (self.meshbound[4] + self.meshbound[5]) / 2,
-        ]
+        self.center = center
         self.collisionFilter = vtk.vtkCollisionDetectionFilter()
         self.collisionFilter.SetInputData(0, self.cameraactor.GetMapper().GetInput())
         self.collisionFilter.SetInputData(1, self.mesh.GetMapper().GetInput())
@@ -63,7 +60,7 @@ class LeftInteractorStyle(object):
         self.collisionFilter.GenerateScalarsOn()
         self.leftbuttoninteraction = False
         self.renderwindowinteractor.GetRenderWindow().Render()
-        self._translate = QtCore.QCoreApplication.translate
+        self._translate = QCoreApplication.translate
         self.xlabelbefore = xlabelbefore
         self.ylabelbefore = ylabelbefore
         self.zlabelbefore = zlabelbefore
@@ -154,7 +151,7 @@ class LeftInteractorStyle(object):
             self.collisionFilter.Update()
             num_contacts = self.collisionFilter.GetNumberOfContacts()
             self.refresh()
-            self.setcollisiondetection(num_contacts, distance_moved , camera)
+            self.setcollisiondetection(num_contacts, distance_moved, camera)
             self.displaytext(camera)
             self.refresh()
         self.interactor_style.OnMouseWheelForward()
@@ -190,7 +187,7 @@ class LeftInteractorStyle(object):
             self.collisionFilter.Update()
             num_contacts = self.collisionFilter.GetNumberOfContacts()
             self.refresh()
-            self.setcollisiondetection(num_contacts, distance_moved , camera)
+            self.setcollisiondetection(num_contacts, distance_moved, camera)
             self.displaytext(camera)
             self.refresh()
         self.interactor_style.OnMouseWheelBackward()
@@ -238,30 +235,30 @@ class LeftInteractorStyle(object):
             camera.GetPosition()[2] - self.spaceseperation,
         )
 
-    def setcollisiondetection(self, num_contacts , distance_moved, camera):
+    def setcollisiondetection(self, num_contacts, distance_moved, camera):
         camera_pos = [
-                camera.GetPosition()[0],
-                camera.GetPosition()[1],
-                camera.GetPosition()[2],
-            ]
+            camera.GetPosition()[0],
+            camera.GetPosition()[1],
+            camera.GetPosition()[2],
+        ]
         if (
-                num_contacts > 0
-                or self.meshbound[0] + distance_moved
-                <= camera_pos[0]
-                >= self.meshbound[1] - distance_moved
-                or self.meshbound[2] + distance_moved
-                <= camera_pos[1]
-                >= self.meshbound[3] - distance_moved
-                or self.meshbound[4] + distance_moved
-                <= camera_pos[2]
-                >= self.meshbound[5] - distance_moved
-            ):
-                camera.SetPosition(self.cubeactor.GetPosition())
-                self.setcamposition(camera)
-                self.camsetvieworientation(camera)
-                self.current_zoom_factor = 1.0
-                camera_pos = camera.GetPosition()
-                self.collisionFilter.Update()
-                self.refresh()
-                self.displaytext(camera)
-                return
+            num_contacts > 0
+            or self.meshbound[0] + distance_moved
+            <= camera_pos[0]
+            >= self.meshbound[1] - distance_moved
+            or self.meshbound[2] + distance_moved
+            <= camera_pos[1]
+            >= self.meshbound[3] - distance_moved
+            or self.meshbound[4] + distance_moved
+            <= camera_pos[2]
+            >= self.meshbound[5] - distance_moved
+        ):
+            camera.SetPosition(self.cubeactor.GetPosition())
+            self.setcamposition(camera)
+            self.camsetvieworientation(camera)
+            self.current_zoom_factor = 1.0
+            camera_pos = camera.GetPosition()
+            self.collisionFilter.Update()
+            self.refresh()
+            self.displaytext(camera)
+            return
