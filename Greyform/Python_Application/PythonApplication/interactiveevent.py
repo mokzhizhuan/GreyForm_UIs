@@ -94,6 +94,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.ylabelbefore = ylabelbefore
         self.zlabelbefore = zlabelbefore
         self.rightclickinteract = roominteraction.rightclickRoomInteract(
+            self,
             xlabel,
             ylabel,
             ren,
@@ -179,6 +180,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
 
     # movement controls
     def KeyPressed(self, obj, event):
+        self.SetMotionFactor(8)
         key = self.GetInteractor().GetKeySym()
         actor_position = []
         camera = self.render.GetActiveCamera()

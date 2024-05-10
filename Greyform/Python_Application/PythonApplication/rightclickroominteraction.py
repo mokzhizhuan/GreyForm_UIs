@@ -7,10 +7,12 @@ import PythonApplication.leftbuttoninteractor as leftbuttoninteraction
 import PythonApplication.interactiveevent as mainInteraction
 import PythonApplication.storedisplay as displaystoring
 
+
 # interaction with room based on the cell picker
 class rightclickRoomInteract(object):
     def __init__(
         self,
+        interactor_style,
         xlabel,
         ylabel,
         ren,
@@ -31,6 +33,7 @@ class rightclickRoomInteract(object):
         default_pos,
     ):
         # starting initialize
+        self.interactor_style = interactor_style
         self.default_pos = default_pos
         self.spaceseperation = spaceseperation
         self.append_filterpolydata = append_filterpolydata
@@ -81,6 +84,7 @@ class rightclickRoomInteract(object):
         self.displaytext(camera)
 
     def click_event(self, obj, event):
+        self.interactor_style.SetMotionFactor(8)
         click_pos = self.renderwindowinteractor.GetEventPosition()
         picker = vtk.vtkCellPicker()
         self.renderwindowinteractor.GetRenderWindow().GetInteractor().SetPicker(picker)
@@ -126,5 +130,3 @@ class rightclickRoomInteract(object):
                 "MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))
             )
         )
-
-    
