@@ -160,7 +160,7 @@ class pythonProgressBar(QDialog):
             self.oldcamerapos,
             self.collisionFilter,
             spaceseperation,
-            center
+            center,
         )
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
@@ -168,7 +168,7 @@ class pythonProgressBar(QDialog):
         self.ren.GetActiveCamera().SetViewUp(0, 0, 1)
         self.ren.ResetCameraClippingRange()
         self.ren.ResetCamera()
-        self.renderwindowinteractor.GetRenderWindow().SetSize(1600, 800)
+        self.renderwindowinteractor.GetRenderWindow().SetSize(1600, 720)
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()

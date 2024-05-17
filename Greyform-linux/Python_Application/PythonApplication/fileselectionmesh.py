@@ -41,26 +41,13 @@ class FileSelectionMesh(QMainWindow):
 
     # load meshdata from file
     def meshdata(self):
-        # load glviewer in ifc
-        if "ifc" in self.file_path:
-            self.viewer = gl.GLViewWidget()
-            self.viewer_page2 = gl.GLViewWidget()
-            self.clearLayout()
-            self.horizontalLayout.addWidget(self.viewer, 1)
-            self.horizontalLayout_page2.addWidget(self.viewer_page2, 1)
-            # clear all item
-            self.viewer.clear()
-            self.viewer_page2.clear()
-            FileSelectionMesh.loadmeshinGLView(self, self.file_path)
-        else:  # load mesh in pyvista from STL
-            # clear mesh
-            self.clearLayout()
-            self.horizontalLayout.addWidget(self.plotterloader.interactor)
-            self.horizontalLayout_page2.addWidget(self.plotterloader_2.interactor)
-            progressbarprogram = Progress.pythonProgressBar(
-                100000, self.plotterloader, self.plotterloader_2, self.file_path
-            )
-            progressbarprogram.exec_()
+        # clear mesh
+        self.horizontalLayout.addWidget(self.plotterloader.interactor)
+        self.horizontalLayout_page2.addWidget(self.plotterloader_2.interactor)
+        progressbarprogram = Progress.pythonProgressBar(
+            60000, self.plotterloader, self.plotterloader_2, self.file_path
+        )
+        progressbarprogram.exec_()
 
     # clear layout
     def clearLayout(self):

@@ -36,6 +36,7 @@ class pythonProgressBar(QDialog):
         self.loader = plotterloader
         self.loader_2 = plotterloader_2
         self.filepath = file_path
+        self.meshsplot = None
         self.start_progress()
 
         self.timer = QTimer(self)
@@ -46,6 +47,9 @@ class pythonProgressBar(QDialog):
 
     def start_progress(self):
         # Start the progress after a delay
+        if self.meshsplot:
+            self.loader.remove_actor(self.meshsplot)
+            self.loader_2.remove_actor(self.meshsplot)
         QTimer.singleShot(self.value, self.add_mesh_later)
 
     def update_progress(self):
@@ -93,9 +97,9 @@ class pythonProgressBar(QDialog):
             vtk_offsets = offset[0]
 
         # Create PyVista mesh
-        meshsplot = pv.PolyData(meshs.points, vtk_cells)
+        self.meshsplot = pv.PolyData(meshs.points, vtk_cells)
         self.loader.add_mesh(
-            meshsplot,
+            self.meshsplot,
             color=(230, 230, 250),
             show_edges=True,
             edge_color=(128, 128, 128),
@@ -105,7 +109,7 @@ class pythonProgressBar(QDialog):
             opacity="linear",
         )
         self.loader_2.add_mesh(
-            meshsplot,
+            self.meshsplot,
             color=(230, 230, 250),
             show_edges=True,
             edge_color=(128, 128, 128),
