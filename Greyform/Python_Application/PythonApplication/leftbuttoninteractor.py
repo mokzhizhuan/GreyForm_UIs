@@ -56,7 +56,7 @@ class LeftInteractorStyle(object):
             1, self.mesh.GetMatrix()
         )  # Static object transform
         # Set up the collision filter
-        self.collisionFilter.SetCollisionModeToHalfContacts()
+        self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()
         self.leftbuttoninteraction = False
         self.renderwindowinteractor.GetRenderWindow().Render()

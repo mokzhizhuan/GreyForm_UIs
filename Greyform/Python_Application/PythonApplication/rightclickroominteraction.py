@@ -58,7 +58,7 @@ class rightclickRoomInteract(object):
         ]
         self.oldcamerapos = oldcamerapos
         self.renderwindowinteractor.GetRenderWindow().Render()
-        self._translate = QtCore.QCoreApplication.translate
+        self._translate = QCoreApplication.translate
         self.xlabelbefore = xlabelbefore
         self.ylabelbefore = ylabelbefore
         self.zlabelbefore = zlabelbefore

@@ -42,5 +42,3 @@ class FileSelectionMesh(QMainWindow):
             60000, self.plotterloader, self.plotterloader_2, self.file_path
         )
         progressbarprogram.exec_()
-
-
