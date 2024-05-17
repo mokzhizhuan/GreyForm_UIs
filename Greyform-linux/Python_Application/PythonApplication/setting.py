@@ -10,55 +10,14 @@ import PythonApplication.reset as closewindow
 import socket
 from PyQt5.QtNetwork import QTcpServer, QHostAddress
 import PythonApplication.login as Login
+import PythonApplication.interfacesignal as interface_signals
 import datetime
 import psutil
 import os
 import pytz
 from tzlocal import get_localzone
-import subprocess
-import re
 
-def get_interface_names():
-    try:
-        result = subprocess.run(['sudo', 'lshw', '-C', 'network'], capture_output=True, text=True, check=True)
-        interface_names = []
 
-        current_interface = None
-        is_wireless = False
-
-        for line in result.stdout.split('\n'):
-            if line.strip().startswith('*-network'):
-                if current_interface and is_wireless:
-                    interface_names.append(current_interface)
-                current_interface = None
-                is_wireless = False
-            elif 'logical name:' in line:
-                match = re.search(r'logical name: (\S+)', line)
-                if match:
-                    current_interface = match.group(1)
-            elif 'Wireless interface' in line:
-                is_wireless = True
-        
-        if current_interface and is_wireless:
-            interface_names.append(current_interface)
-
-        return interface_names
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with error: {e}")
-        return []
-
-def get_signal_strength(interface):
-    try:
-        result = subprocess.run(['iwconfig', interface], capture_output=True, text=True, check=True)
-        for line in result.stdout.split('\n'):
-            if 'Signal level' in line:
-                match = re.search(r'Signal level=(-?\d+)', line)
-                if match:
-                    return match.group(1)
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with error: {e}")
-
-    return None
 
 class Setting(QWidget):
     # setting loader
@@ -81,15 +40,14 @@ class Setting(QWidget):
     def setupUi(self):
         # home
         self.settingform.themebox.currentIndexChanged.connect(self.colorchange)
-        result = subprocess.run(['sudo', 'lshw', '-C', 'network'], capture_output=True, text=True, check=True)
         # wifi
         self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
-        self.interfaces = get_interface_names()
+        self.interfaces = interface_signals.get_wireless_interfaces()
         interface_info = f"Interface: None"
         self.settingform.interface_label.setText(interface_info)
         self.settingform.treeWidget.hide()
         for interface in self.interfaces:
-            signal_strength = get_signal_strength(interface)
+            signal_strength = interface_signals.get_signal_strength(interface)
             if signal_strength:
                 ssid = self.interfaces
                 item = QTreeWidgetItem([ssid, str(signal_strength)])
