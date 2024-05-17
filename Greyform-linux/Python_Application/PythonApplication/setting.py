@@ -87,13 +87,14 @@ class Setting(QWidget):
         self.interfaces = get_interface_names()
         interface_info = f"Interface: None"
         self.settingform.interface_label.setText(interface_info)
+        self.settingform.treeWidget.hide()
         for interface in self.interfaces:
             signal_strength = get_signal_strength(interface)
             if signal_strength:
                 ssid = self.interfaces
                 item = QTreeWidgetItem([ssid, str(signal_strength)])
+                self.settingform.treeWidget.show()
                 self.settingform.treeWidget.addTopLevelItem(item)
-
                 interface_info = f"Interface: {self.interfaces[0]}"
                 self.settingform.interface_label.setText(interface_info)
         
