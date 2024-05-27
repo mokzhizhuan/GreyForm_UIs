@@ -156,7 +156,6 @@ class pythonProgressBar(QDialog):
         self.ren.ResetCamera()
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.GetRenderWindow().Finalize()
-        self.renderwindowinteractor.GetRenderWindow().SetSize(1600, 800)
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()

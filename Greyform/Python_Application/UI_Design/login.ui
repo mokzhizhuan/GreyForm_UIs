@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>480</width>
-    <height>620</height>
+    <width>340</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,11 +19,18 @@
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>190</x>
-     <y>50</y>
+     <x>90</x>
+     <y>30</y>
      <width>121</width>
      <height>71</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>28</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
    </property>
    <property name="styleSheet">
     <string notr="true">color:rgb(225, 225, 225); font-size:28pt;</string>
@@ -32,85 +39,85 @@
     <string>Login</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="password">
+  <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>170</x>
-     <y>260</y>
-     <width>241</width>
+     <x>20</x>
+     <y>140</y>
+     <width>281</width>
      <height>51</height>
     </rect>
    </property>
-   <property name="styleSheet">
-    <string notr="true">font-size:14pt; color:rgb(243, 243, 243)</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1">
+    <item>
+     <widget class="QLabel" name="label_5">
+      <property name="styleSheet">
+       <string notr="true">font-size:15pt; color:rgb(255, 0, 127)</string>
+      </property>
+      <property name="text">
+       <string>Password</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="password">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">font-size:14pt; color:rgb(243, 243, 243)</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
-  <widget class="QLabel" name="label_3">
+  <widget class="QWidget" name="horizontalLayoutWidget_2">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>270</y>
-     <width>111</width>
-     <height>31</height>
+     <x>0</x>
+     <y>220</y>
+     <width>337</width>
+     <height>51</height>
     </rect>
    </property>
-   <property name="styleSheet">
-    <string notr="true">font-size:15pt; color:rgb(255, 0, 127)</string>
-   </property>
-   <property name="text">
-    <string>Password</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="loginbutton">
-   <property name="geometry">
-    <rect>
-     <x>270</x>
-     <y>390</y>
-     <width>141</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-color: rgb(167, 168, 167); font-size:14pt; color:rgb(255, 255, 255)</string>
-   </property>
-   <property name="text">
-    <string>Login</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>350</y>
-     <width>171</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">color:rgb(255, 255, 255)</string>
-   </property>
-   <property name="text">
-    <string>Forgot Password?</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="changepassbutton">
-   <property name="geometry">
-    <rect>
-     <x>320</x>
-     <y>340</y>
-     <width>93</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">color:rgb(255, 255, 255)</string>
-   </property>
-   <property name="text">
-    <string>Change Password</string>
-   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QPushButton" name="loginbutton">
+      <property name="font">
+       <font>
+        <pointsize>14</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(167, 168, 167); font-size:14pt; color:rgb(255, 255, 255)</string>
+      </property>
+      <property name="text">
+       <string>Login</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="changepassbutton">
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color:rgb(255, 255, 255)</string>
+      </property>
+      <property name="text">
+       <string>Change Password</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

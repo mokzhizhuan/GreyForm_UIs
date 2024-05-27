@@ -18,6 +18,8 @@ class restoredefaultsetting(object):
         PasslineEdit,
         stackedwidgetpage,
         MainWindow,
+        windowwidth,
+        windowheight,
     ):
         self.stackedWidget = stackedwidgetpage
         self.MainWindow = MainWindow
@@ -28,6 +30,8 @@ class restoredefaultsetting(object):
         self.country = country
         self.default_settings = default_settings
         self.PasslineEdit = PasslineEdit
+        self.windowwidth = windowwidth
+        self.windowheight = windowheight
         self.restore_defaults()
 
     def restore_defaults(self):
@@ -64,7 +68,9 @@ class restoredefaultsetting(object):
         self.PasslineEdit.setText(self.default_settings["password"])
 
         # Apply the changes
-        self.settingchange = setting.Setting(self.stackedWidget, self.MainWindow)
+        self.settingchange = setting.Setting(
+            self.stackedWidget, self.MainWindow, self.windowwidth, self.windowheight
+        )
         self.settingchange.colorchange(theme_index)
         self.settingchange.update_font(font_index)
         self.settingchange.change_resolution(resolution_index)

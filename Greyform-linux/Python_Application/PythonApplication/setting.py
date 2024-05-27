@@ -4,13 +4,16 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.restoredefault as default
-#from pywifi import PyWiFi, const
+
+# from pywifi import PyWiFi, const
 import PythonApplication.serveraddress as server
 import PythonApplication.reset as closewindow
 import socket
 from PyQt5.QtNetwork import QTcpServer, QHostAddress
 import PythonApplication.login as Login
 import PythonApplication.interfacesignal as interface_signals
+import PythonApplication.settinglayout as settinglayoutUi
+import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import datetime
 import psutil
 import os
@@ -18,19 +21,26 @@ import pytz
 from tzlocal import get_localzone
 
 
-
 class Setting(QWidget):
     # setting loader
-    def __init__(self, stackedwidgetpage, MainWindow):
+    def __init__(
+        self,
+        stackedwidgetpage,
+        MainWindow,
+        windowwidth,
+        windowheight,
+    ):
         super(Setting, self).__init__()
         self.stackedWidget = stackedwidgetpage
+        self.windowwidth = windowwidth
+        self.windowheight = windowheight
         self.settingform = uic.loadUi("UI_Design/setting.ui", self)
         self.MainWindow = MainWindow
         self.accountinfo = [{"UserID": "admin", "Pass": "pass"}]
         self.default_settings = {
             "theme": "Gray",
             "font_size": "15",
-            "resolution": "1920 x 1080",
+            "resolution": f"{windowwidth} x {windowheight}",
             "timezone": str(get_localzone()),
             "password": "pass",
         }
@@ -55,7 +65,7 @@ class Setting(QWidget):
                 self.settingform.treeWidget.addTopLevelItem(item)
                 interface_info = f"Interface: {self.interfaces[0]}"
                 self.settingform.interface_label.setText(interface_info)
-        
+
         # setting host services and resolution
         self.font_size = self.settingform.Text_size.currentText()
         self.font = QFont()
@@ -65,6 +75,12 @@ class Setting(QWidget):
         self.settingform.resolutioncomboBox.currentIndexChanged.connect(
             self.change_resolution
         )
+
+        resolution_index = self.settingform.resolutioncomboBox.findText(
+            self.default_settings["resolution"], Qt.MatchFixedString
+        )
+        if resolution_index >= 0:
+            self.settingform.resolutioncomboBox.setCurrentIndex(resolution_index)
         all_timezones = pytz.all_timezones
         for timezone in all_timezones:
             self.settingform.country.addItem(timezone)
@@ -83,7 +99,11 @@ class Setting(QWidget):
         self.file = []
         self.loginwidget = QStackedWidget(self.settingform.UserPage)
         loginwindow = Login.Login(
-            self.accountinfo, self.loginwidget, self.userlabel, self.file
+            self.accountinfo,
+            self.loginwidget,
+            self.userlabel,
+            self.file,
+            self.settingform.UserPage,
         )
         self.loginwidget.addWidget(loginwindow)
         self.loginwidget.setGeometry(10, 70, 700, 800)
@@ -95,6 +115,7 @@ class Setting(QWidget):
         self.restartwidget.addWidget(self.restartwidgetwindow)
         self.restartwidget.setGeometry(150, 460, 300, 200)
         self.button_UI()
+        self.setStretch()
         self.retranslateUi()
 
         self.settingform.restoreDefaultsButton.clicked.connect(
@@ -108,74 +129,26 @@ class Setting(QWidget):
                 self.settingform.PasslineEdit,
                 self.stackedWidget,
                 self.MainWindow,
+                self.windowwidth,
+                self.windowheight,
             )
         )
 
     # button interaction page
     def button_UI(self):
-        self.settingform.MarkingbackButton.clicked.connect(
-            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(0)
+        settingbuttonUIinteraction.settingbuttonUI(
+            self.settingform.MarkingbackButton,
+            self.settingform.stackedWidgetsetting,
+            self.stackedWidget,
+            self.settingform.HomeButton,
+            self.settingform.WifiButton,
+            self.settingform.serviceIPAddressButton,
+            self.settingform.ServicesButton,
+            self.settingform.UserButton,
+            self.settingform.AboutButton,
+            self.settingform.PowerButton,
+            self.settingform.maintitlelabel,
         )
-        self.settingform.MarkingbackButton.clicked.connect(self.homepages)
-        self.settingform.MarkingbackButton.clicked.connect(
-            lambda: self.stackedWidget.setCurrentIndex(4)
-        )
-        self.settingform.HomeButton.clicked.connect(self.homepages)
-        self.settingform.HomeButton.clicked.connect(
-            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(0)
-        )
-        self.settingform.WifiButton.clicked.connect(
-            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(1)
-        )
-        self.settingform.WifiButton.clicked.connect(self.wifipages)
-        self.settingform.serviceIPAddressButton.clicked.connect(
-            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(2)
-        )
-        self.settingform.serviceIPAddressButton.clicked.connect(
-            self.serviceIPAddresspages
-        )
-        self.settingform.ServicesButton.clicked.connect(
-            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(3)
-        )
-        self.settingform.ServicesButton.clicked.connect(self.Servicespages)
-        self.settingform.UserButton.clicked.connect(
-            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(4)
-        )
-        self.settingform.UserButton.clicked.connect(self.Userpages)
-        self.settingform.AboutButton.clicked.connect(
-            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(5)
-        )
-        self.settingform.AboutButton.clicked.connect(self.Aboutpages)
-        self.settingform.PowerButton.clicked.connect(
-            lambda: self.settingform.stackedWidgetsetting.setCurrentIndex(6)
-        )
-        self.settingform.PowerButton.clicked.connect(self.Powerpages)
-
-    # ui button setting
-    def homepages(self):
-        self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
-
-    def wifipages(self):
-        self.settingform.maintitlelabel.setText("<h3>Wifi Setting</h3>")
-
-    def serviceIPAddresspages(self):
-        self.settingform.maintitlelabel.setText("<h3>Host Services</h3>")
-
-    def Servicespages(self):
-        self.settingform.maintitlelabel.setText(
-            "<h3>Services and Resolution Setting</h3>"
-        )
-
-    def Userpages(self):
-        self.settingform.maintitlelabel.setText(
-            "<h3>User Administration Localization Setting</h3>"
-        )
-
-    def Aboutpages(self):
-        self.settingform.maintitlelabel.setText("<h3>About Setting</h3>")
-
-    def Powerpages(self):
-        self.settingform.maintitlelabel.setText("<h3>Power Setting</h3>")
 
     # detect ip address
     def get_ip_address(self):
@@ -271,3 +244,39 @@ class Setting(QWidget):
         else:
             color = QColorDialog.getColor()
             self.MainWindow.setStyleSheet(f"background-color : {color.name()}")
+
+    def setStretch(self):
+        settinglayoutUi.SettingLayout(
+            self.settingform,
+            self.settingform.labeltitlsetting,
+            self.settingform.settinglayoutWidget,
+            self.settingform.layoutWidgethome,
+            self.settingform.restoreDefaultsButton,
+            self.settingform.settingHomepage,
+            self.settingform.interface_label,
+            self.settingform.treeWidget,
+            self.settingform.wifipage,
+            self.settingform.ip_label,
+            self.settingform.Portnumipadd,
+            self.settingform.serviceipaddresspage,
+            self.settingform.layoutWidgetservicestextsize,
+            self.settingform.host,
+            self.settingform.layoutWidgetservicesresolution,
+            self.settingform.layoutWidgetservicescountryGMT,
+            self.settingform.layoutWidgetservicessetpass,
+            self.settingform.SystemDate,
+            self.settingform.Systemtime,
+            self.settingform.SystemMemory,
+            self.settingform.Port,
+            self.settingform.servicespage,
+            self.userlabel,
+            self.loginwidget,
+            self.settingform.UserPage,
+            self.settingform.version_label,
+            self.settingform.titlelabel,
+            self.settingform.author_label,
+            self.settingform.info_label,
+            self.settingform.AboutPage,
+            self.restartwidget,
+            self.settingform.RestartPowerOffPage,
+        )
