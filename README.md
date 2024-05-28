@@ -17,7 +17,7 @@ QtPython <br>
 Python 3.11 <br> 
 Python 3.10(linux) <br><br>
 
-UI_Drawinng is included.
+UI_Drawinng is included and including layout for uidesign and box layout
 ##
 Steps on running the system:<br>
 Run your cmd on your file location:<br>
