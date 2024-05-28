@@ -4,6 +4,9 @@ import PythonApplication.middlebuttoninteractor as middlebuttoninteractor
 import PythonApplication.leftbuttoninteractor as leftbuttoninteraction
 import PythonApplication.rightclickroominteraction as roominteraction
 import PythonApplication.storedisplay as displaystoring
+import tkinter as tk
+from tkinter import messagebox
+
 
 # insert interactive event for the stl mesh , left click is for moving the stl ,
 # right click is to insert the actor in the room view , right click for room interact shower and toilet
@@ -129,7 +132,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.default_pos,
             center,
         )
-        self.displaytext(camera)
+        self.leftbuttoninteraction.displaytext(camera)
 
     # inside view
     def RightButtonPressEvent(self, obj, event):
@@ -145,7 +148,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.cubeactor.SetPosition(self.old_actor_position)
         self.camsetvieworientation(camera)
         self.render.SetActiveCamera(camera)  # insert and replace a new camera
-        self.displaytext(camera)
+        self.leftbuttoninteraction.displaytext(camera)
         """self.markingevent = self.AddObserver(
             "MiddleButtonPressEvent", self.middlebuttonobserver.MiddleButtonPressEvent
         )"""
@@ -200,6 +203,8 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             return  # return to its original position
         if key == "n":
             self.leftbuttoninteraction.release()
+        elif key == "m":
+            self.leftbuttoninteraction.reset(self.default_pos)
         if key == "Up":
             # actor will not go beyond the inside are of the mesh
             if actor_position[0] < (
@@ -226,25 +231,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 actor_position[1] -= self.actor_speed
                 self.setcollision(actor_position, key, camera)
         self.displaystore.storedisplay()
-        self.displaytext(camera)
-
-    # displaycamtext
-    def displaytext(self, camera):
-        self.xlabelbefore.setText(
-            self._translate(
-                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))
-            )
-        )
-        self.ylabelbefore.setText(
-            self._translate(
-                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))
-            )
-        )
-        self.zlabelbefore.setText(
-            self._translate(
-                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))
-            )
-        )
+        self.leftbuttoninteraction.displaytext(camera)
 
     # set camera orientation
     def camsetvieworientation(self, camera):
@@ -278,7 +265,13 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         if num_contacts == 0:
             self.refresh()
             self.old_actor_position = actor_position
+        elif num_contacts <= 8:
+            messege = f"collision detected , camera actor is stuck moving back to the original position"
+            self.show_error_message(messege)
+            self.leftbuttoninteraction.reset(self.default_pos)
         else:
+            messege = f"collision detected. Moving back to previous position. Collision Contact detected {num_contacts}"
+            self.show_error_message(messege)
             self.old_actor_position = [
                 self.cubeactor.GetPosition()[0],
                 self.cubeactor.GetPosition()[1],
@@ -297,3 +290,10 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             camera.SetPosition(self.old_actor_position)
             actor_position = self.old_actor_position
             self.refresh()
+
+    # Use Tkinter to show an error message
+    def show_error_message(self, message):
+        root = tk.Tk()
+        root.withdraw()  # Hide the root window
+        messagebox.showerror("Error", message)
+        root.destroy()

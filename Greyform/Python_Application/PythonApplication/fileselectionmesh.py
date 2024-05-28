@@ -21,6 +21,14 @@ class FileSelectionMesh(QMainWindow):
         pyvistaframe_2,
         layoutWidget,
         layoutWidget_page2,
+        renderer,
+        renderWindowInteractor,
+        Ylabel,
+        Xlabel,
+        Xlabel_before,
+        Ylabel_before,
+        Zlabel_before,
+        append_filter,
     ):
         self.horizontalLayout = horizontalLayout
         self.horizontalLayout_page2 = horizontalLayout_page2
@@ -31,6 +39,14 @@ class FileSelectionMesh(QMainWindow):
         self.layoutwidget = layoutWidget
         self.layoutwidget_page2 = layoutWidget_page2
         self.file_path = file_path
+        self.renderer = renderer
+        self.renderWindowInteractor = renderWindowInteractor
+        self.Ylabel = Ylabel
+        self.Xlabel = Xlabel
+        self.Xlabel_before = Xlabel_before
+        self.Ylabel_before = Ylabel_before
+        self.Zlabel_before = Zlabel_before
+        self.append_filter = append_filter
         self.meshdata()
 
     # load meshdata from file
@@ -39,6 +55,17 @@ class FileSelectionMesh(QMainWindow):
         self.horizontalLayout.addWidget(self.plotterloader.interactor)
         self.horizontalLayout_page2.addWidget(self.plotterloader_2.interactor)
         progressbarprogram = Progress.pythonProgressBar(
-            60000, self.plotterloader, self.plotterloader_2, self.file_path
+            100000,
+            self.plotterloader,
+            self.plotterloader_2,
+            self.file_path,
+            self.renderer,
+            self.renderWindowInteractor,
+            self.Xlabel,
+            self.Ylabel,
+            self.Xlabel_before,
+            self.Ylabel_before,
+            self.Zlabel_before,
+            self.append_filter,
         )
         progressbarprogram.exec_()

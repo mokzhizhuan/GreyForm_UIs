@@ -9,7 +9,6 @@ import PythonApplication.menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
 import PythonApplication.fileselectionmesh as fileselectionmesh
 import PythonApplication.setsequence as SequenceData
-import PythonApplication.createmesh as Createmesh
 from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import PythonApplication.menu_confirmack as confirmack
@@ -105,20 +104,6 @@ class Ui_MainWindow(QMainWindow):
             self.addbuttonseq(
                 button, self.mainwindow.NextButton_Page_3, self.mainwindow.Seqlabel
             )
-        self.mainwindow.NextButton_Page_3.clicked.connect(
-            lambda: Createmesh.createMesh.createmesh(
-                self,
-                self.renderer,
-                self.file_path,
-                self.renderWindowInteractor,
-                self.mainwindow.Ylabel,
-                self.mainwindow.Xlabel,
-                self.mainwindow.Xlabel_2,
-                self.mainwindow.Ylabel_2,
-                self.mainwindow.Zlabel,
-                self.append_filter,
-            )
-        )
         self.mainwindow.ConfirmButton.clicked.connect(
             lambda: self.mainwindow.stackedWidget.setCurrentIndex(4)
         )
@@ -176,6 +161,14 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.pyvistaframe_2,
             self.mainwindow.layoutWidgetframe,
             self.mainwindow.layoutWidgetpage3,
+            self.renderer,
+            self.renderWindowInteractor,
+            self.mainwindow.Ylabel,
+            self.mainwindow.Xlabel,
+            self.mainwindow.Xlabel_2,
+            self.mainwindow.Ylabel_2,
+            self.mainwindow.Zlabel,
+            self.append_filter,
         )
         self.file = file.replace(".stl", "")
         self.mainwindow.NextButton_Page_2.show()

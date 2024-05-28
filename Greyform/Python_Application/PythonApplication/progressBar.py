@@ -11,11 +11,26 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QTimer
 import pyvista as pv
+import PythonApplication.createmesh as Createmesh
 
 
 # progress bar to load the imported stl to pyvista or gl view widget
 class pythonProgressBar(QDialog):
-    def __init__(self, value, plotterloader, plotterloader_2, file_path):
+    def __init__(
+        self,
+        value,
+        plotterloader,
+        plotterloader_2,
+        file_path,
+        renderer,
+        renderWindowInteractor,
+        Xlabel,
+        Ylabel,
+        Xlabel_before,
+        Ylabel_before,
+        Zlabel_before,
+        append_filter,
+    ):
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setWindowTitle("Progress Window")
@@ -33,6 +48,14 @@ class pythonProgressBar(QDialog):
         self.loader_2 = plotterloader_2
         self.filepath = file_path
         self.meshsplot = None
+        self.renderer = renderer
+        self.renderWindowInteractor = renderWindowInteractor
+        self.Ylabel = Ylabel
+        self.Xlabel = Xlabel
+        self.Xlabel_before = Xlabel_before
+        self.Ylabel_before = Ylabel_before
+        self.Zlabel_before = Zlabel_before
+        self.append_filter = append_filter
         self.start_progress()
 
         self.timer = QTimer(self)
@@ -87,4 +110,15 @@ class pythonProgressBar(QDialog):
         # show Frame
         self.loader.show()
         self.loader_2.show()
+        Createmesh.createMesh(
+            self.renderer,
+            self.filepath,
+            self.renderWindowInteractor,
+            self.Ylabel,
+            self.Xlabel,
+            self.Xlabel_before,
+            self.Ylabel_before,
+            self.Zlabel_before,
+            self.append_filter,
+        )
         self.close()

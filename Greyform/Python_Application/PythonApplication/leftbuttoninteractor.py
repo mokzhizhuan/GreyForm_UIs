@@ -118,6 +118,16 @@ class LeftInteractorStyle(object):
         self.current_zoom_factor = 1.0
         self.camsetvieworientation(camera)
         self.refresh()
+    
+    def reset(self, original_pos):
+        self.interactor_style.SetMotionFactor(8)
+        camera = self.render.GetActiveCamera()
+        self.cubeactor.SetPosition(original_pos)
+        camera.SetPosition(self.cubeactor.GetPosition())
+        self.setcamposition(camera)
+        self.current_zoom_factor = 1.0
+        self.camsetvieworientation(camera)
+        self.refresh()
 
     def mouse_wheel_forward(self, obj, event):
         self.interactor_style.SetMotionFactor(1)
