@@ -5,12 +5,23 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import sys
 import mainwindowlayout as mainwindowuilayout
+<<<<<<< HEAD
+=======
+import PythonApplication.menu_close as closewindow
+import PythonApplication.menuconfirm as backtomenudialog
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
 import PythonApplication.fileselectionmesh as fileselectionmesh
 import PythonApplication.setsequence as SequenceData
 from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
+<<<<<<< HEAD
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
 import PythonApplication.setting as setting
+=======
+import PythonApplication.menu_confirmack as confirmack
+import PythonApplication.setting as setting
+import PythonApplication.enable_robot as robotenabler
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
 import vtk
 import os
 
@@ -55,8 +66,11 @@ class Ui_MainWindow(QMainWindow):
                 self.mainwindow.vtkframe
             )
         )
+<<<<<<< HEAD
         self.mainwindow.horizontalLayout_2.addWidget(self.plotterloader.interactor)
         self.mainwindow.horizontalLayout_4.addWidget(self.plotterloader_2.interactor)
+=======
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         self.mainwindow.verticalLayout.addWidget(self.renderWindowInteractor)
         self.settingpageuipage = setting.Setting(
             self.mainwindow.stackedWidget,
@@ -65,17 +79,53 @@ class Ui_MainWindow(QMainWindow):
             self.height,
         )  # insert setting
         self.setStretch()
+<<<<<<< HEAD
+=======
+        self.retranslateUi()
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         self.button_UI()
 
     # button interaction
     def button_UI(self):
+<<<<<<< HEAD
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_selection_changed)
         self.mainwindow.FilePathButton.clicked.connect(self.browsefilesdirectory)
+=======
+        self.mainwindow.menuStartButton.clicked.connect(
+            lambda: self.mainwindow.stackedWidget.setCurrentIndex(1)
+        )
+        self.mainwindow.menuCloseButton.clicked.connect(
+            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(self.mainwindow)
+        )
+        self.mainwindow.Selectivefilelistview.clicked.connect(self.on_selection_changed)
+        self.mainwindow.NextButton_Page_2.clicked.connect(
+            lambda: self.mainwindow.stackedWidget.setCurrentIndex(2)
+        )
+        self.mainwindow.BacktoMenuButton.clicked.connect(
+            lambda: backtomenudialog.Ui_Dialog_Confirm.show_dialog_confirm(
+                self.mainwindow, self.mainwindow.stackedWidget
+            )
+        )
+        self.mainwindow.FilePathButton.clicked.connect(self.browsefilesdirectory)
+        self.mainwindow.BacktoMenuButton.clicked.connect(
+            lambda: self.mainwindow.stackedWidget.setCurrentIndex(0)
+        )
+        self.mainwindow.BackButton_Page_2.clicked.connect(
+            lambda: self.stackedWidget.setCurrentIndex(1)
+        )
+        self.mainwindow.BackButton_2.clicked.connect(
+            lambda: self.stackedWidget.setCurrentIndex(2)
+        )
+        self.mainwindow.NextButton_Page_3.clicked.connect(
+            lambda: self.mainwindow.stackedWidget.setCurrentIndex(3)
+        )
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         for i in range(1, 4):
             button = getattr(self.mainwindow, f"seq{i}Button")
             self.addbuttonseq(
                 button, self.mainwindow.NextButton_Page_3, self.mainwindow.Seqlabel
             )
+<<<<<<< HEAD
         mainwindowbuttonUIinteraction.mainwindowbuttonUI(
             self.mainwindow,
             self.mainwindow.stackedWidget,
@@ -94,6 +144,30 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.EnableRobotButton,
             self.mainwindow.SettingButton,
             self.append_filter,
+=======
+        self.mainwindow.ConfirmButton.clicked.connect(
+            lambda: self.mainwindow.stackedWidget.setCurrentIndex(4)
+        )
+        self.mainwindow.HomeButton.clicked.connect(
+            lambda: self.mainwindow.stackedWidget.setCurrentIndex(0)
+        )
+        self.mainwindow.CloseButton.clicked.connect(
+            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(self.mainwindow)
+        )
+        self.mainwindow.ConfirmAckButton.clicked.connect(
+            lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(
+                self.mainwindow, self.append_filter
+            )
+        )
+        self.mainwindow.MarkingButton.clicked.connect(
+            lambda: self.mainwindow.stackedWidget.setCurrentIndex(3)
+        )
+        self.mainwindow.EnableRobotButton.clicked.connect(
+            lambda: robotenabler.EnableRobotInterpreter()
+        )
+        self.mainwindow.SettingButton.clicked.connect(
+            lambda: self.mainwindow.stackedWidget.setCurrentIndex(5)
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         )
 
     def addbuttonseq(self, button, nextbutton, seqlabel):
@@ -120,6 +194,11 @@ class Ui_MainWindow(QMainWindow):
         self.file_path = model.filePath(index)
         file = self.mainwindow.Selectivefilelistview.model().itemData(index)[0]
         fileselectionmesh.FileSelectionMesh(
+<<<<<<< HEAD
+=======
+            self.mainwindow.horizontalLayout_2,
+            self.mainwindow.horizontalLayout_4,
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
             self.file_path,
             self.plotterloader,
             self.plotterloader_2,
@@ -189,6 +268,17 @@ class Ui_MainWindow(QMainWindow):
         self.renderWindowInteractor.GetRenderWindow().Finalize()
         self.renderWindowInteractor.GetRenderWindow().GetInteractor().TerminateApp()
         event.accept()
+<<<<<<< HEAD
+=======
+
+    def retranslateUi(self):
+        self.mainwindow.displaybeforelabel.setText(
+            self._translate("MainWindow", "Mesh Camera Dimensions")
+        )
+        self.mainwindow.label_2.setText(
+            self._translate("MainWindow", "Click Position", None)
+        )
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
 
 
 if __name__ == "__main__":

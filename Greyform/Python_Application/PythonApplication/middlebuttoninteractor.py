@@ -13,11 +13,11 @@ set the position where it mark with xyz coordinates and inserted in the vtkframe
 
 class MiddleButtonPressed(object):
     def __init__(
-        self, interactor_style, render, renderwindowinteractors, append_filterpolydata
+        self, interactor_style, render, renderwindowinteractor, append_filterpolydata
     ):
         self.interactor_style = interactor_style
         self.render = render
-        self.renderwindowinteractors = renderwindowinteractors
+        self.renderwindowinteractor = renderwindowinteractor
         self.points = []
         self.pointstorage = []
         self.pickerround = []
@@ -31,7 +31,7 @@ class MiddleButtonPressed(object):
         pickedPos = picker.GetPickPosition()
         for i in range(len(pickedPos)):
             self.pickerround.append(round(picker.GetPickPosition()[i]))
-        if len(self.points) < 2:#2nd marking
+        if len(self.points) < 2:  # 2nd marking
             self.points.append(self.pickerround)
             print(f"Point {len(self.points)} picked at: {self.pickerround}")
             self.createCube()  # 1st marking recorded
@@ -75,7 +75,7 @@ class MiddleButtonPressed(object):
                 print(
                     "Error for the 2nd marking sequence , the 2nd marking sequence must be the same x, y axis or x , z axis. Please try again."
                 )
-        else:#reset array
+        else:  # reset array
             self.points = []
 
         self.interactor_style.OnMiddleButtonDown()
@@ -101,6 +101,8 @@ class MiddleButtonPressed(object):
         self.crossActor.GetProperty().SetLineWidth(40)  # Set line width to 40 points
         self.crossActor.SetMapper(self.crossMapper)
         self.crossActor.GetProperty().SetColor(1, 0, 0)  # Red color
-        self.render.AddActor(self.crossActor)#add actor to the render
-        self.append_filterpolydata.AddInputData(self.crossActor.GetMapper().GetInput())#add input data for append filter
-        self.renderwindowinteractors.GetRenderWindow().Render()
+        self.render.AddActor(self.crossActor)  # add actor to the render
+        self.append_filterpolydata.AddInputData(
+            self.crossActor.GetMapper().GetInput()
+        )  # add input data for append filter
+        self.renderwindowinteractor.GetRenderWindow().Render()

@@ -16,7 +16,10 @@ from stl import mesh
 import vtk
 import meshio
 import PythonApplication.createmesh as Createmesh
+<<<<<<< HEAD
 import PythonApplication.loadpyvista as loadingstl
+=======
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
 
 
 # progress bar to load the imported stl to pyvista or gl view widget
@@ -118,6 +121,7 @@ class pythonProgressBar(QDialog):
             vtk_offsets = offset[0]
         # Create PyVista mesh
         self.meshsplot = pv.PolyData(meshs.points, vtk_cells)
+<<<<<<< HEAD
         loadingstl.StLloaderpyvista(self.meshsplot, self.loader, self.loader_2)
         Createmesh.createMesh(
             self.renderer,
@@ -130,4 +134,40 @@ class pythonProgressBar(QDialog):
             self.Zlabel_before,
             self.append_filter,
         )
+=======
+        self.loader.add_mesh(
+            self.meshsplot,
+            color=(230, 230, 250),
+            show_edges=True,
+            edge_color=(128, 128, 128),
+            cmap="terrain",
+            clim=[1, 3],
+            name="roombuilding",
+            opacity="linear",
+        )
+        self.loader_2.add_mesh(
+            self.meshsplot,
+            color=(230, 230, 250),
+            show_edges=True,
+            edge_color=(128, 128, 128),
+            cmap="terrain",
+            clim=[1, 3],
+            name="roombuilding",
+            opacity="linear",
+        )
+        # show Frame
+        self.loader.show()
+        self.loader_2.show()
+        Createmesh.createMesh(
+            self.renderer,
+            self.filepath,
+            self.renderWindowInteractor,
+            self.Ylabel,
+            self.Xlabel,
+            self.Xlabel_before,
+            self.Ylabel_before,
+            self.Zlabel_before,
+            self.append_filter,
+        )
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         self.close()

@@ -190,10 +190,13 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             camera.SetFocalPoint(0, 0, 0)
             camera.SetViewUp(0, 0, 1)
             self.render.ResetCamera()
+<<<<<<< HEAD
             camera.SetPosition(0, -(self.meshbound[3] * 3), self.meshbound[5] * 2)
             camera.SetFocalPoint(0, 0, 0)
             camera.SetViewUp(0, 0, 1)
             self.render.ResetCameraClippingRange()
+=======
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
             self.RemoveObserver(self.movement)
             # self.RemoveObserver(self.markingevent)
             self.RemoveObserver(self.mousemovement)
@@ -206,7 +209,10 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 "RightButtonPressEvent", self.RightButtonPressEvent
             )
             self.refresh()
+<<<<<<< HEAD
             self.renderwindowinteractor.GetRenderWindow().Render()
+=======
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
             return  # return to its original position
         if key == "n":
             self.leftbuttoninteraction.release()
@@ -242,7 +248,15 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
 
     # set camera orientation
     def camsetvieworientation(self, camera):
+<<<<<<< HEAD
         camera.SetViewUp(0, 0, 1)
+=======
+        camera.SetViewUp(
+            self.defaultposition[0],
+            self.defaultposition[1],
+            self.defaultposition[2],
+        )
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
 
     # refresher
     def refresh(self):
@@ -268,7 +282,11 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         if num_contacts == 0:
             self.refresh()
             self.old_actor_position = actor_position
+<<<<<<< HEAD
         elif num_contacts > 0 and num_contacts <= 8 :
+=======
+        elif num_contacts <= 8:
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
             messege = f"collision detected , camera actor is stuck moving back to the original position"
             self.show_error_message(messege)
             self.leftbuttoninteraction.reset(self.default_pos)

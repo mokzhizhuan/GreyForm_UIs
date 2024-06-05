@@ -43,11 +43,19 @@ class createMesh(QMainWindow):
         self.loadStl()
 
     def loadStl(self):
+<<<<<<< HEAD
+=======
+        # self.updateProgress()
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         """Load the given STL file, and return a vtkPolyData object for it."""
         self.reader.SetFileName(self.polydata)
         self.reader.Update()
         polydata = self.reader.GetOutput()
+<<<<<<< HEAD
         self.actor = self.polyDataToActor(polydata)
+=======
+        actor = self.polyDataToActor(polydata)
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         center = [
             (self.meshbounds[0] + self.meshbounds[1]) / 2,
             (self.meshbounds[2] + self.meshbounds[3]) / 2,
@@ -55,11 +63,14 @@ class createMesh(QMainWindow):
         ]
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
+<<<<<<< HEAD
         if self.actor and self.cubeactor and self.cameraactor:
             self.ren.RemoveActor(self.actor)
             self.ren.RemoveActor(self.cameraactor)
             self.ren.RemoveActor(self.cubeactor)
             self.renderwindowinteractor.GetRenderWindow().Render()
+=======
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         self.cubeactor.SetPosition(80, center[1], center[2])
         self.cubeactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
@@ -71,6 +82,7 @@ class createMesh(QMainWindow):
         self.cameraactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
         )
+<<<<<<< HEAD
         # Translate the cube to set its center to the origin (0,0,0)
         transform = vtk.vtkTransform()
         transform.Translate(-center[0], -center[1], -center[2])
@@ -108,6 +120,26 @@ class createMesh(QMainWindow):
         self.collisionFilter.SetMatrix(
             1, self.actor.GetMatrix()
         )  # Static object transform
+=======
+        self.ren.AddActor(self.cameraactor)
+        self.ren.AddActor(self.cubeactor)
+        self.ren.AddActor(actor)
+        self.oldcamerapos = self.cubeactor.GetPosition()
+        self.collisionFilter = vtk.vtkCollisionDetectionFilter()
+        # Set up the collision filter
+        self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
+        self.collisionFilter.SetInputData(1, actor.GetMapper().GetInput())
+        self.collisionFilter.SetTransform(
+            0, vtk.vtkTransform()
+        )  # Moving object transform
+        self.collisionFilter.SetTransform(
+            1, vtk.vtkTransform()
+        )  # Static object transform
+        self.collisionFilter.SetMatrix(
+            0, self.cubeactor.GetMatrix()
+        )  # Static object transform
+        self.collisionFilter.SetMatrix(1, actor.GetMatrix())  # Static object transform
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()
         camera = events.myInteractorStyle(
@@ -119,7 +151,11 @@ class createMesh(QMainWindow):
             self.xlabelbefore,
             self.ylabelbefore,
             self.zlabelbefore,
+<<<<<<< HEAD
             self.actor,
+=======
+            actor,
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
             polydata,
             self.reader,
             self.append_filterpolydata,
@@ -141,8 +177,11 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
+<<<<<<< HEAD
         # for face_center, orientation in zip(face_centers, orientations):
         # self.add_axes(self.ren, face_center, orientation, axes_length)
+=======
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
 
     def create_cube_actor(self):
         self.cube_source = vtk.vtkCubeSource()
@@ -185,6 +224,7 @@ class createMesh(QMainWindow):
         self.append_filterpolydata.AddInputData(actor.GetMapper().GetInput())
         self.append_filterpolydata.Update()
         return actor
+<<<<<<< HEAD
 
     def add_axes(self, renderer, center, orientation, axes_length):
         axes = vtk.vtkAxesActor()
@@ -207,3 +247,5 @@ class createMesh(QMainWindow):
         axes.SetUserTransform(transform)
 
         renderer.AddActor(axes)
+=======
+>>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b

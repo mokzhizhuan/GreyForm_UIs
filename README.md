@@ -17,7 +17,7 @@ QtPython <br>
 Python 3.11 <br> 
 Python 3.10(linux) <br><br>
 
-UI_Drawinng is included.
+UI_Drawinng is included and including layout for uidesign and box layout
 ##
 Steps on running the system:<br>
 Run your cmd on your file location:<br>
@@ -26,7 +26,14 @@ python/python3 mainapplication.py
 ##
 For Visual Studio: <br>
 Open Folder to file_path/GreyForm_UIs/GreyForm/Python_Application/<br>
-python/python3 mainapplication.py
+python/python3 mainapplication.py<br>
+<br>
+##
+insert interactive event for the stl mesh , left click is for moving the stl  <br>
+Right click is to insert the actor in the room view , right click for room interact shower and toilet <br>
+middle click is to insert an object tht was marked <br>
+l key is to remove the actor in the room view and set the mesh to the original position <br>
+m Key is to restore moving position <br>
 
 ##
 Main Classes:<br>                               
