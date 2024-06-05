@@ -15,11 +15,27 @@ import numpy as np
 from stl import mesh
 import vtk
 import meshio
+import PythonApplication.createmesh as Createmesh
+import PythonApplication.loadpyvista as loadingstl
 
 
 # progress bar to load the imported stl to pyvista or gl view widget
 class pythonProgressBar(QDialog):
-    def __init__(self, value, plotterloader, plotterloader_2, file_path):
+    def __init__(
+        self,
+        value,
+        plotterloader,
+        plotterloader_2,
+        file_path,
+        renderer,
+        renderWindowInteractor,
+        Xlabel,
+        Ylabel,
+        Xlabel_before,
+        Ylabel_before,
+        Zlabel_before,
+        append_filter,
+    ):
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setWindowTitle("Progress Window")
@@ -36,6 +52,15 @@ class pythonProgressBar(QDialog):
         self.loader = plotterloader
         self.loader_2 = plotterloader_2
         self.filepath = file_path
+        self.meshsplot = None
+        self.renderer = renderer
+        self.renderWindowInteractor = renderWindowInteractor
+        self.Ylabel = Ylabel
+        self.Xlabel = Xlabel
+        self.Xlabel_before = Xlabel_before
+        self.Ylabel_before = Ylabel_before
+        self.Zlabel_before = Zlabel_before
+        self.append_filter = append_filter
         self.start_progress()
 
         self.timer = QTimer(self)
@@ -46,6 +71,9 @@ class pythonProgressBar(QDialog):
 
     def start_progress(self):
         # Start the progress after a delay
+        if self.meshsplot:
+            self.loader.remove_actor(self.meshsplot)
+            self.loader_2.remove_actor(self.meshsplot)
         QTimer.singleShot(self.value, self.add_mesh_later)
 
     def update_progress(self):
@@ -66,7 +94,6 @@ class pythonProgressBar(QDialog):
         offset = []
         cells = []
         cell_types = []
-
         for cell_block in meshs.cells:
             cell_type = cell_block.type
             cell_data = cell_block.data
@@ -83,38 +110,24 @@ class pythonProgressBar(QDialog):
                 ).flatten()
             )
             cell_types.append(cell_type)
-
-        # Now, we should concatenate all the cells data if there are multiple cell types
         if len(cells) > 1:
             vtk_cells = np.concatenate(cells)
             vtk_offsets = np.concatenate(offset)
         else:
             vtk_cells = cells[0]
             vtk_offsets = offset[0]
-
         # Create PyVista mesh
-        meshsplot = pv.PolyData(meshs.points, vtk_cells)
-        self.loader.add_mesh(
-            meshsplot,
-            color=(230, 230, 250),
-            show_edges=True,
-            edge_color=(128, 128, 128),
-            cmap="terrain",
-            clim=[1, 3],
-            name="roombuilding",
-            opacity="linear",
+        self.meshsplot = pv.PolyData(meshs.points, vtk_cells)
+        loadingstl.StLloaderpyvista(self.meshsplot, self.loader, self.loader_2)
+        Createmesh.createMesh(
+            self.renderer,
+            self.filepath,
+            self.renderWindowInteractor,
+            self.Ylabel,
+            self.Xlabel,
+            self.Xlabel_before,
+            self.Ylabel_before,
+            self.Zlabel_before,
+            self.append_filter,
         )
-        self.loader_2.add_mesh(
-            meshsplot,
-            color=(230, 230, 250),
-            show_edges=True,
-            edge_color=(128, 128, 128),
-            cmap="terrain",
-            clim=[1, 3],
-            name="roombuilding",
-            opacity="linear",
-        )
-        # show Frame
-        self.loader.show()
-        self.loader_2.show()
         self.close()

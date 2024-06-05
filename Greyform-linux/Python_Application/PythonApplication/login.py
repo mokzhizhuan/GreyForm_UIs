@@ -1,23 +1,48 @@
 import sys
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 import PythonApplication.BIMFile as BIMfile
 
 
+# user login function will include profile also later
 class Login(QDialog):
-    def __init__(self, accountinfo, widget, userlabel, file):
+    def __init__(self, accountinfo, widget, userlabel, file, stackedWidgetusersetting):
         super(Login, self).__init__()
         self.form = uic.loadUi("UI_Design/login.ui", self)
         self.accountinfo = accountinfo
         self.widget = widget
         self.userlabel = userlabel
         self.file = file
+        self.stackedWidgetusersetting = stackedWidgetusersetting
         self.form.userid = self.accountinfo[0]["UserID"]
+        self.setupUI()
         self.loginbutton.clicked.connect(self.loginfunction)
         self.password.setEchoMode(QtWidgets.QLineEdit.Password)
         self.password.returnPressed.connect(self.loginfunction)
         self.changepassbutton.clicked.connect(self.changepassword)
 
+    def setupUI(self):
+        self.loginboxlayout = QVBoxLayout()
+        self.verticalSpacer = QSpacerItem(
+            20, 40, QSizePolicy.Minimum, QSizePolicy.MinimumExpanding
+        )
+        self.verticalSpacer_2 = QSpacerItem(
+            20, 40, QSizePolicy.Minimum, QSizePolicy.MinimumExpanding
+        )
+        self.loginboxlayout.addWidget(self.form.label)
+        self.loginboxlayout.addItem(self.verticalSpacer)
+        self.loginboxlayout.addWidget(self.form.horizontalLayoutWidget)
+        self.loginboxlayout.addItem(self.verticalSpacer_2)
+        self.loginboxlayout.addWidget(self.form.horizontalLayoutWidget_2)
+        self.loginboxlayout.setStretch(1, 1)
+        self.loginboxlayout.setStretch(3, 1)
+        self.setLayout(self.loginboxlayout)
+
+    # login success or fail
     def loginfunction(self):
         password = self.form.password.text()
         counter = 0
@@ -25,13 +50,20 @@ class Login(QDialog):
             if self.accountinfo[acc]["Pass"] == password:
                 counter = counter + 1
         if counter == 1:
-            Bimfiles = BIMfile.BimfileInterpretor(
+            """Bimfiles = BIMfile.BimfileInterpretor(
                 self.accountinfo, self.widget, self.userlabel, self.file
             )
             self.widget.addWidget(Bimfiles)
-            self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
+            self.widget.setCurrentIndex(self.widget.currentIndex() + 1)"""
+            message_box = QMessageBox()
+            message_box.setIcon(QMessageBox.Information)
+            message_box.setWindowTitle("Success")
+            message_box.setText("Login Success")
+            message_box.setStandardButtons(QMessageBox.Ok)
+            # Show the message box and wait for a response
+            response = message_box.exec_()
         else:
-            # Create a QMessageBox
+            # warning message box
             msg_box = QMessageBox()
 
             # Apply a stylesheet to the QMessageBox
@@ -50,16 +82,22 @@ class Login(QDialog):
             # Show the message box
             msg_box.exec_()
 
+    # access to change pass ui
     def changepassword(self):
         ChangePassword = ChangePass(
-            self.accountinfo, self.widget, self.userlabel, self.file
+            self.accountinfo,
+            self.widget,
+            self.userlabel,
+            self.file,
+            self.stackedWidgetusersetting,
         )
         self.widget.addWidget(ChangePassword)
         self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
 
 
+# change password.
 class ChangePass(QDialog):
-    def __init__(self, accountinfo, widget, userlabel, file):
+    def __init__(self, accountinfo, widget, userlabel, file, stackedWidgetusersetting):
         super(ChangePass, self).__init__()
         self.form = uic.loadUi("UI_Design/changepass.ui", self)
         self.form.changepassbutton.clicked.connect(self.changepassfunction)
@@ -70,12 +108,30 @@ class ChangePass(QDialog):
         self.widget = widget
         self.userlabel = userlabel
         self.file = file
+        self.stackedWidgetusersetting = stackedWidgetusersetting
+        self.setupUI()
 
+    def setupUI(self):
+        self.changepassboxlayout = QVBoxLayout()
+        self.verticalSpacer = QSpacerItem(
+            20, 70, QSizePolicy.Minimum, QSizePolicy.Maximum
+        )
+        self.verticalSpacer_2 = QSpacerItem(
+            20, 70, QSizePolicy.Minimum, QSizePolicy.Maximum
+        )
+        self.changepassboxlayout.addWidget(self.form.label)
+        self.changepassboxlayout.addItem(self.verticalSpacer)
+        self.changepassboxlayout.addWidget(self.form.horizontalLayoutWidget)
+        self.changepassboxlayout.addItem(self.verticalSpacer_2)
+        self.changepassboxlayout.addWidget(self.form.horizontalLayoutWidget_2)
+        self.setLayout(self.changepassboxlayout)
+
+    # change pass ui
     def changepassfunction(self):
         password = self.form.password.text()
         if password != self.accountinfo[0]["Pass"]:
             self.accountinfo[0]["Pass"] = password
-            login = Login(self.accountinfo, self.widget, self.userlabel , self.file)
+            login = Login(self.accountinfo, self.widget, self.userlabel, self.file)
             self.widget.addWidget(login)
             self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
         else:
@@ -98,7 +154,14 @@ class ChangePass(QDialog):
             # Show the message box
             msg_box.exec_()
 
+    # back to login ui
     def backtologin(self):
-        login = Login(self.accountinfo, self.widget, self.userlabel, self.file)
+        login = Login(
+            self.accountinfo,
+            self.widget,
+            self.userlabel,
+            self.file,
+            self.stackedWidgetusersetting,
+        )
         self.widget.addWidget(login)
         self.widget.setCurrentIndex(self.widget.currentIndex() + 1)

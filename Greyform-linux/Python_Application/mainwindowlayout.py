@@ -1,0 +1,105 @@
+from PyQt5 import QtCore, QtWidgets, QtGui, uic
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+
+
+class Ui_MainWindow_layout(object):
+    def __init__(
+        self,
+        stackedWidget,
+        centralwidget,
+        maintitle,
+        mainlayoutwidget,
+        mainlayoutpagebutton,
+        mainmenu,
+        page2layout,
+        framepage2layout,
+        page2,
+        itemlabel_page3,
+        page3layout,
+        page3,
+        page4layout,
+        page4frame,
+        page4,
+        settingbutton,
+        page5layout,
+        page5,
+        settinguipage,
+        settingpage,
+    ):
+        self.stackedWidget = stackedWidget
+        self.centralwidget = centralwidget
+        self.maintitle = maintitle
+        self.mainlayoutwidget = mainlayoutwidget
+        self.mainlayoutpagebutton = mainlayoutpagebutton
+        self.mainmenu = mainmenu
+        self.page2Layout = page2layout
+        self.framepage2layout = framepage2layout
+        self.page2 = page2
+        self.itemlabel_page3 = itemlabel_page3
+        self.page3Layout = page3layout
+        self.page3 = page3
+        self.page4Layout = page4layout
+        self.page4frame = page4frame
+        self.page4 = page4
+        self.settingbutton = settingbutton
+        self.page5Layout = page5layout
+        self.page5 = page5
+        self.settinguipage = settinguipage
+        self.settingpage = settingpage
+        self.setStretch()
+
+    def setStretch(self):
+        self.boxLayout = QVBoxLayout()
+        self.boxLayout.addWidget(self.stackedWidget)
+        self.centralwidget.setLayout(self.boxLayout)
+        self.page1boxlayout = QVBoxLayout()
+        self.verticalSpacer = QSpacerItem(
+            20, 400, QSizePolicy.Minimum, QSizePolicy.Expanding
+        )
+        self.verticalSpacer_2 = QSpacerItem(
+            20, 220, QSizePolicy.Minimum, QSizePolicy.Expanding
+        )
+        self.page1boxlayout.setSizeConstraint(QLayout.SetNoConstraint)
+        self.page1boxlayout.addItem(self.verticalSpacer)
+        self.page1boxlayout.addWidget(self.maintitle)
+        self.page1boxlayout.addItem(self.verticalSpacer_2)
+        self.page1boxlayout.addWidget(self.mainlayoutwidget)
+        self.page1boxlayout.setStretch(0, 1)
+        self.page1boxlayout.setStretch(1, 1)
+        self.page1boxlayout.setStretch(2, 1)
+        self.mainlayoutpagebutton.setStretch(0, 1)
+        self.mainlayoutpagebutton.setStretch(1, 1)
+        self.mainmenu.setLayout(self.page1boxlayout)
+        self.page2boxLayout = QHBoxLayout()
+        self.page2boxLayout.addWidget(self.page2Layout)
+        self.page2boxLayout.addWidget(self.framepage2layout)
+        self.page2boxLayout.setStretch(0, 1)
+        self.page2boxLayout.setStretch(1, 1)
+        self.page2.setLayout(self.page2boxLayout)
+        self.page3boxLayout = QVBoxLayout()
+        self.page3boxLayout.addWidget(self.itemlabel_page3)
+        self.page3boxLayout.addWidget(self.page3Layout)
+        self.page3boxLayout.setStretch(1, 1)
+        self.page3.setLayout(self.page3boxLayout)
+        self.page4boxLayout = QVBoxLayout()
+        self.page4boxLayout.addWidget(self.page4Layout)
+        self.page4boxLayout.addWidget(self.page4frame)
+        self.page4boxLayout.setStretch(0, 2)
+        self.page4boxLayout.setStretch(1, 1)
+        self.page4.setLayout(self.page4boxLayout)
+        self.page5boxLayout = QVBoxLayout()
+        self.settinglayout = QHBoxLayout()
+        self.horizontalSpacer = QSpacerItem(
+            40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
+        )
+        self.settinglayout.addItem(self.horizontalSpacer)
+        self.settinglayout.addWidget(self.settingbutton)
+        self.page5boxLayout.addLayout(self.settinglayout)
+        self.page5boxLayout.addWidget(self.page5Layout)
+        self.page5.setLayout(self.page5boxLayout)
+        self.page6boxLayout = QVBoxLayout()
+        self.page6boxLayout.addWidget(self.settinguipage, 1)
+        self.settingpage.setLayout(self.page6boxLayout)
