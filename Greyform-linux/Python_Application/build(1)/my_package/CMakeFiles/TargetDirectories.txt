@@ -1,9 +1,0 @@
-/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package/CMakeFiles/uninstall.dir
-/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package/CMakeFiles/my_package_uninstall.dir
-/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package/CMakeFiles/test.dir
-/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package/CMakeFiles/edit_cache.dir
-/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package/CMakeFiles/rebuild_cache.dir
-/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package/CMakeFiles/list_install_components.dir
-/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package/CMakeFiles/install.dir
-/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package/CMakeFiles/install/local.dir
-/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package/CMakeFiles/install/strip.dir
