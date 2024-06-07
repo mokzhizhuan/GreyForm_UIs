@@ -118,7 +118,6 @@ class LeftInteractorStyle(object):
         self.current_zoom_factor = 1.0
         self.camsetvieworientation(camera)
         self.refresh()
-<<<<<<< HEAD
 
     def reset(self, default_pos):
         self.cubeactor.SetPosition(default_pos[0], default_pos[1], default_pos[2])
@@ -126,18 +125,6 @@ class LeftInteractorStyle(object):
         camera.SetPosition(self.cubeactor.GetPosition())
         self.setcamposition(camera)
         self.camsetvieworientation(camera)
-=======
-    
-    def reset(self, original_pos):
-        self.interactor_style.SetMotionFactor(8)
-        camera = self.render.GetActiveCamera()
-        self.cubeactor.SetPosition(original_pos)
-        camera.SetPosition(self.cubeactor.GetPosition())
-        self.setcamposition(camera)
-        self.current_zoom_factor = 1.0
-        self.camsetvieworientation(camera)
-        self.refresh()
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
 
     def mouse_wheel_forward(self, obj, event):
         self.interactor_style.SetMotionFactor(1)

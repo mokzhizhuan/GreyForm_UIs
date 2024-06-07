@@ -12,10 +12,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QTimer
 import pyvista as pv
 import PythonApplication.createmesh as Createmesh
-<<<<<<< HEAD
 import PythonApplication.loadpyvista as loadingstl
-=======
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
 
 
 # progress bar to load the imported stl to pyvista or gl view widget
@@ -100,31 +97,4 @@ class pythonProgressBar(QDialog):
             self.Zlabel_before,
             self.append_filter,
         )
-<<<<<<< HEAD
-=======
-        self.loader_2.add_mesh(
-            self.meshsplot,
-            color=(230, 230, 250),
-            show_edges=True,
-            edge_color=(128, 128, 128),
-            cmap="terrain",
-            clim=[1, 3],
-            name="roombuilding",
-            opacity="linear",
-        )
-        # show Frame
-        self.loader.show()
-        self.loader_2.show()
-        Createmesh.createMesh(
-            self.renderer,
-            self.filepath,
-            self.renderWindowInteractor,
-            self.Ylabel,
-            self.Xlabel,
-            self.Xlabel_before,
-            self.Ylabel_before,
-            self.Zlabel_before,
-            self.append_filter,
-        )
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         self.close()

@@ -43,19 +43,11 @@ class createMesh(QMainWindow):
         self.loadStl()
 
     def loadStl(self):
-<<<<<<< HEAD
-=======
-        # self.updateProgress()
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
-        """Load the given STL file, and return a vtkPolyData object for it."""
+        self.clearactor()
         self.reader.SetFileName(self.polydata)
         self.reader.Update()
         polydata = self.reader.GetOutput()
-<<<<<<< HEAD
         self.actor = self.polyDataToActor(polydata)
-=======
-        actor = self.polyDataToActor(polydata)
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         center = [
             (self.meshbounds[0] + self.meshbounds[1]) / 2,
             (self.meshbounds[2] + self.meshbounds[3]) / 2,
@@ -63,14 +55,6 @@ class createMesh(QMainWindow):
         ]
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
-<<<<<<< HEAD
-        if self.actor and self.cubeactor and self.cameraactor:
-            self.ren.RemoveActor(self.actor)
-            self.ren.RemoveActor(self.cameraactor)
-            self.ren.RemoveActor(self.cubeactor)
-            self.renderwindowinteractor.GetRenderWindow().Render()
-=======
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         self.cubeactor.SetPosition(80, center[1], center[2])
         self.cubeactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
@@ -82,31 +66,6 @@ class createMesh(QMainWindow):
         self.cameraactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
         )
-<<<<<<< HEAD
-        # Translate the cube to set its center to the origin (0,0,0)
-        transform = vtk.vtkTransform()
-        transform.Translate(-center[0], -center[1], -center[2])
-
-        transform_filter = vtk.vtkTransformPolyDataFilter()
-        transform_filter.SetTransform(transform)
-        transform_filter.SetInputData(polydata)
-        transform_filter.Update()
-
-        translated_polydata = transform_filter.GetOutput()
-
-        # Get the new bounds of the mesh
-        new_meshbounds = translated_polydata.GetBounds()
-        axes_length = [center[0] / 2, center[1] / 2, center[2] / 2]
-        orientations = ["x", "-x", "y", "-y", "z", "-z"]
-        face_centers = [
-            (new_meshbounds[1], 0, new_meshbounds[5]),  # +X face
-            (new_meshbounds[1], new_meshbounds[3] * 2, new_meshbounds[5]),  # -X face
-            (new_meshbounds[1], new_meshbounds[3], 0),  # +Y face
-            (new_meshbounds[1], new_meshbounds[3], new_meshbounds[5] * 2),  # -Y face
-            (0, new_meshbounds[3], new_meshbounds[5]),  # +Z face
-            (new_meshbounds[1] * 2, new_meshbounds[3], new_meshbounds[5]),  # -Z face
-        ]
-        # Add axes to each face of the cube
         self.ren.AddActor(self.cameraactor)
         self.ren.AddActor(self.cubeactor)
         self.ren.AddActor(self.actor)
@@ -117,29 +76,8 @@ class createMesh(QMainWindow):
         self.collisionFilter.SetTransform(0, vtk.vtkTransform())
         self.collisionFilter.SetTransform(1, vtk.vtkTransform())
         self.collisionFilter.SetMatrix(0, self.cubeactor.GetMatrix())
-        self.collisionFilter.SetMatrix(
-            1, self.actor.GetMatrix()
-        )  # Static object transform
-=======
-        self.ren.AddActor(self.cameraactor)
-        self.ren.AddActor(self.cubeactor)
-        self.ren.AddActor(actor)
-        self.oldcamerapos = self.cubeactor.GetPosition()
-        self.collisionFilter = vtk.vtkCollisionDetectionFilter()
-        # Set up the collision filter
-        self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
-        self.collisionFilter.SetInputData(1, actor.GetMapper().GetInput())
-        self.collisionFilter.SetTransform(
-            0, vtk.vtkTransform()
-        )  # Moving object transform
-        self.collisionFilter.SetTransform(
-            1, vtk.vtkTransform()
-        )  # Static object transform
-        self.collisionFilter.SetMatrix(
-            0, self.cubeactor.GetMatrix()
-        )  # Static object transform
-        self.collisionFilter.SetMatrix(1, actor.GetMatrix())  # Static object transform
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
+        # Static object transform
+        self.collisionFilter.SetMatrix(1, self.actor.GetMatrix())
         self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()
         camera = events.myInteractorStyle(
@@ -151,11 +89,7 @@ class createMesh(QMainWindow):
             self.xlabelbefore,
             self.ylabelbefore,
             self.zlabelbefore,
-<<<<<<< HEAD
             self.actor,
-=======
-            actor,
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
             polydata,
             self.reader,
             self.append_filterpolydata,
@@ -177,11 +111,14 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
-<<<<<<< HEAD
-        # for face_center, orientation in zip(face_centers, orientations):
-        # self.add_axes(self.ren, face_center, orientation, axes_length)
-=======
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
+
+    def clearactor(self):
+        actors = self.ren.GetActors()
+        actors.InitTraversal()
+        actor = actors.GetNextActor()
+        while actor:
+            self.ren.RemoveActor(actor)
+            actor = actors.GetNextActor()
 
     def create_cube_actor(self):
         self.cube_source = vtk.vtkCubeSource()
@@ -224,28 +161,3 @@ class createMesh(QMainWindow):
         self.append_filterpolydata.AddInputData(actor.GetMapper().GetInput())
         self.append_filterpolydata.Update()
         return actor
-<<<<<<< HEAD
-
-    def add_axes(self, renderer, center, orientation, axes_length):
-        axes = vtk.vtkAxesActor()
-        axes.SetTotalLength(axes_length[0], axes_length[1], axes_length[2])
-
-        transform = vtk.vtkTransform()
-        transform.Translate(center)
-
-        if orientation == "x":
-            transform.RotateY(90)
-        elif orientation == "-x":
-            transform.RotateY(-90)
-        elif orientation == "y":
-            transform.RotateX(90)
-        elif orientation == "-y":
-            transform.RotateX(-90)
-        elif orientation == "-z":
-            transform.RotateX(180)
-
-        axes.SetUserTransform(transform)
-
-        renderer.AddActor(axes)
-=======
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b

@@ -54,7 +54,6 @@ class FileSelectionMesh(QMainWindow):
 
     # load meshdata from file
     def meshdata(self):
-<<<<<<< HEAD
         if ".stl" in self.file_path:
             progressbarprogram = Progress.pythonProgressBar(
                 100000,
@@ -92,24 +91,4 @@ class FileSelectionMesh(QMainWindow):
                     self.append_filter,
                 )
                 progressbarprogram.exec_()
-=======
-        # clear mesh
-        self.horizontalLayout.addWidget(self.plotterloader.interactor)
-        self.horizontalLayout_page2.addWidget(self.plotterloader_2.interactor)
-        progressbarprogram = Progress.pythonProgressBar(
-            100000,
-            self.plotterloader,
-            self.plotterloader_2,
-            self.file_path,
-            self.renderer,
-            self.renderWindowInteractor,
-            self.Xlabel,
-            self.Ylabel,
-            self.Xlabel_before,
-            self.Ylabel_before,
-            self.Zlabel_before,
-            self.append_filter,
-        )
-        progressbarprogram.exec_()
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
 

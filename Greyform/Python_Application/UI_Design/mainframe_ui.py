@@ -87,12 +87,9 @@ class Ui_MainWindow(object):
         self.NextButton_Page_2 = QtWidgets.QPushButton(self.layoutWidgetpage2)
         self.NextButton_Page_2.setObjectName("NextButton_Page_2")
         self.horizontalLayout_8.addWidget(self.NextButton_Page_2)
-<<<<<<< HEAD
         self.horizontalLayout_8.setStretch(0, 1)
         self.horizontalLayout_8.setStretch(1, 1)
         self.horizontalLayout_8.setStretch(2, 1)
-=======
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b
         self.verticalLayout_17.addLayout(self.horizontalLayout_8)
         self.layoutWidgetframe = QtWidgets.QWidget(self.page)
         self.layoutWidgetframe.setGeometry(QtCore.QRect(340, 10, 451, 559))
@@ -508,7 +505,3 @@ class Ui_MainWindow(object):
         self.EnableRobotButton.setText(_translate("MainWindow", "Enable Robot"))
         self.CloseButton.setText(_translate("MainWindow", "Abort/Close"))
         self.ConfirmAckButton.setText(_translate("MainWindow", "Acknowledge"))
-<<<<<<< HEAD
-=======
-import square_rc
->>>>>>> d75172a254c2d19122ed92d74deb6d75ee068b4b

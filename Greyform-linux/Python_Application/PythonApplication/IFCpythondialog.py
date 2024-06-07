@@ -18,6 +18,7 @@ import pandas as pd
 import pyvista as pv
 import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl
+import PythonApplication.excel_export_info as biminfo
 import numpy as np
 import openpyxl
 
@@ -55,6 +56,7 @@ class ProgressBarDialogIFC(QDialog):
         self.Ylabel_before = Ylabel_before
         self.Zlabel_before = Zlabel_before
         self.append_filter = append_filter
+        self.meshsplot = None
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setGeometry(30, 130, 340, 30)
         label = QLabel("Graphics is converting , please wait.")
@@ -91,40 +93,22 @@ class ProgressBarDialogIFC(QDialog):
                 settings, self.ifc_file, multiprocessing.cpu_count()
             )
             if iterator.initialize():
-                all_points = []
-                all_cells = []
-                all_guids = []
-                all_element = []
-                all_materials = []
-                all_material_ids = []
+                stl_data = {"points": [], "cells": [], "material_ids": []}
                 scale_factor = 100.0
+                # Collect all unique element types
+                biminfo.Exportexcelinfo(self.ifc_file, "IfcElement")
                 try:
                     while True:
                         shape = iterator.get()
                         guid = shape.guid
-                        element = self.ifc_file.by_guid(shape.guid)
+                        element = self.ifc_file.by_guid(guid)
                         element_type = element.is_a() if element else "Unknown"
-                        # Skip IfcOpeningElement
-                        if element_type == "IfcOpeningElement":
-                            if not iterator.next():
-                                break
-                            continue
-                        element_name = (
-                            element.Name
-                            if element and hasattr(element, "Name")
-                            else "Unnamed"
-                        )
                         # Indices of vertices per triangle face
                         faces = shape.geometry.faces
-                        # X Y Z of vertices in flattened list
+                         # X Y Z of vertices in flattened list
                         verts = shape.geometry.verts
-                        # Material names and colour style information that are relevant to this shape
-                        materials = shape.geometry.materials
-                        # Indices of material applied per triangle face e.g. [f1m, f2m, ...]
-                        material_ids = shape.geometry.material_ids
-                        if len(faces) == 0 or len(verts) == 0:
-                            print(f"No geometry for shape {guid}")
-                            continue
+                        # Indices of material applied per triangle face
+                        material_ids = shape.geometry.material_ids  
                         # Group vertices and faces appropriately
                         grouped_verts = [
                             [verts[i], verts[i + 1], verts[i + 2]]
@@ -135,38 +119,27 @@ class ProgressBarDialogIFC(QDialog):
                             for i in range(0, len(faces), 3)
                         ]
                         # Scale vertices
-                        scaled_grouped_verts = self.scale_vertices(
-                            grouped_verts, scale_factor
-                        )
-                        # Flatten the grouped_verts and add indices to all_points
-                        vert_index_offset = len(all_points)
-                        all_points.extend(scaled_grouped_verts)
-                        all_cells.extend(
-                            [
+                        scaled_grouped_verts = np.array(grouped_verts) * scale_factor
+                        # Collect data for STL
+                        if element_type != "IfcOpeningElement":
+                            stl_vert_index_offset = len(stl_data["points"])
+                            stl_data["points"].extend(scaled_grouped_verts)
+                            stl_data["cells"].extend(
                                 [
-                                    face[0] + vert_index_offset,
-                                    face[1] + vert_index_offset,
-                                    face[2] + vert_index_offset,
+                                    [
+                                        face[0] + stl_vert_index_offset,
+                                        face[1] + stl_vert_index_offset,
+                                        face[2] + stl_vert_index_offset,
+                                    ]
+                                    for face in grouped_faces
                                 ]
-                                for face in grouped_faces
-                            ]
-                        )
-                        all_element.extend(
-                            [(element_type, element_name)] * len(grouped_faces)
-                        )
-                        all_guids.extend([guid] * len(grouped_faces))
-                        if material_ids:
-                            all_material_ids.extend(material_ids)
-                        if materials:
-                            all_materials.extend(materials)
+                            )
+                            stl_data["material_ids"].extend(material_ids)
                         if not iterator.next():
                             break
                 except Exception as e:
                     self.log_error(f"Error while processing IFC shapes: {e}")
-                self.convertStl(all_points, all_cells, all_material_ids)
-                self.convertExcel(
-                    all_points, all_cells, all_element, all_guids, all_materials
-                )
+                self.convertStl(stl_data)
                 try:
                     self.stlloader()
                 except Exception as e:
@@ -182,47 +155,18 @@ class ProgressBarDialogIFC(QDialog):
             log_file.write(message + "\n")
 
     # Convert to meshio format and write to STL
-    def convertStl(self, all_points, all_cells, all_material_ids):
+    def convertStl(self, data):
         try:
-            points = all_points
-            cells = [("triangle", all_cells)]
+            points = np.array(data["points"])
+            cells = [("triangle", np.array(data["cells"]))]
             # Create material ID array for each face
-            cell_data = {"triangle": [all_material_ids]}
             self.stl_file = "output.stl"
-            meshio.write_points_cells(
-                self.stl_file,
-                points=points,
-                cells=cells,
-                cell_data=cell_data,
-            )
+            mesh = meshio.Mesh(points=points, cells=cells)
+            mesh.cell_data["triangle"] = [np.array(data["material_ids"])]
+            meshio.write(self.stl_file, mesh)
+            self.meshsplot = pv.read(self.stl_file)
         except Exception as e:
             self.log_error(f"Failed to write STL file: {e}")
-
-    def convertExcel(
-        self, all_points, all_cells, all_element, all_guids, all_materials
-    ):
-        try:
-            points_df = pd.DataFrame(all_points, columns=["X", "Y", "Z"])
-            cells_df = pd.DataFrame(
-                all_cells, columns=["Vertex1", "Vertex2", "Vertex3"]
-            )
-            guids_df = pd.DataFrame(all_guids, columns=["GUID"])
-            elements_df = pd.DataFrame(
-                all_element, columns=["Element Type", "Element Name"]
-            )
-            materials_df = pd.DataFrame(all_materials, columns=["Material"])
-            # Save to Excel
-            with pd.ExcelWriter("output.xlsx") as writer:
-                points_df.to_excel(writer, sheet_name="Vertices", index=False)
-                cells_df.to_excel(writer, sheet_name="Faces", index=False)
-                guids_df.to_excel(writer, sheet_name="GUIDs", index=False)
-                elements_df.to_excel(writer, sheet_name="Elements", index=False)
-                materials_df.to_excel(writer, sheet_name="Materials", index=False)
-        except Exception as e:
-            self.log_error(f"Failed to write Excel file: {e}")
-
-    def scale_vertices(self, vertices, scale_factor):
-        return np.array(vertices) * scale_factor
 
     # add mesh in pyvista frame
     def stlloader(self):
