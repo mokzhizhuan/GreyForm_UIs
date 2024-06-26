@@ -36,6 +36,17 @@ l key is to remove the actor in the room view and set the mesh to the original p
 m Key is to restore moving position <br>
 
 ##
+IFC format: <br>
+excel format <br> 
+Stl Format to load pyvista <br>
+
+##
+configuration of ros
+ros publisher
+ros subscriber
+linked to qt python GUI
+
+##
 Main Classes:<br>                               
 MainApplication > Mainframe(main classes, consist of 6 pages) > Starting Menu > File Selection Mesh > Sequence Selection > Marking UI > Marking Button Ui > Setting UI
 
@@ -43,7 +54,8 @@ MainApplication > Mainframe(main classes, consist of 6 pages) > Starting Menu > 
 Sub Classes:<br>
 createmesh > progressBarvtk > interactiveevent <br>
 menu_confirm <br>
-fileselectionmesh > progressBar <br>
+fileselectionmesh > progressBar                          > load_pyvistaframe <br>
+                  > ifcpythondialog > excel_export_info                      <br>
 menu_close <br>
 setsequence 
 enable_robot
@@ -53,10 +65,17 @@ setting UI > Wifi <br>
            > Services <br>
            > User Account <br> > Change Password Page <br>
                                > Upload Home BIM File > Upload BIM File > Localization File Progress UI > Select Localization Marking > Marking Completed <br>
-                                                      > Delete BIM FIle 
+                                                      > Delete BIM FIle <br>
            > Restart/Shutdown <br>
            > About <br>
 
 ##
 Loading the STL link , using the STL file extension. <br>
-This program is only load STL file for the frames. 
+This program is only load STL file for the frames. <br>
+Ifc will be loaded and will convert to STL file format to load pyvista. <br>
+
+##
+Progress: <br>
+gui wall selection <br>
+collision avoidance progression <br>
+marker accuracy algorithm <br>
