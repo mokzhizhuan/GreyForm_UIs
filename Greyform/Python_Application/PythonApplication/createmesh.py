@@ -160,4 +160,5 @@ class createMesh(QMainWindow):
         actor.SetOrientation(1, 0, 0)
         self.append_filterpolydata.AddInputData(actor.GetMapper().GetInput())
         self.append_filterpolydata.Update()
+        print(self.meshbounds)
         return actor

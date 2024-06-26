@@ -5,16 +5,13 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.restoredefault as default
 from pywifi import PyWiFi, const
-import PythonApplication.serveraddress as server
 import PythonApplication.reset as closewindow
-import socket
 from PyQt5.QtNetwork import QTcpServer, QHostAddress
 import PythonApplication.login as Login
 import PythonApplication.settinglayout as settinglayoutUi
 import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
+import PythonApplication.settingtext as settingtextlayout
 import datetime
-import psutil
-import os
 import pytz
 from tzlocal import get_localzone
 
@@ -42,15 +39,22 @@ class Setting(QWidget):
             "timezone": str(get_localzone()),
             "password": "pass",
         }
+        self.saved_setting = {
+            "theme": "Gray",
+            "font_size": "15",
+            "resolution": f"{windowwidth} x {windowheight}",
+            "timezone": str(get_localzone()),
+            "password": "pass",
+        }
         self.setupUi()
 
     # setup ui setting from the page
     def setupUi(self):
         # home
         self.settingform.themebox.currentIndexChanged.connect(self.colorchange)
+        self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
 
         # wifi
-        self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
         self.wifi = PyWiFi()
         self.interface = self.wifi.interfaces()[0]
         self.refreshWiFiList()
@@ -103,9 +107,29 @@ class Setting(QWidget):
         self.restartwidget = QStackedWidget(self.settingform.RestartPowerOffPage)
         self.restartwidget.addWidget(self.restartwidgetwindow)
         self.restartwidget.setGeometry(50, 260, 300, 200)
-        self.button_UI()
         self.setStretch()
         self.retranslateUi()
+        settingUI = settingbuttonUIinteraction.settingbuttonUI(
+            self.settingform.MarkingbackButton,
+            self.settingform.stackedWidgetsetting,
+            self.stackedWidget,
+            self.settingform.HomeButton,
+            self.settingform.WifiButton,
+            self.settingform.serviceIPAddressButton,
+            self.settingform.ServicesButton,
+            self.settingform.UserButton,
+            self.settingform.AboutButton,
+            self.settingform.PowerButton,
+            self.settingform.maintitlelabel,
+            self.settingform.themebox,
+            self.settingform.Text_size,
+            self.settingform.resolutioncomboBox,
+            self.settingform.country,
+            self.settingform.PasslineEdit,
+            self.MainWindow,
+            self.saved_setting,
+        )
+        settingUI.load_settings()
 
         self.settingform.restoreDefaultsButton.clicked.connect(
             lambda: default.restoredefaultsetting(
@@ -123,21 +147,6 @@ class Setting(QWidget):
             )
         )
 
-    # button interaction page
-    def button_UI(self):
-        settingbuttonUIinteraction.settingbuttonUI(
-            self.settingform.MarkingbackButton,
-            self.settingform.stackedWidgetsetting,
-            self.stackedWidget,
-            self.settingform.HomeButton,
-            self.settingform.WifiButton,
-            self.settingform.serviceIPAddressButton,
-            self.settingform.ServicesButton,
-            self.settingform.UserButton,
-            self.settingform.AboutButton,
-            self.settingform.PowerButton,
-            self.settingform.maintitlelabel,
-        )
 
     # detect WIFI
     def refreshWiFiList(self):
@@ -151,50 +160,35 @@ class Setting(QWidget):
         interface_info = f"Interface: {self.interface.name()}"
         self.settingform.interface_label.setText(interface_info)
 
-    # detect ip address
-    def get_ip_address(self):
-        # Get the IP address of the local machine
-        ip_address = socket.gethostbyname(socket.gethostname())
-        return ip_address
-
     # add text
     def retranslateUi(self):
-        ip_address = self.get_ip_address()
-        self.settingform.labeltitlsetting.setText("<h3>Setting</h3>")
-        self.settingform.ip_label.setText(f"IP Address: {ip_address}")
-        self.settingform.titlelabel.setText("<h3>About My Application</h3>")
-        self.settingform.info_label.setText(
-            "This is a Robot Marking Application program"
-        )
-        self.settingform.version_label.setText("Version: 1.0")
-        self.settingform.author_label.setText("Created by Mok Zhi Zhuan")
-        servers = server.MyServer()
-        self.settingform.Portnumipadd.setText(f"Port: {servers.serverPort()}")
-        self.settingform.host.setText(f"Host: {servers.serverAddress().toString()}")
-        self.settingform.Port.setText(f"Port: {servers.serverPort()}")
-        datetoday = datetime.date.today()
-        datetodayformatted = datetoday.strftime("%d/%m/%Y")
-        process = psutil.Process(os.getpid())
-        memory_usage = process.memory_info().rss / (1024 * 1024)  # in MB
         self.update_time()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_time)
         self.timer.start(5000)  # Trigger every 5000 milliseconds (5 seconds)
-        self.settingform.SystemDate.setText(f"Date : {datetodayformatted}")
-        self.settingform.SystemMemory.setText(
-            f"System Memory Usage : {memory_usage:.2f} MB"
+        settingtextlayout.SettingText(
+            self.settingform.labeltitlsetting,
+            self.settingform.ip_label,
+            self.settingform.titlelabel,
+            self.settingform.info_label,
+            self.settingform.version_label,
+            self.settingform.author_label,
+            self.settingform.Portnumipadd,
+            self.settingform.host,
+            self.settingform.Port,
+            self.settingform.SystemDate,
+            self.settingform.SystemMemory,
+            self.settingform.PasslineEdit,
+            self.userlabel,
+            self.accountinfo,
         )
-        self.userlabel.setText(f"<h2>User: {self.accountinfo[0]['UserID']}</h2>")
-        self.settingform.PasslineEdit.setText(f"{self.accountinfo[0]['Pass']}")
-        self.settingform.PasslineEdit.returnPressed.connect(self.changepassfunction)
-
-    def changepassfunction(self):
-        password = self.settingform.PasslineEdit.text()
-        self.accountinfo[0]["Pass"] = password
 
     def update_time(self):
         now = datetime.datetime.now()
         formatted_time = now.strftime("%I:%M %p").lstrip("0")
+        if "AM" not in formatted_time and "PM" not in formatted_time:
+            am_pm = "AM" if now.hour < 12 else "PM"
+            formatted_time = now.strftime("%I:%M ") + am_pm
         self.settingform.Systemtime.setText(f"Time : {formatted_time}")
 
     def updateTimeLabel(self, index):
@@ -202,6 +196,9 @@ class Setting(QWidget):
         tz = pytz.timezone(selected_time_zone)
         now = datetime.datetime.now(tz)
         formatted_time = now.strftime("%I:%M %p").lstrip("0")
+        if "AM" not in formatted_time and "PM" not in formatted_time:
+            am_pm = "AM" if now.hour < 12 else "PM"
+            formatted_time = now.strftime("%I:%M ") + am_pm
         self.settingform.Systemtime.setText(f"Time : {formatted_time}")
 
     def update_font(self, index):
@@ -230,7 +227,7 @@ class Setting(QWidget):
 
     def colorchange(self, index):
         self.color = self.settingform.themebox.currentText()
-        if self.color == "White":
+        if self.color == "Light":
             self.MainWindow.setStyleSheet(f"background-color : {self.color}")
         elif self.color == "Gray":
             self.MainWindow.setStyleSheet(self.styleSheet())

@@ -1,0 +1,12 @@
+setup.py
+my_robot_wallinterfaces/__init__.py
+my_robot_wallinterfaces.egg-info/PKG-INFO
+my_robot_wallinterfaces.egg-info/SOURCES.txt
+my_robot_wallinterfaces.egg-info/dependency_links.txt
+my_robot_wallinterfaces.egg-info/top_level.txt
+my_robot_wallinterfaces/msg/__init__.py
+my_robot_wallinterfaces/msg/_combined_message.py
+my_robot_wallinterfaces/msg/_file_extraction_message.py
+my_robot_wallinterfaces/msg/_selection_wall.py
+my_robot_wallinterfaces/srv/__init__.py
+my_robot_wallinterfaces/srv/_set_led.py

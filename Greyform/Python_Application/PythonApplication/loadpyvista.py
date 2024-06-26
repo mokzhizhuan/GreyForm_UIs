@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
     QLabel,
 )
 import pyvista as pv
+import numpy as np
 
 
 class StLloaderpyvista(object):
@@ -22,16 +23,8 @@ class StLloaderpyvista(object):
     def loadstl(self):
         self.loader.remove_actor("roombuilding")
         self.loader_2.remove_actor("roombuilding")
-        self.loader.remove_actor("edges")
-        self.loader_2.remove_actor("edges")
         self.loader.update()
         self.loader_2.update()
-        edges = self.meshsplot.extract_feature_edges(
-            boundary_edges=False,
-            non_manifold_edges=True,
-            feature_edges=False,
-            manifold_edges=True,
-        )
         self.loader.add_mesh(
             self.meshsplot,
             color=(230, 230, 250),
@@ -42,7 +35,6 @@ class StLloaderpyvista(object):
             name="roombuilding",
             opacity="linear",
         )
-        self.loader.add_mesh(edges, color="black", line_width=2 ,name="edges")
         self.loader_2.add_mesh(
             self.meshsplot,
             color=(230, 230, 250),
@@ -53,7 +45,10 @@ class StLloaderpyvista(object):
             name="roombuilding",
             opacity="linear",
         )
-        self.loader_2.add_mesh(edges, color="black", line_width=2 ,name="edges")
         # show Frame
         self.loader.show()
         self.loader_2.show()
+
+    def log_points(self, message):
+        with open("dimension.txt", "a") as log_file:
+            log_file.write(message + "\n")

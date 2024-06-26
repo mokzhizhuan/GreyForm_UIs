@@ -186,14 +186,11 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         if key == "l":  # reset movement and camera
             # Set up the camera
             camera = self.render.GetActiveCamera()
-            camera.SetPosition(0, -(self.meshbound[2] * 3), 0)
-            camera.SetFocalPoint(0, 0, 0)
-            camera.SetViewUp(0, 0, 1)
-            self.render.ResetCamera()
-            camera.SetPosition(0, -(self.meshbound[3] * 3), self.meshbound[5] * 2)
+            camera.SetPosition(0, -1, 0)
             camera.SetFocalPoint(0, 0, 0)
             camera.SetViewUp(0, 0, 1)
             self.render.ResetCameraClippingRange()
+            self.render.ResetCamera()
             self.RemoveObserver(self.movement)
             # self.RemoveObserver(self.markingevent)
             self.RemoveObserver(self.mousemovement)
@@ -268,7 +265,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         if num_contacts == 0:
             self.refresh()
             self.old_actor_position = actor_position
-        elif num_contacts > 0 and num_contacts <= 8 :
+        elif num_contacts > 0 and num_contacts < 8:
             messege = f"collision detected , camera actor is stuck moving back to the original position"
             self.show_error_message(messege)
             self.leftbuttoninteraction.reset(self.default_pos)

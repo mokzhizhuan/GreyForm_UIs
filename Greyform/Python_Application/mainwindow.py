@@ -12,6 +12,7 @@ from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
 import PythonApplication.setting as setting
 import vtk
+import json
 import os
 
 
@@ -19,9 +20,17 @@ import os
 class Ui_MainWindow(QMainWindow):
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
-        self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
         self.width = 800
         self.height = 600
+        try:
+            with open("settings.json", "r") as f:
+                settings = json.load(f)
+                settings.get(
+                    "resolution", f"{self.width} x {self.height}"
+                )
+        except FileNotFoundError:
+            pass
+        self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
         self.mainwindow.resize(self.width, self.height)
         self.filepaths = os.getcwd()
         self.file = None
@@ -116,6 +125,7 @@ class Ui_MainWindow(QMainWindow):
 
     # file selection when clicked
     def on_selection_changed(self, index):
+        self.mainwindow.NextButton_Page_2.hide()
         model = self.mainwindow.Selectivefilelistview.model()
         self.file_path = model.filePath(index)
         file = self.mainwindow.Selectivefilelistview.model().itemData(index)[0]
@@ -192,6 +202,7 @@ class Ui_MainWindow(QMainWindow):
         self.renderWindowInteractor.GetRenderWindow().Finalize()
         self.renderWindowInteractor.GetRenderWindow().GetInteractor().TerminateApp()
         event.accept()
+
 
 
 if __name__ == "__main__":

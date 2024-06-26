@@ -10,11 +10,9 @@ import ifcopenshell
 import ifcopenshell.geom
 import meshio
 import multiprocessing
-import pandas as pd
 import pyvista as pv
 import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl
-from ifcopenshell.util.placement import get_local_placement
 import PythonApplication.excel_export_info as biminfo
 import numpy as np
 
@@ -90,9 +88,9 @@ class ProgressBarDialogIFC(QDialog):
             )
             if iterator.initialize():
                 stl_data = {"points": [], "cells": [], "material_ids": []}
-                scale_factor = 100.0
+                # making sure it scale the same as the stl file diagram based on ifc
+                scale_factor = 1000.0
                 # Collect all unique element types
-                biminfo.Exportexcelinfo(self.ifc_file, "IfcElement")
                 try:
                     while True:
                         shape = iterator.get()
@@ -101,10 +99,10 @@ class ProgressBarDialogIFC(QDialog):
                         element_type = element.is_a() if element else "Unknown"
                         # Indices of vertices per triangle face
                         faces = shape.geometry.faces
-                         # X Y Z of vertices in flattened list
+                        # X Y Z of vertices in flattened list
                         verts = shape.geometry.verts
                         # Indices of material applied per triangle face
-                        material_ids = shape.geometry.material_ids  
+                        material_ids = shape.geometry.material_ids
                         # Group vertices and faces appropriately
                         grouped_verts = [
                             [verts[i], verts[i + 1], verts[i + 2]]
@@ -136,6 +134,7 @@ class ProgressBarDialogIFC(QDialog):
                 except Exception as e:
                     self.log_error(f"Error while processing IFC shapes: {e}")
                 self.convertStl(stl_data)
+                biminfo.Exportexcelinfo(self.ifc_file, "IfcElement")
                 try:
                     self.stlloader()
                 except Exception as e:
@@ -163,7 +162,6 @@ class ProgressBarDialogIFC(QDialog):
             self.meshsplot = pv.read(self.stl_file)
         except Exception as e:
             self.log_error(f"Failed to write STL file: {e}")
-
 
     # add mesh in pyvista frame
     def stlloader(self):
