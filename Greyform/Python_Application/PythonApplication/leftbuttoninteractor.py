@@ -56,6 +56,7 @@ class LeftInteractorStyle(object):
             1, self.mesh.GetMatrix()
         )  # Static object transform
         # Set up the collision filter
+        self.cellPicker = vtk.vtkCellPicker()
         self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()
         self.leftbuttoninteraction = False

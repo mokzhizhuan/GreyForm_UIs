@@ -87,6 +87,7 @@ class FileSelectionMesh(QMainWindow):
                     self.Ylabel_before,
                     self.Zlabel_before,
                     self.append_filter,
+
                 )
                 progressbarprogram.exec_()
 

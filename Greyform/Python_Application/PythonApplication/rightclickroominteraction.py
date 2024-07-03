@@ -82,20 +82,20 @@ class rightclickRoomInteract(object):
             self.collisionFilter,
             spaceseperation,
             self.default_pos,
-            center
+            center,
         )
         self.displaytext(camera)
 
     def click_event(self, obj, event):
         self.interactor_style.SetMotionFactor(8)
         click_pos = self.renderwindowinteractor.GetEventPosition()
-        picker = vtk.vtkCellPicker()
-        self.renderwindowinteractor.GetRenderWindow().GetInteractor().SetPicker(picker)
-        picker.Pick(click_pos[0], click_pos[1], 0, self.render)
+        pickerroominteract = vtk.vtkCellPicker()
+        self.renderwindowinteractor.GetRenderWindow().GetInteractor().SetPicker(pickerroominteract)
+        pickerroominteract.Pick(click_pos[0], click_pos[1], 0, self.render)
         picked_position = [
-            picker.GetPickPosition()[0],
-            picker.GetPickPosition()[1],
-            picker.GetPickPosition()[2],
+            pickerroominteract.GetPickPosition()[0],
+            pickerroominteract.GetPickPosition()[1],
+            pickerroominteract.GetPickPosition()[2],
         ]
         if picked_position[0] <= self.default_pos[0]:
             picked_position[0] = self.default_pos[0]

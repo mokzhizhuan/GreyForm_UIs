@@ -40,7 +40,6 @@ class storage(object):
         self.ylabels = ylabel
         self.render = ren
         self.cameraactor = cameraactor
-        camera = self.render.GetActiveCamera()
         self.renderwindowinteractor = renderwindowinteractor
         self.meshbound = meshbounds
         self.mesh = polydata
@@ -82,5 +81,5 @@ class storage(object):
             self.oldcamerapos,
             self.collisionFilter,
             self.spaceseperation,
-            self.center
+            self.center,
         )

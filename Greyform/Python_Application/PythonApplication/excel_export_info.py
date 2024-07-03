@@ -133,23 +133,23 @@ class Exportexcelinfo(object):
                 print(f"Rotating marker for row {row_idx}: {marker}")
                 if "b" in name:
                     marker = 4
-                    status = "done"
+                    status = "blank"
                     worksheet.write(row_idx, marker_col_index + 1, marker)
                     worksheet.write(row_idx, status_col_index + 1, status)
                 else:
                     marker = 3
-                    status = "done"
+                    status = "blank"
                     worksheet.write(row_idx, marker_col_index + 1, marker)
                     worksheet.write(row_idx, status_col_index + 1, status)
             else:
                 if marker == "T":
                     marker = 2
-                    status = "done"
+                    status = "blank"
                     worksheet.write(row_idx, marker_col_index + 1, marker)
                     worksheet.write(row_idx, status_col_index + 1, status)
                 elif marker == "+":
                     marker = 1
-                    status = "done"
+                    status = "blank"
                     worksheet.write(row_idx, marker_col_index + 1, marker)
                     worksheet.write(row_idx, status_col_index + 1, status)
                 elif marker == "6":

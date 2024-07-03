@@ -211,27 +211,23 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.leftbuttoninteraction.reset(self.default_pos)
         if key == "Up":
             # actor will not go beyond the inside are of the mesh
-            if actor_position[0] < (
-                self.meshbound[1] - self.actor_speed * 2
-            ):  # prevent shape max number
+            if actor_position[0] < (self.meshbound[1] - self.actor_speed * 2):
+                # prevent shape max number
                 actor_position[0] += self.actor_speed
                 self.setcollision(actor_position, key, camera)
         elif key == "Down":
-            if actor_position[0] > (
-                self.meshbound[0] + self.actor_speed * 2
-            ):  # prevent shape min number
+            if actor_position[0] > (self.meshbound[0] + self.actor_speed * 2):
+                # prevent shape min number
                 actor_position[0] -= self.actor_speed
                 self.setcollision(actor_position, key, camera)
         elif key == "Left":
-            if actor_position[1] < (
-                self.meshbound[3] - self.actor_speed * 2
-            ):  # prevent shape max number
+            if actor_position[1] < (self.meshbound[3] - self.actor_speed * 2):
+                # prevent shape max number
                 actor_position[1] += self.actor_speed
                 self.setcollision(actor_position, key, camera)
         elif key == "Right":
-            if actor_position[1] > (
-                self.meshbound[2] + self.actor_speed * 2
-            ):  # prevent shape min number
+            if actor_position[1] > (self.meshbound[2] + self.actor_speed * 2):
+                # prevent shape min number
                 actor_position[1] -= self.actor_speed
                 self.setcollision(actor_position, key, camera)
         self.displaystore.storedisplay()
