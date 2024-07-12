@@ -41,10 +41,8 @@ excel format <br>
 Stl Format to load pyvista <br>
 
 ##
-configuration of ros
-ros publisher
-ros subscriber
-linked to qt python GUI
+configuration of ros <br>
+ros publisher and Ros Subscriber are linked to qt Python GUI<br>
 
 ##
 Main Classes:<br>                               
