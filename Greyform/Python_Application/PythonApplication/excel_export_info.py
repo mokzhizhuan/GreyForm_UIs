@@ -28,16 +28,27 @@ class Exportexcelinfo(object):
                 self.pen_column in dataframe_Legend.columns
                 and self.pin_id_column in dataframe_Legend.columns
             ):
-                grouped = dataframe_Legend.drop_duplicates()
-                grouped[self.pen_column] = (
-                    grouped[self.pen_column].astype(str).str.strip()
-                )
-                grouped[self.pin_id_column] = (
-                    grouped[self.pin_id_column].astype(str).str.strip()
-                )
-                grouped[self.pen_column].fillna("", inplace=True)
-                grouped[self.pin_id_column].fillna("", inplace=True)
-                self.wall_legend = grouped.to_dict(orient="records")
+                dataframe_Legend[self.pen_column].fillna("", inplace=True)
+                dataframe_Legend[self.pin_id_column].fillna("", inplace=True)
+                filtered_dataframe = dataframe_Legend[
+                    (dataframe_Legend[self.pen_column] != "")
+                    & (dataframe_Legend[self.pin_id_column] != "")
+                ]
+                self.wall_legend = filtered_dataframe.to_dict(orient="records")
+                self.wall_name = "BSS.20mm Wall Finishes (600x600mm)"
+                self.wall_600x600mm = []
+                self.indexwall = 0
+                self.index = 0
+                for data_legend in self.wall_legend:
+                    data_pen_name = data_legend.get(self.pen_column)
+                    data_pin_id = data_legend.get(self.pin_id_column)
+                    if self.wall_name in data_pen_name:
+                        self.wall_600x600mm.append(
+                            {
+                                "Penetration/Fitting/Reference Point Name": data_pen_name,
+                                "Pin ID": data_pin_id,
+                            }
+                        )
             pandas_data = []
             for object_data in data:
                 row = []
@@ -50,12 +61,9 @@ class Exportexcelinfo(object):
                 self.determine_wall_number, axis=1
             )
             dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
-            # Apply this custom formatting function to the 'PlacementMatrix' column
-            file_name = f"exporteddatas.xlsx"
+            file_name = f"exporteddatass.xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 workbook = writer.book
-                # format_rotated = workbook.add_format({'text_wrap': True, 'valign': 'top', 'rotation': 90})
-
                 for object_class in dataframe["Class"].unique():
                     df_class = dataframe[dataframe["Class"] == object_class]
                     df_class = df_class.drop(["Class"], axis=1)
@@ -63,7 +71,6 @@ class Exportexcelinfo(object):
                     df_class.to_excel(writer, sheet_name=object_class)
                     worksheet = writer.sheets[object_class]
                     self.apply_rotation_to_markers(workbook, worksheet, df_class)
-
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
 
@@ -81,7 +88,7 @@ class Exportexcelinfo(object):
                     x, y, z = placement.Location.Coordinates
             objects_data.append(
                 {
-                    "Class": object.is_a(),
+                    "Class": str(object.is_a()).replace("Ifc", ""),
                     "Marking type": (
                         Element.get_type(object).Name
                         if Element.get_type(object)
@@ -93,7 +100,7 @@ class Exportexcelinfo(object):
                     "Position Z (m)": int(z),
                     "Wall Number": str(wall_number),
                     "Shape type": "",
-                    "Status": "",
+                    "Status": "blank",
                 }
             )
         return objects_data
@@ -101,9 +108,6 @@ class Exportexcelinfo(object):
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
             log_file.write(message + "\n")
-
-    def format_matrix(self, matrix):
-        return [[f"{element:.2f}" for element in row] for row in matrix]
 
     def add_markers(self, row):
         if pd.isnull(row["Point number/name"]):
@@ -120,12 +124,10 @@ class Exportexcelinfo(object):
 
     def apply_rotation_to_markers(self, workbook, worksheet, df_class):
         marker_col_index = df_class.columns.get_loc("Shape type")
-        status_col_index = df_class.columns.get_loc("Status")
-        for row_idx, (name, marker, status) in enumerate(
+        for row_idx, (name, marker) in enumerate(
             zip(
                 df_class["Point number/name"],
                 df_class["Shape type"],
-                df_class["Status"],
             ),
             start=1,
         ):
@@ -133,30 +135,20 @@ class Exportexcelinfo(object):
                 print(f"Rotating marker for row {row_idx}: {marker}")
                 if "b" in name:
                     marker = 4
-                    status = "blank"
                     worksheet.write(row_idx, marker_col_index + 1, marker)
-                    worksheet.write(row_idx, status_col_index + 1, status)
                 else:
                     marker = 3
-                    status = "blank"
                     worksheet.write(row_idx, marker_col_index + 1, marker)
-                    worksheet.write(row_idx, status_col_index + 1, status)
             else:
                 if marker == "T":
                     marker = 2
-                    status = "blank"
                     worksheet.write(row_idx, marker_col_index + 1, marker)
-                    worksheet.write(row_idx, status_col_index + 1, status)
                 elif marker == "+":
                     marker = 1
-                    status = "blank"
                     worksheet.write(row_idx, marker_col_index + 1, marker)
-                    worksheet.write(row_idx, status_col_index + 1, status)
                 elif marker == "6":
                     marker = 6
-                    status = "blank"
                     worksheet.write(row_idx, marker_col_index + 1, marker)
-                    worksheet.write(row_idx, status_col_index + 1, status)
 
     def get_attribute_value(self, object_data, attribute):
         if "." not in attribute:
@@ -181,18 +173,27 @@ class Exportexcelinfo(object):
         wallnum = None
         name = row["Point number/name"]
         if pd.isnull(name):
-            if wallnum == None:
-                return "F"
+            self.index += 1
+            return None
         name = str(name)
+        if self.index == 117:
+            self.index += 1
+            return None
+        if self.wall_name in name:
+            if self.indexwall < len(self.wall_600x600mm):
+                wallnum = self.wallnumber(self.wall_600x600mm[self.indexwall]["Pin ID"])
+                self.indexwall += 1
+                self.index += 1
+                return wallnum
         for data_legend in self.wall_legend:
             data_pen_name = data_legend.get(self.pen_column)
             data_pin_id = data_legend.get(self.pin_id_column)
             if data_pen_name in name:
                 wallnum = self.wallnumber(data_pin_id)
+                self.index += 1
                 return wallnum
         wallnum = self.wallnumber(name)
-        if wallnum == None:
-            return "F"
+        self.index += 1
         return wallnum
 
     def wallnumber(self, name):
