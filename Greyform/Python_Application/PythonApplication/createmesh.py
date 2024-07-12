@@ -22,6 +22,11 @@ class createMesh(QMainWindow):
         ylabelbefore,
         zlabelbefore,
         append_filterpolydata,
+        seq1Button,
+        seq2Button,
+        seq3Button,
+        NextButton_Page_3,
+        Seqlabel,
     ):
         # variable for loading bar ui
         self.defaultposition = [0, 0, 1]
@@ -37,9 +42,33 @@ class createMesh(QMainWindow):
         self.xlabels = xlabel
         self.ylabels = ylabel
         self.append_filterpolydata = append_filterpolydata
+        self.seq1Button = seq1Button
+        self.seq2Button = seq2Button
+        self.seq3Button = seq3Button
+        self.NextButton_Page_3 = NextButton_Page_3
+        self.Seqlabel = Seqlabel
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
+        self.seq1Button.clicked.connect(
+            lambda: self.addseqtext(
+                self.seq1Button, self.NextButton_Page_3, self.Seqlabel
+            )
+        )
+        self.seq2Button.clicked.connect(
+            lambda: self.addseqtext(
+                self.seq2Button,
+                self.NextButton_Page_3,
+                self.Seqlabel,
+            )
+        )
+        self.seq3Button.clicked.connect(
+            lambda: self.addseqtext(
+                self.seq3Button,
+                self.NextButton_Page_3,
+                self.Seqlabel,
+            )
+        )
         self.loadStl()
 
     def loadStl(self):
@@ -162,3 +191,10 @@ class createMesh(QMainWindow):
         self.append_filterpolydata.Update()
         print(self.meshbounds)
         return actor
+    
+    def addseqtext(self, buttonseq, buttonnextpage, label):
+        dataseqtext = buttonseq.text()
+        dataseqtext = dataseqtext.replace("Stage ", "")
+        buttonnextpage.show()
+        _translate = QtCore.QCoreApplication.translate
+        label.setText(_translate("MainWindow", "Stage: " + str(dataseqtext)))

@@ -6,7 +6,6 @@ from PyQt5.QtGui import *
 import sys
 import mainwindowlayout as mainwindowuilayout
 import PythonApplication.fileselectionmesh as fileselectionmesh
-import PythonApplication.setsequence as SequenceData
 from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
@@ -25,9 +24,7 @@ class Ui_MainWindow(QMainWindow):
         try:
             with open("settings.json", "r") as f:
                 settings = json.load(f)
-                settings.get(
-                    "resolution", f"{self.width} x {self.height}"
-                )
+                settings.get("resolution", f"{self.width} x {self.height}")
         except FileNotFoundError:
             pass
         self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
@@ -72,7 +69,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow,
             self.width,
             self.height,
-        )  # insert setting
+        )  # insert setting page
         self.setStretch()
         self.button_UI()
 
@@ -80,11 +77,6 @@ class Ui_MainWindow(QMainWindow):
     def button_UI(self):
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_selection_changed)
         self.mainwindow.FilePathButton.clicked.connect(self.browsefilesdirectory)
-        for i in range(1, 4):
-            button = getattr(self.mainwindow, f"seq{i}Button")
-            self.addbuttonseq(
-                button, self.mainwindow.NextButton_Page_3, self.mainwindow.Seqlabel
-            )
         mainwindowbuttonUIinteraction.mainwindowbuttonUI(
             self.mainwindow,
             self.mainwindow.stackedWidget,
@@ -103,13 +95,6 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.EnableRobotButton,
             self.mainwindow.SettingButton,
             self.append_filter,
-        )
-
-    def addbuttonseq(self, button, nextbutton, seqlabel):
-        button.clicked.connect(
-            lambda: SequenceData.loadseqdata.on_selection_sequence(
-                button, nextbutton, seqlabel
-            )
         )
 
     def browsefilesdirectory(self):
@@ -145,11 +130,18 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.Ylabel_2,
             self.mainwindow.Zlabel,
             self.append_filter,
+            self.mainwindow.seq1Button,
+            self.mainwindow.seq2Button,
+            self.mainwindow.seq3Button,
+            self.mainwindow.NextButton_Page_3,
+            self.mainwindow.Seqlabel,
         )
         if ".stl" in file:
             self.file = file.replace(".stl", "")
         elif ".ifc" in file:
             self.file = file.replace(".ifc", "")
+        elif ".xml" in file:
+            self.file = file.replace(".xml", "")
         self.mainwindow.NextButton_Page_2.show()
         self.mainwindow.Itemlabel.setText(
             self._translate("MainWindow", "Product : " + str(self.file))
@@ -202,7 +194,6 @@ class Ui_MainWindow(QMainWindow):
         self.renderWindowInteractor.GetRenderWindow().Finalize()
         self.renderWindowInteractor.GetRenderWindow().GetInteractor().TerminateApp()
         event.accept()
-
 
 
 if __name__ == "__main__":

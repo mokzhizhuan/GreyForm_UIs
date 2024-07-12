@@ -32,6 +32,11 @@ class ProgressBarDialogIFC(QDialog):
         Ylabel_before,
         Zlabel_before,
         append_filter,
+        seq1Button,
+        seq2Button,
+        seq3Button,
+        NextButton_Page_3,
+        Seqlabel,
     ):
         super().__init__()
         progress_layout = QVBoxLayout()
@@ -51,6 +56,11 @@ class ProgressBarDialogIFC(QDialog):
         self.Zlabel_before = Zlabel_before
         self.append_filter = append_filter
         self.meshsplot = None
+        self.seq1Button = seq1Button
+        self.seq2Button = seq2Button
+        self.seq3Button = seq3Button
+        self.NextButton_Page_3 = NextButton_Page_3
+        self.Seqlabel = Seqlabel
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setGeometry(30, 130, 340, 30)
         label = QLabel("Graphics is converting , please wait.")
@@ -89,7 +99,7 @@ class ProgressBarDialogIFC(QDialog):
             if iterator.initialize():
                 stl_data = {"points": [], "cells": [], "material_ids": []}
                 # making sure it scale the same as the stl file diagram based on ifc
-                scale_factor = 1000.0
+                scale_factor = 1500.0
                 # Collect all unique element types
                 try:
                     while True:
@@ -177,5 +187,10 @@ class ProgressBarDialogIFC(QDialog):
             self.Ylabel_before,
             self.Zlabel_before,
             self.append_filter,
+            self.seq1Button,
+            self.seq2Button,
+            self.seq3Button,
+            self.NextButton_Page_3,
+            self.Seqlabel,
         )
         self.close()

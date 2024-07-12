@@ -1,10 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QPushButton,
     QVBoxLayout,
-    QWidget,
     QDialog,
     QProgressBar,
     QLabel,
@@ -13,6 +9,8 @@ from PyQt5.QtCore import QTimer
 import pyvista as pv
 import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl
+import numpy as np
+from stl import mesh
 
 
 # progress bar to load the imported stl to pyvista or gl view widget
@@ -31,6 +29,11 @@ class pythonProgressBar(QDialog):
         Ylabel_before,
         Zlabel_before,
         append_filter,
+        seq1Button,
+        seq2Button,
+        seq3Button,
+        NextButton_Page_3,
+        Seqlabel,
     ):
         super().__init__()
         progress_layout = QVBoxLayout()
@@ -56,6 +59,11 @@ class pythonProgressBar(QDialog):
         self.Ylabel_before = Ylabel_before
         self.Zlabel_before = Zlabel_before
         self.append_filter = append_filter
+        self.seq1Button = seq1Button
+        self.seq2Button = seq2Button
+        self.seq3Button = seq3Button
+        self.NextButton_Page_3 = NextButton_Page_3
+        self.Seqlabel = Seqlabel
         self.start_progress()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
@@ -84,11 +92,15 @@ class pythonProgressBar(QDialog):
     # add mesh in pyvista frame
     def add_mesh_later(self):
         self.update_progress()
-        self.meshsplot = pv.read(self.filepath)
+        input_stl_path = self.filepath
+        scale_factor = 1.5  # Increase size by 150%
+        output_stl_path = "output.stl"
+        self.resize_stl(input_stl_path, scale_factor, output_stl_path)
+        self.meshsplot = pv.read(output_stl_path)
         loadingstl.StLloaderpyvista(self.meshsplot, self.loader , self.loader_2)
         Createmesh.createMesh(
             self.renderer,
-            self.filepath,
+            output_stl_path,
             self.renderWindowInteractor,
             self.Ylabel,
             self.Xlabel,
@@ -96,5 +108,23 @@ class pythonProgressBar(QDialog):
             self.Ylabel_before,
             self.Zlabel_before,
             self.append_filter,
+            self.seq1Button,
+            self.seq2Button,
+            self.seq3Button,
+            self.NextButton_Page_3,
+            self.Seqlabel,
         )
         self.close()
+
+    def resize_stl(self, file_path, scale_factor, output_path):
+    # Load the STL file
+        Mesh = mesh.Mesh.from_file(file_path)
+    
+        # Scale the mesh
+        Mesh.vectors *= scale_factor
+    
+        # Update the normals
+        Mesh.update_normals()
+    
+        # Save the resized mesh
+        Mesh.save(output_path)

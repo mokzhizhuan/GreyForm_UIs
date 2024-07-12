@@ -1,5 +1,3 @@
-import sys
-from PyQt5 import QtCore, QtWidgets, QtOpenGL, QtGui, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -11,6 +9,11 @@ import PythonApplication.progressBar as Progress
 import ifcopenshell
 import ifcopenshell.geom
 import PythonApplication.IFCpythondialog as ProgressIFCFile
+import PythonApplication.loadpyvista as loadingstl
+import xml.etree.ElementTree as ET
+import numpy as np
+import meshio
+import pyvista as pv
 
 
 # load pyvista in the frame
@@ -32,6 +35,11 @@ class FileSelectionMesh(QMainWindow):
         Ylabel_before,
         Zlabel_before,
         append_filter,
+        seq1Button,
+        seq2Button,
+        seq3Button,
+        NextButton_Page_3,
+        Seqlabel,
     ):
         self.plotterloader = plotterloader
         self.plotterloader_2 = plotterloader_2
@@ -48,6 +56,11 @@ class FileSelectionMesh(QMainWindow):
         self.Ylabel_before = Ylabel_before
         self.Zlabel_before = Zlabel_before
         self.append_filter = append_filter
+        self.seq1Button = seq1Button
+        self.seq2Button = seq2Button
+        self.seq3Button = seq3Button
+        self.NextButton_Page_3 = NextButton_Page_3
+        self.Seqlabel = Seqlabel
         self.meshdata()
 
     # load meshdata from file
@@ -66,6 +79,11 @@ class FileSelectionMesh(QMainWindow):
                 self.Ylabel_before,
                 self.Zlabel_before,
                 self.append_filter,
+                self.seq1Button,
+                self.seq2Button,
+                self.seq3Button,
+                self.NextButton_Page_3,
+                self.Seqlabel,
             )
             progressbarprogram.exec_()
         elif ".ifc" in self.file_path:
@@ -87,9 +105,49 @@ class FileSelectionMesh(QMainWindow):
                     self.Ylabel_before,
                     self.Zlabel_before,
                     self.append_filter,
-
+                    self.seq1Button,
+                    self.seq2Button,
+                    self.seq3Button,
+                    self.NextButton_Page_3,
+                    self.Seqlabel,
                 )
                 progressbarprogram.exec_()
+        elif ".xml" in self.file_path:
+            tree = ET.parse(self.file_path)
+            root = tree.getroot()
+            # Extract the point and face data
+            points = []
+            faces = []
+
+            # Namespace dictionary for XML parsing
+            ns = {"gbXML": "http://www.gbxml.org/schema"}
+
+            for shell in root.findall(".//gbXML:ClosedShell", ns):
+                for polyloop in shell.findall("gbXML:PolyLoop", ns):
+                    poly_points = []
+                    for point in polyloop.findall("gbXML:CartesianPoint", ns):
+                        coords = [
+                            float(coord.text)
+                            for coord in point.findall("gbXML:Coordinate", ns)
+                        ]
+                        if coords not in points:
+                            points.append(coords)
+                        poly_points.append(points.index(coords))
+                    # Create triangular faces from the polyloop points
+                    for i in range(1, len(poly_points) - 1):
+                        faces.append(
+                            [poly_points[0], poly_points[i], poly_points[i + 1]]
+                        )
+
+            points = np.array(points)
+            faces = np.array(faces)
+            # Create the mesh for STL
+            mesh = meshio.Mesh(points, [("triangle", faces)])
+            meshio.write("output.stl", mesh)
+            self.meshsplot = pv.read("output.stl")
+            loadingstl.StLloaderpyvista(
+                self.meshsplot, self.plotterloader, self.plotterloader_2
+            )
 
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:

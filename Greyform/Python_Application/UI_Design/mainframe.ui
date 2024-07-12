@@ -232,7 +232,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Sequence 1</string>
+              <string>Stage 1</string>
              </property>
             </widget>
            </item>
@@ -250,7 +250,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Sequence 2</string>
+              <string>Stage 2</string>
              </property>
             </widget>
            </item>
@@ -268,7 +268,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Sequence 3</string>
+              <string>Stage 3</string>
              </property>
             </widget>
            </item>
