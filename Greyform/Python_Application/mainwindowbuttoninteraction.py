@@ -4,7 +4,6 @@ import PythonApplication.fileselectionmesh as fileselectionmesh
 import PythonApplication.setsequence as SequenceData
 import PythonApplication.menu_confirmack as confirmack
 import PythonApplication.setting as setting
-import PythonApplication.enable_robot as robotenabler
 
 
 class mainwindowbuttonUI(object):
@@ -74,9 +73,7 @@ class mainwindowbuttonUI(object):
         self.ConfirmButton.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(4)
         )
-        self.HomeButton.clicked.connect(
-            lambda: self.stackedWidget.setCurrentIndex(0)
-        )
+        self.HomeButton.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.CloseButton.clicked.connect(
             lambda: closewindow.Ui_Dialog_Close.show_dialog_close(self.mainwindow)
         )
@@ -88,10 +85,6 @@ class mainwindowbuttonUI(object):
         self.MarkingButton.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(3)
         )
-        self.EnableRobotButton.clicked.connect(
-            lambda: robotenabler.EnableRobotInterpreter()
-        )
         self.SettingButton.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(5)
         )
-
