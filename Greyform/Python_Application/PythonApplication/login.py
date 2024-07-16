@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, uic , QtGui , QtCore
+from PyQt5 import QtWidgets, uic, QtGui, QtCore
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -183,16 +183,16 @@ class Profile(QDialog):
         self.form.loginbutton.clicked.connect(self.backtologin)
 
     def setupUI(self):
-        
         self.form.userlabel.setAlignment(Qt.AlignCenter)
         self.profilelayout = QVBoxLayout()
         self.profilelayout.addWidget(self.form.profileiconlabel)
         pixmap = QPixmap("—Pngtree—avatar icon profile icon member_5247852.png")
         self.form.profileiconlabel.setPixmap(pixmap)
-        self.form.profileiconlabel.resize(
-            int(pixmap.width() / 2), int(pixmap.height() / 2)
+        scaled_pixmap = pixmap.scaled(
+            self.form.profileiconlabel.size(),
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation,
         )
-        scaled_pixmap = pixmap.scaled(self.form.profileiconlabel.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.form.profileiconlabel.setAlignment(Qt.AlignCenter)
         self.form.profileiconlabel.setScaledContents(True)
         self.form.profileiconlabel.setPixmap(scaled_pixmap)

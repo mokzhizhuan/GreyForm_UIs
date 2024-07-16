@@ -13,7 +13,6 @@ import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
 import datetime
 import pytz
-from tzlocal import get_localzone
 
 
 class Setting(QWidget):
@@ -36,14 +35,18 @@ class Setting(QWidget):
             "theme": "Gray",
             "font_size": "15",
             "resolution": f"{windowwidth} x {windowheight}",
-            "timezone": str(get_localzone()),
+            "timezone": str(
+                datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+            ),
             "password": "pass",
         }
         self.saved_setting = {
             "theme": "Gray",
             "font_size": "15",
             "resolution": f"{windowwidth} x {windowheight}",
-            "timezone": str(get_localzone()),
+            "timezone": str(
+                datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+            ),
             "password": "pass",
         }
         self.setupUi()
@@ -78,7 +81,9 @@ class Setting(QWidget):
         all_timezones = pytz.all_timezones
         for timezone in all_timezones:
             self.settingform.country.addItem(timezone)
-        local_timezone = get_localzone()
+        local_timezone = (
+            datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
+        )
         index = self.settingform.country.findText(
             str(local_timezone), Qt.MatchFixedString
         )
@@ -146,7 +151,6 @@ class Setting(QWidget):
                 self.windowheight,
             )
         )
-
 
     # detect WIFI
     def refreshWiFiList(self):
@@ -274,4 +278,3 @@ class Setting(QWidget):
             self.restartwidget,
             self.settingform.RestartPowerOffPage,
         )
-
