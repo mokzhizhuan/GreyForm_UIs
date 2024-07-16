@@ -3,7 +3,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import PythonApplication.savesetting as SaveSettingsDialog
 import json
-from tzlocal import get_localzone
+import datetime
+import pytz
 
 
 class settingbuttonUI(object):
@@ -148,7 +149,7 @@ class settingbuttonUI(object):
                     )
                 )
                 self.timezonebox.setCurrentText(
-                    settings.get("timezone", str(get_localzone()))
+                    settings.get("timezone", str(datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo))
                 )
                 self.passwordedit.setText(settings.get("password", "pass"))
         except FileNotFoundError:

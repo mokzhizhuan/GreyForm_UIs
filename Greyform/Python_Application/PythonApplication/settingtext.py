@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from pywifi import PyWiFi, const
 import PythonApplication.serveraddress as server
-import psutil
 import os
 import datetime
 import socket
@@ -23,7 +22,6 @@ class SettingText(object):
         host,
         Port,
         SystemDate,
-        SystemMemory,
         PasslineEdit,
         userlabel,
         accountinfo,
@@ -38,7 +36,6 @@ class SettingText(object):
         self.host = host
         self.Port = Port
         self.SystemDate = SystemDate
-        self.SystemMemory = SystemMemory
         self.PasslineEdit = PasslineEdit
         self.userlabel = userlabel
         self.accountinfo = accountinfo
@@ -64,11 +61,10 @@ class SettingText(object):
         self.host.setText(f"Host: {servers.serverAddress().toString()}")
         self.Port.setText(f"Port: {servers.serverPort()}")
         datetoday = datetime.date.today()
-        datetodayformatted = datetoday.strftime("%d/%m/%Y")
-        process = psutil.Process(os.getpid())
-        memory_usage = process.memory_info().rss / (1024 * 1024)  # in MB
+        datetodayformatted = (
+            f"{datetoday.day}/{datetoday.month}/{datetoday.strftime('%y')}"
+        )
         self.SystemDate.setText(f"Date : {datetodayformatted}")
-        self.SystemMemory.setText(f"System Memory Usage : {memory_usage:.2f} MB")
         self.userlabel.setText(f"<h2>User: {self.accountinfo[0]['UserID']}</h2>")
         self.PasslineEdit.setText(f"{self.accountinfo[0]['Pass']}")
         self.PasslineEdit.returnPressed.connect(self.changepassfunction)

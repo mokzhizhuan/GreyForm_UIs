@@ -13,8 +13,10 @@ import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
 import datetime
 import pytz
+import psutil
+import os
 
-
+#setting page
 class Setting(QWidget):
     # setting loader
     def __init__(
@@ -170,6 +172,12 @@ class Setting(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_time)
         self.timer.start(5000)  # Trigger every 5000 milliseconds (5 seconds)
+        process = psutil.Process(os.getpid())
+        memory_usage = process.memory_info().rss / (1024 * 1024)  # in MB
+        self.settingform.SystemMemory.setText(f"System Memory Usage : {memory_usage:.2f} MB")
+        self.memorytimer = QTimer(self)
+        self.memorytimer.timeout.connect(self.update_memory)
+        self.memorytimer.start(1000)
         settingtextlayout.SettingText(
             self.settingform.labeltitlsetting,
             self.settingform.ip_label,
@@ -181,11 +189,16 @@ class Setting(QWidget):
             self.settingform.host,
             self.settingform.Port,
             self.settingform.SystemDate,
-            self.settingform.SystemMemory,
             self.settingform.PasslineEdit,
             self.userlabel,
             self.accountinfo,
         )
+
+    def update_memory(self):
+        # Update the text of self.SystemMemory
+        process = psutil.Process(os.getpid())
+        memory_usage = process.memory_info().rss / (1024 * 1024)  # in MB
+        self.settingform.SystemMemory.setText(f"System Memory Usage : {memory_usage:.2f} MB")
 
     def update_time(self):
         now = datetime.datetime.now()

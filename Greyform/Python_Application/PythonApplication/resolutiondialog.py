@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QDialogButtonBox,
 )
 
-
+#custom resolution
 class ResolutionDialog(QDialog):
     def __init__(self, windowwidth, windowheight, parent=None):
         super().__init__(parent)
