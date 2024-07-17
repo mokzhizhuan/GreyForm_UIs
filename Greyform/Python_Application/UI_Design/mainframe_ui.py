@@ -259,6 +259,23 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_21.addWidget(self.Itemlabel_2)
 
+        self.horizontalLayout_19 = QHBoxLayout()
+        self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
+        self.FloorViewbutton = QPushButton(self.horizontalLayoutWidgetpage4)
+        self.FloorViewbutton.setObjectName(u"FloorViewbutton")
+
+        self.horizontalLayout_19.addWidget(self.FloorViewbutton)
+
+        self.Leftwallviewbutton = QPushButton(self.horizontalLayoutWidgetpage4)
+        self.Leftwallviewbutton.setObjectName(u"Leftwallviewbutton")
+
+        self.horizontalLayout_19.addWidget(self.Leftwallviewbutton)
+
+        self.horizontalLayout_19.setStretch(0, 1)
+        self.horizontalLayout_19.setStretch(1, 1)
+
+        self.verticalLayout_21.addLayout(self.horizontalLayout_19)
+
         self.verticalLayout_21.setStretch(0, 1)
         self.verticalLayout_21.setStretch(1, 1)
 
@@ -513,6 +530,10 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_23.setStretch(0, 1)
         self.verticalLayout_23.setStretch(1, 1)
+        self.LidarButton = QPushButton(self.page_4)
+        self.LidarButton.setObjectName(u"LidarButton")
+        self.LidarButton.setGeometry(QRect(10, 500, 771, 71))
+        self.LidarButton.setFont(font2)
         self.stackedWidget.addWidget(self.page_4)
         self.settingpage = QWidget()
         self.settingpage.setObjectName(u"settingpage")
@@ -546,6 +567,8 @@ class Ui_MainWindow(object):
         self.BackButton_Page_2.setText(QCoreApplication.translate("MainWindow", u"Back", None))
         self.Seqlabel.setText(QCoreApplication.translate("MainWindow", u"Sequence:", None))
         self.Itemlabel_2.setText(QCoreApplication.translate("MainWindow", u"Product:", None))
+        self.FloorViewbutton.setText(QCoreApplication.translate("MainWindow", u"Floor View", None))
+        self.Leftwallviewbutton.setText(QCoreApplication.translate("MainWindow", u"Left Wall View", None))
         self.ConfirmButton.setText(QCoreApplication.translate("MainWindow", u"Confirm", None))
         self.BackButton_2.setText(QCoreApplication.translate("MainWindow", u"Back", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Click Mouse Display", None))
@@ -571,5 +594,6 @@ class Ui_MainWindow(object):
         self.EnableRobotButton.setText(QCoreApplication.translate("MainWindow", u"Enable Robot", None))
         self.CloseButton.setText(QCoreApplication.translate("MainWindow", u"Abort/Close", None))
         self.ConfirmAckButton.setText(QCoreApplication.translate("MainWindow", u"Acknowledge", None))
+        self.LidarButton.setText(QCoreApplication.translate("MainWindow", u"Enable Lidar Sensor", None))
     # retranslateUi
 

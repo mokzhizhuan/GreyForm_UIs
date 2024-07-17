@@ -70,6 +70,8 @@ class Ui_MainWindow(QMainWindow):
             self.width,
             self.height,
         )  # insert setting page
+        self.mainwindow.Leftwallviewbutton.hide()
+        self.mainwindow.FloorViewbutton.hide()
         self.setStretch()
         self.button_UI()
 
@@ -167,6 +169,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.layoutWidgetpage4,
             self.mainwindow.horizontalLayoutWidgetpage4,
             self.mainwindow.page_3,
+            self.mainwindow.LidarButton,
             self.mainwindow.SettingButton,
             self.mainwindow.layoutWidgetpage5,
             self.mainwindow.page_4,
