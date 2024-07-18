@@ -70,6 +70,7 @@ class Ui_MainWindow(QMainWindow):
             self.width,
             self.height,
         )  # insert setting page
+        self.mainwindow.LidarButton.hide()
         self.mainwindow.Leftwallviewbutton.hide()
         self.mainwindow.FloorViewbutton.hide()
         self.setStretch()
