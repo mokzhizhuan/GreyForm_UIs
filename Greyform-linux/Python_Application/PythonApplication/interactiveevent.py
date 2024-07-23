@@ -178,12 +178,16 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         key = self.GetInteractor().GetKeySym()
         actor_position = []
         camera = self.render.GetActiveCamera()
+        delay = 0.1
         for i in range(3):
             actor_position.append(self.cubeactor.GetPosition()[i])
         if key == "l":  # reset movement and camera
-            self.render.GetActiveCamera().SetPosition(0, -1, 0)
-            self.render.GetActiveCamera().SetFocalPoint(0, 0, 0)
-            self.render.GetActiveCamera().SetViewUp(0, 0, 1)
+            # Set up the camera
+            camera = self.render.GetActiveCamera()
+            camera.SetPosition(0, -1, 0)
+            camera.SetFocalPoint(0, 0, 0)
+            camera.SetViewUp(0, 0, 1)
+            self.render.ResetCameraClippingRange()
             self.render.ResetCamera()
             self.RemoveObserver(self.movement)
             # self.RemoveObserver(self.markingevent)
@@ -197,36 +201,45 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 "RightButtonPressEvent", self.RightButtonPressEvent
             )
             self.refresh()
+            self.renderwindowinteractor.GetRenderWindow().Render()
             return  # return to its original position
         if key == "n":
             self.leftbuttoninteraction.release()
-        if key == "Up":
+        elif key == "m":
+            self.leftbuttoninteraction.reset(self.default_pos)
+        if key == "Up" and self.disable_up is False:
             # actor will not go beyond the inside are of the mesh
-            if actor_position[0] < (
-                self.meshbound[1] - self.actor_speed * 2
-            ):  # prevent shape max number
+            if actor_position[0] < (self.meshbound[1] - self.actor_speed * 2):
+                # prevent shape max number
                 actor_position[0] += self.actor_speed
+                self.setkeypreventcontrols()
                 self.setcollision(actor_position, key, camera)
-        elif key == "Down":
-            if actor_position[0] > (
-                self.meshbound[0] + self.actor_speed * 2
-            ):  # prevent shape min number
+                self.updatecamera(camera)
+            time.sleep(delay)
+        elif key == "Down" and self.disable_down is False:
+            if actor_position[0] > (self.meshbound[0] + self.actor_speed * 2):
+                # prevent shape min number
                 actor_position[0] -= self.actor_speed
+                self.setkeypreventcontrols()
                 self.setcollision(actor_position, key, camera)
-        elif key == "Left":
-            if actor_position[1] < (
-                self.meshbound[3] - self.actor_speed * 2
-            ):  # prevent shape max number
+                self.updatecamera(camera)
+            time.sleep(delay)
+        elif key == "Left" and self.disable_left is False:
+            if actor_position[1] < (self.meshbound[3] - self.actor_speed * 2):
+                # prevent shape max number
                 actor_position[1] += self.actor_speed
+                self.setkeypreventcontrols()
                 self.setcollision(actor_position, key, camera)
-        elif key == "Right":
-            if actor_position[1] > (
-                self.meshbound[2] + self.actor_speed * 2
-            ):  # prevent shape min number
+                self.updatecamera(camera)
+            time.sleep(delay)
+        elif key == "Right" and self.disable_right is False:
+            if actor_position[1] > (self.meshbound[2] + self.actor_speed * 2):
+                # prevent shape min number
                 actor_position[1] -= self.actor_speed
+                self.setkeypreventcontrols()
                 self.setcollision(actor_position, key, camera)
-        self.displaystore.storedisplay()
-        self.displaytext(camera)
+                self.updatecamera(camera)
+            time.sleep(delay)
 
     # displaycamtext
     def displaytext(self, camera):
