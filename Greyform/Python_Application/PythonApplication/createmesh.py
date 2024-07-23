@@ -123,7 +123,7 @@ class createMesh(QMainWindow):
         self.collisionFilter.SetMatrix(0, self.cubeactor.GetMatrix())
         # Static object transform
         self.collisionFilter.SetMatrix(1, self.actor.GetMatrix())
-        self.collisionFilter.SetCollisionModeToFirstContact()
+        self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()
         camera = events.myInteractorStyle(
             self.xlabels,
