@@ -6,6 +6,7 @@ import PythonApplication.rightclickroominteraction as roominteraction
 import PythonApplication.storedisplay as displaystoring
 import tkinter as tk
 from tkinter import messagebox
+import time
 
 
 # insert interactive event for the stl mesh , left click is for moving the stl ,
@@ -187,6 +188,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.SetMotionFactor(8)
         key = self.GetInteractor().GetKeySym()
         actor_position = []
+        delay = 0.1
         camera = self.render.GetActiveCamera()
         for i in range(3):
             actor_position.append(self.cubeactor.GetPosition()[i])
@@ -223,24 +225,28 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 actor_position[0] += self.actor_speed
                 self.setkeypreventcontrols()
                 self.setcollision(actor_position, key, camera)
+            time.sleep(delay)
         elif key == "Down" and self.disable_down is False:
             if actor_position[0] > (self.meshbound[0] + self.actor_speed * 2):
                 # prevent shape min number
                 actor_position[0] -= self.actor_speed
                 self.setkeypreventcontrols()
                 self.setcollision(actor_position, key, camera)
+            time.sleep(delay)
         elif key == "Left" and self.disable_left is False:
             if actor_position[1] < (self.meshbound[3] - self.actor_speed * 2):
                 # prevent shape max number
                 actor_position[1] += self.actor_speed
                 self.setkeypreventcontrols()
                 self.setcollision(actor_position, key, camera)
+            time.sleep(delay)
         elif key == "Right" and self.disable_right is False:
             if actor_position[1] > (self.meshbound[2] + self.actor_speed * 2):
                 # prevent shape min number
                 actor_position[1] -= self.actor_speed
                 self.setkeypreventcontrols()
                 self.setcollision(actor_position, key, camera)
+            time.sleep(delay)
         self.displaystore.storedisplay()
         self.leftbuttoninteraction.displaytext(camera)
 
