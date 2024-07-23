@@ -76,7 +76,34 @@ class createMesh(QMainWindow):
         self.reader.SetFileName(self.polydata)
         self.reader.Update()
         polydata = self.reader.GetOutput()
-        self.actor = self.polyDataToActor(polydata)
+        self.polyDataToActor(polydata)
+        minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]
+        transform = vtk.vtkTransform()
+        transform.Translate(-minBounds[0], -minBounds[1], -minBounds[2])
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetInputData(polydata)
+        transformFilter.SetTransform(transform)
+        transformFilter.Update()
+
+        transformedPolyData = transformFilter.GetOutput()
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputData(transformedPolyData)
+
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        actor.GetProperty().SetRepresentationToSurface()
+        colorsd = vtkNamedColors()
+        actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
+        actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
+        actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d("LightSteelBlue"))
+        actor.GetProperty().SetDiffuse(0.8)
+        actor.GetProperty().SetSpecular(0.3)
+        actor.GetProperty().SetSpecularPower(60.0)
+        actor.GetProperty().BackfaceCullingOn()
+        actor.GetProperty().FrontfaceCullingOn()
+        print(actor.GetBounds())
+        for i in range(6):
+            self.meshbounds[i] = actor.GetBounds()[i]
         center = [
             (self.meshbounds[0] + self.meshbounds[1]) / 2,
             (self.meshbounds[2] + self.meshbounds[3]) / 2,
@@ -84,30 +111,45 @@ class createMesh(QMainWindow):
         ]
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
-        self.cubeactor.SetPosition(80, center[1], center[2])
+        featureEdges = vtkFeatureEdges()
+        featureEdges.SetInputConnection(self.reader.GetOutputPort())
+        featureEdges.BoundaryEdgesOn()
+        featureEdges.FeatureEdgesOff()
+        featureEdges.ManifoldEdgesOff()
+        featureEdges.NonManifoldEdgesOff()
+        featureEdges.ColoringOn()
+        featureEdges.Update()
+
+        # Visualize
+        edgeMapper = vtkPolyDataMapper()
+        edgeMapper.SetInputConnection(featureEdges.GetOutputPort())
+        edgeActor = vtkActor()
+        edgeActor.SetMapper(edgeMapper)
+        self.cubeactor.SetPosition(160, center[1], center[2])
         self.cubeactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
         )
         spaceseperation = 50
         self.cameraactor.SetPosition(
-            80, center[1] - spaceseperation, center[2] - spaceseperation
+            160, center[1] - spaceseperation, center[2] - spaceseperation
         )
         self.cameraactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
         )
         self.ren.AddActor(self.cameraactor)
+        self.ren.AddActor(edgeActor)
         self.ren.AddActor(self.cubeactor)
-        self.ren.AddActor(self.actor)
+        self.ren.AddActor(actor)
         self.oldcamerapos = self.cubeactor.GetPosition()
         self.collisionFilter = vtk.vtkCollisionDetectionFilter()
         self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
-        self.collisionFilter.SetInputData(1, self.actor.GetMapper().GetInput())
+        self.collisionFilter.SetInputData(1, actor.GetMapper().GetInput())
         self.collisionFilter.SetTransform(0, vtk.vtkTransform())
         self.collisionFilter.SetTransform(1, vtk.vtkTransform())
         self.collisionFilter.SetMatrix(0, self.cubeactor.GetMatrix())
         # Static object transform
-        self.collisionFilter.SetMatrix(1, self.actor.GetMatrix())
-        self.collisionFilter.SetCollisionModeToAllContacts()
+        self.collisionFilter.SetMatrix(1, actor.GetMatrix())
+        self.collisionFilter.SetCollisionModeToFirstContact()
         self.collisionFilter.GenerateScalarsOn()
         camera = events.myInteractorStyle(
             self.xlabels,
@@ -118,7 +160,7 @@ class createMesh(QMainWindow):
             self.xlabelbefore,
             self.ylabelbefore,
             self.zlabelbefore,
-            self.actor,
+            actor,
             polydata,
             self.reader,
             self.append_filterpolydata,
@@ -133,6 +175,7 @@ class createMesh(QMainWindow):
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
         self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
         self.ren.GetActiveCamera().SetViewUp(0, 0, 1)
+        self.ren.SetBackground(0.1, 0.2, 0.3)
         self.ren.ResetCameraClippingRange()
         self.ren.ResetCamera()
         self.renderwindowinteractor.GetRenderWindow().Render()
@@ -172,25 +215,11 @@ class createMesh(QMainWindow):
         mapper.SetInputConnection(self.reader.GetOutputPort())
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-        actor.GetProperty().SetRepresentationToSurface()
         self.meshbounds = []
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
-        # color RGB must be /255 for Red, Green , blue color code
-        actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
-        actor.GetProperty().SetDiffuse(0.8)
-        actor.SetPosition(0, 0, 0)
-        colorsd = vtkNamedColors()
-        actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d("LightSteelBlue"))
-        actor.GetProperty().SetSpecular(0.3)
-        actor.GetProperty().SetSpecularPower(60.0)
-        actor.GetProperty().BackfaceCullingOn()
-        actor.GetProperty().FrontfaceCullingOn()
-        actor.SetOrientation(1, 0, 0)
         self.append_filterpolydata.AddInputData(actor.GetMapper().GetInput())
         self.append_filterpolydata.Update()
-        print(self.meshbounds)
-        return actor
     
     def addseqtext(self, buttonseq, buttonnextpage, label):
         dataseqtext = buttonseq.text()
