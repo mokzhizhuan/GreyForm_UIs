@@ -77,33 +77,7 @@ class createMesh(QMainWindow):
         self.reader.Update()
         polydata = self.reader.GetOutput()
         self.polyDataToActor(polydata)
-        minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]
-        transform = vtk.vtkTransform()
-        transform.Translate(-minBounds[0], -minBounds[1], -minBounds[2])
-        transformFilter = vtk.vtkTransformPolyDataFilter()
-        transformFilter.SetInputData(polydata)
-        transformFilter.SetTransform(transform)
-        transformFilter.Update()
-
-        transformedPolyData = transformFilter.GetOutput()
-        mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputData(transformedPolyData)
-
-        actor = vtk.vtkActor()
-        actor.SetMapper(mapper)
-        actor.GetProperty().SetRepresentationToSurface()
-        colorsd = vtkNamedColors()
-        actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
-        actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
-        actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d("LightSteelBlue"))
-        actor.GetProperty().SetDiffuse(0.8)
-        actor.GetProperty().SetSpecular(0.3)
-        actor.GetProperty().SetSpecularPower(60.0)
-        actor.GetProperty().BackfaceCullingOn()
-        actor.GetProperty().FrontfaceCullingOn()
-        print(actor.GetBounds())
-        for i in range(6):
-            self.meshbounds[i] = actor.GetBounds()[i]
+        self.fixedposition(polydata)
         center = [
             (self.meshbounds[0] + self.meshbounds[1]) / 2,
             (self.meshbounds[2] + self.meshbounds[3]) / 2,
@@ -139,16 +113,16 @@ class createMesh(QMainWindow):
         self.ren.AddActor(self.cameraactor)
         self.ren.AddActor(edgeActor)
         self.ren.AddActor(self.cubeactor)
-        self.ren.AddActor(actor)
+        self.ren.AddActor(self.actor)
         self.oldcamerapos = self.cubeactor.GetPosition()
         self.collisionFilter = vtk.vtkCollisionDetectionFilter()
         self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
-        self.collisionFilter.SetInputData(1, actor.GetMapper().GetInput())
+        self.collisionFilter.SetInputData(1, self.actor.GetMapper().GetInput())
         self.collisionFilter.SetTransform(0, vtk.vtkTransform())
         self.collisionFilter.SetTransform(1, vtk.vtkTransform())
         self.collisionFilter.SetMatrix(0, self.cubeactor.GetMatrix())
         # Static object transform
-        self.collisionFilter.SetMatrix(1, actor.GetMatrix())
+        self.collisionFilter.SetMatrix(1, self.actor.GetMatrix())
         self.collisionFilter.SetCollisionModeToFirstContact()
         self.collisionFilter.GenerateScalarsOn()
         camera = events.myInteractorStyle(
@@ -160,7 +134,7 @@ class createMesh(QMainWindow):
             self.xlabelbefore,
             self.ylabelbefore,
             self.zlabelbefore,
-            actor,
+            self.actor,
             polydata,
             self.reader,
             self.append_filterpolydata,
@@ -184,6 +158,33 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
 
+    def fixedposition(self, polydata):
+        minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]
+        transform = vtk.vtkTransform()
+        transform.Translate(-minBounds[0], -minBounds[1], -minBounds[2])
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetInputData(polydata)
+        transformFilter.SetTransform(transform)
+        transformFilter.Update()
+        transformedPolyData = transformFilter.GetOutput()
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputData(transformedPolyData)
+        self.actor = vtk.vtkActor()
+        self.actor.SetMapper(mapper)
+        self.actor.GetProperty().SetRepresentationToSurface()
+        colorsd = vtkNamedColors()
+        self.actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
+        self.actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
+        self.actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d("LightSteelBlue"))
+        self.actor.GetProperty().SetDiffuse(0.8)
+        self.actor.GetProperty().SetSpecular(0.3)
+        self.actor.GetProperty().SetSpecularPower(60.0)
+        self.actor.GetProperty().BackfaceCullingOn()
+        self.actor.GetProperty().FrontfaceCullingOn()
+        print(self.actor.GetBounds())
+        for i in range(6):
+            self.meshbounds[i] = self.actor.GetBounds()[i]
+        
     def clearactor(self):
         actors = self.ren.GetActors()
         actors.InitTraversal()
