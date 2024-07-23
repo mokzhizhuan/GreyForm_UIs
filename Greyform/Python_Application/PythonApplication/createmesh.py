@@ -70,6 +70,23 @@ class createMesh(QMainWindow):
             )
         )
         self.loadStl()
+    
+    def addfeatureEdges(self):
+        featureEdges = vtkFeatureEdges()
+        featureEdges.SetInputConnection(self.reader.GetOutputPort())
+        featureEdges.BoundaryEdgesOn()
+        featureEdges.FeatureEdgesOff()
+        featureEdges.ManifoldEdgesOff()
+        featureEdges.NonManifoldEdgesOff()
+        featureEdges.ColoringOn()
+        featureEdges.Update()
+
+        # Visualize
+        edgeMapper = vtkPolyDataMapper()
+        edgeMapper.SetInputConnection(featureEdges.GetOutputPort())
+        edgeActor = vtkActor()
+        edgeActor.SetMapper(edgeMapper)
+        return edgeActor
 
     def loadStl(self):
         self.clearactor()
@@ -85,20 +102,7 @@ class createMesh(QMainWindow):
         ]
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
-        featureEdges = vtkFeatureEdges()
-        featureEdges.SetInputConnection(self.reader.GetOutputPort())
-        featureEdges.BoundaryEdgesOn()
-        featureEdges.FeatureEdgesOff()
-        featureEdges.ManifoldEdgesOff()
-        featureEdges.NonManifoldEdgesOff()
-        featureEdges.ColoringOn()
-        featureEdges.Update()
-
-        # Visualize
-        edgeMapper = vtkPolyDataMapper()
-        edgeMapper.SetInputConnection(featureEdges.GetOutputPort())
-        edgeActor = vtkActor()
-        edgeActor.SetMapper(edgeMapper)
+        edgeActor = self.addfeatureEdges()
         self.cubeactor.SetPosition(160, center[1], center[2])
         self.cubeactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
