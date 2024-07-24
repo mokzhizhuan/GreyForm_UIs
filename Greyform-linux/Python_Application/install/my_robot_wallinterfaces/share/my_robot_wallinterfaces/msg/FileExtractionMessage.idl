@@ -9,6 +9,8 @@ module my_robot_wallinterfaces {
       string excelfile;
 
       sequence<uint8> stl_data;
+
+      string status;
     };
   };
 };

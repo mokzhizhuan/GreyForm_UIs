@@ -3,8 +3,6 @@ file(REMOVE_RECURSE
   "../rosidl_generator_py/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_fastrtps_c.c"
   "../rosidl_generator_py/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_introspection_c.c"
   "../rosidl_generator_py/my_robot_wallinterfaces/msg/__init__.py"
-  "../rosidl_generator_py/my_robot_wallinterfaces/msg/_combined_message.py"
-  "../rosidl_generator_py/my_robot_wallinterfaces/msg/_combined_message_s.c"
   "../rosidl_generator_py/my_robot_wallinterfaces/msg/_file_extraction_message.py"
   "../rosidl_generator_py/my_robot_wallinterfaces/msg/_file_extraction_message_s.c"
   "../rosidl_generator_py/my_robot_wallinterfaces/msg/_selection_wall.py"

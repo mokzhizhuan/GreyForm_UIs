@@ -134,6 +134,21 @@ bool my_robot_wallinterfaces__msg__file_extraction_message__convert_from_py(PyOb
     }
     Py_DECREF(field);
   }
+  {  // status
+    PyObject * field = PyObject_GetAttrString(_pymsg, "status");
+    if (!field) {
+      return false;
+    }
+    assert(PyUnicode_Check(field));
+    PyObject * encoded_field = PyUnicode_AsUTF8String(field);
+    if (!encoded_field) {
+      Py_DECREF(field);
+      return false;
+    }
+    rosidl_runtime_c__String__assign(&ros_message->status, PyBytes_AS_STRING(encoded_field));
+    Py_DECREF(encoded_field);
+    Py_DECREF(field);
+  }
 
   return true;
 }
@@ -229,6 +244,23 @@ PyObject * my_robot_wallinterfaces__msg__file_extraction_message__convert_to_py(
       Py_DECREF(ret);
     }
     Py_DECREF(field);
+  }
+  {  // status
+    PyObject * field = NULL;
+    field = PyUnicode_DecodeUTF8(
+      ros_message->status.data,
+      strlen(ros_message->status.data),
+      "replace");
+    if (!field) {
+      return NULL;
+    }
+    {
+      int rc = PyObject_SetAttrString(_pymessage, "status", field);
+      Py_DECREF(field);
+      if (rc) {
+        return NULL;
+      }
+    }
   }
 
   // ownership of _pymessage is transferred to the caller

@@ -60,16 +60,19 @@ class FileExtractionMessage(metaclass=Metaclass_FileExtractionMessage):
     __slots__ = [
         '_excelfile',
         '_stl_data',
+        '_status',
     ]
 
     _fields_and_field_types = {
         'excelfile': 'string',
         'stl_data': 'sequence<uint8>',
+        'status': 'string',
     }
 
     SLOT_TYPES = (
         rosidl_parser.definition.UnboundedString(),  # noqa: E501
         rosidl_parser.definition.UnboundedSequence(rosidl_parser.definition.BasicType('uint8')),  # noqa: E501
+        rosidl_parser.definition.UnboundedString(),  # noqa: E501
     )
 
     def __init__(self, **kwargs):
@@ -78,6 +81,7 @@ class FileExtractionMessage(metaclass=Metaclass_FileExtractionMessage):
             ', '.join(sorted(k for k in kwargs.keys() if '_' + k not in self.__slots__))
         self.excelfile = kwargs.get('excelfile', str())
         self.stl_data = array.array('B', kwargs.get('stl_data', []))
+        self.status = kwargs.get('status', str())
 
     def __repr__(self):
         typename = self.__class__.__module__.split('.')
@@ -111,6 +115,8 @@ class FileExtractionMessage(metaclass=Metaclass_FileExtractionMessage):
         if self.excelfile != other.excelfile:
             return False
         if self.stl_data != other.stl_data:
+            return False
+        if self.status != other.status:
             return False
         return True
 
@@ -159,3 +165,16 @@ class FileExtractionMessage(metaclass=Metaclass_FileExtractionMessage):
                  all(val >= 0 and val < 256 for val in value)), \
                 "The 'stl_data' field must be a set or sequence and each value of type 'int' and each unsigned integer in [0, 255]"
         self._stl_data = array.array('B', value)
+
+    @builtins.property
+    def status(self):
+        """Message field 'status'."""
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        if __debug__:
+            assert \
+                isinstance(value, str), \
+                "The 'status' field must be of type 'str'"
+        self._status = value

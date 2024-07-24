@@ -21,16 +21,32 @@ namespace msg
 namespace builder
 {
 
+class Init_FileExtractionMessage_status
+{
+public:
+  explicit Init_FileExtractionMessage_status(::my_robot_wallinterfaces::msg::FileExtractionMessage & msg)
+  : msg_(msg)
+  {}
+  ::my_robot_wallinterfaces::msg::FileExtractionMessage status(::my_robot_wallinterfaces::msg::FileExtractionMessage::_status_type arg)
+  {
+    msg_.status = std::move(arg);
+    return std::move(msg_);
+  }
+
+private:
+  ::my_robot_wallinterfaces::msg::FileExtractionMessage msg_;
+};
+
 class Init_FileExtractionMessage_stl_data
 {
 public:
   explicit Init_FileExtractionMessage_stl_data(::my_robot_wallinterfaces::msg::FileExtractionMessage & msg)
   : msg_(msg)
   {}
-  ::my_robot_wallinterfaces::msg::FileExtractionMessage stl_data(::my_robot_wallinterfaces::msg::FileExtractionMessage::_stl_data_type arg)
+  Init_FileExtractionMessage_status stl_data(::my_robot_wallinterfaces::msg::FileExtractionMessage::_stl_data_type arg)
   {
     msg_.stl_data = std::move(arg);
-    return std::move(msg_);
+    return Init_FileExtractionMessage_status(msg_);
   }
 
 private:

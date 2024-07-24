@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ubuntu/Desktop/Greyform-linux/Python_Application/my_package
+CMAKE_SOURCE_DIR = /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_package
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package
+CMAKE_BINARY_DIR = /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package
 
 # Utility rule file for my_package_uninstall.
 
@@ -67,7 +67,7 @@ include CMakeFiles/my_package_uninstall.dir/compiler_depend.make
 include CMakeFiles/my_package_uninstall.dir/progress.make
 
 CMakeFiles/my_package_uninstall:
-	/usr/bin/cmake -P /home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
+	/usr/bin/cmake -P /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
 
 my_package_uninstall: CMakeFiles/my_package_uninstall
 my_package_uninstall: CMakeFiles/my_package_uninstall.dir/build.make
@@ -82,6 +82,6 @@ CMakeFiles/my_package_uninstall.dir/clean:
 .PHONY : CMakeFiles/my_package_uninstall.dir/clean
 
 CMakeFiles/my_package_uninstall.dir/depend:
-	cd /home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ubuntu/Desktop/Greyform-linux/Python_Application/my_package /home/ubuntu/Desktop/Greyform-linux/Python_Application/my_package /home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package /home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package /home/ubuntu/Desktop/Greyform-linux/Python_Application/build/my_package/CMakeFiles/my_package_uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_package /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_package /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package/CMakeFiles/my_package_uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/my_package_uninstall.dir/depend
 

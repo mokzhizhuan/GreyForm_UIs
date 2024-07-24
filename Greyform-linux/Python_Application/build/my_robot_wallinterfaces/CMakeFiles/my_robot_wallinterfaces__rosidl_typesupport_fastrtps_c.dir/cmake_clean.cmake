@@ -1,6 +1,4 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/my_robot_wallinterfaces/msg/detail/combined_message__type_support_c.cpp.o"
-  "CMakeFiles/my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/my_robot_wallinterfaces/msg/detail/combined_message__type_support_c.cpp.o.d"
   "CMakeFiles/my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support_c.cpp.o"
   "CMakeFiles/my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support_c.cpp.o.d"
   "CMakeFiles/my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/my_robot_wallinterfaces/msg/detail/selection_wall__type_support_c.cpp.o"
@@ -9,8 +7,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/my_robot_wallinterfaces/srv/detail/set_led__type_support_c.cpp.o.d"
   "libmy_robot_wallinterfaces__rosidl_typesupport_fastrtps_c.pdb"
   "libmy_robot_wallinterfaces__rosidl_typesupport_fastrtps_c.so"
-  "rosidl_typesupport_fastrtps_c/my_robot_wallinterfaces/msg/detail/combined_message__rosidl_typesupport_fastrtps_c.h"
-  "rosidl_typesupport_fastrtps_c/my_robot_wallinterfaces/msg/detail/combined_message__type_support_c.cpp"
   "rosidl_typesupport_fastrtps_c/my_robot_wallinterfaces/msg/detail/file_extraction_message__rosidl_typesupport_fastrtps_c.h"
   "rosidl_typesupport_fastrtps_c/my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support_c.cpp"
   "rosidl_typesupport_fastrtps_c/my_robot_wallinterfaces/msg/detail/selection_wall__rosidl_typesupport_fastrtps_c.h"

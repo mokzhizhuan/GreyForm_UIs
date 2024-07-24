@@ -1,4 +1,3 @@
-from PyQt5 import QtCore, QtWidgets, QtGui, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -23,6 +22,7 @@ class Ui_MainWindow_layout(object):
         page4layout,
         page4frame,
         page4,
+        LidarButton,
         settingbutton,
         page5layout,
         page5,
@@ -44,6 +44,7 @@ class Ui_MainWindow_layout(object):
         self.page4Layout = page4layout
         self.page4frame = page4frame
         self.page4 = page4
+        self.LidarButton = LidarButton
         self.settingbutton = settingbutton
         self.page5Layout = page5layout
         self.page5 = page5
@@ -89,6 +90,7 @@ class Ui_MainWindow_layout(object):
         self.page4boxLayout.addWidget(self.page4frame)
         self.page4boxLayout.setStretch(0, 2)
         self.page4boxLayout.setStretch(1, 1)
+        
         self.page4.setLayout(self.page4boxLayout)
         self.page5boxLayout = QVBoxLayout()
         self.settinglayout = QHBoxLayout()
@@ -99,6 +101,7 @@ class Ui_MainWindow_layout(object):
         self.settinglayout.addWidget(self.settingbutton)
         self.page5boxLayout.addLayout(self.settinglayout)
         self.page5boxLayout.addWidget(self.page5Layout)
+        self.page5boxLayout.addWidget(self.LidarButton)
         self.page5.setLayout(self.page5boxLayout)
         self.page6boxLayout = QVBoxLayout()
         self.page6boxLayout.addWidget(self.settinguipage, 1)

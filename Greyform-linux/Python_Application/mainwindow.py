@@ -12,20 +12,38 @@ from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
 import PythonApplication.setting as setting
 import vtk
+import json
 import os
+from stl import mesh
+import numpy as np
+import talker_listener.talker_node as RosPublisher
+import talker_listener.lidar_publisher as RosLidarPublisher
+import rclpy
+from rclpy.node import Node
+from rclpy.executors import MultiThreadedExecutor
+from std_msgs.msg import String
+from threading import Thread
 
 
 # load the mainwindow application
 class Ui_MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, ros_node, ros_lidar):
         super(Ui_MainWindow, self).__init__()
         self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
         self.width = 800
         self.height = 600
+        try:
+            with open("settings.json", "r") as f:
+                settings = json.load(f)
+                settings.get("resolution", f"{self.width} x {self.height}")
+        except FileNotFoundError:
+            pass
         self.mainwindow.resize(self.width, self.height)
         self.filepaths = os.getcwd()
         self.file = None
         self.file_path = None
+        self.ros_node = ros_node
+        self.ros_lidar = ros_lidar
         self.renderer = vtk.vtkRenderer()
         self.append_filter = vtk.vtkAppendPolyData()
         self._translate = QCoreApplication.translate
@@ -64,6 +82,9 @@ class Ui_MainWindow(QMainWindow):
             self.width,
             self.height,
         )  # insert setting
+        self.mainwindow.Leftwallviewbutton.hide()
+        self.mainwindow.FloorViewbutton.hide()
+        self.mainwindow.LidarButton.hide()
         self.setStretch()
         self.retranslateUi()
         self.button_UI()
@@ -96,6 +117,8 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.SettingButton,
             self.append_filter,
         )
+        self.mainwindow.LidarButton.clicked.connect(self.start_lidar_publisher)
+        self.mainwindow.EnableRobotButton.clicked.connect(self.publish_message)
 
     def addbuttonseq(self, button, nextbutton, seqlabel):
         button.clicked.connect(
@@ -149,6 +172,21 @@ class Ui_MainWindow(QMainWindow):
             self._translate("MainWindow", "Product: " + str(self.file))
         )
 
+    def publish_message(self):
+        self.exceldata = "exporteddatas.xlsx"
+        if self.file_path:
+            if ".stl" in self.file_path:
+                self.ros_node.publish_file_message(self.file_path, self.exceldata)
+            elif ".ifc" in self.file_path:
+                file = "output.stl"
+                self.ros_node.publish_file_message(file, self.exceldata)
+        else:
+            print("No STL file selected.")
+
+    def start_lidar_publisher(self):
+        self.lidar_thread = Thread(target=ros_spin, args=(self.ros_lidar,))
+        self.lidar_thread.start()
+
     def setStretch(self):
         mainwindowuilayout.Ui_MainWindow_layout(
             self.mainwindow.stackedWidget,
@@ -166,6 +204,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.layoutWidgetpage4,
             self.mainwindow.horizontalLayoutWidgetpage4,
             self.mainwindow.page_3,
+            self.mainwindow.LidarButton,
             self.mainwindow.SettingButton,
             self.mainwindow.layoutWidgetpage5,
             self.mainwindow.page_4,
@@ -203,8 +242,40 @@ class Ui_MainWindow(QMainWindow):
         )
 
 
+def ros_spin(node):
+    executor = MultiThreadedExecutor()
+    executor.add_node(node)
+    try:
+        executor.spin()
+    finally:
+        executor.shutdown()
+        node.destroy_node()
+
+
 if __name__ == "__main__":
+    # Initialize ROS 2
+    rclpy.init()
+
+    # Create the ROS 2 publisher nodes
+    talker_node = RosPublisher.TalkerNode()
+    lidar_publisher = RosLidarPublisher.LiDARPublisher()
+
+    # Create the Qt application
     app = QApplication(sys.argv)
-    window = Ui_MainWindow()
-    window.show()
-    sys.exit(app.exec_())
+
+    # Create and show the main window
+    main_window = Ui_MainWindow(talker_node, lidar_publisher)
+    main_window.show()
+
+    # Start ROS 2 spinning in separate threads
+    talker_thread = Thread(target=ros_spin, args=(talker_node,))
+    talker_thread.start()
+
+    # Execute the Qt application
+    try:
+        sys.exit(app.exec_())
+    except SystemExit:
+        pass
+
+    # Shutdown ROS 2
+    rclpy.shutdown()

@@ -39,16 +39,19 @@ struct FileExtractionMessage_
       rosidl_runtime_cpp::MessageInitialization::ZERO == _init)
     {
       this->excelfile = "";
+      this->status = "";
     }
   }
 
   explicit FileExtractionMessage_(const ContainerAllocator & _alloc, rosidl_runtime_cpp::MessageInitialization _init = rosidl_runtime_cpp::MessageInitialization::ALL)
-  : excelfile(_alloc)
+  : excelfile(_alloc),
+    status(_alloc)
   {
     if (rosidl_runtime_cpp::MessageInitialization::ALL == _init ||
       rosidl_runtime_cpp::MessageInitialization::ZERO == _init)
     {
       this->excelfile = "";
+      this->status = "";
     }
   }
 
@@ -59,6 +62,9 @@ struct FileExtractionMessage_
   using _stl_data_type =
     std::vector<uint8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint8_t>>;
   _stl_data_type stl_data;
+  using _status_type =
+    std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>;
+  _status_type status;
 
   // setters for named parameter idiom
   Type & set__excelfile(
@@ -71,6 +77,12 @@ struct FileExtractionMessage_
     const std::vector<uint8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint8_t>> & _arg)
   {
     this->stl_data = _arg;
+    return *this;
+  }
+  Type & set__status(
+    const std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> & _arg)
+  {
+    this->status = _arg;
     return *this;
   }
 
@@ -120,6 +132,9 @@ struct FileExtractionMessage_
       return false;
     }
     if (this->stl_data != other.stl_data) {
+      return false;
+    }
+    if (this->status != other.status) {
       return false;
     }
     return true;

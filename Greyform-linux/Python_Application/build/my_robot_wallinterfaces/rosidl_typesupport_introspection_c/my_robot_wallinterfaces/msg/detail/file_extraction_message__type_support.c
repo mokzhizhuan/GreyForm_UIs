@@ -14,6 +14,7 @@
 
 // Include directives for member types
 // Member `excelfile`
+// Member `status`
 #include "rosidl_runtime_c/string_functions.h"
 // Member `stl_data`
 #include "rosidl_runtime_c/primitives_sequence_functions.h"
@@ -92,7 +93,7 @@ bool my_robot_wallinterfaces__msg__FileExtractionMessage__rosidl_typesupport_int
   return rosidl_runtime_c__uint8__Sequence__init(member, size);
 }
 
-static rosidl_typesupport_introspection_c__MessageMember my_robot_wallinterfaces__msg__FileExtractionMessage__rosidl_typesupport_introspection_c__FileExtractionMessage_message_member_array[2] = {
+static rosidl_typesupport_introspection_c__MessageMember my_robot_wallinterfaces__msg__FileExtractionMessage__rosidl_typesupport_introspection_c__FileExtractionMessage_message_member_array[3] = {
   {
     "excelfile",  // name
     rosidl_typesupport_introspection_c__ROS_TYPE_STRING,  // type
@@ -126,13 +127,30 @@ static rosidl_typesupport_introspection_c__MessageMember my_robot_wallinterfaces
     my_robot_wallinterfaces__msg__FileExtractionMessage__rosidl_typesupport_introspection_c__fetch_function__FileExtractionMessage__stl_data,  // fetch(index, &value) function pointer
     my_robot_wallinterfaces__msg__FileExtractionMessage__rosidl_typesupport_introspection_c__assign_function__FileExtractionMessage__stl_data,  // assign(index, value) function pointer
     my_robot_wallinterfaces__msg__FileExtractionMessage__rosidl_typesupport_introspection_c__resize_function__FileExtractionMessage__stl_data  // resize(index) function pointer
+  },
+  {
+    "status",  // name
+    rosidl_typesupport_introspection_c__ROS_TYPE_STRING,  // type
+    0,  // upper bound of string
+    NULL,  // members of sub message
+    false,  // is array
+    0,  // array size
+    false,  // is upper bound
+    offsetof(my_robot_wallinterfaces__msg__FileExtractionMessage, status),  // bytes offset in struct
+    NULL,  // default value
+    NULL,  // size() function pointer
+    NULL,  // get_const(index) function pointer
+    NULL,  // get(index) function pointer
+    NULL,  // fetch(index, &value) function pointer
+    NULL,  // assign(index, value) function pointer
+    NULL  // resize(index) function pointer
   }
 };
 
 static const rosidl_typesupport_introspection_c__MessageMembers my_robot_wallinterfaces__msg__FileExtractionMessage__rosidl_typesupport_introspection_c__FileExtractionMessage_message_members = {
   "my_robot_wallinterfaces__msg",  // message namespace
   "FileExtractionMessage",  // message name
-  2,  // number of fields
+  3,  // number of fields
   sizeof(my_robot_wallinterfaces__msg__FileExtractionMessage),
   my_robot_wallinterfaces__msg__FileExtractionMessage__rosidl_typesupport_introspection_c__FileExtractionMessage_message_member_array,  // message members
   my_robot_wallinterfaces__msg__FileExtractionMessage__rosidl_typesupport_introspection_c__FileExtractionMessage_init_function,  // function to initialize message memory (memory has to be allocated)

@@ -1,5 +1,3 @@
-msg/CombinedMessage.idl
-msg/CombinedMessage.msg
 msg/FileExtractionMessage.idl
 msg/FileExtractionMessage.msg
 msg/SelectionWall.idl

@@ -38,6 +38,8 @@ cdr_serialize(
   {
     cdr << ros_message.stl_data;
   }
+  // Member: status
+  cdr << ros_message.status;
   return true;
 }
 
@@ -54,6 +56,9 @@ cdr_deserialize(
   {
     cdr >> ros_message.stl_data;
   }
+
+  // Member: status
+  cdr >> ros_message.status;
 
   return true;
 }
@@ -85,6 +90,10 @@ get_serialized_size(
     current_alignment += array_size * item_size +
       eprosima::fastcdr::Cdr::alignment(current_alignment, item_size);
   }
+  // Member: status
+  current_alignment += padding +
+    eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
+    (ros_message.status.size() + 1);
 
   return current_alignment - initial_alignment;
 }
@@ -134,6 +143,19 @@ max_serialized_size_FileExtractionMessage(
     current_alignment += array_size * sizeof(uint8_t);
   }
 
+  // Member: status
+  {
+    size_t array_size = 1;
+
+    full_bounded = false;
+    is_plain = false;
+    for (size_t index = 0; index < array_size; ++index) {
+      current_alignment += padding +
+        eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
+        1;
+    }
+  }
+
   size_t ret_val = current_alignment - initial_alignment;
   if (is_plain) {
     // All members are plain, and type is not empty.
@@ -142,7 +164,7 @@ max_serialized_size_FileExtractionMessage(
     using DataType = my_robot_wallinterfaces::msg::FileExtractionMessage;
     is_plain =
       (
-      offsetof(DataType, stl_data) +
+      offsetof(DataType, status) +
       last_member_size
       ) == ret_val;
   }

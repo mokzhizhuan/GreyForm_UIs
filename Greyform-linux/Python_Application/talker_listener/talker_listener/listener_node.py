@@ -1,7 +1,6 @@
 import rclpy
 from rclpy.node import Node
 from my_robot_wallinterfaces.msg import (
-    CombinedMessage,
     SelectionWall,
     FileExtractionMessage,
 )

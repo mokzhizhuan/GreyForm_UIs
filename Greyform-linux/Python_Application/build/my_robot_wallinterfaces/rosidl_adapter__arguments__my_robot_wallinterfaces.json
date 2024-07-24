@@ -3,7 +3,6 @@
   "non_idl_tuples": [
     "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces:msg/FileExtractionMessage.msg",
     "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces:msg/SelectionWall.msg",
-    "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces:msg/CombinedMessage.msg",
     "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces:srv/SetLed.srv"
   ]
 }

@@ -13,6 +13,7 @@
 
 // Include directives for member types
 // Member `excelfile`
+// Member `status`
 #include "rosidl_runtime_c/string_functions.h"
 // Member `stl_data`
 #include "rosidl_runtime_c/primitives_sequence_functions.h"
@@ -33,6 +34,11 @@ my_robot_wallinterfaces__msg__FileExtractionMessage__init(my_robot_wallinterface
     my_robot_wallinterfaces__msg__FileExtractionMessage__fini(msg);
     return false;
   }
+  // status
+  if (!rosidl_runtime_c__String__init(&msg->status)) {
+    my_robot_wallinterfaces__msg__FileExtractionMessage__fini(msg);
+    return false;
+  }
   return true;
 }
 
@@ -46,6 +52,8 @@ my_robot_wallinterfaces__msg__FileExtractionMessage__fini(my_robot_wallinterface
   rosidl_runtime_c__String__fini(&msg->excelfile);
   // stl_data
   rosidl_runtime_c__uint8__Sequence__fini(&msg->stl_data);
+  // status
+  rosidl_runtime_c__String__fini(&msg->status);
 }
 
 bool
@@ -63,6 +71,12 @@ my_robot_wallinterfaces__msg__FileExtractionMessage__are_equal(const my_robot_wa
   // stl_data
   if (!rosidl_runtime_c__uint8__Sequence__are_equal(
       &(lhs->stl_data), &(rhs->stl_data)))
+  {
+    return false;
+  }
+  // status
+  if (!rosidl_runtime_c__String__are_equal(
+      &(lhs->status), &(rhs->status)))
   {
     return false;
   }
@@ -86,6 +100,12 @@ my_robot_wallinterfaces__msg__FileExtractionMessage__copy(
   // stl_data
   if (!rosidl_runtime_c__uint8__Sequence__copy(
       &(input->stl_data), &(output->stl_data)))
+  {
+    return false;
+  }
+  // status
+  if (!rosidl_runtime_c__String__copy(
+      &(input->status), &(output->status)))
   {
     return false;
   }

@@ -1,6 +1,4 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/my_robot_wallinterfaces__rosidl_generator_py.dir/rosidl_generator_py/my_robot_wallinterfaces/msg/_combined_message_s.c.o"
-  "CMakeFiles/my_robot_wallinterfaces__rosidl_generator_py.dir/rosidl_generator_py/my_robot_wallinterfaces/msg/_combined_message_s.c.o.d"
   "CMakeFiles/my_robot_wallinterfaces__rosidl_generator_py.dir/rosidl_generator_py/my_robot_wallinterfaces/msg/_file_extraction_message_s.c.o"
   "CMakeFiles/my_robot_wallinterfaces__rosidl_generator_py.dir/rosidl_generator_py/my_robot_wallinterfaces/msg/_file_extraction_message_s.c.o.d"
   "CMakeFiles/my_robot_wallinterfaces__rosidl_generator_py.dir/rosidl_generator_py/my_robot_wallinterfaces/msg/_selection_wall_s.c.o"

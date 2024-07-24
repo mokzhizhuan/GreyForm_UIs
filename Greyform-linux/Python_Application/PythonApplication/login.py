@@ -1,11 +1,9 @@
-import sys
-from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import QDialog, QApplication, QMessageBox
+from PyQt5 import QtWidgets, uic, QtGui, QtCore
+from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-import PythonApplication.BIMFile as BIMfile
 
 
 # user login function will include profile also later
@@ -20,10 +18,10 @@ class Login(QDialog):
         self.stackedWidgetusersetting = stackedWidgetusersetting
         self.form.userid = self.accountinfo[0]["UserID"]
         self.setupUI()
-        self.loginbutton.clicked.connect(self.loginfunction)
-        self.password.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.password.returnPressed.connect(self.loginfunction)
-        self.changepassbutton.clicked.connect(self.changepassword)
+        self.form.loginbutton.clicked.connect(self.loginfunction)
+        self.form.password.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.form.password.returnPressed.connect(self.loginfunction)
+        self.form.changepassbutton.clicked.connect(self.changepassword)
 
     def setupUI(self):
         self.loginboxlayout = QVBoxLayout()
@@ -50,18 +48,22 @@ class Login(QDialog):
             if self.accountinfo[acc]["Pass"] == password:
                 counter = counter + 1
         if counter == 1:
-            """Bimfiles = BIMfile.BimfileInterpretor(
-                self.accountinfo, self.widget, self.userlabel, self.file
-            )
-            self.widget.addWidget(Bimfiles)
-            self.widget.setCurrentIndex(self.widget.currentIndex() + 1)"""
             message_box = QMessageBox()
             message_box.setIcon(QMessageBox.Information)
             message_box.setWindowTitle("Success")
-            message_box.setText("Login Success")
+            message_box.setText("Login Success " + self.form.userid)
             message_box.setStandardButtons(QMessageBox.Ok)
-            # Show the message box and wait for a response
-            response = message_box.exec_()
+            returnValue = message_box.exec()
+            if returnValue == QMessageBox.Ok:
+                profile = Profile(
+                    self.accountinfo,
+                    self.widget,
+                    self.userlabel,
+                    self.file,
+                    self.stackedWidgetusersetting,
+                )
+            self.widget.addWidget(profile)
+            self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
         else:
             # warning message box
             msg_box = QMessageBox()
@@ -80,7 +82,7 @@ class Login(QDialog):
             msg_box.setStandardButtons(QMessageBox.Ok)
 
             # Show the message box
-            msg_box.exec_()
+            msg_box.exec()
 
     # access to change pass ui
     def changepassword(self):
@@ -155,6 +157,54 @@ class ChangePass(QDialog):
             msg_box.exec_()
 
     # back to login ui
+    def backtologin(self):
+        login = Login(
+            self.accountinfo,
+            self.widget,
+            self.userlabel,
+            self.file,
+            self.stackedWidgetusersetting,
+        )
+        self.widget.addWidget(login)
+        self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
+
+
+class Profile(QDialog):
+    def __init__(self, accountinfo, widget, userlabel, file, stackedWidgetusersetting):
+        super(Profile, self).__init__()
+        self.form = uic.loadUi("UI_Design/Profile.ui", self)
+        self.accountinfo = accountinfo
+        self.widget = widget
+        self.userlabel = userlabel
+        self.file = file
+        self.stackedWidgetusersetting = stackedWidgetusersetting
+        self.form.userlabel.setText(self.accountinfo[0]["UserID"])
+        self.setupUI()
+        self.form.loginbutton.clicked.connect(self.backtologin)
+
+    def setupUI(self):
+
+        self.form.userlabel.setAlignment(Qt.AlignCenter)
+        self.profilelayout = QVBoxLayout()
+        self.profilelayout.addWidget(self.form.profileiconlabel)
+        pixmap = QPixmap("—Pngtree—avatar icon profile icon member_5247852.png")
+        self.form.profileiconlabel.setPixmap(pixmap)
+        self.form.profileiconlabel.resize(
+            int(pixmap.width() / 2), int(pixmap.height() / 2)
+        )
+        scaled_pixmap = pixmap.scaled(
+            self.form.profileiconlabel.size(),
+            Qt.KeepAspectRatio,
+            Qt.SmoothTransformation,
+        )
+        self.form.profileiconlabel.setAlignment(Qt.AlignCenter)
+        self.form.profileiconlabel.setScaledContents(True)
+        self.form.profileiconlabel.setPixmap(scaled_pixmap)
+        self.profilelayout.addWidget(self.form.label)
+        self.profilelayout.addWidget(self.form.userlabel)
+        self.profilelayout.addWidget(self.form.loginbutton)
+        self.setLayout(self.profilelayout)
+
     def backtologin(self):
         login = Login(
             self.accountinfo,

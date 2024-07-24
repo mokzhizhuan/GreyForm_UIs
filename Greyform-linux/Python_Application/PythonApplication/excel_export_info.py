@@ -1,5 +1,3 @@
-import ifcopenshell
-import ifcopenshell.geom
 import pandas as pd
 import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
@@ -8,20 +6,49 @@ from ifcopenshell.util.placement import get_local_placement
 class Exportexcelinfo(object):
     def __init__(self, file, class_type):
         try:
-            data, pset_attributes = self.get_objects_data_by_class(file, class_type)
+            data = self.get_objects_data_by_class(file, class_type)
             attributes = [
-                "ExpressID",
-                "GlobalID",
                 "Class",
-                "PredefinedType",
-                "Name",
-                "Level",
-                "ObjectType",
-                "PlacementMatrix",
-                "RevertOrigin",
-                "Vertices",
-            ] + pset_attributes
-
+                "Marking type",
+                "Point number/name",
+                "Position X (m)",
+                "Position Y (m)",
+                "Position Z (m)",
+                "Wall Number",
+                "Shape type",
+                "Status",
+            ]
+            dataframe_Legend = pd.read_excel(
+                "Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2
+            )
+            self.pen_column = dataframe_Legend.columns[3]
+            self.pin_id_column = dataframe_Legend.columns[9]
+            dataframe_Legend = dataframe_Legend[[self.pen_column, self.pin_id_column]]
+            if (
+                self.pen_column in dataframe_Legend.columns
+                and self.pin_id_column in dataframe_Legend.columns
+            ):
+                dataframe_Legend[self.pen_column].fillna("", inplace=True)
+                dataframe_Legend[self.pin_id_column].fillna("", inplace=True)
+                filtered_dataframe = dataframe_Legend[
+                    (dataframe_Legend[self.pen_column] != "")
+                    & (dataframe_Legend[self.pin_id_column] != "")
+                ]
+                self.wall_legend = filtered_dataframe.to_dict(orient="records")
+                self.wall_name = "BSS.20mm Wall Finishes (600x600mm)"
+                self.wall_600x600mm = []
+                self.indexwall = 0
+                self.index = 0
+                for data_legend in self.wall_legend:
+                    data_pen_name = data_legend.get(self.pen_column)
+                    data_pin_id = data_legend.get(self.pin_id_column)
+                    if self.wall_name in data_pen_name:
+                        self.wall_600x600mm.append(
+                            {
+                                "Penetration/Fitting/Reference Point Name": data_pen_name,
+                                "Pin ID": data_pin_id,
+                            }
+                        )
             pandas_data = []
             for object_data in data:
                 row = []
@@ -29,101 +56,99 @@ class Exportexcelinfo(object):
                     value = self.get_attribute_value(object_data, attribute)
                     row.append(value)
                 pandas_data.append(tuple(row))
-
             dataframe = pd.DataFrame.from_records(pandas_data, columns=attributes)
-            dataframe["Markers"] = dataframe.apply(self.add_markers, axis=1)
-            file_name = f"exporteddata.xlsx"
+            dataframe["Wall Number"] = dataframe.apply(
+                self.determine_wall_number, axis=1
+            )
+            dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
+            file_name = f"exporteddatass.xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 workbook = writer.book
-                # format_rotated = workbook.add_format({'text_wrap': True, 'valign': 'top', 'rotation': 90})
-
                 for object_class in dataframe["Class"].unique():
                     df_class = dataframe[dataframe["Class"] == object_class]
-                    df_class = df_class.drop(
-                        [
-                            "Class",
-                            "PredefinedType",
-                            "RevertOrigin",
-                            "Vertices",
-                            "Pset_ProvisionForVoid.Width",
-                            "Pset_ProvisionForVoid.Depth",
-                            "Pset_QuantityTakeOff.Reference",
-                            "Pset_ProvisionForVoid.id",
-                            "Pset_ProductRequirements.id",
-                            "Pset_BuildingElementProxyCommon.Reference",
-                            "Pset_QuantityTakeOff.id",
-                            "Pset_BuildingElementProxyCommon.id",
-                            "Pset_ProvisionForVoid.Height",
-                            "Pset_ProductRequirements.Category",
-                        ],
-                        axis=1,
-                    )
+                    df_class = df_class.drop(["Class"], axis=1)
                     df_class = df_class.dropna(axis=1, how="all")
                     df_class.to_excel(writer, sheet_name=object_class)
-                    # Rotated cell
                     worksheet = writer.sheets[object_class]
                     self.apply_rotation_to_markers(workbook, worksheet, df_class)
-            # Apply this custom formatting function to the 'PlacementMatrix' column
-            dataframe["PlacementMatrix"] = dataframe["PlacementMatrix"].apply(
-                self.format_matrix
-            )
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
 
     def get_objects_data_by_class(self, file, class_type):
-        pset_attributes = set()
         objects_data = []
         objects = file.by_type(class_type)
         for object in objects:
-            psets = Element.get_psets(object, psets_only=True)
-            self.add_pset_attributes(psets, pset_attributes)
-            qtos = Element.get_psets(object, qtos_only=True)
-            self.add_pset_attributes(qtos, pset_attributes)
-            placement_matrix = get_local_placement(object.ObjectPlacement)
-            revert_origin = object.Name if object.Name == "CP1:CP1:1433163" else ""
+            wall_number = object.Tag if object.Tag else ""
+            name = object.Name if object.Name else ""
             # Extract Vertices of Elements
-            if object.Representation is not None:
-                settings = ifcopenshell.geom.settings()
-                shape = ifcopenshell.geom.create_shape(settings, object)
-                verts = shape.geometry.verts
-                grouped_verts = [
-                    [verts[i], verts[i + 1], verts[i + 2]]
-                    for i in range(0, len(verts), 3)
-                ]
+            x, y, z = (0, 0, 0)
+            if object.ObjectPlacement:
+                placement = object.ObjectPlacement.RelativePlacement
+                if placement and placement.Location:
+                    x, y, z = placement.Location.Coordinates
             objects_data.append(
                 {
-                    "ExpressID": object.id(),
-                    "GlobalID": object.GlobalId,
-                    "Class": object.is_a(),
-                    "PredefinedType": Element.get_predefined_type(object),
-                    "Name": object.Name,
-                    "Level": (
-                        Element.get_container(object).Name
-                        if Element.get_container(object)
-                        else ""
-                    ),
-                    "ObjectType": (
+                    "Class": str(object.is_a()).replace("Ifc", ""),
+                    "Marking type": (
                         Element.get_type(object).Name
                         if Element.get_type(object)
-                        else ""
+                        else object.Name
                     ),
-                    "PlacementMatrix": placement_matrix,
-                    "RevertOrigin": revert_origin,
-                    "Vertices": grouped_verts,
-                    "QuantitySets": qtos,
-                    "PropertySets": psets,
+                    "Point number/name": name,
+                    "Position X (m)": int(x),
+                    "Position Y (m)": int(y),
+                    "Position Z (m)": int(z),
+                    "Wall Number": str(wall_number),
+                    "Shape type": "",
+                    "Status": "blank",
                 }
             )
-        return objects_data, list((pset_attributes))
-
-    def add_pset_attributes(self, psets, pset_attributes):
-        for pset_name, pset_data in psets.items():
-            for property_name in pset_data.keys():
-                pset_attributes.add(f"{pset_name}.{property_name}")
+        return objects_data
 
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
             log_file.write(message + "\n")
+
+    def add_markers(self, row):
+        if pd.isnull(row["Point number/name"]):
+            return "6"
+        if row["Point number/name"] and row["Point number/name"].startswith("TMP"):
+            if (
+                any(char in row["Point number/name"] for char in ["a", "b", "c"])
+                and row["Point number/name"][8] == "s"
+            ):
+                return "T"
+            else:
+                return "+"
+        return "6"
+
+    def apply_rotation_to_markers(self, workbook, worksheet, df_class):
+        marker_col_index = df_class.columns.get_loc("Shape type")
+        for row_idx, (name, marker) in enumerate(
+            zip(
+                df_class["Point number/name"],
+                df_class["Shape type"],
+            ),
+            start=1,
+        ):
+            if name and name.startswith("TMP") and name[8] == "s" and name[3] == "7":
+                print(f"Rotating marker for row {row_idx}: {marker}")
+                if "b" in name:
+                    marker = 4
+                    worksheet.write(row_idx, marker_col_index + 1, marker)
+                else:
+                    marker = 3
+                    worksheet.write(row_idx, marker_col_index + 1, marker)
+            else:
+                if marker == "T":
+                    marker = 2
+                    worksheet.write(row_idx, marker_col_index + 1, marker)
+                elif marker == "+":
+                    marker = 1
+                    worksheet.write(row_idx, marker_col_index + 1, marker)
+                elif marker == "6":
+                    marker = 6
+                    worksheet.write(row_idx, marker_col_index + 1, marker)
 
     def get_attribute_value(self, object_data, attribute):
         if "." not in attribute:
@@ -144,34 +169,47 @@ class Exportexcelinfo(object):
         else:
             return None
 
-    def format_matrix(self, matrix):
-        return [[f"{element:.2f}" for element in row] for row in matrix]
+    def determine_wall_number(self, row):
+        wallnum = None
+        name = row["Point number/name"]
+        if pd.isnull(name):
+            self.index += 1
+            return None
+        name = str(name)
+        if self.index == 117:
+            self.index += 1
+            return None
+        if self.wall_name in name:
+            if self.indexwall < len(self.wall_600x600mm):
+                wallnum = self.wallnumber(self.wall_600x600mm[self.indexwall]["Pin ID"])
+                self.indexwall += 1
+                self.index += 1
+                return wallnum
+        for data_legend in self.wall_legend:
+            data_pen_name = data_legend.get(self.pen_column)
+            data_pin_id = data_legend.get(self.pin_id_column)
+            if data_pen_name in name:
+                wallnum = self.wallnumber(data_pin_id)
+                self.index += 1
+                return wallnum
+        wallnum = self.wallnumber(name)
+        self.index += 1
+        return wallnum
 
-    def add_markers(self, row):
-        if row["Name"] and row["Name"].startswith("TMP"):
-            if (
-                any(char in row["Name"] for char in ["a", "b", "c"])
-                and row["Name"][8] == "s"
-            ):
-                return "T"
-            else:
-                return "+"
-        return ""
-
-    def apply_rotation_to_markers(self, workbook, worksheet, df_class):
-        marker_col_index = df_class.columns.get_loc("Markers")
-        format_rotated_n90 = workbook.add_format({"rotation": -90})
-        format_rotated_90 = workbook.add_format({"rotation": 90})
-        for row_idx, (name, marker) in enumerate(
-            zip(df_class["Name"], df_class["Markers"]), start=1
-        ):
-            if name and name.startswith("TMP") and name[8] == "s" and name[3] == "7":
-                print(f"Rotating marker for row {row_idx}: {marker}")
-                if "b" in name:
-                    worksheet.write(
-                        row_idx, marker_col_index + 1, marker, format_rotated_90
-                    )
-                else:
-                    worksheet.write(
-                        row_idx, marker_col_index + 1, marker, format_rotated_n90
-                    )
+    def wallnumber(self, name):
+        if "CP" in name:
+            index = name.index("CP") + 2
+            if index < len(name) and name[index].isdigit():
+                return int(name[index])
+        if "LP" in name:
+            index = name.index("LP") + 2
+            if index < len(name) and name[index].isdigit():
+                return int(name[index])
+        if "SP" in name:
+            index = name.index("SP") + 2
+            if index < len(name) and name[index].isdigit():
+                return int(name[index])
+        if "TMP" in name:
+            index = name.index("TMP") + 3
+            if index < len(name) and name[index].isdigit():
+                return int(name[index])

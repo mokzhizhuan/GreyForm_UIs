@@ -1,9 +1,5 @@
 file(REMOVE_RECURSE
   "CMakeFiles/my_robot_wallinterfaces__cpp"
-  "rosidl_generator_cpp/my_robot_wallinterfaces/msg/combined_message.hpp"
-  "rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__builder.hpp"
-  "rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__struct.hpp"
-  "rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__traits.hpp"
   "rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/file_extraction_message__builder.hpp"
   "rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/file_extraction_message__struct.hpp"
   "rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/file_extraction_message__traits.hpp"

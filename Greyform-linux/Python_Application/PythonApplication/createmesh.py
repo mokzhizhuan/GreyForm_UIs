@@ -45,6 +45,23 @@ class createMesh(QMainWindow):
         self.ren.UseHiddenLineRemovalOn()
         self.loadStl()
 
+    def addfeatureEdges(self):
+        featureEdges = vtkFeatureEdges()
+        featureEdges.SetInputData(self.reader)
+        featureEdges.BoundaryEdgesOn()
+        featureEdges.FeatureEdgesOff()
+        featureEdges.ManifoldEdgesOff()
+        featureEdges.NonManifoldEdgesOff()
+        featureEdges.ColoringOn()
+        featureEdges.Update()
+
+        # Visualize
+        edgeMapper = vtkPolyDataMapper()
+        edgeMapper.SetInputConnection(featureEdges.GetOutputPort())
+        edgeActor = vtkActor()
+        edgeActor.SetMapper(edgeMapper)
+        return edgeActor
+
 
     def loadStl(self):
         """Load the given STL file, and return a vtkPolyData object for it."""
@@ -66,7 +83,8 @@ class createMesh(QMainWindow):
             vtk_faces.InsertNextCell(polygon)
         self.reader.SetPoints(vtk_points)
         self.reader.SetPolys(vtk_faces)
-        actor = self.polyDataToActor()
+        self.polyDataToActor()
+        self.fixedposition()
         center = [
             (self.meshbounds[0] + self.meshbounds[1]) / 2,
             (self.meshbounds[2] + self.meshbounds[3]) / 2,
@@ -74,25 +92,27 @@ class createMesh(QMainWindow):
         ]
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
-        self.cubeactor.SetPosition(80, center[1], center[2])
+        edgeActor = self.addfeatureEdges()
+        self.cubeactor.SetPosition(160, center[1], center[2])
         self.cubeactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
         )
         spaceseperation = 50
         self.cameraactor.SetPosition(
-            80, center[1] - spaceseperation, center[2] - spaceseperation
+            160, center[1] - spaceseperation, center[2] - spaceseperation
         )
         self.cameraactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
         )
-        self.ren.AddActor(actor)
         self.ren.AddActor(self.cameraactor)
+        self.ren.AddActor(edgeActor)
         self.ren.AddActor(self.cubeactor)
+        self.ren.AddActor(self.actor)
         self.oldcamerapos = self.cubeactor.GetPosition()
         self.collisionFilter = vtk.vtkCollisionDetectionFilter()
         # Set up the collision filter
         self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
-        self.collisionFilter.SetInputData(1, actor.GetMapper().GetInput())
+        self.collisionFilter.SetInputData(1, self.actor.GetMapper().GetInput())
         self.collisionFilter.SetTransform(
             0, vtk.vtkTransform()
         )  # Moving object transform
@@ -102,7 +122,7 @@ class createMesh(QMainWindow):
         self.collisionFilter.SetMatrix(
             0, self.cubeactor.GetMatrix()
         )  # Static object transform
-        self.collisionFilter.SetMatrix(1, actor.GetMatrix())  # Static object transform
+        self.collisionFilter.SetMatrix(1, self.actor.GetMatrix())  # Static object transform
         self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()
         camera = events.myInteractorStyle(
@@ -114,7 +134,7 @@ class createMesh(QMainWindow):
             self.xlabelbefore,
             self.ylabelbefore,
             self.zlabelbefore,
-            actor,
+            self.actor,
             self.polydata,
             self.reader,
             self.append_filterpolydata,
@@ -134,6 +154,33 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
+
+    def fixedposition(self):
+        minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]
+        transform = vtk.vtkTransform()
+        transform.Translate(-minBounds[0], -minBounds[1], -minBounds[2])
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetInputData(self.reader)
+        transformFilter.SetTransform(transform)
+        transformFilter.Update()
+        transformedPolyData = transformFilter.GetOutput()
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputData(transformedPolyData)
+        self.actor = vtk.vtkActor()
+        self.actor.SetMapper(mapper)
+        self.actor.GetProperty().SetRepresentationToSurface()
+        colorsd = vtkNamedColors()
+        self.actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
+        self.actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
+        self.actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d("LightSteelBlue"))
+        self.actor.GetProperty().SetDiffuse(0.8)
+        self.actor.GetProperty().SetSpecular(0.3)
+        self.actor.GetProperty().SetSpecularPower(60.0)
+        self.actor.GetProperty().BackfaceCullingOn()
+        self.actor.GetProperty().FrontfaceCullingOn()
+        print(self.actor.GetBounds())
+        for i in range(6):
+            self.meshbounds[i] = self.actor.GetBounds()[i]
 
     def create_cube_actor(self):
         self.cube_source = vtk.vtkCubeSource()
@@ -161,12 +208,4 @@ class createMesh(QMainWindow):
         self.meshbounds = []
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
-        # color RGB must be /255 for Red, green , blue color code
-        actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
-        actor.GetProperty().SetDiffuse(0.8)
-        colorsd = vtkNamedColors()
-        actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d("LightSteelBlue"))
-        actor.GetProperty().SetSpecular(0.3)
-        actor.GetProperty().SetSpecularPower(60.0)
-        return actor
 

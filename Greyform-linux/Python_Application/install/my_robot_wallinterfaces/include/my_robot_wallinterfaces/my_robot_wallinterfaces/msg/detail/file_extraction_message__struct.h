@@ -19,6 +19,7 @@ extern "C"
 
 // Include directives for member types
 // Member 'excelfile'
+// Member 'status'
 #include "rosidl_runtime_c/string.h"
 // Member 'stl_data'
 #include "rosidl_runtime_c/primitives_sequence.h"
@@ -28,6 +29,7 @@ typedef struct my_robot_wallinterfaces__msg__FileExtractionMessage
 {
   rosidl_runtime_c__String excelfile;
   rosidl_runtime_c__uint8__Sequence stl_data;
+  rosidl_runtime_c__String status;
 } my_robot_wallinterfaces__msg__FileExtractionMessage;
 
 // Struct for a sequence of my_robot_wallinterfaces__msg__FileExtractionMessage.

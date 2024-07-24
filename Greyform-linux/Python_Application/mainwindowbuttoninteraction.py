@@ -80,7 +80,7 @@ class mainwindowbuttonUI(object):
         )
         self.ConfirmAckButton.clicked.connect(
             lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(
-                self.mainwindow, self.append_filter
+                self.mainwindow
             )
         )
         self.MarkingButton.clicked.connect(

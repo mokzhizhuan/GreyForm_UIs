@@ -10,6 +10,8 @@ setup.py
 ../build/talker_listener/talker_listener.egg-info/zip-safe
 resource/talker_listener
 talker_listener/__init__.py
+talker_listener/lidar_publisher.py
+talker_listener/lidar_subscriber.py
 talker_listener/listener_node.py
 talker_listener/talker_node.py
 test/test_copyright.py

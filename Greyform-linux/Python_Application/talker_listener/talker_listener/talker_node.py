@@ -4,7 +4,6 @@ import sys
 from my_robot_wallinterfaces.msg import (
     FileExtractionMessage,
     SelectionWall,
-    CombinedMessage,
 )
 from my_robot_wallinterfaces.srv import SetLed
 from std_msgs.msg import String

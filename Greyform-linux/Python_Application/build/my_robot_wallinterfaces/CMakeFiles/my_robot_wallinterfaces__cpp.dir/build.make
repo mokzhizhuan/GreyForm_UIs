@@ -74,10 +74,6 @@ CMakeFiles/my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinter
 CMakeFiles/my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/selection_wall__builder.hpp
 CMakeFiles/my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/selection_wall__struct.hpp
 CMakeFiles/my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/selection_wall__traits.hpp
-CMakeFiles/my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/combined_message.hpp
-CMakeFiles/my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__builder.hpp
-CMakeFiles/my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__struct.hpp
-CMakeFiles/my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__traits.hpp
 CMakeFiles/my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/srv/set_led.hpp
 CMakeFiles/my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/srv/detail/set_led__builder.hpp
 CMakeFiles/my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/srv/detail/set_led__struct.hpp
@@ -100,7 +96,6 @@ rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp: /o
 rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp: /opt/ros/humble/share/rosidl_generator_cpp/resource/srv__traits.hpp.em
 rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp: rosidl_adapter/my_robot_wallinterfaces/msg/FileExtractionMessage.idl
 rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp: rosidl_adapter/my_robot_wallinterfaces/msg/SelectionWall.idl
-rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp: rosidl_adapter/my_robot_wallinterfaces/msg/CombinedMessage.idl
 rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp: rosidl_adapter/my_robot_wallinterfaces/srv/SetLed.idl
 rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp: /opt/ros/humble/share/builtin_interfaces/msg/Duration.idl
 rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp: /opt/ros/humble/share/builtin_interfaces/msg/Time.idl
@@ -128,18 +123,6 @@ rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/selection_wall__struct.h
 rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/selection_wall__traits.hpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp
 	@$(CMAKE_COMMAND) -E touch_nocreate rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/selection_wall__traits.hpp
 
-rosidl_generator_cpp/my_robot_wallinterfaces/msg/combined_message.hpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp
-	@$(CMAKE_COMMAND) -E touch_nocreate rosidl_generator_cpp/my_robot_wallinterfaces/msg/combined_message.hpp
-
-rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__builder.hpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp
-	@$(CMAKE_COMMAND) -E touch_nocreate rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__builder.hpp
-
-rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__struct.hpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp
-	@$(CMAKE_COMMAND) -E touch_nocreate rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__struct.hpp
-
-rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__traits.hpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp
-	@$(CMAKE_COMMAND) -E touch_nocreate rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__traits.hpp
-
 rosidl_generator_cpp/my_robot_wallinterfaces/srv/set_led.hpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/file_extraction_message.hpp
 	@$(CMAKE_COMMAND) -E touch_nocreate rosidl_generator_cpp/my_robot_wallinterfaces/srv/set_led.hpp
 
@@ -153,10 +136,6 @@ rosidl_generator_cpp/my_robot_wallinterfaces/srv/detail/set_led__traits.hpp: ros
 	@$(CMAKE_COMMAND) -E touch_nocreate rosidl_generator_cpp/my_robot_wallinterfaces/srv/detail/set_led__traits.hpp
 
 my_robot_wallinterfaces__cpp: CMakeFiles/my_robot_wallinterfaces__cpp
-my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/combined_message.hpp
-my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__builder.hpp
-my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__struct.hpp
-my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/combined_message__traits.hpp
 my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/file_extraction_message__builder.hpp
 my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/file_extraction_message__struct.hpp
 my_robot_wallinterfaces__cpp: rosidl_generator_cpp/my_robot_wallinterfaces/msg/detail/file_extraction_message__traits.hpp
