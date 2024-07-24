@@ -34,6 +34,7 @@ Right click is to insert the actor in the room view , right click for room inter
 middle click is to insert an object tht was marked <br>
 l key is to remove the actor in the room view and set the mesh to the original position <br>
 m Key is to restore moving position <br>
+Lastly , disable one movement. if the mesh struck collision . it will disable one movement key, this will prevent crashing the cameraactor program <br>
 
 ##
 IFC format: <br>
@@ -74,6 +75,4 @@ Ifc will be loaded and will convert to STL file format to load pyvista. <br>
 
 ##
 Progress: <br>
-gui wall selection <br>
-collision avoidance progression <br>
-marker accuracy algorithm <br>
+None
