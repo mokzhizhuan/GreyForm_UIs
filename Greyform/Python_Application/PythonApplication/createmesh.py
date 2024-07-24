@@ -81,7 +81,6 @@ class createMesh(QMainWindow):
         featureEdges.ColoringOn()
         featureEdges.Update()
 
-        # Visualize
         edgeMapper = vtkPolyDataMapper()
         edgeMapper.SetInputConnection(featureEdges.GetOutputPort())
         edgeActor = vtkActor()

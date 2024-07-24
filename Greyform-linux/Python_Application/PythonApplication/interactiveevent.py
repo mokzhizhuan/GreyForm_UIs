@@ -4,6 +4,10 @@ import PythonApplication.middlebuttoninteractor as middlebuttoninteractor
 import PythonApplication.leftbuttoninteractor as leftbuttoninteraction
 import PythonApplication.rightclickroominteraction as roominteraction
 import PythonApplication.storedisplay as displaystoring
+import tkinter as tk
+from tkinter import messagebox
+import time
+
 
 # insert interactive event for the stl mesh , left click is for moving the stl ,
 # right click is to insert the actor in the room view , right click for room interact shower and toilet
@@ -77,8 +81,8 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             spaceseperation,
             center,
         )
-        self.old_actor_position = [80, self.center[1], self.center[2]]
-        self.default_pos = [80, self.center[1], self.center[2]]
+        self.old_actor_position = [160, self.center[1], self.center[2]]
+        self.default_pos = [160, self.center[1], self.center[2]]
         self.collisionFilter = collisionFilter
         self.old_actor_position = oldcamerapos
         self.refresh()
@@ -129,7 +133,8 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.default_pos,
             center,
         )
-        self.displaytext(camera)
+        self.setkeypreventcontrols()
+        self.leftbuttoninteraction.displaytext(camera)
 
     # inside view
     def RightButtonPressEvent(self, obj, event):
@@ -145,7 +150,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.cubeactor.SetPosition(self.old_actor_position)
         self.camsetvieworientation(camera)
         self.render.SetActiveCamera(camera)  # insert and replace a new camera
-        self.displaytext(camera)
+        self.leftbuttoninteraction.displaytext(camera)
         """self.markingevent = self.AddObserver(
             "MiddleButtonPressEvent", self.middlebuttonobserver.MiddleButtonPressEvent
         )"""
@@ -171,6 +176,12 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         )
         self.refresh()
         self.OnRightButtonDown()
+    
+    def setkeypreventcontrols(self):
+        self.disable_up = False
+        self.disable_down = False
+        self.disable_left = False
+        self.disable_right = False
 
     # movement controls
     def KeyPressed(self, obj, event):
@@ -241,31 +252,13 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 self.updatecamera(camera)
             time.sleep(delay)
 
-    # displaycamtext
-    def displaytext(self, camera):
-        self.xlabelbefore.setText(
-            self._translate(
-                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[0]))
-            )
-        )
-        self.ylabelbefore.setText(
-            self._translate(
-                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[1]))
-            )
-        )
-        self.zlabelbefore.setText(
-            self._translate(
-                "MainWindow", str("{0:.2f}".format(camera.GetPosition()[2]))
-            )
-        )
-
     # set camera orientation
     def camsetvieworientation(self, camera):
-        camera.SetViewUp(
-            self.defaultposition[0],
-            self.defaultposition[1],
-            self.defaultposition[2],
-        )
+        camera.SetViewUp(0, 0, 1)
+    
+    def updatecamera(self, camera):
+        self.displaystore.storedisplay()
+        self.leftbuttoninteraction.displaytext(camera)
 
     # refresher
     def refresh(self):
@@ -292,6 +285,8 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.refresh()
             self.old_actor_position = actor_position
         else:
+            messege = f"collision detected. Moving back to previous position.\n Collision: Contact detected {num_contacts}"
+            self.show_error_message(messege)
             self.old_actor_position = [
                 self.cubeactor.GetPosition()[0],
                 self.cubeactor.GetPosition()[1],
@@ -299,14 +294,25 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             ]
             if key == "Up":
                 self.old_actor_position[0] -= self.actor_speed * 2
+                self.disable_up = True
             elif key == "Down":
                 self.old_actor_position[0] += self.actor_speed * 2
+                self.disable_down = True
             elif key == "Left":
                 self.old_actor_position[1] -= self.actor_speed * 2
+                self.disable_left = True
             elif key == "Right":
                 self.old_actor_position[1] += self.actor_speed * 2
+                self.disable_right = True
             self.cubeactor.SetPosition(self.old_actor_position)
             self.setcameraactor()
             camera.SetPosition(self.old_actor_position)
             actor_position = self.old_actor_position
             self.refresh()
+
+    # Use Tkinter to show an error message
+    def show_error_message(self, message):
+        root = tk.Tk()
+        root.withdraw()  # Hide the root window
+        messagebox.showerror("Error", message)
+        root.destroy()

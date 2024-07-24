@@ -1,0 +1,22 @@
+[3.917s] Invoking command in '/home/ubuntu/Desktop/Greyform-linux/Python_Application/talker_listener': PYTHONPATH=/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/talker_listener/prefix_override:/home/ubuntu/Desktop/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/talker_listener build --build-base /home/ubuntu/Desktop/Greyform-linux/Python_Application/build/talker_listener/build install --record /home/ubuntu/Desktop/Greyform-linux/Python_Application/build/talker_listener/install.log --single-version-externally-managed install_data
+[5.159s] running egg_info
+[5.163s] writing ../build/talker_listener/talker_listener.egg-info/PKG-INFO
+[5.165s] writing dependency_links to ../build/talker_listener/talker_listener.egg-info/dependency_links.txt
+[5.166s] writing entry points to ../build/talker_listener/talker_listener.egg-info/entry_points.txt
+[5.166s] writing requirements to ../build/talker_listener/talker_listener.egg-info/requires.txt
+[5.167s] writing top-level names to ../build/talker_listener/talker_listener.egg-info/top_level.txt
+[5.174s] reading manifest file '../build/talker_listener/talker_listener.egg-info/SOURCES.txt'
+[5.183s] writing manifest file '../build/talker_listener/talker_listener.egg-info/SOURCES.txt'
+[5.184s] running build
+[5.184s] running build_py
+[5.185s] running install
+[5.188s] running install_lib
+[5.195s] running install_data
+[5.195s] running install_egg_info
+[5.211s] removing '/home/ubuntu/Desktop/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener-0.0.0-py3.10.egg-info' (and everything under it)
+[5.217s] Copying ../build/talker_listener/talker_listener.egg-info to /home/ubuntu/Desktop/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener-0.0.0-py3.10.egg-info
+[5.220s] running install_scripts
+[5.289s] Installing listenerNode script to /home/ubuntu/Desktop/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listeners
+[5.290s] Installing talkerNode script to /home/ubuntu/Desktop/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listeners
+[5.292s] writing list of installed files to '/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/talker_listener/install.log'
+[5.361s] Invoked command in '/home/ubuntu/Desktop/Greyform-linux/Python_Application/talker_listener' returned '0': PYTHONPATH=/home/ubuntu/Desktop/Greyform-linux/Python_Application/build/talker_listener/prefix_override:/home/ubuntu/Desktop/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/talker_listener build --build-base /home/ubuntu/Desktop/Greyform-linux/Python_Application/build/talker_listener/build install --record /home/ubuntu/Desktop/Greyform-linux/Python_Application/build/talker_listener/install.log --single-version-externally-managed install_data

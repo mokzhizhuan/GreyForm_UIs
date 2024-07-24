@@ -1,0 +1,401 @@
+[0.558s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build']
+[0.558s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=8, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x7b2a9c042c50>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x7b2a9c0425c0>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x7b2a9c0425c0>>, mixin_verb=('build',))
+[1.610s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[1.611s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[1.612s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[1.613s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[1.613s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[1.614s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[1.614s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application'
+[1.614s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[1.615s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[1.615s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[1.616s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[1.616s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[1.616s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[1.616s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[1.616s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[1.616s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[1.674s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[1.674s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[1.674s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[1.675s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[1.675s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[1.675s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extensions ['ignore', 'ignore_ament_install']
+[1.676s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extension 'ignore'
+[1.676s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extension 'ignore_ament_install'
+[1.676s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extensions ['colcon_pkg']
+[1.676s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extension 'colcon_pkg'
+[1.677s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extensions ['colcon_meta']
+[1.677s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extension 'colcon_meta'
+[1.677s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extensions ['ros']
+[1.677s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extension 'ros'
+[1.678s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extensions ['cmake', 'python']
+[1.678s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extension 'cmake'
+[1.679s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extension 'python'
+[1.679s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extensions ['python_setup_py']
+[1.679s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication) by extension 'python_setup_py'
+[1.680s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extensions ['ignore', 'ignore_ament_install']
+[1.680s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extension 'ignore'
+[1.680s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extension 'ignore_ament_install'
+[1.680s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extensions ['colcon_pkg']
+[1.681s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extension 'colcon_pkg'
+[1.681s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extensions ['colcon_meta']
+[1.681s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extension 'colcon_meta'
+[1.681s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extensions ['ros']
+[1.682s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extension 'ros'
+[1.682s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extensions ['cmake', 'python']
+[1.682s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extension 'cmake'
+[1.682s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extension 'python'
+[1.683s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extensions ['python_setup_py']
+[1.683s] Level 1:colcon.colcon_core.package_identification:_identify(PythonApplication/__pycache__) by extension 'python_setup_py'
+[1.684s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extensions ['ignore', 'ignore_ament_install']
+[1.686s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extension 'ignore'
+[1.686s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extension 'ignore_ament_install'
+[1.687s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extensions ['colcon_pkg']
+[1.687s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extension 'colcon_pkg'
+[1.687s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extensions ['colcon_meta']
+[1.687s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extension 'colcon_meta'
+[1.688s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extensions ['ros']
+[1.688s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extension 'ros'
+[1.688s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extensions ['cmake', 'python']
+[1.688s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extension 'cmake'
+[1.689s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extension 'python'
+[1.689s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extensions ['python_setup_py']
+[1.689s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design) by extension 'python_setup_py'
+[1.690s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extensions ['ignore', 'ignore_ament_install']
+[1.691s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extension 'ignore'
+[1.691s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extension 'ignore_ament_install'
+[1.691s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extensions ['colcon_pkg']
+[1.691s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extension 'colcon_pkg'
+[1.692s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extensions ['colcon_meta']
+[1.692s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extension 'colcon_meta'
+[1.692s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extensions ['ros']
+[1.692s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extension 'ros'
+[1.693s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extensions ['cmake', 'python']
+[1.693s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extension 'cmake'
+[1.693s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extension 'python'
+[1.693s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extensions ['python_setup_py']
+[1.694s] Level 1:colcon.colcon_core.package_identification:_identify(UI_Design/__pycache__) by extension 'python_setup_py'
+[1.694s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['ignore', 'ignore_ament_install']
+[1.695s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'ignore'
+[1.695s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'ignore_ament_install'
+[1.696s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['colcon_pkg']
+[1.696s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'colcon_pkg'
+[1.697s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['colcon_meta']
+[1.697s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'colcon_meta'
+[1.697s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['ros']
+[1.697s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'ros'
+[1.698s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['cmake', 'python']
+[1.698s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'cmake'
+[1.699s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'python'
+[1.699s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extensions ['python_setup_py']
+[1.699s] Level 1:colcon.colcon_core.package_identification:_identify(__pycache__) by extension 'python_setup_py'
+[1.700s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[1.700s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[1.700s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[1.701s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[1.701s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[1.701s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[1.702s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[1.702s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[1.702s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[1.703s] Level 1:colcon.colcon_core.package_identification:_identify(my_package) by extensions ['ignore', 'ignore_ament_install']
+[1.703s] Level 1:colcon.colcon_core.package_identification:_identify(my_package) by extension 'ignore'
+[1.703s] Level 1:colcon.colcon_core.package_identification:_identify(my_package) by extension 'ignore_ament_install'
+[1.703s] Level 1:colcon.colcon_core.package_identification:_identify(my_package) by extensions ['colcon_pkg']
+[1.704s] Level 1:colcon.colcon_core.package_identification:_identify(my_package) by extension 'colcon_pkg'
+[1.704s] Level 1:colcon.colcon_core.package_identification:_identify(my_package) by extensions ['colcon_meta']
+[1.704s] Level 1:colcon.colcon_core.package_identification:_identify(my_package) by extension 'colcon_meta'
+[1.704s] Level 1:colcon.colcon_core.package_identification:_identify(my_package) by extensions ['ros']
+[1.704s] Level 1:colcon.colcon_core.package_identification:_identify(my_package) by extension 'ros'
+[1.713s] DEBUG:colcon.colcon_core.package_identification:Package 'my_package' with type 'ros.ament_cmake' and name 'my_package'
+[1.714s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot_wallinterfaces) by extensions ['ignore', 'ignore_ament_install']
+[1.714s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot_wallinterfaces) by extension 'ignore'
+[1.714s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot_wallinterfaces) by extension 'ignore_ament_install'
+[1.715s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot_wallinterfaces) by extensions ['colcon_pkg']
+[1.715s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot_wallinterfaces) by extension 'colcon_pkg'
+[1.715s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot_wallinterfaces) by extensions ['colcon_meta']
+[1.716s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot_wallinterfaces) by extension 'colcon_meta'
+[1.716s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot_wallinterfaces) by extensions ['ros']
+[1.716s] Level 1:colcon.colcon_core.package_identification:_identify(my_robot_wallinterfaces) by extension 'ros'
+[1.718s] DEBUG:colcon.colcon_core.package_identification:Package 'my_robot_wallinterfaces' with type 'ros.ament_cmake' and name 'my_robot_wallinterfaces'
+[1.719s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extensions ['ignore', 'ignore_ament_install']
+[1.719s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extension 'ignore'
+[1.720s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extension 'ignore_ament_install'
+[1.720s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extensions ['colcon_pkg']
+[1.720s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extension 'colcon_pkg'
+[1.721s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extensions ['colcon_meta']
+[1.721s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extension 'colcon_meta'
+[1.721s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extensions ['ros']
+[1.721s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extension 'ros'
+[1.722s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extensions ['cmake', 'python']
+[1.723s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extension 'cmake'
+[1.724s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extension 'python'
+[1.724s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extensions ['python_setup_py']
+[1.725s] Level 1:colcon.colcon_core.package_identification:_identify(myenv) by extension 'python_setup_py'
+[1.725s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extensions ['ignore', 'ignore_ament_install']
+[1.726s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extension 'ignore'
+[1.726s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extension 'ignore_ament_install'
+[1.726s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extensions ['colcon_pkg']
+[1.726s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extension 'colcon_pkg'
+[1.726s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extensions ['colcon_meta']
+[1.727s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extension 'colcon_meta'
+[1.727s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extensions ['ros']
+[1.727s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extension 'ros'
+[1.727s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extensions ['cmake', 'python']
+[1.727s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extension 'cmake'
+[1.728s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extension 'python'
+[1.728s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extensions ['python_setup_py']
+[1.728s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/bin) by extension 'python_setup_py'
+[1.728s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extensions ['ignore', 'ignore_ament_install']
+[1.729s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extension 'ignore'
+[1.729s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extension 'ignore_ament_install'
+[1.730s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extensions ['colcon_pkg']
+[1.730s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extension 'colcon_pkg'
+[1.730s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extensions ['colcon_meta']
+[1.731s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extension 'colcon_meta'
+[1.732s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extensions ['ros']
+[1.732s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extension 'ros'
+[1.733s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extensions ['cmake', 'python']
+[1.733s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extension 'cmake'
+[1.735s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extension 'python'
+[1.736s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extensions ['python_setup_py']
+[1.736s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/include) by extension 'python_setup_py'
+[1.737s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extensions ['ignore', 'ignore_ament_install']
+[1.737s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extension 'ignore'
+[1.737s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extension 'ignore_ament_install'
+[1.738s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extensions ['colcon_pkg']
+[1.738s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extension 'colcon_pkg'
+[1.738s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extensions ['colcon_meta']
+[1.738s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extension 'colcon_meta'
+[1.739s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extensions ['ros']
+[1.739s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extension 'ros'
+[1.740s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extensions ['cmake', 'python']
+[1.740s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extension 'cmake'
+[1.740s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extension 'python'
+[1.740s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extensions ['python_setup_py']
+[1.740s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib) by extension 'python_setup_py'
+[1.741s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extensions ['ignore', 'ignore_ament_install']
+[1.742s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extension 'ignore'
+[1.742s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extension 'ignore_ament_install'
+[1.742s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extensions ['colcon_pkg']
+[1.743s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extension 'colcon_pkg'
+[1.743s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extensions ['colcon_meta']
+[1.743s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extension 'colcon_meta'
+[1.743s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extensions ['ros']
+[1.743s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extension 'ros'
+[1.745s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extensions ['cmake', 'python']
+[1.745s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extension 'cmake'
+[1.746s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extension 'python'
+[1.746s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extensions ['python_setup_py']
+[1.747s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10) by extension 'python_setup_py'
+[1.748s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extensions ['ignore', 'ignore_ament_install']
+[1.750s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extension 'ignore'
+[1.750s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extension 'ignore_ament_install'
+[1.750s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extensions ['colcon_pkg']
+[1.750s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extension 'colcon_pkg'
+[1.751s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extensions ['colcon_meta']
+[1.751s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extension 'colcon_meta'
+[1.751s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extensions ['ros']
+[1.751s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extension 'ros'
+[1.752s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extensions ['cmake', 'python']
+[1.752s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extension 'cmake'
+[1.752s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extension 'python'
+[1.752s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extensions ['python_setup_py']
+[1.752s] Level 1:colcon.colcon_core.package_identification:_identify(myenv/lib/python3.10/site-packages) by extension 'python_setup_py'
+[1.753s] Level 1:colcon.colcon_core.package_identification:_identify(talker_listener) by extensions ['ignore', 'ignore_ament_install']
+[1.753s] Level 1:colcon.colcon_core.package_identification:_identify(talker_listener) by extension 'ignore'
+[1.754s] Level 1:colcon.colcon_core.package_identification:_identify(talker_listener) by extension 'ignore_ament_install'
+[1.754s] Level 1:colcon.colcon_core.package_identification:_identify(talker_listener) by extensions ['colcon_pkg']
+[1.754s] Level 1:colcon.colcon_core.package_identification:_identify(talker_listener) by extension 'colcon_pkg'
+[1.755s] Level 1:colcon.colcon_core.package_identification:_identify(talker_listener) by extensions ['colcon_meta']
+[1.755s] Level 1:colcon.colcon_core.package_identification:_identify(talker_listener) by extension 'colcon_meta'
+[1.755s] Level 1:colcon.colcon_core.package_identification:_identify(talker_listener) by extensions ['ros']
+[1.755s] Level 1:colcon.colcon_core.package_identification:_identify(talker_listener) by extension 'ros'
+[1.758s] DEBUG:colcon.colcon_core.package_identification:Package 'talker_listener' with type 'ros.ament_python' and name 'talker_listener'
+[1.759s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[1.759s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[1.759s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[1.759s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[1.760s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[1.910s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[1.910s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[1.925s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 15 installed packages in /home/ubuntu/ros2_humble/install
+[1.934s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 341 installed packages in /opt/ros/humble
+[1.946s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[2.194s] Level 5:colcon.colcon_core.verb:set package 'my_package' build argument 'cmake_args' from command line to 'None'
+[2.194s] Level 5:colcon.colcon_core.verb:set package 'my_package' build argument 'cmake_target' from command line to 'None'
+[2.194s] Level 5:colcon.colcon_core.verb:set package 'my_package' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[2.194s] Level 5:colcon.colcon_core.verb:set package 'my_package' build argument 'cmake_clean_cache' from command line to 'False'
+[2.194s] Level 5:colcon.colcon_core.verb:set package 'my_package' build argument 'cmake_clean_first' from command line to 'False'
+[2.194s] Level 5:colcon.colcon_core.verb:set package 'my_package' build argument 'cmake_force_configure' from command line to 'False'
+[2.194s] Level 5:colcon.colcon_core.verb:set package 'my_package' build argument 'ament_cmake_args' from command line to 'None'
+[2.195s] Level 5:colcon.colcon_core.verb:set package 'my_package' build argument 'catkin_cmake_args' from command line to 'None'
+[2.195s] Level 5:colcon.colcon_core.verb:set package 'my_package' build argument 'catkin_skip_building_tests' from command line to 'False'
+[2.195s] DEBUG:colcon.colcon_core.verb:Building package 'my_package' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package', 'merge_install': False, 'path': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_package', 'symlink_install': False, 'test_result_base': None}
+[2.197s] Level 5:colcon.colcon_core.verb:set package 'my_robot_wallinterfaces' build argument 'cmake_args' from command line to 'None'
+[2.198s] Level 5:colcon.colcon_core.verb:set package 'my_robot_wallinterfaces' build argument 'cmake_target' from command line to 'None'
+[2.198s] Level 5:colcon.colcon_core.verb:set package 'my_robot_wallinterfaces' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[2.198s] Level 5:colcon.colcon_core.verb:set package 'my_robot_wallinterfaces' build argument 'cmake_clean_cache' from command line to 'False'
+[2.198s] Level 5:colcon.colcon_core.verb:set package 'my_robot_wallinterfaces' build argument 'cmake_clean_first' from command line to 'False'
+[2.198s] Level 5:colcon.colcon_core.verb:set package 'my_robot_wallinterfaces' build argument 'cmake_force_configure' from command line to 'False'
+[2.198s] Level 5:colcon.colcon_core.verb:set package 'my_robot_wallinterfaces' build argument 'ament_cmake_args' from command line to 'None'
+[2.199s] Level 5:colcon.colcon_core.verb:set package 'my_robot_wallinterfaces' build argument 'catkin_cmake_args' from command line to 'None'
+[2.199s] Level 5:colcon.colcon_core.verb:set package 'my_robot_wallinterfaces' build argument 'catkin_skip_building_tests' from command line to 'False'
+[2.199s] DEBUG:colcon.colcon_core.verb:Building package 'my_robot_wallinterfaces' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces', 'merge_install': False, 'path': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces', 'symlink_install': False, 'test_result_base': None}
+[2.201s] Level 5:colcon.colcon_core.verb:set package 'talker_listener' build argument 'cmake_args' from command line to 'None'
+[2.202s] Level 5:colcon.colcon_core.verb:set package 'talker_listener' build argument 'cmake_target' from command line to 'None'
+[2.202s] Level 5:colcon.colcon_core.verb:set package 'talker_listener' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[2.202s] Level 5:colcon.colcon_core.verb:set package 'talker_listener' build argument 'cmake_clean_cache' from command line to 'False'
+[2.202s] Level 5:colcon.colcon_core.verb:set package 'talker_listener' build argument 'cmake_clean_first' from command line to 'False'
+[2.202s] Level 5:colcon.colcon_core.verb:set package 'talker_listener' build argument 'cmake_force_configure' from command line to 'False'
+[2.203s] Level 5:colcon.colcon_core.verb:set package 'talker_listener' build argument 'ament_cmake_args' from command line to 'None'
+[2.203s] Level 5:colcon.colcon_core.verb:set package 'talker_listener' build argument 'catkin_cmake_args' from command line to 'None'
+[2.203s] Level 5:colcon.colcon_core.verb:set package 'talker_listener' build argument 'catkin_skip_building_tests' from command line to 'False'
+[2.203s] DEBUG:colcon.colcon_core.verb:Building package 'talker_listener' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener', 'merge_install': False, 'path': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/talker_listener', 'symlink_install': False, 'test_result_base': None}
+[2.204s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[2.207s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[2.208s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces' with build type 'ament_cmake'
+[2.209s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces'
+[2.225s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[2.226s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[2.227s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[2.249s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_package' with build type 'ament_cmake'
+[2.249s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_package'
+[2.252s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[2.254s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[2.323s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_humble/install/dynamic_map_matcher:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces -- -j8 -l8
+[2.359s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_humble/install/dynamic_map_matcher:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package -- -j8 -l8
+[2.563s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_humble/install/dynamic_map_matcher:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package -- -j8 -l8
+[3.480s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_humble/install/dynamic_map_matcher:/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package
+[3.554s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(my_package)
+[3.558s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_humble/install/dynamic_map_matcher:/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package
+[3.571s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package' for CMake module files
+[3.581s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package' for CMake config files
+[3.584s] Level 1:colcon.colcon_core.shell:create_environment_hook('my_package', 'cmake_prefix_path')
+[3.586s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/hook/cmake_prefix_path.ps1'
+[3.601s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/hook/cmake_prefix_path.dsv'
+[3.605s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/hook/cmake_prefix_path.sh'
+[3.611s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/bin'
+[3.612s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/lib/pkgconfig/my_package.pc'
+[3.614s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/lib/python3.10/site-packages'
+[3.615s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/bin'
+[3.616s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.ps1'
+[3.629s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.dsv'
+[3.634s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.sh'
+[3.640s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.bash'
+[3.645s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.zsh'
+[3.676s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/colcon-core/packages/my_package)
+[3.934s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(my_package)
+[3.936s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package' for CMake module files
+[3.940s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package' for CMake config files
+[3.942s] Level 1:colcon.colcon_core.shell:create_environment_hook('my_package', 'cmake_prefix_path')
+[3.943s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/hook/cmake_prefix_path.ps1'
+[3.946s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/hook/cmake_prefix_path.dsv'
+[3.953s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/hook/cmake_prefix_path.sh'
+[3.955s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/bin'
+[3.956s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/lib/pkgconfig/my_package.pc'
+[3.957s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/lib/python3.10/site-packages'
+[3.958s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/bin'
+[3.959s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.ps1'
+[3.964s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.dsv'
+[3.968s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.sh'
+[3.971s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.bash'
+[3.974s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.zsh'
+[3.978s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/colcon-core/packages/my_package)
+[4.995s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_humble/install/dynamic_map_matcher:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces -- -j8 -l8
+[5.602s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_humble/install/dynamic_map_matcher:/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces
+[5.826s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(my_robot_wallinterfaces)
+[5.827s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_humble/install/dynamic_map_matcher:/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces
+[5.828s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces' for CMake module files
+[5.830s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces' for CMake config files
+[5.832s] Level 1:colcon.colcon_core.shell:create_environment_hook('my_robot_wallinterfaces', 'cmake_prefix_path')
+[5.832s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/cmake_prefix_path.ps1'
+[5.834s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/cmake_prefix_path.dsv'
+[5.835s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/cmake_prefix_path.sh'
+[5.838s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib'
+[5.839s] Level 1:colcon.colcon_core.shell:create_environment_hook('my_robot_wallinterfaces', 'ld_library_path_lib')
+[5.840s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/ld_library_path_lib.ps1'
+[5.842s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/ld_library_path_lib.dsv'
+[5.844s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/ld_library_path_lib.sh'
+[5.846s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/bin'
+[5.846s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/pkgconfig/my_robot_wallinterfaces.pc'
+[5.847s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/python3.10/site-packages'
+[5.848s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/bin'
+[5.849s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.ps1'
+[5.851s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.dsv'
+[5.853s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.sh'
+[5.855s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.bash'
+[5.857s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.zsh'
+[5.858s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/colcon-core/packages/my_robot_wallinterfaces)
+[6.543s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(my_robot_wallinterfaces)
+[6.544s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces' for CMake module files
+[6.547s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces' for CMake config files
+[6.551s] Level 1:colcon.colcon_core.shell:create_environment_hook('my_robot_wallinterfaces', 'cmake_prefix_path')
+[6.553s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/cmake_prefix_path.ps1'
+[6.557s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/cmake_prefix_path.dsv'
+[6.560s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/cmake_prefix_path.sh'
+[6.563s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib'
+[6.564s] Level 1:colcon.colcon_core.shell:create_environment_hook('my_robot_wallinterfaces', 'ld_library_path_lib')
+[6.565s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/ld_library_path_lib.ps1'
+[6.566s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/ld_library_path_lib.dsv'
+[6.568s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/hook/ld_library_path_lib.sh'
+[6.570s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/bin'
+[6.571s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/pkgconfig/my_robot_wallinterfaces.pc'
+[6.571s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/python3.10/site-packages'
+[6.572s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/bin'
+[6.574s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.ps1'
+[6.577s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.dsv'
+[6.580s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.sh'
+[6.581s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.bash'
+[6.583s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.zsh'
+[6.586s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/colcon-core/packages/my_robot_wallinterfaces)
+[6.589s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/talker_listener' with build type 'ament_python'
+[6.590s] Level 1:colcon.colcon_core.shell:create_environment_hook('talker_listener', 'ament_prefix_path')
+[6.592s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener/hook/ament_prefix_path.ps1'
+[6.594s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener/hook/ament_prefix_path.dsv'
+[6.595s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener/hook/ament_prefix_path.sh'
+[6.597s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[6.597s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[7.984s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/talker_listener'
+[7.985s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[7.985s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[9.540s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/talker_listener': AMENT_PREFIX_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/prefix_override:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/talker_listener build --build-base /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build install --record /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log --single-version-externally-managed install_data
+[10.497s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener' for CMake module files
+[10.499s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/talker_listener' returned '0': AMENT_PREFIX_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/prefix_override:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/talker_listener build --build-base /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build install --record /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log --single-version-externally-managed install_data
+[10.500s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener' for CMake config files
+[10.502s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib'
+[10.503s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/bin'
+[10.503s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/pkgconfig/talker_listener.pc'
+[10.504s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages'
+[10.504s] Level 1:colcon.colcon_core.shell:create_environment_hook('talker_listener', 'pythonpath')
+[10.505s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener/hook/pythonpath.ps1'
+[10.506s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener/hook/pythonpath.dsv'
+[10.507s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener/hook/pythonpath.sh'
+[10.509s] Level 1:colcon.colcon_core.environment:checking '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/bin'
+[10.510s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(talker_listener)
+[10.510s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener/package.ps1'
+[10.511s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener/package.dsv'
+[10.512s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener/package.sh'
+[10.513s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener/package.bash'
+[10.514s] INFO:colcon.colcon_core.shell:Creating package script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener/package.zsh'
+[10.515s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/colcon-core/packages/talker_listener)
+[10.515s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[10.518s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[10.518s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[10.518s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[10.534s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[10.534s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[10.535s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[10.579s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[10.580s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/local_setup.ps1'
+[10.583s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/_local_setup_util_ps1.py'
+[10.591s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/setup.ps1'
+[10.598s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/local_setup.sh'
+[10.600s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/_local_setup_util_sh.py'
+[10.603s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/setup.sh'
+[10.609s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/local_setup.bash'
+[10.612s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/setup.bash'
+[10.618s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/local_setup.zsh'
+[10.622s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/setup.zsh'
