@@ -1,6 +1,5 @@
 from PyQt5.QtCore import *
 from vtk import *
-import PythonApplication.middlebuttoninteractor as middlebuttoninteractor
 import PythonApplication.leftbuttoninteractor as leftbuttoninteraction
 import PythonApplication.rightclickroominteraction as roominteraction
 import PythonApplication.storedisplay as displaystoring
@@ -11,7 +10,6 @@ import time
 
 # insert interactive event for the stl mesh , left click is for moving the stl ,
 # right click is to insert the actor in the room view , right click for room interact shower and toilet
-# middle click is to insert an object tht was marked
 # l key is to remove the actor in the room view and set the mesh to the original position
 class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     def __init__(
@@ -35,7 +33,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         spaceseperation,
         center,
     ):
-        # starting initialize
+        # starting initalize
         self.append_filterpolydata = append_filterpolydata
         self.addactor = self.AddObserver(
             "RightButtonPressEvent", self.RightButtonPressEvent
@@ -47,12 +45,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.cameraactor = cameraactor
         camera = self.render.GetActiveCamera()
         self.renderwindowinteractor = renderwindowinteractor
-        """self.middlebuttonobserver = middlebuttoninteractor.MiddleButtonPressed(
-            self,
-            self.render,
-            self.renderwindowinteractor,
-            append_filterpolydata,
-        )  # marking points interaction"""
         self.meshbound = meshbounds
         self.mesh = polydata
         self.polys = polys
@@ -151,9 +143,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.camsetvieworientation(camera)
         self.render.SetActiveCamera(camera)  # insert and replace a new camera
         self.leftbuttoninteraction.displaytext(camera)
-        """self.markingevent = self.AddObserver(
-            "MiddleButtonPressEvent", self.middlebuttonobserver.MiddleButtonPressEvent
-        )"""
         self.movement = self.AddObserver("KeyPressEvent", self.KeyPressed)
         self.mousemovement = self.AddObserver(
             "MouseMoveEvent", self.leftbuttoninteraction.mouse_move
@@ -176,7 +165,8 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         )
         self.refresh()
         self.OnRightButtonDown()
-    
+
+    # default prevent controls
     def setkeypreventcontrols(self):
         self.disable_up = False
         self.disable_down = False
@@ -193,7 +183,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         for i in range(3):
             actor_position.append(self.cubeactor.GetPosition()[i])
         if key == "l":  # reset movement and camera
-            # Set up the camera
             camera = self.render.GetActiveCamera()
             camera.SetPosition(0, -1, 0)
             camera.SetFocalPoint(0, 0, 0)
@@ -201,7 +190,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.render.ResetCameraClippingRange()
             self.render.ResetCamera()
             self.RemoveObserver(self.movement)
-            # self.RemoveObserver(self.markingevent)
             self.RemoveObserver(self.mousemovement)
             self.RemoveObserver(self.revert_left_position)
             self.RemoveObserver(self.releasemouseclick)
