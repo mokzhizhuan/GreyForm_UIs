@@ -7,7 +7,7 @@ import vtk
 from vtk import *
 from vtkmodules.vtkCommonColor import vtkNamedColors
 import PythonApplication.interactiveevent as events
-
+import PythonApplication.doormeshvtk as doormeshVTK
 
 # create the imported stl mesh in vtk frame
 class createMesh(QMainWindow):
@@ -50,6 +50,7 @@ class createMesh(QMainWindow):
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
+        self.door = doormeshVTK.doorMesh()
         self.seq1Button.clicked.connect(
             lambda: self.addseqtext(
                 self.seq1Button, self.NextButton_Page_3, self.Seqlabel
@@ -70,22 +71,6 @@ class createMesh(QMainWindow):
             )
         )
         self.loadStl()
-    
-    def addfeatureEdges(self):
-        featureEdges = vtkFeatureEdges()
-        featureEdges.SetInputConnection(self.reader.GetOutputPort())
-        featureEdges.BoundaryEdgesOn()
-        featureEdges.FeatureEdgesOff()
-        featureEdges.ManifoldEdgesOff()
-        featureEdges.NonManifoldEdgesOff()
-        featureEdges.ColoringOn()
-        featureEdges.Update()
-
-        edgeMapper = vtkPolyDataMapper()
-        edgeMapper.SetInputConnection(featureEdges.GetOutputPort())
-        edgeActor = vtkActor()
-        edgeActor.SetMapper(edgeMapper)
-        return edgeActor
 
     def loadStl(self):
         self.clearactor()
@@ -93,6 +78,7 @@ class createMesh(QMainWindow):
         self.reader.Update()
         polydata = self.reader.GetOutput()
         self.polyDataToActor(polydata)
+        self.doordimension = self.door.includedimension()
         self.fixedposition(polydata)
         center = [
             (self.meshbounds[0] + self.meshbounds[1]) / 2,
@@ -101,7 +87,6 @@ class createMesh(QMainWindow):
         ]
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
-        edgeActor = self.addfeatureEdges()
         self.cubeactor.SetPosition(160, center[1], center[2])
         self.cubeactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
@@ -114,7 +99,6 @@ class createMesh(QMainWindow):
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
         )
         self.ren.AddActor(self.cameraactor)
-        self.ren.AddActor(edgeActor)
         self.ren.AddActor(self.cubeactor)
         self.ren.AddActor(self.actor)
         self.oldcamerapos = self.cubeactor.GetPosition()
@@ -165,13 +149,39 @@ class createMesh(QMainWindow):
         minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]
         transform = vtk.vtkTransform()
         transform.Translate(-minBounds[0], -minBounds[1], -minBounds[2])
-        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter = vtkTransformPolyDataFilter()
         transformFilter.SetInputData(polydata)
         transformFilter.SetTransform(transform)
         transformFilter.Update()
         transformedPolyData = transformFilter.GetOutput()
-        mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputData(transformedPolyData)
+        normals = vtkPolyDataNormals()
+        normals.SetInputData(transformedPolyData)
+        normals.ComputePointNormalsOn()
+        normals.ComputeCellNormalsOff()
+        normals.Update()
+
+        mesh_with_normals = normals.GetOutput()
+        internal_points = vtk.vtkPoints()
+        thickness = self.doordimension[3]
+        for i in range(mesh_with_normals.GetNumberOfPoints()):
+            point = mesh_with_normals.GetPoint(i)
+            normal = mesh_with_normals.GetPointData().GetNormals().GetTuple(i)
+
+            new_point = [point[j] - thickness * normal[j] for j in range(3)]
+            internal_points.InsertNextPoint(new_point)
+
+        internal_mesh = vtkPolyData()
+        internal_mesh.SetPoints(internal_points)
+        internal_mesh.SetPolys(polydata.GetPolys())
+
+        append_filter = vtkAppendPolyData()
+        append_filter.AddInputData(transformedPolyData)
+        append_filter.AddInputData(internal_mesh)
+        append_filter.Update()
+
+        combined_mesh = append_filter.GetOutput()
+        mapper = vtkPolyDataMapper()
+        mapper.SetInputData(combined_mesh)
         self.actor = vtk.vtkActor()
         self.actor.SetMapper(mapper)
         self.actor.GetProperty().SetRepresentationToSurface()
@@ -184,10 +194,11 @@ class createMesh(QMainWindow):
         self.actor.GetProperty().SetSpecularPower(60.0)
         self.actor.GetProperty().BackfaceCullingOn()
         self.actor.GetProperty().FrontfaceCullingOn()
-        print(self.actor.GetBounds())
+
         for i in range(6):
-            self.meshbounds[i] = self.actor.GetBounds()[i]
-        
+            self.meshbounds[i] = int(self.actor.GetBounds()[i])
+        print(self.actor.GetBounds())
+
     def clearactor(self):
         actors = self.ren.GetActors()
         actors.InitTraversal()
@@ -220,11 +231,12 @@ class createMesh(QMainWindow):
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
         self.meshbounds = []
+
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
         self.append_filterpolydata.AddInputData(actor.GetMapper().GetInput())
         self.append_filterpolydata.Update()
-    
+
     def addseqtext(self, buttonseq, buttonnextpage, label):
         dataseqtext = buttonseq.text()
         dataseqtext = dataseqtext.replace("Stage ", "")
