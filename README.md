@@ -17,17 +17,20 @@ QtPython <br>
 Python 3.11 <br> 
 Python 3.10(linux) <br><br>
 
-UI_Drawinng is included and including layout for uidesign and box layout
+UI_Drawinng is included and including layout for uidesign and box layout <br>
+
 ##
 Steps on running the system:<br>
 Run your cmd on your file location:<br>
 cd file_path/GreyForm_UIs/GreyForm/Python_Application/<br>
 python/python3 mainapplication.py
+
 ##
 For Visual Studio: <br>
 Open Folder to file_path/GreyForm_UIs/GreyForm/Python_Application/<br>
 python/python3 mainapplication.py<br>
 <br>
+
 ##
 insert interactive event for the stl mesh , left click is for moving the stl  <br>
 Right click is to insert the actor in the room view , right click for room interact shower and toilet <br>
@@ -35,6 +38,7 @@ middle click is to insert an object tht was marked <br>
 l key is to remove the actor in the room view and set the mesh to the original position <br>
 m Key is to restore moving position <br>
 Lastly , disable one movement. if the mesh struck collision . it will disable one movement key, this will prevent crashing the cameraactor program <br>
+include thickness based on the dorr using revit and vtk thickness for stl <br>
 
 ##
 IFC format: <br>
