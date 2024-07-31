@@ -2,9 +2,6 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import *
 import vtk
 from vtk import *
-import PythonApplication.middlebuttoninteractor as middlebuttoninteractor
-import PythonApplication.leftbuttoninteractor as leftbuttoninteraction
-import PythonApplication.interactiveevent as mainInteraction
 import PythonApplication.storedisplay as displaystoring
 
 

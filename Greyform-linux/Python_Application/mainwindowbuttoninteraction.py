@@ -1,7 +1,6 @@
 import PythonApplication.menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
 import PythonApplication.fileselectionmesh as fileselectionmesh
-import PythonApplication.setsequence as SequenceData
 import PythonApplication.menu_confirmack as confirmack
 import PythonApplication.setting as setting
 import PythonApplication.enable_robot as robotenabler
@@ -80,15 +79,13 @@ class mainwindowbuttonUI(object):
         )
         self.ConfirmAckButton.clicked.connect(
             lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(
-                self.mainwindow
+                self.mainwindow, self.append_filter
             )
         )
         self.MarkingButton.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(3)
         )
-        self.EnableRobotButton.clicked.connect(
-            lambda: robotenabler.EnableRobotInterpreter()
-        )
         self.SettingButton.clicked.connect(
             lambda: self.stackedWidget.setCurrentIndex(5)
         )
+

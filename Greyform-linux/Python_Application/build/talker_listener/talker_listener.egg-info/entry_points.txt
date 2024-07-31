@@ -1,6 +1,0 @@
-[console_scripts]
-Lidar_publisher = talker_listener.lidar_publisher:main
-Lidar_subscriber = talker_listener.lidar_subscriber:main
-listenerNode = talker_listener.listener_node:main
-talkerNode = talker_listener.talker_node:main
-

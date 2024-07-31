@@ -1,3 +1,0 @@
-int32 wallselection
-string typeselection
-int32 sectionselection
