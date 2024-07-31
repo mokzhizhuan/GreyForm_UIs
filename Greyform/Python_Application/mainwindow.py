@@ -33,7 +33,6 @@ class Ui_MainWindow(QMainWindow):
         self.file = None
         self.file_path = None
         self.renderer = vtk.vtkRenderer()
-        self.append_filter = vtk.vtkAppendPolyData()
         self._translate = QCoreApplication.translate
         self.setupUi()
 
@@ -97,7 +96,6 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.MarkingButton,
             self.mainwindow.EnableRobotButton,
             self.mainwindow.SettingButton,
-            self.append_filter,
         )
 
     def browsefilesdirectory(self):
@@ -132,7 +130,6 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.Xlabel_2,
             self.mainwindow.Ylabel_2,
             self.mainwindow.Zlabel,
-            self.append_filter,
             self.mainwindow.seq1Button,
             self.mainwindow.seq2Button,
             self.mainwindow.seq3Button,

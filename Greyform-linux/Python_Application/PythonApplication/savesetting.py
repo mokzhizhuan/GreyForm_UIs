@@ -10,19 +10,14 @@ class SettingsDialog(QDialog):
     def initUI(self):
         self.setWindowTitle('Save Settings')
         layout = QVBoxLayout()
-
         self.label = QLabel('Do you want to save the settings?')
         layout.addWidget(self.label)
-
         buttonLayout = QHBoxLayout()
-
         self.confirmButton = QPushButton('Confirm')
         self.confirmButton.clicked.connect(self.accept)
         buttonLayout.addWidget(self.confirmButton)
-
         self.cancelButton = QPushButton('Cancel')
         self.cancelButton.clicked.connect(self.reject)
         buttonLayout.addWidget(self.cancelButton)
-
         layout.addLayout(buttonLayout)
         self.setLayout(layout)

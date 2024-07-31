@@ -4,8 +4,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.restoredefault as default
-
-# from pywifi import PyWiFi, const
 import PythonApplication.serveraddress as server
 import PythonApplication.reset as closewindow
 import socket
@@ -99,10 +97,8 @@ class Setting(QWidget):
         if index >= 0:
             self.settingform.country.setCurrentIndex(index)
         self.settingform.country.currentIndexChanged.connect(self.updateTimeLabel)
-
         self.userlabel = QLabel(self.settingform.UserPage)
         self.userlabel.setGeometry(10, 10, 400, 40)
-
         # User info login
         self.file = []
         self.loginwidget = QStackedWidget(self.settingform.UserPage)
@@ -125,7 +121,6 @@ class Setting(QWidget):
         self.button_UI()
         self.setStretch()
         self.retranslateUi()
-
         self.settingform.restoreDefaultsButton.clicked.connect(
             lambda: default.restoredefaultsetting(
                 self.accountinfo,

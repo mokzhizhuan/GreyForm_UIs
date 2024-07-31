@@ -21,19 +21,15 @@ class RestartCloseWidget(QWidget):
         self.initUI()
 
     def initUI(self):
-
         button_layout = QHBoxLayout()
-
         restart_btn = QPushButton("Restart App", self)
         restart_btn.setFont(QFont("Arial", 18))
         restart_btn.clicked.connect(self.show_restart_dialog)
         button_layout.addWidget(restart_btn)
-
         close_btn = QPushButton("Close App", self)
         close_btn.setFont(QFont("Arial", 18))
         close_btn.clicked.connect(self.show_close_dialog)
         button_layout.addWidget(close_btn)
-
         self.setLayout(button_layout)
 
     def show_restart_dialog(self):

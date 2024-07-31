@@ -25,7 +25,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         polydata,
         polys,
         reader,
-        append_filterpolydata,
         cubeactor,
         cameraactor,
         oldcamerapos,
@@ -34,7 +33,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         center,
     ):
         # starting initalize
-        self.append_filterpolydata = append_filterpolydata
         self.addactor = self.AddObserver(
             "RightButtonPressEvent", self.RightButtonPressEvent
         )
@@ -95,7 +93,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             polydata,
             polys,
             reader,
-            append_filterpolydata,
             cubeactor,
             cameraactor,
             oldcamerapos,
@@ -116,7 +113,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             polydata,
             polys,
             reader,
-            append_filterpolydata,
             cubeactor,
             cameraactor,
             oldcamerapos,

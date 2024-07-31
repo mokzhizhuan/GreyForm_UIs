@@ -31,7 +31,6 @@ class ProgressBarDialogIFC(QDialog):
         Xlabel_before,
         Ylabel_before,
         Zlabel_before,
-        append_filter,
         seq1Button,
         seq2Button,
         seq3Button,
@@ -54,7 +53,6 @@ class ProgressBarDialogIFC(QDialog):
         self.Xlabel_before = Xlabel_before
         self.Ylabel_before = Ylabel_before
         self.Zlabel_before = Zlabel_before
-        self.append_filter = append_filter
         self.meshsplot = None
         self.seq1Button = seq1Button
         self.seq2Button = seq2Button
@@ -186,7 +184,6 @@ class ProgressBarDialogIFC(QDialog):
             self.Xlabel_before,
             self.Ylabel_before,
             self.Zlabel_before,
-            self.append_filter,
             self.seq1Button,
             self.seq2Button,
             self.seq3Button,

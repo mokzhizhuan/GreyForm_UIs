@@ -36,38 +36,28 @@ class restoredefaultsetting(object):
 
     def restore_defaults(self):
         self.accountinfo[0]["Pass"] = "pass"
-        # Restore default theme
         theme_index = self.themebox.findText(
             self.default_settings["theme"], Qt.MatchFixedString
         )
         if theme_index >= 0:
             self.themebox.setCurrentIndex(theme_index)
-
-        # Restore default font size
         font_index = self.Text_size.findText(
             self.default_settings["font_size"], Qt.MatchFixedString
         )
         if font_index >= 0:
             self.Text_size.setCurrentIndex(font_index)
-
-        # Restore default resolution
         resolution_index = self.resolutioncomboBox.findText(
             self.default_settings["resolution"], Qt.MatchFixedString
         )
         if resolution_index >= 0:
             self.resolutioncomboBox.setCurrentIndex(resolution_index)
-
-        # Restore default timezone
         timezone_index = self.country.findText(
             self.default_settings["timezone"], Qt.MatchFixedString
         )
         if timezone_index >= 0:
             self.country.setCurrentIndex(timezone_index)
-
         self.accountinfo[0]["Pass"] = self.default_settings["password"]
         self.PasslineEdit.setText(self.default_settings["password"])
-
-        # Apply the changes
         self.settingchange = setting.Setting(
             self.stackedWidget, self.MainWindow, self.windowwidth, self.windowheight
         )

@@ -162,7 +162,6 @@ class Setting(QWidget):
         signal_strength = networks[0].signal
         item = QTreeWidgetItem([ssid, str(signal_strength)])
         self.settingform.treeWidget.addTopLevelItem(item)
-
         interface_info = f"Interface: {self.interface.name()}"
         self.settingform.interface_label.setText(interface_info)
 

@@ -21,7 +21,6 @@ class createMesh(QMainWindow):
         xlabelbefore,
         ylabelbefore,
         zlabelbefore,
-        append_filterpolydata,
         seq1Button,
         seq2Button,
         seq3Button,
@@ -41,7 +40,6 @@ class createMesh(QMainWindow):
         self.zlabelbefore = zlabelbefore
         self.xlabels = xlabel
         self.ylabels = ylabel
-        self.append_filterpolydata = append_filterpolydata
         self.seq1Button = seq1Button
         self.seq2Button = seq2Button
         self.seq3Button = seq3Button
@@ -124,7 +122,6 @@ class createMesh(QMainWindow):
             self.actor,
             polydata,
             self.reader,
-            self.append_filterpolydata,
             self.cubeactor,
             self.cameraactor,
             self.oldcamerapos,
@@ -189,7 +186,6 @@ class createMesh(QMainWindow):
         self.actor.GetProperty().SetSpecularPower(60.0)
         self.actor.GetProperty().BackfaceCullingOn()
         self.actor.GetProperty().FrontfaceCullingOn()
-
         for i in range(6):
             self.meshbounds[i] = int(self.actor.GetBounds()[i])
         print(self.actor.GetBounds())
@@ -226,11 +222,8 @@ class createMesh(QMainWindow):
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
         self.meshbounds = []
-
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
-        self.append_filterpolydata.AddInputData(actor.GetMapper().GetInput())
-        self.append_filterpolydata.Update()
 
     def addseqtext(self, buttonseq, buttonnextpage, label):
         dataseqtext = buttonseq.text()

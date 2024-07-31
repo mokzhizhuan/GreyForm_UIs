@@ -1,9 +1,6 @@
 import PythonApplication.menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
-import PythonApplication.fileselectionmesh as fileselectionmesh
 import PythonApplication.menu_confirmack as confirmack
-import PythonApplication.setting as setting
-import PythonApplication.enable_robot as robotenabler
 
 
 class mainwindowbuttonUI(object):
@@ -23,9 +20,7 @@ class mainwindowbuttonUI(object):
         CloseButton,
         ConfirmAckButton,
         MarkingButton,
-        EnableRobotButton,
         SettingButton,
-        append_filter,
     ):
         self.mainwindow = mainwindow
         self.stackedWidget = stackedWidget
@@ -41,9 +36,7 @@ class mainwindowbuttonUI(object):
         self.CloseButton = CloseButton
         self.ConfirmAckButton = ConfirmAckButton
         self.MarkingButton = MarkingButton
-        self.EnableRobotButton = EnableRobotButton
         self.SettingButton = SettingButton
-        self.append_filter = append_filter
         self.button_UI()
 
     def button_UI(self):
@@ -79,7 +72,7 @@ class mainwindowbuttonUI(object):
         )
         self.ConfirmAckButton.clicked.connect(
             lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(
-                self.mainwindow, self.append_filter
+                self.mainwindow
             )
         )
         self.MarkingButton.clicked.connect(

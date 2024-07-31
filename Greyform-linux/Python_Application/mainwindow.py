@@ -44,7 +44,6 @@ class Ui_MainWindow(QMainWindow):
         self.ros_node = ros_node
         self.ros_lidar = ros_lidar
         self.renderer = vtk.vtkRenderer()
-        self.append_filter = vtk.vtkAppendPolyData()
         self._translate = QCoreApplication.translate
         self.setupUi()
 
@@ -107,9 +106,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.CloseButton,
             self.mainwindow.ConfirmAckButton,
             self.mainwindow.MarkingButton,
-            self.mainwindow.EnableRobotButton,
             self.mainwindow.SettingButton,
-            self.append_filter,
         )
         self.mainwindow.LidarButton.clicked.connect(self.start_lidar_publisher)
         self.mainwindow.EnableRobotButton.clicked.connect(self.publish_message)
@@ -146,7 +143,6 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.Xlabel_2,
             self.mainwindow.Ylabel_2,
             self.mainwindow.Zlabel,
-            self.append_filter,
             self.mainwindow.seq1Button,
             self.mainwindow.seq2Button,
             self.mainwindow.seq3Button,

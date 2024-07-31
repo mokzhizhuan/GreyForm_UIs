@@ -20,7 +20,6 @@ class storage(object):
         polydata,
         polys,
         reader,
-        append_filterpolydata,
         cubeactor,
         cameraactor,
         oldcamerapos,
@@ -33,7 +32,6 @@ class storage(object):
         self.movement = None
         self.default_pos = default_pos
         self.spaceseperation = spaceseperation
-        self.append_filterpolydata = append_filterpolydata
         self.xlabels = xlabel
         self.ylabels = ylabel
         self.render = ren
@@ -74,7 +72,6 @@ class storage(object):
             self.mesh,
             self.polys,
             self.reader,
-            self.append_filterpolydata,
             self.cubeactor,
             self.cameraactor,
             self.oldcamerapos,

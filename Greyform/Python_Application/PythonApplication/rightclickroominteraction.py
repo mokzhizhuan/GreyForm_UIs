@@ -21,7 +21,6 @@ class rightclickRoomInteract(object):
         polydata,
         polys,
         reader,
-        append_filterpolydata,
         cubeactor,
         cameraactor,
         oldcamerapos,
@@ -34,7 +33,6 @@ class rightclickRoomInteract(object):
         self.interactor_style = interactor_style
         self.default_pos = default_pos
         self.spaceseperation = spaceseperation
-        self.append_filterpolydata = append_filterpolydata
         self.xlabels = xlabel
         self.ylabels = ylabel
         self.render = ren
@@ -72,7 +70,6 @@ class rightclickRoomInteract(object):
             polydata,
             polys,
             reader,
-            append_filterpolydata,
             cubeactor,
             cameraactor,
             oldcamerapos,

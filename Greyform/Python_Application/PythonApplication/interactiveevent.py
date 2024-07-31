@@ -25,7 +25,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         polydata,
         polys,
         reader,
-        append_filterpolydata,
         cubeactor,
         cameraactor,
         oldcamerapos,
@@ -34,7 +33,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         center,
     ):
         # starting initalize
-        self.append_filterpolydata = append_filterpolydata
         self.addactor = self.AddObserver(
             "RightButtonPressEvent", self.RightButtonPressEvent
         )
@@ -95,7 +93,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             polydata,
             polys,
             reader,
-            append_filterpolydata,
             cubeactor,
             cameraactor,
             oldcamerapos,
@@ -116,7 +113,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             polydata,
             polys,
             reader,
-            append_filterpolydata,
             cubeactor,
             cameraactor,
             oldcamerapos,
@@ -242,7 +238,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     def camsetvieworientation(self, camera):
         camera.SetViewUp(0, 0, 1)
 
-    # refresher
     def refresh(self):
         self.render.ResetCameraClippingRange()
         self.renderwindowinteractor.GetRenderWindow().Render()
@@ -295,6 +290,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     # Use Tkinter to show an error message
     def show_error_message(self, message):
         root = tk.Tk()
-        root.withdraw()  # Hide the root window
+        root.withdraw() 
         messagebox.showerror("Error", message)
         root.destroy()
