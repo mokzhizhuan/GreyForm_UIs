@@ -22,10 +22,8 @@ class doorMesh(object):
         actor = vtkActor()
         actor.SetMapper(mapper)
         self.meshbounds = []
-
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
-
         minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]
         transform = vtkTransform()
         transform.Translate(-minBounds[0], -minBounds[1], -minBounds[2])
