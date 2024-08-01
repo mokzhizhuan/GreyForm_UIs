@@ -65,23 +65,16 @@ class Login(QDialog):
             self.widget.addWidget(profile)
             self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
         else:
-            # warning message box
             msg_box = QMessageBox()
-
-            # Apply a stylesheet to the QMessageBox
             msg_box.setStyleSheet(
                 "QLabel{color: red;} QPushButton{ width: 100px; font-size: 16px; }"
             )
-
-            # Set the icon, title, text and buttons for the message box
             msg_box.setIcon(QMessageBox.Warning)
             msg_box.setWindowTitle("Error")
             msg_box.setText(
                 "Incorrect Password, please try again or press the change password button."
             )
             msg_box.setStandardButtons(QMessageBox.Ok)
-
-            # Show the message box
             msg_box.exec()
 
     # access to change pass ui
@@ -137,23 +130,16 @@ class ChangePass(QDialog):
             self.widget.addWidget(login)
             self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
         else:
-            # Create a QMessageBox
             msg_box = QMessageBox()
-
-            # Apply a stylesheet to the QMessageBox
             msg_box.setStyleSheet(
                 "QLabel{color: red;} QPushButton{ width: 100px; font-size: 16px; }"
             )
-
-            # Set the icon, title, text and buttons for the message box
             msg_box.setIcon(QMessageBox.Warning)
             msg_box.setWindowTitle("Error")
             msg_box.setText(
                 "The Password that you inputed is the same as the password , please input the different password."
             )
             msg_box.setStandardButtons(QMessageBox.Ok)
-
-            # Show the message box
             msg_box.exec_()
 
     # back to login ui

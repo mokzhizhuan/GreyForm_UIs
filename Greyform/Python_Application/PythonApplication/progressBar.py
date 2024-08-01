@@ -70,7 +70,6 @@ class pythonProgressBar(QDialog):
         progress_layout.addWidget(self.progress_bar)
 
     def start_progress(self):
-        # Start the progress after a delay
         if self.meshsplot:
             self.loader.remove_actor(self.meshsplot)
             self.loader_2.remove_actor(self.meshsplot)
@@ -80,10 +79,9 @@ class pythonProgressBar(QDialog):
         value = self.progress_bar.value()
         if value < 100:
             self.progress_bar.setValue(value + 1)
-            # Update progress again after 100 milliseconds
             QTimer.singleShot(100, self.update_progress)
         else:
-            self.timer.stop()  # Stop the timer when progress reaches 100%
+            self.timer.stop()  
             self.progress_bar.setValue(0)  # Reset progress to 0
             self.timer.start(100)
 
@@ -114,11 +112,7 @@ class pythonProgressBar(QDialog):
         self.close()
 
     def resize_stl(self, file_path, scale_factor, output_path):
-    # Load the STL file
         Mesh = mesh.Mesh.from_file(file_path)
-        # Scale the mesh
         Mesh.vectors *= scale_factor
-        # Update the normals
         Mesh.update_normals()
-        # Save the resized mesh
         Mesh.save(output_path)

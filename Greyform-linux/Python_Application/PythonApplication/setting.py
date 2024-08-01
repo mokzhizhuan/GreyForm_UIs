@@ -19,9 +19,8 @@ import os
 import pytz
 from tzlocal import get_localzone
 
-
+# setting loader
 class Setting(QWidget):
-    # setting loader
     def __init__(
         self,
         stackedwidgetpage,
@@ -71,7 +70,6 @@ class Setting(QWidget):
                 self.settingform.treeWidget.addTopLevelItem(item)
                 interface_info = f"Interface: {self.interfaces[0]}"
                 self.settingform.interface_label.setText(interface_info)
-
         # setting host services and resolution
         self.font_size = self.settingform.Text_size.currentText()
         self.font = QFont()
@@ -81,7 +79,6 @@ class Setting(QWidget):
         self.settingform.resolutioncomboBox.currentIndexChanged.connect(
             self.change_resolution
         )
-
         resolution_index = self.settingform.resolutioncomboBox.findText(
             self.default_settings["resolution"], Qt.MatchFixedString
         )
@@ -111,7 +108,6 @@ class Setting(QWidget):
         )
         self.loginwidget.addWidget(loginwindow)
         self.loginwidget.setGeometry(10, 70, 700, 800)
-
         # power and restart
         self.restartwidgetwindow = closewindow.RestartCloseWidget(self.MainWindow)
         self.restartwidgetwindow.show()

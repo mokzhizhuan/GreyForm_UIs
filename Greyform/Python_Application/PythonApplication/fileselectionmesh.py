@@ -136,7 +136,6 @@ class FileSelectionMesh(QMainWindow):
                         )
             points = np.array(points)
             faces = np.array(faces)
-            # Create the mesh for STL
             mesh = meshio.Mesh(points, [("triangle", faces)])
             meshio.write("output.stl", mesh)
             self.meshsplot = pv.read("output.stl")

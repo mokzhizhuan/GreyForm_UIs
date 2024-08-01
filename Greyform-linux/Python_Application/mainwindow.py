@@ -242,29 +242,16 @@ def ros_spin(node):
 
 
 if __name__ == "__main__":
-    # Initialize ROS 2
     rclpy.init()
-
-    # Create the ROS 2 publisher nodes
     talker_node = RosPublisher.TalkerNode()
     lidar_publisher = RosLidarPublisher.LiDARPublisher()
-
-    # Create the Qt application
     app = QApplication(sys.argv)
-
-    # Create and show the main window
     main_window = Ui_MainWindow(talker_node, lidar_publisher)
     main_window.show()
-
-    # Start ROS 2 spinning in separate threads
     talker_thread = Thread(target=ros_spin, args=(talker_node,))
     talker_thread.start()
-
-    # Execute the Qt application
     try:
         sys.exit(app.exec_())
     except SystemExit:
         pass
-
-    # Shutdown ROS 2
     rclpy.shutdown()

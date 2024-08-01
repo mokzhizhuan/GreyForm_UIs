@@ -90,7 +90,6 @@ class Ui_MainWindow_layout(object):
         self.page4boxLayout.addWidget(self.page4frame)
         self.page4boxLayout.setStretch(0, 2)
         self.page4boxLayout.setStretch(1, 1)
-        
         self.page4.setLayout(self.page4boxLayout)
         self.page5boxLayout = QVBoxLayout()
         self.settinglayout = QHBoxLayout()

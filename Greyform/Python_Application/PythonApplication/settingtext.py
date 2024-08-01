@@ -41,9 +41,7 @@ class SettingText(object):
         self.accountinfo = accountinfo
         self.retranslateUi()
 
-    # detect ip address
     def get_ip_address(self):
-        # Get the IP address of the local machine
         ip_address = socket.gethostbyname(socket.gethostname())
         return ip_address
 

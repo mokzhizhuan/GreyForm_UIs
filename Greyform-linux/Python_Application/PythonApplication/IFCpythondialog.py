@@ -87,7 +87,7 @@ class ProgressBarDialogIFC(QDialog):
         value = self.progress_bar.value()
         if value < 100:
             self.progress_bar.setValue(value + 1)
-            # Update progress again after 100 milliseconds
+            # Update progress again after 100%
             QTimer.singleShot(100, self.update_progress)
         else:
             self.timer.stop()  # Stop the timer when progress reaches 100%
@@ -113,13 +113,9 @@ class ProgressBarDialogIFC(QDialog):
                         guid = shape.guid
                         element = self.ifc_file.by_guid(guid)
                         element_type = element.is_a() if element else "Unknown"
-                        # Indices of vertices per triangle face
                         faces = shape.geometry.faces
-                         # X Y Z of vertices in flattened list
                         verts = shape.geometry.verts
-                        # Indices of material applied per triangle face
                         material_ids = shape.geometry.material_ids  
-                        # Group vertices and faces appropriately
                         grouped_verts = [
                             [verts[i], verts[i + 1], verts[i + 2]]
                             for i in range(0, len(verts), 3)
@@ -128,9 +124,7 @@ class ProgressBarDialogIFC(QDialog):
                             [faces[i], faces[i + 1], faces[i + 2]]
                             for i in range(0, len(faces), 3)
                         ]
-                        # Scale vertices
                         scaled_grouped_verts = np.array(grouped_verts) * scale_factor
-                        # Collect data for STL
                         if element_type != "IfcOpeningElement":
                             stl_vert_index_offset = len(stl_data["points"])
                             stl_data["points"].extend(scaled_grouped_verts)

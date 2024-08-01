@@ -49,7 +49,6 @@ class pythonProgressBar(QDialog):
         label.setGeometry(QtCore.QRect(50, 30, 170, 30))
         label.setWordWrap(True)
         label.setObjectName("label")
-
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setGeometry(30, 130, 340, 30)
         self.value = value
@@ -148,7 +147,6 @@ class pythonProgressBar(QDialog):
         self.close()
 
     def resize_stl(self, file_path, scale_factor, output_path):
-    # Load the STL file
         Mesh = mesh.Mesh.from_file(file_path)
         Mesh.vectors *= scale_factor
         Mesh.update_normals()

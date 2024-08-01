@@ -44,6 +44,5 @@ class StLloaderpyvista(object):
             name="roombuilding",
             opacity="linear",
         )
-        # show Frame
         self.loader.show()
         self.loader_2.show()

@@ -105,13 +105,9 @@ class ProgressBarDialogIFC(QDialog):
                         guid = shape.guid
                         element = self.ifc_file.by_guid(guid)
                         element_type = element.is_a() if element else "Unknown"
-                        # Indices of vertices per triangle face
                         faces = shape.geometry.faces
-                        # X Y Z of vertices in flattened list
                         verts = shape.geometry.verts
-                        # Indices of material applied per triangle face
                         material_ids = shape.geometry.material_ids
-                        # Group vertices and faces appropriately
                         grouped_verts = [
                             [verts[i], verts[i + 1], verts[i + 2]]
                             for i in range(0, len(verts), 3)
@@ -120,9 +116,8 @@ class ProgressBarDialogIFC(QDialog):
                             [faces[i], faces[i + 1], faces[i + 2]]
                             for i in range(0, len(faces), 3)
                         ]
-                        # Scale vertices
                         scaled_grouped_verts = np.array(grouped_verts) * scale_factor
-                        # Collect data for STL
+                        # data array for STL
                         if element_type != "IfcOpeningElement":
                             stl_vert_index_offset = len(stl_data["points"])
                             stl_data["points"].extend(scaled_grouped_verts)
@@ -162,7 +157,6 @@ class ProgressBarDialogIFC(QDialog):
         try:
             points = np.array(data["points"])
             cells = [("triangle", np.array(data["cells"]))]
-            # Create material ID array for each face
             self.stl_file = "output.stl"
             mesh = meshio.Mesh(points=points, cells=cells)
             mesh.cell_data["triangle"] = [np.array(data["material_ids"])]

@@ -59,16 +59,9 @@ class TalkerNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-
-    # create node
     talkerNode = TalkerNode()
-
-    # use node
     rclpy.spin(talkerNode)
-
-    # destroy node
     talkerNode.destroy_node()
-
     rclpy.shutdown()
 
 

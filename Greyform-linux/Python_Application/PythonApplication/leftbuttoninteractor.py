@@ -140,11 +140,7 @@ class LeftInteractorStyle(object):
             dy = position[1] - focal_point[1]
             dz = position[2] - focal_point[2]
             current_distance = math.sqrt(dx**2 + dy**2 + dz**2)
-            # Calculate the new distance by applying the zoom factor
-            new_distance = (
-                current_distance / zoom_factor
-            )  # Zooming out increases distance
-            # The difference in distance moved by the camera
+            new_distance = current_distance / zoom_factor
             distance_moved = abs(current_distance - new_distance)
             camera.Zoom(zoom_factor)  # Zoom in
             self.setcamposition(camera)
@@ -176,11 +172,7 @@ class LeftInteractorStyle(object):
             dy = position[1] - focal_point[1]
             dz = position[2] - focal_point[2]
             current_distance = math.sqrt(dx**2 + dy**2 + dz**2)
-            # Calculate the new distance by applying the zoom factor
-            new_distance = (
-                current_distance / zoom_factor
-            )  # Zooming out increases distance
-            # The difference in distance moved by the camera
+            new_distance = current_distance / zoom_factor
             distance_moved = abs(current_distance - new_distance)
             self.current_zoom_factor *= zoom_factor
             self.setcamposition(camera)

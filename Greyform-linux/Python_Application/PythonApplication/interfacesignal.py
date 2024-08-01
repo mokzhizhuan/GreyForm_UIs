@@ -9,13 +9,11 @@ def get_wireless_interfaces():
             ["nmcli", "device", "status"], capture_output=True, text=True, check=True
         )
         wireless_interfaces = []
-
         for line in result.stdout.split("\n"):
             if "wifi" in line:
                 columns = line.split()
                 if len(columns) > 0:
                     wireless_interfaces.append(columns[0])
-
         return wireless_interfaces
     except subprocess.CalledProcessError as e:
         print(f"Command failed with error: {e}")
@@ -34,5 +32,4 @@ def get_signal_strength(interface):
                     return match.group(1)
     except subprocess.CalledProcessError as e:
         print(f"Command failed with error: {e}")
-
     return None

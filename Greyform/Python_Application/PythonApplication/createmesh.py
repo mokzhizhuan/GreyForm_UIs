@@ -106,7 +106,6 @@ class createMesh(QMainWindow):
         self.collisionFilter.SetTransform(0, vtk.vtkTransform())
         self.collisionFilter.SetTransform(1, vtk.vtkTransform())
         self.collisionFilter.SetMatrix(0, self.cubeactor.GetMatrix())
-        # Static object transform
         self.collisionFilter.SetMatrix(1, self.actor.GetMatrix())
         self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()

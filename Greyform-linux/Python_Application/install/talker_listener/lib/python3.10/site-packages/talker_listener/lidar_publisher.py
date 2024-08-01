@@ -23,7 +23,6 @@ class LiDARPublisher(Node):
         msg.range_max = 3.5
         msg.ranges = [random.uniform(0.12, 3.5) for _ in range(360)]
         msg.intensities = [random.uniform(0, 1) for _ in range(360)]
-        
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing LiDAR scan')
 

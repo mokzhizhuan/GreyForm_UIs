@@ -18,9 +18,9 @@ class StLloaderpyvista(object):
         self.meshsplot = meshsplot
         self.loader = loader
         self.loader_2 = loader_2
-        self.loadstl()
+        self.loadstlframe()
 
-    def loadstl(self):
+    def loadstlframe(self):
         self.loader.remove_actor("roombuilding")
         self.loader_2.remove_actor("roombuilding")
         self.loader.update()
@@ -45,7 +45,6 @@ class StLloaderpyvista(object):
             name="roombuilding",
             opacity="linear",
         )
-        # show Frame
         self.loader.show()
         self.loader_2.show()
 

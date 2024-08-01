@@ -35,7 +35,6 @@ class ListenerNode(Node):
             self.get_logger().info(
                 "STL file received and processed: %s" % msg.stl_data[:100]
             )
-            # Ensure the buffer size is a multiple of the element size
             with open('/tmp/temp_stl_file.stl', 'wb') as f:
                 f.write(stl_data)
             stl_mesh = mesh.Mesh.from_file('/tmp/temp_stl_file.stl')
@@ -77,16 +76,9 @@ class ListenerNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-
-    # create node
     listenerNode = ListenerNode()
-
-    # use node
     rclpy.spin(listenerNode)
-
-    # destroy node
     listenerNode.destroy_node()
-
     rclpy.shutdown()
 
 

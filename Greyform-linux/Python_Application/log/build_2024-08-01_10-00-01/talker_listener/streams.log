@@ -1,0 +1,33 @@
+[1.606s] Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/talker_listener': AMENT_PREFIX_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/talker_listener build --build-base /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build install --record /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log --single-version-externally-managed install_data
+[2.422s] running egg_info
+[2.424s] writing ../build/talker_listener/talker_listener.egg-info/PKG-INFO
+[2.426s] writing dependency_links to ../build/talker_listener/talker_listener.egg-info/dependency_links.txt
+[2.427s] writing entry points to ../build/talker_listener/talker_listener.egg-info/entry_points.txt
+[2.428s] writing requirements to ../build/talker_listener/talker_listener.egg-info/requires.txt
+[2.429s] writing top-level names to ../build/talker_listener/talker_listener.egg-info/top_level.txt
+[2.434s] reading manifest file '../build/talker_listener/talker_listener.egg-info/SOURCES.txt'
+[2.436s] writing manifest file '../build/talker_listener/talker_listener.egg-info/SOURCES.txt'
+[2.437s] running build
+[2.438s] running build_py
+[2.438s] copying talker_listener/listener_node.py -> /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener
+[2.439s] copying talker_listener/talker_node.py -> /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener
+[2.440s] copying talker_listener/lidar_publisher.py -> /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener
+[2.441s] running install
+[2.442s] running install_lib
+[2.444s] copying /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener/listener_node.py -> /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener
+[2.445s] copying /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener/talker_node.py -> /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener
+[2.445s] copying /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener/lidar_publisher.py -> /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener
+[2.446s] byte-compiling /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener/listener_node.py to listener_node.cpython-310.pyc
+[2.449s] byte-compiling /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener/talker_node.py to talker_node.cpython-310.pyc
+[2.451s] byte-compiling /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener/lidar_publisher.py to lidar_publisher.cpython-310.pyc
+[2.453s] running install_data
+[2.454s] running install_egg_info
+[2.457s] removing '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener-0.0.0-py3.10.egg-info' (and everything under it)
+[2.458s] Copying ../build/talker_listener/talker_listener.egg-info to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener-0.0.0-py3.10.egg-info
+[2.461s] running install_scripts
+[2.508s] Installing Lidar_publisher script to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener
+[2.509s] Installing Lidar_subscriber script to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener
+[2.511s] Installing listenerNode script to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener
+[2.512s] Installing talkerNode script to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener
+[2.514s] writing list of installed files to '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log'
+[2.557s] Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/talker_listener' returned '0': AMENT_PREFIX_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/talker_listener build --build-base /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build install --record /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log --single-version-externally-managed install_data
