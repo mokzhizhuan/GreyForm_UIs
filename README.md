@@ -9,7 +9,7 @@ pip/pip3 install pyqtgraph <br>
 pip/pip3 install OpenGL <br>
 pip/pip3 install numpy-stl<br>
 pip/pip3 install meshio<br>
-Enable robot function(I will implement later) : <br>
+Enable robot function must install ros2 <br>
 ##
 
 Extendsion Used:<br>
