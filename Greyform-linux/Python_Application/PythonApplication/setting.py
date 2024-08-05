@@ -27,6 +27,8 @@ class Setting(QWidget):
         MainWindow,
         windowwidth,
         windowheight,
+        settingButton,
+        stackedWidget_main,
     ):
         super(Setting, self).__init__()
         self.stackedWidget = stackedwidgetpage
@@ -49,6 +51,8 @@ class Setting(QWidget):
             "timezone": str(get_localzone()),
             "password": "pass",
         }
+        self.settingButton = settingButton
+        self.stackedWidget_main = stackedWidget_main
         self.setupUi()
 
     # setup ui setting from the page
@@ -154,6 +158,8 @@ class Setting(QWidget):
             self.settingform.PasslineEdit,
             self.MainWindow,
             self.saved_setting,
+            self.settingButton,
+            self.stackedWidget_main,
         )
 
     # add text

@@ -9,7 +9,8 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-#menu dialog to go back to the menu
+
+# menu dialog to go back to the menu
 class Ui_Dialog_Confirm(QMainWindow):
     def show_dialog_confirm(self, stacked_widget):
         dialog = QDialog(self)
@@ -30,7 +31,7 @@ class Ui_Dialog_Confirm(QMainWindow):
             | QtWidgets.QDialogButtonBox.StandardButton.Ok
         )
         buttonBox.setObjectName("buttonBox")
-        buttonBox.accepted.connect(lambda: stacked_widget.setCurrentIndex(0))
+        buttonBox.accepted.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         buttonBox.accepted.connect(dialog.close)
         buttonBox.rejected.connect(dialog.close)
         dialog_layout.addWidget(buttonBox)

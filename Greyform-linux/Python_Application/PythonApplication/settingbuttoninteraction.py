@@ -5,6 +5,7 @@ import PythonApplication.savesetting as SaveSettingsDialog
 import json
 from tzlocal import get_localzone
 
+
 class settingbuttonUI(object):
     def __init__(
         self,
@@ -26,6 +27,8 @@ class settingbuttonUI(object):
         passwordedit,
         MainWindow,
         saved_setting,
+        settingButton,
+        stackedWidget_main,
     ):
         self.MarkingbackButton = MarkingbackButton
         self.stackedWidgetsetting = stackedWidgetsetting
@@ -48,13 +51,12 @@ class settingbuttonUI(object):
         self.windowwidth, self.windowheight = map(
             int, self.savesettings["resolution"].split("x")
         )
+        self.stackedWidget_main = stackedWidget_main
         self.button_UI()
+
 
     def button_UI(self):
         self.MarkingbackButton.clicked.connect(self.confirm_save_settings)
-        self.MarkingbackButton.clicked.connect(
-            lambda: self.stackedWidget.setCurrentIndex(4)
-        )
         self.HomeButton.clicked.connect(self.homepages)
         self.HomeButton.clicked.connect(
             lambda: self.stackedWidgetsetting.setCurrentIndex(0)
@@ -132,7 +134,7 @@ class settingbuttonUI(object):
         msg.setStandardButtons(QMessageBox.Ok)
         self.stackedWidgetsetting.setCurrentIndex(0)
         self.homepages()
-        self.stackedWidget.setCurrentIndex(4)
+        self.stackedWidget_main.setCurrentIndex(0)
         msg.exec_()
 
     def load_settings(self):

@@ -26,7 +26,7 @@ from threading import Thread
 
 # load the mainwindow application
 class Ui_MainWindow(QMainWindow):
-    def __init__(self, ros_node, ros_lidar):
+    def __init__(self, ros_node):
         super(Ui_MainWindow, self).__init__()
         self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
         self.width = 800
@@ -42,7 +42,6 @@ class Ui_MainWindow(QMainWindow):
         self.file = None
         self.file_path = None
         self.ros_node = ros_node
-        self.ros_lidar = ros_lidar
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
         self.setupUi()
@@ -50,6 +49,7 @@ class Ui_MainWindow(QMainWindow):
     # setup UI
     def setupUi(self):
         self.mainwindow.NextButton_Page_2.hide()
+        self.pageindex = self.stackedWidget.currentIndex()
         self.plotterloader = QtInteractor(
             self.mainwindow.pyvistaframe,
             line_smoothing=True,
@@ -71,27 +71,28 @@ class Ui_MainWindow(QMainWindow):
                 self.mainwindow.vtkframe
             )
         )
+        self.SettingButton.clicked.connect(self.directtosettingpage)
         self.mainwindow.horizontalLayout_2.addWidget(self.plotterloader.interactor)
         self.mainwindow.horizontalLayout_4.addWidget(self.plotterloader_2.interactor)
         self.mainwindow.verticalLayout.addWidget(self.renderWindowInteractor)
+        self.retranslateUi()
+        self.button_UI()
         self.settingpageuipage = setting.Setting(
             self.mainwindow.stackedWidget,
             self.mainwindow,
             self.width,
             self.height,
+            self.mainwindow.SettingButton,
+            self.mainwindow.stackedWidget_main,
         )  # insert setting
-        self.mainwindow.Leftwallviewbutton.hide()
-        self.mainwindow.FloorViewbutton.hide()
-        self.mainwindow.LidarButton.hide()
         self.setStretch()
-        self.retranslateUi()
-        self.button_UI()
 
     # button interaction
     def button_UI(self):
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_selection_changed)
         self.mainwindow.FilePathButton.clicked.connect(self.browsefilesdirectory)
-        mainwindowbuttonUIinteraction.mainwindowbuttonUI(
+        self.SettingButton.clicked.connect(self.directtosettingpage)
+        self.buttonui = mainwindowbuttonUIinteraction.mainwindowbuttonUI(
             self.mainwindow,
             self.mainwindow.stackedWidget,
             self.mainwindow.menuStartButton,
@@ -106,11 +107,11 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.CloseButton,
             self.mainwindow.ConfirmAckButton,
             self.mainwindow.MarkingButton,
-            self.mainwindow.SettingButton,
         )
-        self.mainwindow.LidarButton.clicked.connect(self.start_lidar_publisher)
         self.mainwindow.EnableRobotButton.clicked.connect(self.publish_message)
 
+    def directtosettingpage(self):
+        self.mainwindow.stackedWidget_main.setCurrentIndex(1)
 
     def browsefilesdirectory(self):
         self.filepaths = QFileDialog.getExistingDirectory(
@@ -172,14 +173,12 @@ class Ui_MainWindow(QMainWindow):
         else:
             print("No STL file selected.")
 
-    def start_lidar_publisher(self):
-        self.lidar_thread = Thread(target=ros_spin, args=(self.ros_lidar,))
-        self.lidar_thread.start()
-
     def setStretch(self):
+        self.boxLayout = QVBoxLayout()
+        self.boxLayout.addWidget(self.mainwindow.stackedWidget_main)
+        self.mainwindow.centralwidget.setLayout(self.boxLayout)
         mainwindowuilayout.Ui_MainWindow_layout(
             self.mainwindow.stackedWidget,
-            self.mainwindow.centralwidget,
             self.mainwindow.QTitle,
             self.mainwindow.layoutWidget,
             self.mainwindow.horizontalLayout,
@@ -193,11 +192,11 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.layoutWidgetpage4,
             self.mainwindow.horizontalLayoutWidgetpage4,
             self.mainwindow.page_3,
-            self.mainwindow.LidarButton,
-            self.mainwindow.SettingButton,
             self.mainwindow.layoutWidgetpage5,
             self.mainwindow.page_4,
             self.settingpageuipage,
+            self.mainwindow.mainconfiguration,
+            self.mainwindow.SettingButton,
             self.mainwindow.settingpage,
         )
 
@@ -244,9 +243,8 @@ def ros_spin(node):
 if __name__ == "__main__":
     rclpy.init()
     talker_node = RosPublisher.TalkerNode()
-    lidar_publisher = RosLidarPublisher.LiDARPublisher()
     app = QApplication(sys.argv)
-    main_window = Ui_MainWindow(talker_node, lidar_publisher)
+    main_window = Ui_MainWindow(talker_node)
     main_window.show()
     talker_thread = Thread(target=ros_spin, args=(talker_node,))
     talker_thread.start()
