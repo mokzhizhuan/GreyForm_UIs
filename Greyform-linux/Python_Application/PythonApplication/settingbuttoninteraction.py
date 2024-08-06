@@ -27,7 +27,6 @@ class settingbuttonUI(object):
         passwordedit,
         MainWindow,
         saved_setting,
-        settingButton,
         stackedWidget_main,
     ):
         self.MarkingbackButton = MarkingbackButton

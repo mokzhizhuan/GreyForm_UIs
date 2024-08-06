@@ -1,35 +1,33 @@
-import subprocess
-import re
+import psutil
+import socket
 
 
 def get_wireless_interfaces():
-    try:
-        # Use nmcli to list all devices
-        result = subprocess.run(
-            ["nmcli", "device", "status"], capture_output=True, text=True, check=True
-        )
-        wireless_interfaces = []
-        for line in result.stdout.split("\n"):
-            if "wifi" in line:
-                columns = line.split()
-                if len(columns) > 0:
-                    wireless_interfaces.append(columns[0])
-        return wireless_interfaces
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with error: {e}")
-        return []
+    # Get all network interfaces
+    interfaces = psutil.net_if_addrs()
+    
+    # Ethernet interfaces typically start with 'e' or 'eth'
+    ethernet_interfaces = {}
+    for interface_name, interface_addresses in interfaces.items():
+        for address in interface_addresses:
+            # Check if the interface is of type AF_LINK (Ethernet) using socket.AF_PACKET for MAC address
+            if address.family == socket.AF_PACKET:
+                if interface_name.startswith('e') or interface_name.startswith('eth'):
+                    ethernet_interfaces[interface_name] = {
+                        "mac": address.address,  # MAC Address
+                        "ip": None               # Default None for IP
+                    }
+            # Check if the address is of type IPv4 using socket.AF_INET
+            if address.family == socket.AF_INET and interface_name in ethernet_interfaces:
+                ethernet_interfaces[interface_name]["ip"] = address.address
 
+    return ethernet_interfaces
 
-def get_signal_strength(interface):
-    try:
-        result = subprocess.run(
-            ["iwconfig", interface], capture_output=True, text=True, check=True
-        )
-        for line in result.stdout.split("\n"):
-            if "Signal level" in line:
-                match = re.search(r"Signal level=(-?\d+)", line)
-                if match:
-                    return match.group(1)
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with error: {e}")
-    return None
+def get_open_ports(interface_ip):
+    open_ports = []
+    # Iterate over all connections
+    for conn in psutil.net_connections(kind='inet'):
+        if conn.laddr and conn.laddr.ip == interface_ip:
+            open_ports.append(conn.laddr.port)
+    return open_ports
+

@@ -45,6 +45,11 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
       <property name="text">
        <string>Setting</string>
       </property>
@@ -116,8 +121,13 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>15</pointsize>
+            </font>
+           </property>
            <property name="text">
-            <string>Click to Continue</string>
+            <string>Continue</string>
            </property>
            <property name="checkable">
             <bool>false</bool>
@@ -132,8 +142,13 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
+           <property name="font">
+            <font>
+             <pointsize>15</pointsize>
+            </font>
+           </property>
            <property name="text">
-            <string>Click to Close the Window</string>
+            <string>Exit</string>
            </property>
            <property name="checkable">
             <bool>false</bool>
@@ -839,4 +854,6 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <resources/>
+ <connections/>
 </ui>

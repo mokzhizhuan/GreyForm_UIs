@@ -228,11 +228,6 @@
              </item>
              <item>
               <property name="text">
-               <string>Light</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
                <string>Other Color</string>
               </property>
              </item>
@@ -643,24 +638,6 @@
           </property>
           <property name="text">
            <string>System Memory: </string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="Port">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>69</y>
-            <width>319</width>
-            <height>35</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>15</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>Port:</string>
           </property>
          </widget>
         </widget>

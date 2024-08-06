@@ -2,11 +2,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-import PythonApplication.serveraddress as server
 import psutil
 import os
 import datetime
-import socket
 
 
 class SettingText(object):
@@ -18,9 +16,6 @@ class SettingText(object):
         info_label,
         version_label,
         author_label,
-        Portnumipadd,
-        host,
-        Port,
         SystemDate,
         SystemMemory,
         PasslineEdit,
@@ -33,9 +28,6 @@ class SettingText(object):
         self.info_label = info_label
         self.version_label = version_label
         self.author_label = author_label
-        self.Portnumipadd = Portnumipadd
-        self.host = host
-        self.Port = Port
         self.SystemDate = SystemDate
         self.SystemMemory = SystemMemory
         self.PasslineEdit = PasslineEdit
@@ -43,25 +35,14 @@ class SettingText(object):
         self.accountinfo = accountinfo
         self.retranslateUi()
 
-    # detect ip address
-    def get_ip_address(self):
-        # Get the IP address of the local machine
-        ip_address = socket.gethostbyname(socket.gethostname())
-        return ip_address
 
     # add text
     def retranslateUi(self):
-        ip_address = self.get_ip_address()
         self.labeltitlsetting.setText("<h3>Setting</h3>")
-        self.ip_label.setText(f"IP Address: {ip_address}")
         self.titlelabel.setText("<h3>About My Application</h3>")
         self.info_label.setText("This is a Robot Marking Application program")
         self.version_label.setText("Version: 1.0")
         self.author_label.setText("Created by Mok Zhi Zhuan")
-        servers = server.MyServer()
-        self.Portnumipadd.setText(f"Port: {servers.serverPort()}")
-        self.host.setText(f"Host: {servers.serverAddress().toString()}")
-        self.Port.setText(f"Port: {servers.serverPort()}")
         datetoday = datetime.date.today()
         datetodayformatted = datetoday.strftime("%d/%m/%Y")
         process = psutil.Process(os.getpid())

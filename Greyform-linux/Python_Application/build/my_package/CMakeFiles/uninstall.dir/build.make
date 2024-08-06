@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_package
+CMAKE_SOURCE_DIR = /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_package
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package
+CMAKE_BINARY_DIR = /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_package
 
 # Utility rule file for uninstall.
 
@@ -78,6 +78,6 @@ CMakeFiles/uninstall.dir/clean:
 .PHONY : CMakeFiles/uninstall.dir/clean
 
 CMakeFiles/uninstall.dir/depend:
-	cd /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_package /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_package /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_package && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_package /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_package /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_package /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_package /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_package/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/uninstall.dir/depend
 

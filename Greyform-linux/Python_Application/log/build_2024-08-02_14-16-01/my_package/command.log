@@ -1,0 +1,1 @@
+Invoking command in '/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_package': /usr/bin/cmake /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_package -DCMAKE_INSTALL_PREFIX=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my_package

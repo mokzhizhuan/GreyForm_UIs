@@ -29,7 +29,7 @@ class createMesh(QMainWindow):
         seq2Button,
         seq3Button,
         NextButton_Page_3,
-        Seqlabel,
+        Seqlabel,   
     ):
         # variable for loading bar ui
         self.defaultposition = [0, 0, 1]

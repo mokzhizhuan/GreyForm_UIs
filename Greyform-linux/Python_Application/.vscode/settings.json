@@ -32,4 +32,5 @@
     "ros.distro": "noetic",
     "terminal.integrated.gpuAcceleration": "off",
     "cmake.sourceDirectory": "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py",
+    "cmake.ignoreCMakeListsMissing": true,
 }

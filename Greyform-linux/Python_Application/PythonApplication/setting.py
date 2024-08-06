@@ -4,18 +4,13 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.restoredefault as default
-import PythonApplication.serveraddress as server
 import PythonApplication.reset as closewindow
-import socket
-from PyQt5.QtNetwork import QTcpServer, QHostAddress
 import PythonApplication.login as Login
 import PythonApplication.interfacesignal as interface_signals
 import PythonApplication.settinglayout as settinglayoutUi
 import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
 import datetime
-import psutil
-import os
 import pytz
 from tzlocal import get_localzone
 
@@ -27,7 +22,6 @@ class Setting(QWidget):
         MainWindow,
         windowwidth,
         windowheight,
-        settingButton,
         stackedWidget_main,
     ):
         super(Setting, self).__init__()
@@ -51,7 +45,6 @@ class Setting(QWidget):
             "timezone": str(get_localzone()),
             "password": "pass",
         }
-        self.settingButton = settingButton
         self.stackedWidget_main = stackedWidget_main
         self.setupUi()
 
@@ -62,18 +55,18 @@ class Setting(QWidget):
         # wifi
         self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
         self.interfaces = interface_signals.get_wireless_interfaces()
-        interface_info = f"Interface: None"
+        interface_info = "Interface: None"
         self.settingform.interface_label.setText(interface_info)
-        self.settingform.treeWidget.hide()
-        for interface in self.interfaces:
-            signal_strength = interface_signals.get_signal_strength(interface)
-            if signal_strength:
-                ssid = self.interfaces
-                item = QTreeWidgetItem([ssid, str(signal_strength)])
-                self.settingform.treeWidget.show()
-                self.settingform.treeWidget.addTopLevelItem(item)
-                interface_info = f"Interface: {self.interfaces[0]}"
-                self.settingform.interface_label.setText(interface_info)
+        if self.interfaces:
+            group_item = QTreeWidgetItem(self.settingform.treeWidget)
+            group_item.setText(0, "Ethernet Interfaces")
+            for interface in self.interfaces:
+                item = QTreeWidgetItem(group_item)
+                item.setText(0, interface)
+        else:
+            no_ethernet_item = QTreeWidgetItem(self.settingform.treeWidget)
+            no_ethernet_item.setText(0, "No Ethernet Interfaces found.")
+        self.settingform.treeWidget.itemClicked.connect(self.on_item_clicked)
         # setting host services and resolution
         self.font_size = self.settingform.Text_size.currentText()
         self.font = QFont()
@@ -137,6 +130,28 @@ class Setting(QWidget):
             )
         )
 
+    def on_item_clicked(self, item, column):
+        # Get the selected interface name
+        interface_name = item.text(column)
+        
+        # Retrieve the interface details
+        interfaces = interface_signals.get_wireless_interfaces()
+        interface_details = interfaces.get(interface_name, {})
+        
+        # Prepare the display text
+        ip_address = interface_details.get("ip", "N/A")
+        mac = interface_details.get("mac", "N/A")
+        if ip_address and ip_address != "N/A":
+            open_ports = interface_signals.get_open_ports(ip_address)
+            ports_text = ", ".join(map(str, open_ports)) if open_ports else "No open ports"
+        else:
+            ports_text = "N/A"
+        interface_info = f"Interface: {interface_name}"
+        self.settingform.interface_label.setText(interface_info)
+        self.settingform.ip_label.setText(f"IP Address : {ip_address}")
+        self.settingform.host.setText(f"Mac Address: {mac}")
+        self.settingform.Portnumipadd.setText(f"Port: {ports_text}")
+
     # button interaction page
     def button_UI(self):
         settingbuttonUIinteraction.settingbuttonUI(
@@ -158,7 +173,6 @@ class Setting(QWidget):
             self.settingform.PasslineEdit,
             self.MainWindow,
             self.saved_setting,
-            self.settingButton,
             self.stackedWidget_main,
         )
 
@@ -174,9 +188,6 @@ class Setting(QWidget):
             self.settingform.info_label,
             self.settingform.version_label,
             self.settingform.author_label,
-            self.settingform.Portnumipadd,
-            self.settingform.host,
-            self.settingform.Port,
             self.settingform.SystemDate,
             self.settingform.SystemMemory,
             self.settingform.PasslineEdit,
