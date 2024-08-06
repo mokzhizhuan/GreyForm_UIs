@@ -1,1 +1,2 @@
 Failed to load stlfile in the frame: name 'picker' is not defined
+Failed to write Excel file: Excel file format cannot be determined, you must specify an engine manually.
