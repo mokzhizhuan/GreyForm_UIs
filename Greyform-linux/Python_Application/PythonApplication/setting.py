@@ -12,6 +12,7 @@ import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
 import datetime
 import pytz
+import json
 from tzlocal import get_localzone
 
 # setting loader
@@ -31,19 +32,28 @@ class Setting(QWidget):
         self.settingform = uic.loadUi("UI_Design/setting.ui", self)
         self.MainWindow = MainWindow
         self.accountinfo = [{"UserID": "admin", "Pass": "pass"}]
+        try:
+            with open("settings.json", "r") as f:
+                data = json.load(f)
+        except FileNotFoundError:
+            pass
+        font = data['font_size']
+        self.theme = data['theme']
+        self.password = data['password']
+        self.font_size = int(font)
         self.default_settings = {
-            "theme": "Gray",
-            "font_size": "15",
+            "theme": str(self.theme),
+            "font_size": self.font_size,
             "resolution": f"{windowwidth} x {windowheight}",
             "timezone": str(get_localzone()),
-            "password": "pass",
+            "password": str(self.password),
         }
         self.saved_setting = {
-            "theme": "Gray",
-            "font_size": "15",
+            "theme": str(self.theme),
+            "font_size": self.font_size,
             "resolution": f"{windowwidth} x {windowheight}",
             "timezone": str(get_localzone()),
-            "password": "pass",
+            "password": str(self.password),
         }
         self.stackedWidget_main = stackedWidget_main
         self.setupUi()
@@ -277,7 +287,6 @@ class Setting(QWidget):
             self.settingform.SystemDate,
             self.settingform.Systemtime,
             self.settingform.SystemMemory,
-            self.settingform.Port,
             self.settingform.servicespage,
             self.userlabel,
             self.loginwidget,
