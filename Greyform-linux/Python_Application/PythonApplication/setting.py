@@ -81,7 +81,7 @@ class Setting(QWidget):
         self.font_size = self.settingform.Text_size.currentText()
         self.font = QFont()
         self.font.setPointSize(int(self.font_size))
-        self.settingform.setFont(self.font)
+        self.apply_font_to_widgets(self.settingform, self.font)
         self.settingform.Text_size.currentIndexChanged[int].connect(self.update_font)
         self.settingform.resolutioncomboBox.currentIndexChanged.connect(
             self.change_resolution
