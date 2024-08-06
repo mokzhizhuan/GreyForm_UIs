@@ -60,6 +60,7 @@ class Ui_MainWindow(QMainWindow):
                 self.mainwindow.vtkframe
             )
         )
+        self.SettingButton.clicked.connect(self.directtosettingpage)
         self.mainwindow.horizontalLayout_2.addWidget(self.plotterloader.interactor)
         self.mainwindow.horizontalLayout_4.addWidget(self.plotterloader_2.interactor)
         self.mainwindow.verticalLayout.addWidget(self.renderWindowInteractor)
@@ -68,10 +69,10 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow,
             self.width,
             self.height,
-        )  # insert setting page
-        self.mainwindow.LidarButton.hide()
-        self.mainwindow.Leftwallviewbutton.hide()
-        self.mainwindow.FloorViewbutton.hide()
+            self.mainwindow.SettingButton,
+            self.mainwindow.stackedWidget_main,
+        )  # insert setting
+        self.retranslateUi()
         self.setStretch()
         self.button_UI()
 
@@ -79,7 +80,7 @@ class Ui_MainWindow(QMainWindow):
     def button_UI(self):
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_selection_changed)
         self.mainwindow.FilePathButton.clicked.connect(self.browsefilesdirectory)
-        mainwindowbuttonUIinteraction.mainwindowbuttonUI(
+        self.buttonui = mainwindowbuttonUIinteraction.mainwindowbuttonUI(
             self.mainwindow,
             self.mainwindow.stackedWidget,
             self.mainwindow.menuStartButton,
@@ -94,9 +95,10 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.CloseButton,
             self.mainwindow.ConfirmAckButton,
             self.mainwindow.MarkingButton,
-            self.mainwindow.EnableRobotButton,
-            self.mainwindow.SettingButton,
         )
+
+    def directtosettingpage(self):
+        self.mainwindow.stackedWidget_main.setCurrentIndex(1)
 
     def browsefilesdirectory(self):
         self.filepaths = QFileDialog.getExistingDirectory(
@@ -151,9 +153,11 @@ class Ui_MainWindow(QMainWindow):
         )
 
     def setStretch(self):
+        self.boxLayout = QVBoxLayout()
+        self.boxLayout.addWidget(self.mainwindow.stackedWidget_main)
+        self.mainwindow.centralwidget.setLayout(self.boxLayout)
         mainwindowuilayout.Ui_MainWindow_layout(
             self.mainwindow.stackedWidget,
-            self.mainwindow.centralwidget,
             self.mainwindow.QTitle,
             self.mainwindow.layoutWidget,
             self.mainwindow.horizontalLayout,
@@ -167,11 +171,11 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.layoutWidgetpage4,
             self.mainwindow.horizontalLayoutWidgetpage4,
             self.mainwindow.page_3,
-            self.mainwindow.LidarButton,
-            self.mainwindow.SettingButton,
             self.mainwindow.layoutWidgetpage5,
             self.mainwindow.page_4,
             self.settingpageuipage,
+            self.mainwindow.mainconfiguration,
+            self.mainwindow.SettingButton,
             self.mainwindow.settingpage,
         )
 
@@ -195,6 +199,14 @@ class Ui_MainWindow(QMainWindow):
         self.renderWindowInteractor.GetRenderWindow().Finalize()
         self.renderWindowInteractor.GetRenderWindow().GetInteractor().TerminateApp()
         event.accept()
+
+    def retranslateUi(self):
+        self.mainwindow.displaybeforelabel.setText(
+            self._translate("MainWindow", "Mesh Camera Dimensions")
+        )
+        self.mainwindow.label_2.setText(
+            self._translate("MainWindow", "Click Position", None)
+        )
 
 
 if __name__ == "__main__":

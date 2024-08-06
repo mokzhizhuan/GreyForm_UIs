@@ -8,7 +8,6 @@ class Ui_MainWindow_layout(object):
     def __init__(
         self,
         stackedWidget,
-        centralwidget,
         maintitle,
         mainlayoutwidget,
         mainlayoutpagebutton,
@@ -22,15 +21,14 @@ class Ui_MainWindow_layout(object):
         page4layout,
         page4frame,
         page4,
-        LidarButton,
-        settingbutton,
         page5layout,
         page5,
         settinguipage,
+        stackedWidget_main,
+        SettingButton,
         settingpage,
     ):
         self.stackedWidget = stackedWidget
-        self.centralwidget = centralwidget
         self.maintitle = maintitle
         self.mainlayoutwidget = mainlayoutwidget
         self.mainlayoutpagebutton = mainlayoutpagebutton
@@ -44,18 +42,29 @@ class Ui_MainWindow_layout(object):
         self.page4Layout = page4layout
         self.page4frame = page4frame
         self.page4 = page4
-        self.LidarButton = LidarButton
-        self.settingbutton = settingbutton
         self.page5Layout = page5layout
         self.page5 = page5
         self.settinguipage = settinguipage
         self.settingpage = settingpage
+        self.stackedWidget_main = stackedWidget_main
+        self.SettingButton = SettingButton
         self.setStretch()
 
     def setStretch(self):
         self.boxLayout = QVBoxLayout()
+        self.settinglayout = QHBoxLayout()
+        self.horizontalSpacer = QSpacerItem(
+            40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
+        )
+        self.settinglayout.addItem(self.horizontalSpacer)
+        self.settinglayout.addWidget(self.SettingButton)
+        self.settinglayout.setStretch(0, 2)
+        self.settinglayout.setStretch(1, 1)
+        self.boxLayout.addLayout(self.settinglayout)
         self.boxLayout.addWidget(self.stackedWidget)
-        self.centralwidget.setLayout(self.boxLayout)
+        self.boxLayout.setStretch(0, 1)
+        self.boxLayout.setStretch(1, 4)
+        self.stackedWidget_main.setLayout(self.boxLayout)
         self.page1boxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
             20, 400, QSizePolicy.Minimum, QSizePolicy.Expanding
@@ -71,6 +80,7 @@ class Ui_MainWindow_layout(object):
         self.page1boxlayout.setStretch(0, 1)
         self.page1boxlayout.setStretch(1, 1)
         self.page1boxlayout.setStretch(2, 1)
+        self.page1boxlayout.setStretch(3, 1)
         self.mainlayoutpagebutton.setStretch(0, 1)
         self.mainlayoutpagebutton.setStretch(1, 1)
         self.mainmenu.setLayout(self.page1boxlayout)
@@ -92,16 +102,8 @@ class Ui_MainWindow_layout(object):
         self.page4boxLayout.setStretch(1, 1)
         self.page4.setLayout(self.page4boxLayout)
         self.page5boxLayout = QVBoxLayout()
-        self.settinglayout = QHBoxLayout()
-        self.horizontalSpacer = QSpacerItem(
-            40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
-        )
-        self.settinglayout.addItem(self.horizontalSpacer)
-        self.settinglayout.addWidget(self.settingbutton)
-        self.page5boxLayout.addLayout(self.settinglayout)
         self.page5boxLayout.addWidget(self.page5Layout)
-        self.page5boxLayout.addWidget(self.LidarButton)
         self.page5.setLayout(self.page5boxLayout)
         self.page6boxLayout = QVBoxLayout()
-        self.page6boxLayout.addWidget(self.settinguipage, 1)
+        self.page6boxLayout.addWidget(self.settinguipage)
         self.settingpage.setLayout(self.page6boxLayout)

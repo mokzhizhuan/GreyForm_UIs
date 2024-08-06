@@ -20,8 +20,6 @@ class mainwindowbuttonUI(object):
         CloseButton,
         ConfirmAckButton,
         MarkingButton,
-        EnableRobotButton,
-        SettingButton,
     ):
         self.mainwindow = mainwindow
         self.stackedWidget = stackedWidget
@@ -37,38 +35,41 @@ class mainwindowbuttonUI(object):
         self.CloseButton = CloseButton
         self.ConfirmAckButton = ConfirmAckButton
         self.MarkingButton = MarkingButton
-        self.EnableRobotButton = EnableRobotButton
-        self.SettingButton = SettingButton
         self.button_UI()
 
+    def startconfigure(self):
+        self.stackedWidget.setCurrentIndex(1)
+
+    def configurestage(self):
+        self.stackedWidget.setCurrentIndex(2)
+
+    def guiconfigure(self):
+        self.stackedWidget.setCurrentIndex(3)
+
+    def guibuttonconfig(self):
+        self.stackedWidget.setCurrentIndex(4)
+
+    def homeui(self):
+        self.stackedWidget.setCurrentIndex(0)
+
     def button_UI(self):
-        self.menuStartButton.clicked.connect(
-            lambda: self.stackedWidget.setCurrentIndex(1)
-        )
+        self.menuStartButton.clicked.connect(self.startconfigure)
         self.menuCloseButton.clicked.connect(
             lambda: closewindow.Ui_Dialog_Close.show_dialog_close(self.mainwindow)
         )
-        self.NextButton_Page_2.clicked.connect(
-            lambda: self.mainwindow.stackedWidget.setCurrentIndex(2)
-        )
+        self.NextButton_Page_2.clicked.connect(self.configurestage)
         self.BacktoMenuButton.clicked.connect(
             lambda: backtomenudialog.Ui_Dialog_Confirm.show_dialog_confirm(
-                self.mainwindow, self.stackedWidget
+                self.mainwindow,
+                self.stackedWidget,
             )
         )
-        self.BackButton_Page_2.clicked.connect(
-            lambda: self.stackedWidget.setCurrentIndex(1)
-        )
-        self.BackButton_Page_3.clicked.connect(
-            lambda: self.stackedWidget.setCurrentIndex(2)
-        )
-        self.NextButton_Page_3.clicked.connect(
-            lambda: self.stackedWidget.setCurrentIndex(3)
-        )
-        self.ConfirmButton.clicked.connect(
-            lambda: self.stackedWidget.setCurrentIndex(4)
-        )
-        self.HomeButton.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        self.BackButton_Page_2.clicked.connect(self.startconfigure)
+        self.BackButton_Page_3.clicked.connect(self.configurestage)
+        self.NextButton_Page_3.clicked.connect(self.guiconfigure)
+        self.ConfirmButton.clicked.connect(self.guibuttonconfig)
+        self.MarkingButton.clicked.connect(self.guiconfigure)
+        self.HomeButton.clicked.connect(self.homeui)
         self.CloseButton.clicked.connect(
             lambda: closewindow.Ui_Dialog_Close.show_dialog_close(self.mainwindow)
         )
@@ -76,10 +77,4 @@ class mainwindowbuttonUI(object):
             lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(
                 self.mainwindow
             )
-        )
-        self.MarkingButton.clicked.connect(
-            lambda: self.stackedWidget.setCurrentIndex(3)
-        )
-        self.SettingButton.clicked.connect(
-            lambda: self.stackedWidget.setCurrentIndex(5)
         )

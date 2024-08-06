@@ -1,7 +1,6 @@
 import PythonApplication.menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
 import PythonApplication.menu_confirmack as confirmack
-import PythonApplication.setting as setting
 
 
 class mainwindowbuttonUI(object):

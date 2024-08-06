@@ -13,7 +13,7 @@
         "/opt/ros/noetic/lib/python3/dist-packages"
     ],
     "files.autoSave": "afterDelay",
-    "workbench.colorTheme": "Bocchi-the-theme",
+    "workbench.colorTheme": "Alex's Dark Theme",
     "json.schemas": [
     ],
     "[python]": {

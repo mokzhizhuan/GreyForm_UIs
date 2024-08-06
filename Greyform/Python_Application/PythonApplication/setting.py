@@ -25,6 +25,8 @@ class Setting(QWidget):
         MainWindow,
         windowwidth,
         windowheight,
+        settingButton,
+        stackedWidget_main, 
     ):
         super(Setting, self).__init__()
         self.stackedWidget = stackedwidgetpage
@@ -51,6 +53,8 @@ class Setting(QWidget):
             ),
             "password": "pass",
         }
+        self.settingButton = settingButton
+        self.stackedWidget_main = stackedWidget_main
         self.setupUi()
 
     # setup ui setting from the page
@@ -114,9 +118,28 @@ class Setting(QWidget):
         self.restartwidget = QStackedWidget(self.settingform.RestartPowerOffPage)
         self.restartwidget.addWidget(self.restartwidgetwindow)
         self.restartwidget.setGeometry(50, 260, 300, 200)
+        self.button_UI()
         self.setStretch()
         self.retranslateUi()
-        settingUI = settingbuttonUIinteraction.settingbuttonUI(
+
+        self.settingform.restoreDefaultsButton.clicked.connect(
+            lambda: default.restoredefaultsetting(
+                self.accountinfo,
+                self.settingform.themebox,
+                self.settingform.Text_size,
+                self.settingform.resolutioncomboBox,
+                self.settingform.country,
+                self.default_settings,
+                self.settingform.PasslineEdit,
+                self.stackedWidget,
+                self.MainWindow,
+                self.windowwidth,
+                self.windowheight,
+            )
+        )
+    # button interaction page
+    def button_UI(self):
+        settingbuttonUIinteraction.settingbuttonUI(
             self.settingform.MarkingbackButton,
             self.settingform.stackedWidgetsetting,
             self.stackedWidget,
@@ -135,23 +158,8 @@ class Setting(QWidget):
             self.settingform.PasslineEdit,
             self.MainWindow,
             self.saved_setting,
-        )
-        settingUI.load_settings()
-
-        self.settingform.restoreDefaultsButton.clicked.connect(
-            lambda: default.restoredefaultsetting(
-                self.accountinfo,
-                self.settingform.themebox,
-                self.settingform.Text_size,
-                self.settingform.resolutioncomboBox,
-                self.settingform.country,
-                self.default_settings,
-                self.settingform.PasslineEdit,
-                self.stackedWidget,
-                self.MainWindow,
-                self.windowwidth,
-                self.windowheight,
-            )
+            self.settingButton,
+            self.stackedWidget_main,
         )
 
     # detect WIFI
