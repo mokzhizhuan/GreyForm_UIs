@@ -27,15 +27,27 @@ class Ui_MainWindow(QMainWindow):
         except FileNotFoundError:
             pass
         resolution = data["resolution"]
+        font = data['font_size']
         self.width, self.height = map(int, resolution.split(" x "))
+        self.font_size = int(font)
+        self.font = QFont()
+        self.font.setPointSize(self.font_size)
         self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
         self.mainwindow.resize(self.width, self.height)
         self.filepaths = os.getcwd()
         self.file = None
         self.file_path = None
         self.renderer = vtk.vtkRenderer()
+        self.apply_font_to_widgets(self.mainwindow, self.font)  
         self._translate = QCoreApplication.translate
         self.setupUi()
+
+    def apply_font_to_widgets(self, parent, font):
+        if hasattr(parent, "setFont"):
+            parent.setFont(font) 
+        if hasattr(parent, "children"):
+            for child in parent.children():
+                self.apply_font_to_widgets(child, font)
 
     # setup UI
     def setupUi(self):
