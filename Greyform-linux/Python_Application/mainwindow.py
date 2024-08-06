@@ -49,7 +49,6 @@ class Ui_MainWindow(QMainWindow):
     # setup UI
     def setupUi(self):
         self.mainwindow.NextButton_Page_2.hide()
-        self.pageindex = self.stackedWidget.currentIndex()
         self.plotterloader = QtInteractor(
             self.mainwindow.pyvistaframe,
             line_smoothing=True,
