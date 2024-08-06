@@ -23,10 +23,11 @@ class Ui_MainWindow(QMainWindow):
         self.height = 600
         try:
             with open("settings.json", "r") as f:
-                settings = json.load(f)
-                settings.get("resolution", f"{self.width} x {self.height}")
+                data = json.load(f)
         except FileNotFoundError:
             pass
+        resolution = data["resolution"]
+        self.width, self.height = map(int, resolution.split(" x "))
         self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
         self.mainwindow.resize(self.width, self.height)
         self.filepaths = os.getcwd()
