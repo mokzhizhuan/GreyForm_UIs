@@ -7,9 +7,15 @@ pip/pip3 install PyQt5 <br>
 pip/pip3 install multiprocess <br>
 pip/pip3 install pyqtgraph <br>
 pip/pip3 install OpenGL <br>
-pip/pip3 install numpy-stl<br>
-pip/pip3 install meshio<br>
+pip/pip3 install numpy-stl <br>
+pip/pip3 install meshio <br>
+pip/pip3 install openxyl <br>
+pip/pip3 install pandas <br>
 Enable robot function must install ros2 <br>
+ros humble software link:<br>
+https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html <br>
+setting up ros workspaces:<br>
+https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html<br>
 ##
 
 Extendsion Used:<br>
