@@ -76,7 +76,7 @@ class Setting(QWidget):
         else:
             no_ethernet_item = QTreeWidgetItem(self.settingform.treeWidget)
             no_ethernet_item.setText(0, "No Ethernet Interfaces found.")
-        self.settingform.treeWidget.itemClicked.connect(self.on_item_clicked)
+        self.settingform.treeWidget.itemClicked.connect(self.ethernet_item_clicked)
         # setting host services and resolution
         self.font_size = self.settingform.Text_size.currentText()
         self.font = QFont()
@@ -140,16 +140,13 @@ class Setting(QWidget):
             )
         )
 
-    def on_item_clicked(self, item, column):
-        # Get the selected interface name
+    def ethernet_item_clicked(self, item, column):
         interface_name = item.text(column)
         
-        # Retrieve the interface details
         interfaces = interface_signals.get_wireless_interfaces()
         interface_details = interfaces.get(interface_name, {})
         
-        # Prepare the display text
-        ip_address = interface_details.get("ip", "N/A")
+        ip_address = interface_details.get("ipv4", "N/A")
         mac = interface_details.get("mac", "N/A")
         if ip_address and ip_address != "N/A":
             open_ports = interface_signals.get_open_ports(ip_address)

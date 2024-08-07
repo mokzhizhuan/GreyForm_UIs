@@ -1,0 +1,49 @@
+[0.325s] Invoking command in '/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/talker_listener': AMENT_PREFIX_PATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces LD_LIBRARY_PATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/talker_listener build --build-base /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build install --record /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log --single-version-externally-managed install_data
+[0.443s] running egg_info
+[0.444s] creating ../build/talker_listener/talker_listener.egg-info
+[0.444s] writing ../build/talker_listener/talker_listener.egg-info/PKG-INFO
+[0.444s] writing dependency_links to ../build/talker_listener/talker_listener.egg-info/dependency_links.txt
+[0.444s] writing entry points to ../build/talker_listener/talker_listener.egg-info/entry_points.txt
+[0.444s] writing requirements to ../build/talker_listener/talker_listener.egg-info/requires.txt
+[0.444s] writing top-level names to ../build/talker_listener/talker_listener.egg-info/top_level.txt
+[0.444s] writing manifest file '../build/talker_listener/talker_listener.egg-info/SOURCES.txt'
+[0.445s] reading manifest file '../build/talker_listener/talker_listener.egg-info/SOURCES.txt'
+[0.445s] writing manifest file '../build/talker_listener/talker_listener.egg-info/SOURCES.txt'
+[0.445s] running build
+[0.445s] running build_py
+[0.446s] creating /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build
+[0.446s] creating /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib
+[0.446s] creating /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener
+[0.446s] copying talker_listener/lidar_publisher.py -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener
+[0.446s] copying talker_listener/lidar_subscriber.py -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener
+[0.446s] copying talker_listener/listener_node.py -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener
+[0.446s] copying talker_listener/talker_node.py -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener
+[0.446s] copying talker_listener/__init__.py -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener
+[0.446s] running install
+[0.446s] running install_lib
+[0.446s] creating /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener
+[0.446s] copying /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener/lidar_publisher.py -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener
+[0.446s] copying /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener/lidar_subscriber.py -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener
+[0.447s] copying /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener/listener_node.py -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener
+[0.447s] copying /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener/talker_node.py -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener
+[0.447s] copying /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener/__init__.py -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener
+[0.447s] byte-compiling /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener/lidar_publisher.py to lidar_publisher.cpython-310.pyc
+[0.447s] byte-compiling /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener/lidar_subscriber.py to lidar_subscriber.cpython-310.pyc
+[0.447s] byte-compiling /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener/listener_node.py to listener_node.cpython-310.pyc
+[0.448s] byte-compiling /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener/talker_node.py to talker_node.cpython-310.pyc
+[0.448s] byte-compiling /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener/__init__.py to __init__.cpython-310.pyc
+[0.448s] running install_data
+[0.448s] creating /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/ament_index
+[0.448s] creating /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/ament_index/resource_index
+[0.448s] creating /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/ament_index/resource_index/packages
+[0.448s] copying resource/talker_listener -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/ament_index/resource_index/packages
+[0.448s] copying package.xml -> /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/share/talker_listener
+[0.449s] running install_egg_info
+[0.449s] Copying ../build/talker_listener/talker_listener.egg-info to /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener-0.0.0-py3.10.egg-info
+[0.450s] running install_scripts
+[0.462s] Installing Lidar_publisher script to /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener
+[0.462s] Installing Lidar_subscriber script to /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener
+[0.462s] Installing listenerNode script to /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener
+[0.462s] Installing talkerNode script to /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener
+[0.462s] writing list of installed files to '/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log'
+[0.475s] Invoked command in '/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/talker_listener' returned '0': AMENT_PREFIX_PATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces LD_LIBRARY_PATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/talker_listener build --build-base /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build install --record /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log --single-version-externally-managed install_data
