@@ -448,7 +448,7 @@
           <height>201</height>
          </rect>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,0,1">
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,1,1">
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_17" stretch="0">
            <property name="sizeConstraint">
@@ -536,11 +536,11 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>191</width>
+                <width>251</width>
                 <height>61</height>
                </rect>
               </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_13">
+              <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="1,1">
                <item>
                 <widget class="QLabel" name="titleXlabel">
                  <property name="text">
@@ -575,11 +575,11 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>191</width>
+                <width>251</width>
                 <height>61</height>
                </rect>
               </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_14">
+              <layout class="QHBoxLayout" name="horizontalLayout_14" stretch="1,1">
                <item>
                 <widget class="QLabel" name="titleYlabel">
                  <property name="text">
@@ -619,15 +619,18 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>211</width>
+                <width>251</width>
                 <height>51</height>
                </rect>
               </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_5">
+              <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,1">
                <item>
                 <widget class="QLabel" name="titleXlabel_2">
                  <property name="text">
                   <string>Width:</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -635,6 +638,9 @@
                 <widget class="QLabel" name="Xlabel_2">
                  <property name="text">
                   <string>800</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -658,15 +664,18 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>211</width>
+                <width>251</width>
                 <height>51</height>
                </rect>
               </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_6">
+              <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,1">
                <item>
                 <widget class="QLabel" name="titleYlabel_2">
                  <property name="text">
                   <string>Height:</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -674,6 +683,9 @@
                 <widget class="QLabel" name="Ylabel_2">
                  <property name="text">
                   <string>800</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -697,15 +709,18 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>211</width>
+                <width>251</width>
                 <height>51</height>
                </rect>
               </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,1">
                <item>
                 <widget class="QLabel" name="titleZlabel">
                  <property name="text">
                   <string>Length</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -713,6 +728,9 @@
                 <widget class="QLabel" name="Zlabel">
                  <property name="text">
                   <string>800</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
