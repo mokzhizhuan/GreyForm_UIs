@@ -132,6 +132,21 @@ class settingbuttonUI(object):
         msg.setText("Settings have been saved successfully!")
         msg.setWindowTitle("Save Settings")
         msg.setStandardButtons(QMessageBox.Ok)
+        msg.setStyleSheet("""
+            QMessageBox {
+                min-width: 400px;   
+                min-height: 200px;  
+            }
+            QLabel {
+                min-width: 300px;   
+                font-size: 20px;    
+            }
+            QPushButton {
+                min-width: 200px;   
+                min-height: 100px; 
+                font-size: 20px;   
+            }
+        """)
         self.stackedWidgetsetting.setCurrentIndex(0)
         self.homepages()
         self.stackedWidget_main.setCurrentIndex(0)
