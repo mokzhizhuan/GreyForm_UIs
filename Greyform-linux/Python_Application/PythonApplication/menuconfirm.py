@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
     QLabel,
     QWidget,
 )
+from PyQt5.QtGui import QFont
 
 #menu dialog to go back to the menu
 class Ui_Dialog_Confirm(QMainWindow):
@@ -17,13 +18,25 @@ class Ui_Dialog_Confirm(QMainWindow):
         dialog.resize(400, 300)
         label = QLabel("Are you sure you want to go back to the menu?")
         label.setGeometry(QtCore.QRect(100, 40, 171, 31))
+        label.setFont(QFont('Arial', 20)) 
         label.setWordWrap(True)
         label.setObjectName("label")
         dialog_layout = QVBoxLayout()
         dialog_layout.addWidget(label)
         dialog.setLayout(dialog_layout)
         buttonBox = QtWidgets.QDialogButtonBox()
-        buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 32))
+        button_font = QFont('Arial', 20)
+        buttonBox.setStyleSheet(
+            """
+            QDialogButtonBox QPushButton {
+                font-size: 20px;      
+                min-width: 200px;      
+                min-height: 100px;   
+                icon-size: 100px 100px;        
+            }
+            """
+        )
+        buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 100))
         buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
         buttonBox.setStandardButtons(
             QtWidgets.QDialogButtonBox.StandardButton.Cancel

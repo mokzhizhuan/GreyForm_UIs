@@ -8,30 +8,48 @@ from PyQt5.QtWidgets import (
     QLabel,
     QWidget,
 )
+from PyQt5.QtGui import QFont
+import vtk
 
-#menu dialog to confirm the robot marking
+
+# menu dialog to confirm the robot marking
 class Ui_Dialog_ConfirmAck(QMainWindow):
     def show_dialog_ConfirmAck(self):
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Dialog Box")
-        dialog.resize(400, 300)
+        self.dialog = QDialog(self)
+        self.dialog.setWindowTitle("Dialog Box")
+        self.dialog.resize(400, 300)
         label = QLabel("Are you sure you want to finalize the marking?")
         label.setGeometry(QtCore.QRect(100, 40, 171, 31))
+        label.setFont(QFont('Arial', 20)) 
         label.setWordWrap(True)
         label.setObjectName("label")
         dialog_layout = QVBoxLayout()
         dialog_layout.addWidget(label)
-        dialog.setLayout(dialog_layout)
+        self.dialog.setLayout(dialog_layout)
         buttonBox = QtWidgets.QDialogButtonBox()
-        buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 32))
+        button_font = QFont('Arial', 20)
+        buttonBox.setStyleSheet(
+            """
+            QDialogButtonBox QPushButton {
+                font-size: 20px;      
+                min-width: 200px;      
+                min-height: 100px;   
+                icon-size: 100px 100px;        
+            }
+            """
+        )
+        buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 100))
         buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
         buttonBox.setStandardButtons(
             QtWidgets.QDialogButtonBox.StandardButton.Cancel
             | QtWidgets.QDialogButtonBox.StandardButton.Ok
         )
         buttonBox.setObjectName("buttonBox")
-        buttonBox.accepted.connect(dialog.close)
-        buttonBox.accepted.connect(self.close)
-        buttonBox.rejected.connect(dialog.close)
+        buttonBox.accepted.connect(lambda: Ui_Dialog_ConfirmAck.appendasSTL(self))
+        buttonBox.rejected.connect(self.dialog.close)
         dialog_layout.addWidget(buttonBox)
-        dialog.exec_()
+        self.dialog.exec_()
+
+    def appendasSTL(self):
+        self.dialog.close()
+        self.close()
