@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (QApplication, QFrame, QGroupBox, QHBoxLayout,
     QLabel, QLayout, QListView, QMainWindow,
     QPushButton, QSizePolicy, QStackedWidget, QStatusBar,
     QVBoxLayout, QWidget)
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
@@ -44,14 +45,17 @@ class Ui_MainWindow(object):
         sizePolicy1.setVerticalStretch(0)
         sizePolicy1.setHeightForWidth(self.SettingButton.sizePolicy().hasHeightForWidth())
         self.SettingButton.setSizePolicy(sizePolicy1)
+        font = QFont()
+        font.setPointSize(15)
+        self.SettingButton.setFont(font)
         self.stackedWidget = QStackedWidget(self.mainconfiguration)
         self.stackedWidget.setObjectName(u"stackedWidget")
         self.stackedWidget.setGeometry(QRect(0, 79, 800, 531))
         sizePolicy.setHeightForWidth(self.stackedWidget.sizePolicy().hasHeightForWidth())
         self.stackedWidget.setSizePolicy(sizePolicy)
-        font = QFont()
-        font.setPointSize(11)
-        self.stackedWidget.setFont(font)
+        font1 = QFont()
+        font1.setPointSize(11)
+        self.stackedWidget.setFont(font1)
         self.mainmenu = QWidget()
         self.mainmenu.setObjectName(u"mainmenu")
         sizePolicy1.setHeightForWidth(self.mainmenu.sizePolicy().hasHeightForWidth())
@@ -74,6 +78,7 @@ class Ui_MainWindow(object):
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.menuStartButton.sizePolicy().hasHeightForWidth())
         self.menuStartButton.setSizePolicy(sizePolicy2)
+        self.menuStartButton.setFont(font)
         self.menuStartButton.setCheckable(False)
 
         self.horizontalLayout.addWidget(self.menuStartButton)
@@ -82,6 +87,7 @@ class Ui_MainWindow(object):
         self.menuCloseButton.setObjectName(u"menuCloseButton")
         sizePolicy2.setHeightForWidth(self.menuCloseButton.sizePolicy().hasHeightForWidth())
         self.menuCloseButton.setSizePolicy(sizePolicy2)
+        self.menuCloseButton.setFont(font)
         self.menuCloseButton.setCheckable(False)
 
         self.horizontalLayout.addWidget(self.menuCloseButton)
@@ -180,9 +186,9 @@ class Ui_MainWindow(object):
         sizePolicy5.setVerticalStretch(0)
         sizePolicy5.setHeightForWidth(self.seq1Button.sizePolicy().hasHeightForWidth())
         self.seq1Button.setSizePolicy(sizePolicy5)
-        font1 = QFont()
-        font1.setPointSize(30)
-        self.seq1Button.setFont(font1)
+        font2 = QFont()
+        font2.setPointSize(30)
+        self.seq1Button.setFont(font2)
 
         self.verticalLayout_18.addWidget(self.seq1Button)
 
@@ -190,7 +196,7 @@ class Ui_MainWindow(object):
         self.seq2Button.setObjectName(u"seq2Button")
         sizePolicy5.setHeightForWidth(self.seq2Button.sizePolicy().hasHeightForWidth())
         self.seq2Button.setSizePolicy(sizePolicy5)
-        self.seq2Button.setFont(font1)
+        self.seq2Button.setFont(font2)
 
         self.verticalLayout_18.addWidget(self.seq2Button)
 
@@ -198,7 +204,7 @@ class Ui_MainWindow(object):
         self.seq3Button.setObjectName(u"seq3Button")
         sizePolicy5.setHeightForWidth(self.seq3Button.sizePolicy().hasHeightForWidth())
         self.seq3Button.setSizePolicy(sizePolicy5)
-        self.seq3Button.setFont(font1)
+        self.seq3Button.setFont(font2)
 
         self.verticalLayout_18.addWidget(self.seq3Button)
 
@@ -342,7 +348,7 @@ class Ui_MainWindow(object):
         self.Xgroupbox.setObjectName(u"Xgroupbox")
         self.horizontalLayoutWidget_9 = QWidget(self.Xgroupbox)
         self.horizontalLayoutWidget_9.setObjectName(u"horizontalLayoutWidget_9")
-        self.horizontalLayoutWidget_9.setGeometry(QRect(0, 0, 191, 61))
+        self.horizontalLayoutWidget_9.setGeometry(QRect(0, 0, 251, 61))
         self.horizontalLayout_13 = QHBoxLayout(self.horizontalLayoutWidget_9)
         self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
         self.horizontalLayout_13.setContentsMargins(0, 0, 0, 0)
@@ -356,6 +362,8 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_13.addWidget(self.Xlabel)
 
+        self.horizontalLayout_13.setStretch(0, 1)
+        self.horizontalLayout_13.setStretch(1, 1)
 
         self.verticalLayout_22.addWidget(self.Xgroupbox)
 
@@ -368,7 +376,7 @@ class Ui_MainWindow(object):
         self.Ygroupbox.setSizePolicy(sizePolicy7)
         self.horizontalLayoutWidget_10 = QWidget(self.Ygroupbox)
         self.horizontalLayoutWidget_10.setObjectName(u"horizontalLayoutWidget_10")
-        self.horizontalLayoutWidget_10.setGeometry(QRect(0, 0, 191, 61))
+        self.horizontalLayoutWidget_10.setGeometry(QRect(0, 0, 251, 61))
         self.horizontalLayout_14 = QHBoxLayout(self.horizontalLayoutWidget_10)
         self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
         self.horizontalLayout_14.setContentsMargins(0, 0, 0, 0)
@@ -382,6 +390,8 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_14.addWidget(self.Ylabel)
 
+        self.horizontalLayout_14.setStretch(0, 1)
+        self.horizontalLayout_14.setStretch(1, 1)
 
         self.verticalLayout_22.addWidget(self.Ygroupbox)
 
@@ -402,20 +412,24 @@ class Ui_MainWindow(object):
         self.Xgroupbox_2.setObjectName(u"Xgroupbox_2")
         self.horizontalLayoutWidget_4 = QWidget(self.Xgroupbox_2)
         self.horizontalLayoutWidget_4.setObjectName(u"horizontalLayoutWidget_4")
-        self.horizontalLayoutWidget_4.setGeometry(QRect(0, 0, 161, 51))
+        self.horizontalLayoutWidget_4.setGeometry(QRect(0, 0, 251, 51))
         self.horizontalLayout_5 = QHBoxLayout(self.horizontalLayoutWidget_4)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.titleXlabel_2 = QLabel(self.horizontalLayoutWidget_4)
         self.titleXlabel_2.setObjectName(u"titleXlabel_2")
+        self.titleXlabel_2.setWordWrap(True)
 
         self.horizontalLayout_5.addWidget(self.titleXlabel_2)
 
         self.Xlabel_2 = QLabel(self.horizontalLayoutWidget_4)
         self.Xlabel_2.setObjectName(u"Xlabel_2")
+        self.Xlabel_2.setWordWrap(True)
 
         self.horizontalLayout_5.addWidget(self.Xlabel_2)
 
+        self.horizontalLayout_5.setStretch(0, 1)
+        self.horizontalLayout_5.setStretch(1, 1)
 
         self.verticalLayout_20.addWidget(self.Xgroupbox_2)
 
@@ -425,20 +439,24 @@ class Ui_MainWindow(object):
         self.Ygroupbox_2.setSizePolicy(sizePolicy7)
         self.horizontalLayoutWidget_7 = QWidget(self.Ygroupbox_2)
         self.horizontalLayoutWidget_7.setObjectName(u"horizontalLayoutWidget_7")
-        self.horizontalLayoutWidget_7.setGeometry(QRect(0, 0, 161, 51))
+        self.horizontalLayoutWidget_7.setGeometry(QRect(0, 0, 251, 51))
         self.horizontalLayout_6 = QHBoxLayout(self.horizontalLayoutWidget_7)
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.titleYlabel_2 = QLabel(self.horizontalLayoutWidget_7)
         self.titleYlabel_2.setObjectName(u"titleYlabel_2")
+        self.titleYlabel_2.setWordWrap(True)
 
         self.horizontalLayout_6.addWidget(self.titleYlabel_2)
 
         self.Ylabel_2 = QLabel(self.horizontalLayoutWidget_7)
         self.Ylabel_2.setObjectName(u"Ylabel_2")
+        self.Ylabel_2.setWordWrap(True)
 
         self.horizontalLayout_6.addWidget(self.Ylabel_2)
 
+        self.horizontalLayout_6.setStretch(0, 1)
+        self.horizontalLayout_6.setStretch(1, 1)
 
         self.verticalLayout_20.addWidget(self.Ygroupbox_2)
 
@@ -448,20 +466,24 @@ class Ui_MainWindow(object):
         self.Zgroupbox.setSizePolicy(sizePolicy7)
         self.horizontalLayoutWidget_8 = QWidget(self.Zgroupbox)
         self.horizontalLayoutWidget_8.setObjectName(u"horizontalLayoutWidget_8")
-        self.horizontalLayoutWidget_8.setGeometry(QRect(0, 0, 161, 51))
+        self.horizontalLayoutWidget_8.setGeometry(QRect(0, 0, 251, 51))
         self.horizontalLayout_7 = QHBoxLayout(self.horizontalLayoutWidget_8)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
         self.titleZlabel = QLabel(self.horizontalLayoutWidget_8)
         self.titleZlabel.setObjectName(u"titleZlabel")
+        self.titleZlabel.setWordWrap(True)
 
         self.horizontalLayout_7.addWidget(self.titleZlabel)
 
         self.Zlabel = QLabel(self.horizontalLayoutWidget_8)
         self.Zlabel.setObjectName(u"Zlabel")
+        self.Zlabel.setWordWrap(True)
 
         self.horizontalLayout_7.addWidget(self.Zlabel)
 
+        self.horizontalLayout_7.setStretch(0, 1)
+        self.horizontalLayout_7.setStretch(1, 1)
 
         self.verticalLayout_20.addWidget(self.Zgroupbox)
 
@@ -472,7 +494,8 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3.addLayout(self.verticalLayout_20)
 
-        self.horizontalLayout_3.setStretch(0, 2)
+        self.horizontalLayout_3.setStretch(0, 1)
+        self.horizontalLayout_3.setStretch(1, 1)
         self.horizontalLayout_3.setStretch(2, 1)
         self.stackedWidget.addWidget(self.page_3)
         self.page_4 = QWidget()
@@ -492,9 +515,9 @@ class Ui_MainWindow(object):
         self.MarkingButton.setObjectName(u"MarkingButton")
         sizePolicy5.setHeightForWidth(self.MarkingButton.sizePolicy().hasHeightForWidth())
         self.MarkingButton.setSizePolicy(sizePolicy5)
-        font2 = QFont()
-        font2.setPointSize(40)
-        self.MarkingButton.setFont(font2)
+        font3 = QFont()
+        font3.setPointSize(40)
+        self.MarkingButton.setFont(font3)
 
         self.verticalLayout_23.addWidget(self.MarkingButton)
 
@@ -506,7 +529,7 @@ class Ui_MainWindow(object):
         self.HomeButton.setObjectName(u"HomeButton")
         sizePolicy5.setHeightForWidth(self.HomeButton.sizePolicy().hasHeightForWidth())
         self.HomeButton.setSizePolicy(sizePolicy5)
-        self.HomeButton.setFont(font2)
+        self.HomeButton.setFont(font3)
 
         self.horizontalLayout_11.addWidget(self.HomeButton)
 
@@ -514,7 +537,7 @@ class Ui_MainWindow(object):
         self.EnableRobotButton.setObjectName(u"EnableRobotButton")
         sizePolicy5.setHeightForWidth(self.EnableRobotButton.sizePolicy().hasHeightForWidth())
         self.EnableRobotButton.setSizePolicy(sizePolicy5)
-        self.EnableRobotButton.setFont(font2)
+        self.EnableRobotButton.setFont(font3)
 
         self.horizontalLayout_11.addWidget(self.EnableRobotButton)
 
@@ -529,7 +552,7 @@ class Ui_MainWindow(object):
         self.CloseButton.setObjectName(u"CloseButton")
         sizePolicy5.setHeightForWidth(self.CloseButton.sizePolicy().hasHeightForWidth())
         self.CloseButton.setSizePolicy(sizePolicy5)
-        self.CloseButton.setFont(font2)
+        self.CloseButton.setFont(font3)
 
         self.horizontalLayout_12.addWidget(self.CloseButton)
 
@@ -537,7 +560,7 @@ class Ui_MainWindow(object):
         self.ConfirmAckButton.setObjectName(u"ConfirmAckButton")
         sizePolicy5.setHeightForWidth(self.ConfirmAckButton.sizePolicy().hasHeightForWidth())
         self.ConfirmAckButton.setSizePolicy(sizePolicy5)
-        self.ConfirmAckButton.setFont(font2)
+        self.ConfirmAckButton.setFont(font3)
 
         self.horizontalLayout_12.addWidget(self.ConfirmAckButton)
 
@@ -575,8 +598,8 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"mainframe", None))
         self.SettingButton.setText(QCoreApplication.translate("MainWindow", u"Setting", None))
         self.QTitle.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:36pt;\">Automated PBU Robot UI</span></p></body></html>", None))
-        self.menuStartButton.setText(QCoreApplication.translate("MainWindow", u"Click to Continue", None))
-        self.menuCloseButton.setText(QCoreApplication.translate("MainWindow", u"Click to Close the Window", None))
+        self.menuStartButton.setText(QCoreApplication.translate("MainWindow", u"Continue", None))
+        self.menuCloseButton.setText(QCoreApplication.translate("MainWindow", u"Exit", None))
         self.FilePathButton.setText(QCoreApplication.translate("MainWindow", u"File_Path", None))
         self.BacktoMenuButton.setText(QCoreApplication.translate("MainWindow", u"Back To Menu", None))
         self.NextButton_Page_2.setText(QCoreApplication.translate("MainWindow", u"Next", None))
@@ -605,7 +628,7 @@ class Ui_MainWindow(object):
         self.titleYlabel_2.setText(QCoreApplication.translate("MainWindow", u"Height:", None))
         self.Ylabel_2.setText(QCoreApplication.translate("MainWindow", u"800", None))
         self.Zgroupbox.setTitle("")
-        self.titleZlabel.setText(QCoreApplication.translate("MainWindow", u"Length", None))
+        self.titleZlabel.setText(QCoreApplication.translate("MainWindow", u"Length:", None))
         self.Zlabel.setText(QCoreApplication.translate("MainWindow", u"800", None))
         self.MarkingButton.setText(QCoreApplication.translate("MainWindow", u"Back to Marking", None))
         self.HomeButton.setText(QCoreApplication.translate("MainWindow", u"Home", None))
