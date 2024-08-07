@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
     QLabel,
 )
 from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QFont
 import pyvista as pv
 import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl
@@ -37,14 +38,17 @@ class pythonProgressBar(QDialog):
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setWindowTitle("Progress Window")
-        self.setGeometry(100, 100, 400, 200)
+        self.setGeometry(100, 100, 600, 200)
         self.setLayout(progress_layout)
         label = QLabel("Graphics is loading , please wait.")
-        label.setGeometry(QtCore.QRect(50, 30, 170, 30))
+        label.setGeometry(QtCore.QRect(50, 30, 200, 100))
+        label.setFont(QFont('Arial', 30)) 
         label.setWordWrap(True)
         label.setObjectName("label")
         self.progress_bar = QProgressBar(self)
-        self.progress_bar.setGeometry(30, 130, 340, 30)
+        self.progress_bar.setFont(QFont('Arial', 30))
+        self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)
+        self.progress_bar.setGeometry(30, 130, 340, 200)
         self.value = value
         self.loader = plotterloader
         self.loader_2 = plotterloader_2

@@ -31,7 +31,8 @@ class Ui_Dialog_Confirm(QMainWindow):
             QDialogButtonBox QPushButton {
                 font-size: 20px;      
                 min-width: 200px;      
-                min-height: 100px;      
+                min-height: 100px;   
+                icon-size: 100px 100px;        
             }
             """
         )

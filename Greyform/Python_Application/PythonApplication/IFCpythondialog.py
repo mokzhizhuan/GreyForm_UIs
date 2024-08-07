@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
     QLabel,
 )
 from PyQt5.QtCore import QTimer
+from PyQt5.QtGui import QFont
 import ifcopenshell
 import ifcopenshell.geom
 import meshio
@@ -15,6 +16,7 @@ import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl
 import PythonApplication.excel_export_info as biminfo
 import numpy as np
+
 
 
 class ProgressBarDialogIFC(QDialog):
@@ -41,7 +43,7 @@ class ProgressBarDialogIFC(QDialog):
         progress_layout = QVBoxLayout()
         self.setLayout(progress_layout)
         self.setWindowTitle("IFC Conversion Progress")
-        self.setGeometry(100, 100, 400, 100)
+        self.setGeometry(100, 100, 600, 200)
         self.ifc_file = ifc_file
         self.totalsteps = total_steps
         self.loader = plotterloader
@@ -60,12 +62,14 @@ class ProgressBarDialogIFC(QDialog):
         self.NextButton_Page_3 = NextButton_Page_3
         self.Seqlabel = Seqlabel
         self.progress_bar = QProgressBar(self)
-        self.progress_bar.setGeometry(30, 130, 340, 30)
+        self.progress_bar.setFont(QFont('Arial', 30))
+        self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)
+        self.progress_bar.setGeometry(30, 130, 340, 200)
         label = QLabel("Graphics is converting , please wait.")
-        label.setGeometry(QtCore.QRect(50, 30, 170, 30))
+        label.setGeometry(QtCore.QRect(50, 30, 200, 100))
+        label.setFont(QFont('Arial', 30)) 
         label.setWordWrap(True)
         label.setObjectName("label")
-        self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
         self.timer.start(100)
         progress_layout.addWidget(label)
