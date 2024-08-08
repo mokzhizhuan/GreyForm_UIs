@@ -29,7 +29,14 @@ UI_Drawinng is included and including layout for uidesign and box layout <br>
 Steps on running the system:<br>
 Run your cmd on your file location:<br>
 cd file_path/GreyForm_UIs/GreyForm/Python_Application/<br>
-python/python3 mainapplication.py
+python/python3 mainapplication.py<br>
+for ros running<br>
+make sure the application run in ~/ros2_ws/src<br>
+once the project folder in ~/ros2_ws/src , cd ~/ros2_ws/src/-----/PythonApplication(example)<br>
+Type command colcon build <br>
+after colcon build check for ament-cake and ros distro, rosidl_default_generator) , if dont have the installation . Please Install them <br>
+after colcon build is fixed, type source /opt/ros/humble/setup.bash and source install/setup.bash to source the link of the setup.bash <br>
+run python/python3 mainapplication.py<br>
 
 ##
 For Visual Studio: <br>
