@@ -15,16 +15,16 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QFrame, QGroupBox, QHBoxLayout,
-    QLabel, QLayout, QListView, QMainWindow,
-    QPushButton, QSizePolicy, QStackedWidget, QStatusBar,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
+    QLayout, QListView, QMainWindow, QPushButton,
+    QSizePolicy, QStackedWidget, QStatusBar, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(811, 624)
+        MainWindow.resize(800, 600)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -50,7 +50,7 @@ class Ui_MainWindow(object):
         self.SettingButton.setFont(font)
         self.stackedWidget = QStackedWidget(self.mainconfiguration)
         self.stackedWidget.setObjectName(u"stackedWidget")
-        self.stackedWidget.setGeometry(QRect(0, 79, 800, 531))
+        self.stackedWidget.setGeometry(QRect(0, 79, 800, 481))
         sizePolicy.setHeightForWidth(self.stackedWidget.sizePolicy().hasHeightForWidth())
         self.stackedWidget.setSizePolicy(sizePolicy)
         font1 = QFont()
@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         self.QTitle.setAlignment(Qt.AlignCenter)
         self.layoutWidget = QWidget(self.mainmenu)
         self.layoutWidget.setObjectName(u"layoutWidget")
-        self.layoutWidget.setGeometry(QRect(40, 420, 709, 71))
+        self.layoutWidget.setGeometry(QRect(40, 400, 709, 71))
         self.horizontalLayout = QHBoxLayout(self.layoutWidget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
@@ -99,7 +99,7 @@ class Ui_MainWindow(object):
         self.page.setSizePolicy(sizePolicy1)
         self.layoutWidgetpage2 = QWidget(self.page)
         self.layoutWidgetpage2.setObjectName(u"layoutWidgetpage2")
-        self.layoutWidgetpage2.setGeometry(QRect(0, 10, 331, 491))
+        self.layoutWidgetpage2.setGeometry(QRect(0, 10, 331, 471))
         self.verticalLayout_17 = QVBoxLayout(self.layoutWidgetpage2)
         self.verticalLayout_17.setObjectName(u"verticalLayout_17")
         self.verticalLayout_17.setContentsMargins(0, 0, 0, 0)
@@ -143,7 +143,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_17.setStretch(1, 1)
         self.layoutWidgetframe = QWidget(self.page)
         self.layoutWidgetframe.setObjectName(u"layoutWidgetframe")
-        self.layoutWidgetframe.setGeometry(QRect(340, 10, 451, 491))
+        self.layoutWidgetframe.setGeometry(QRect(340, 10, 451, 471))
         self.horizontalLayout_2 = QHBoxLayout(self.layoutWidgetframe)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -171,7 +171,7 @@ class Ui_MainWindow(object):
         self.Itemlabel.setSizePolicy(sizePolicy4)
         self.layoutWidgetpage3 = QWidget(self.page_2)
         self.layoutWidgetpage3.setObjectName(u"layoutWidgetpage3")
-        self.layoutWidgetpage3.setGeometry(QRect(0, 30, 801, 471))
+        self.layoutWidgetpage3.setGeometry(QRect(0, 30, 801, 451))
         self.horizontalLayout_16 = QHBoxLayout(self.layoutWidgetpage3)
         self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
         self.horizontalLayout_16.setContentsMargins(0, 0, 0, 0)
@@ -250,6 +250,8 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_16.addLayout(self.horizontalLayout_4)
 
+        self.horizontalLayout_16.setStretch(0, 1)
+        self.horizontalLayout_16.setStretch(1, 1)
         self.stackedWidget.addWidget(self.page_2)
         self.page_3 = QWidget()
         self.page_3.setObjectName(u"page_3")
@@ -257,7 +259,7 @@ class Ui_MainWindow(object):
         self.page_3.setSizePolicy(sizePolicy1)
         self.layoutWidgetpage4 = QWidget(self.page_3)
         self.layoutWidgetpage4.setObjectName(u"layoutWidgetpage4")
-        self.layoutWidgetpage4.setGeometry(QRect(0, 10, 791, 281))
+        self.layoutWidgetpage4.setGeometry(QRect(0, 10, 791, 261))
         self.verticalLayout = QVBoxLayout(self.layoutWidgetpage4)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -275,7 +277,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayoutWidgetpage4 = QWidget(self.page_3)
         self.horizontalLayoutWidgetpage4.setObjectName(u"horizontalLayoutWidgetpage4")
-        self.horizontalLayoutWidgetpage4.setGeometry(QRect(10, 300, 781, 201))
+        self.horizontalLayoutWidgetpage4.setGeometry(QRect(0, 280, 791, 201))
         self.horizontalLayout_3 = QHBoxLayout(self.horizontalLayoutWidgetpage4)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
@@ -344,56 +346,35 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_22.addWidget(self.label_2)
 
-        self.Xgroupbox = QGroupBox(self.horizontalLayoutWidgetpage4)
-        self.Xgroupbox.setObjectName(u"Xgroupbox")
-        self.horizontalLayoutWidget_9 = QWidget(self.Xgroupbox)
-        self.horizontalLayoutWidget_9.setObjectName(u"horizontalLayoutWidget_9")
-        self.horizontalLayoutWidget_9.setGeometry(QRect(0, 0, 251, 61))
-        self.horizontalLayout_13 = QHBoxLayout(self.horizontalLayoutWidget_9)
+        self.horizontalLayout_13 = QHBoxLayout()
         self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
-        self.horizontalLayout_13.setContentsMargins(0, 0, 0, 0)
-        self.titleXlabel = QLabel(self.horizontalLayoutWidget_9)
+        self.titleXlabel = QLabel(self.horizontalLayoutWidgetpage4)
         self.titleXlabel.setObjectName(u"titleXlabel")
 
         self.horizontalLayout_13.addWidget(self.titleXlabel)
 
-        self.Xlabel = QLabel(self.horizontalLayoutWidget_9)
+        self.Xlabel = QLabel(self.horizontalLayoutWidgetpage4)
         self.Xlabel.setObjectName(u"Xlabel")
 
         self.horizontalLayout_13.addWidget(self.Xlabel)
 
-        self.horizontalLayout_13.setStretch(0, 1)
-        self.horizontalLayout_13.setStretch(1, 1)
 
-        self.verticalLayout_22.addWidget(self.Xgroupbox)
+        self.verticalLayout_22.addLayout(self.horizontalLayout_13)
 
-        self.Ygroupbox = QGroupBox(self.horizontalLayoutWidgetpage4)
-        self.Ygroupbox.setObjectName(u"Ygroupbox")
-        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Minimum)
-        sizePolicy7.setHorizontalStretch(0)
-        sizePolicy7.setVerticalStretch(0)
-        sizePolicy7.setHeightForWidth(self.Ygroupbox.sizePolicy().hasHeightForWidth())
-        self.Ygroupbox.setSizePolicy(sizePolicy7)
-        self.horizontalLayoutWidget_10 = QWidget(self.Ygroupbox)
-        self.horizontalLayoutWidget_10.setObjectName(u"horizontalLayoutWidget_10")
-        self.horizontalLayoutWidget_10.setGeometry(QRect(0, 0, 251, 61))
-        self.horizontalLayout_14 = QHBoxLayout(self.horizontalLayoutWidget_10)
+        self.horizontalLayout_14 = QHBoxLayout()
         self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
-        self.horizontalLayout_14.setContentsMargins(0, 0, 0, 0)
-        self.titleYlabel = QLabel(self.horizontalLayoutWidget_10)
+        self.titleYlabel = QLabel(self.horizontalLayoutWidgetpage4)
         self.titleYlabel.setObjectName(u"titleYlabel")
 
         self.horizontalLayout_14.addWidget(self.titleYlabel)
 
-        self.Ylabel = QLabel(self.horizontalLayoutWidget_10)
+        self.Ylabel = QLabel(self.horizontalLayoutWidgetpage4)
         self.Ylabel.setObjectName(u"Ylabel")
 
         self.horizontalLayout_14.addWidget(self.Ylabel)
 
-        self.horizontalLayout_14.setStretch(0, 1)
-        self.horizontalLayout_14.setStretch(1, 1)
 
-        self.verticalLayout_22.addWidget(self.Ygroupbox)
+        self.verticalLayout_22.addLayout(self.horizontalLayout_14)
 
         self.verticalLayout_22.setStretch(0, 1)
         self.verticalLayout_22.setStretch(1, 1)
@@ -408,84 +389,56 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_20.addWidget(self.displaybeforelabel)
 
-        self.Xgroupbox_2 = QGroupBox(self.horizontalLayoutWidgetpage4)
-        self.Xgroupbox_2.setObjectName(u"Xgroupbox_2")
-        self.horizontalLayoutWidget_4 = QWidget(self.Xgroupbox_2)
-        self.horizontalLayoutWidget_4.setObjectName(u"horizontalLayoutWidget_4")
-        self.horizontalLayoutWidget_4.setGeometry(QRect(0, 0, 251, 51))
-        self.horizontalLayout_5 = QHBoxLayout(self.horizontalLayoutWidget_4)
+        self.horizontalLayout_5 = QHBoxLayout()
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.titleXlabel_2 = QLabel(self.horizontalLayoutWidget_4)
+        self.titleXlabel_2 = QLabel(self.horizontalLayoutWidgetpage4)
         self.titleXlabel_2.setObjectName(u"titleXlabel_2")
         self.titleXlabel_2.setWordWrap(True)
 
         self.horizontalLayout_5.addWidget(self.titleXlabel_2)
 
-        self.Xlabel_2 = QLabel(self.horizontalLayoutWidget_4)
+        self.Xlabel_2 = QLabel(self.horizontalLayoutWidgetpage4)
         self.Xlabel_2.setObjectName(u"Xlabel_2")
         self.Xlabel_2.setWordWrap(True)
 
         self.horizontalLayout_5.addWidget(self.Xlabel_2)
 
-        self.horizontalLayout_5.setStretch(0, 1)
-        self.horizontalLayout_5.setStretch(1, 1)
 
-        self.verticalLayout_20.addWidget(self.Xgroupbox_2)
+        self.verticalLayout_20.addLayout(self.horizontalLayout_5)
 
-        self.Ygroupbox_2 = QGroupBox(self.horizontalLayoutWidgetpage4)
-        self.Ygroupbox_2.setObjectName(u"Ygroupbox_2")
-        sizePolicy7.setHeightForWidth(self.Ygroupbox_2.sizePolicy().hasHeightForWidth())
-        self.Ygroupbox_2.setSizePolicy(sizePolicy7)
-        self.horizontalLayoutWidget_7 = QWidget(self.Ygroupbox_2)
-        self.horizontalLayoutWidget_7.setObjectName(u"horizontalLayoutWidget_7")
-        self.horizontalLayoutWidget_7.setGeometry(QRect(0, 0, 251, 51))
-        self.horizontalLayout_6 = QHBoxLayout(self.horizontalLayoutWidget_7)
+        self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
-        self.titleYlabel_2 = QLabel(self.horizontalLayoutWidget_7)
+        self.titleYlabel_2 = QLabel(self.horizontalLayoutWidgetpage4)
         self.titleYlabel_2.setObjectName(u"titleYlabel_2")
         self.titleYlabel_2.setWordWrap(True)
 
         self.horizontalLayout_6.addWidget(self.titleYlabel_2)
 
-        self.Ylabel_2 = QLabel(self.horizontalLayoutWidget_7)
+        self.Ylabel_2 = QLabel(self.horizontalLayoutWidgetpage4)
         self.Ylabel_2.setObjectName(u"Ylabel_2")
         self.Ylabel_2.setWordWrap(True)
 
         self.horizontalLayout_6.addWidget(self.Ylabel_2)
 
-        self.horizontalLayout_6.setStretch(0, 1)
-        self.horizontalLayout_6.setStretch(1, 1)
 
-        self.verticalLayout_20.addWidget(self.Ygroupbox_2)
+        self.verticalLayout_20.addLayout(self.horizontalLayout_6)
 
-        self.Zgroupbox = QGroupBox(self.horizontalLayoutWidgetpage4)
-        self.Zgroupbox.setObjectName(u"Zgroupbox")
-        sizePolicy7.setHeightForWidth(self.Zgroupbox.sizePolicy().hasHeightForWidth())
-        self.Zgroupbox.setSizePolicy(sizePolicy7)
-        self.horizontalLayoutWidget_8 = QWidget(self.Zgroupbox)
-        self.horizontalLayoutWidget_8.setObjectName(u"horizontalLayoutWidget_8")
-        self.horizontalLayoutWidget_8.setGeometry(QRect(0, 0, 251, 51))
-        self.horizontalLayout_7 = QHBoxLayout(self.horizontalLayoutWidget_8)
+        self.horizontalLayout_7 = QHBoxLayout()
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
-        self.titleZlabel = QLabel(self.horizontalLayoutWidget_8)
+        self.titleZlabel = QLabel(self.horizontalLayoutWidgetpage4)
         self.titleZlabel.setObjectName(u"titleZlabel")
         self.titleZlabel.setWordWrap(True)
 
         self.horizontalLayout_7.addWidget(self.titleZlabel)
 
-        self.Zlabel = QLabel(self.horizontalLayoutWidget_8)
+        self.Zlabel = QLabel(self.horizontalLayoutWidgetpage4)
         self.Zlabel.setObjectName(u"Zlabel")
         self.Zlabel.setWordWrap(True)
 
         self.horizontalLayout_7.addWidget(self.Zlabel)
 
-        self.horizontalLayout_7.setStretch(0, 1)
-        self.horizontalLayout_7.setStretch(1, 1)
 
-        self.verticalLayout_20.addWidget(self.Zgroupbox)
+        self.verticalLayout_20.addLayout(self.horizontalLayout_7)
 
         self.verticalLayout_20.setStretch(0, 1)
         self.verticalLayout_20.setStretch(1, 1)
@@ -500,14 +453,14 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.page_3)
         self.page_4 = QWidget()
         self.page_4.setObjectName(u"page_4")
-        sizePolicy8 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        sizePolicy8.setHorizontalStretch(1)
-        sizePolicy8.setVerticalStretch(1)
-        sizePolicy8.setHeightForWidth(self.page_4.sizePolicy().hasHeightForWidth())
-        self.page_4.setSizePolicy(sizePolicy8)
+        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy7.setHorizontalStretch(1)
+        sizePolicy7.setVerticalStretch(1)
+        sizePolicy7.setHeightForWidth(self.page_4.sizePolicy().hasHeightForWidth())
+        self.page_4.setSizePolicy(sizePolicy7)
         self.layoutWidgetpage5 = QWidget(self.page_4)
         self.layoutWidgetpage5.setObjectName(u"layoutWidgetpage5")
-        self.layoutWidgetpage5.setGeometry(QRect(0, 10, 791, 481))
+        self.layoutWidgetpage5.setGeometry(QRect(0, 10, 791, 471))
         self.verticalLayout_23 = QVBoxLayout(self.layoutWidgetpage5)
         self.verticalLayout_23.setObjectName(u"verticalLayout_23")
         self.verticalLayout_23.setContentsMargins(0, 0, 0, 0)
@@ -614,20 +567,15 @@ class Ui_MainWindow(object):
         self.ConfirmButton.setText(QCoreApplication.translate("MainWindow", u"Confirm", None))
         self.BackButton_2.setText(QCoreApplication.translate("MainWindow", u"Back", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Click Mouse Display", None))
-        self.Xgroupbox.setTitle("")
         self.titleXlabel.setText(QCoreApplication.translate("MainWindow", u"Width:", None))
         self.Xlabel.setText(QCoreApplication.translate("MainWindow", u"800", None))
-        self.Ygroupbox.setTitle("")
         self.titleYlabel.setText(QCoreApplication.translate("MainWindow", u"Height:", None))
         self.Ylabel.setText(QCoreApplication.translate("MainWindow", u"800", None))
         self.displaybeforelabel.setText(QCoreApplication.translate("MainWindow", u"Camera Display", None))
-        self.Xgroupbox_2.setTitle("")
         self.titleXlabel_2.setText(QCoreApplication.translate("MainWindow", u"Width:", None))
         self.Xlabel_2.setText(QCoreApplication.translate("MainWindow", u"800", None))
-        self.Ygroupbox_2.setTitle("")
         self.titleYlabel_2.setText(QCoreApplication.translate("MainWindow", u"Height:", None))
         self.Ylabel_2.setText(QCoreApplication.translate("MainWindow", u"800", None))
-        self.Zgroupbox.setTitle("")
         self.titleZlabel.setText(QCoreApplication.translate("MainWindow", u"Length:", None))
         self.Zlabel.setText(QCoreApplication.translate("MainWindow", u"800", None))
         self.MarkingButton.setText(QCoreApplication.translate("MainWindow", u"Back to Marking", None))
