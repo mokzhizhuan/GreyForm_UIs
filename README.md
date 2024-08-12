@@ -10,9 +10,15 @@ pip/pip3 install numpy-stl <br>
 pip/pip3 install meshio <br>
 pip/pip3 install openxyl <br>
 pip/pip3 install pandas <br>
-or use the script sh file(linux: <br>
+or use the script sh file(linux): <br>
 sudo chmod +x installpip.sh/installpip3.sh <br>
 execute the script using sudo sh/bash installpip3.sh <br>
+for Window script execution: <br>
+save all the python libraries installation in a bat file <br>
+execute the program with the bat file <br>
+in Window VS Code: <br>
+download the extentsion batch runner <br>
+after downloading batch runner execution , ![image](https://github.com/user-attachments/assets/92b1a1da-7755-46cd-9e20-4acc39829f64) execute the play button.<br>
 Enable robot function must install ros2 <br>
 ros humble software link:<br>
 https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html <br>
