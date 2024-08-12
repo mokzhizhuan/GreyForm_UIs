@@ -33,10 +33,7 @@ def get_open_ports(interface_ip):
     for conn in psutil.net_connections(kind='inet'):
         if conn.laddr and conn.laddr.ip == interface_ip:
             open_ports.append(conn.laddr.port)
-    
-    print(f"Open Ports for IP {interface_ip}: {open_ports}")
-    
-    return open_ports
+    return open_ports[0]
 
 def get_default_gateway():
     try:

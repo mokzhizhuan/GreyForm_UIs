@@ -122,7 +122,6 @@ class settingbuttonUI(object):
         }
         with open("settings.json", "w") as f:
             json.dump(self.savesettings, f)
-
         self.show_save_dialog()
 
     def show_save_dialog(self):

@@ -1,5 +1,4 @@
-Install python libraries using system commands cmd<br>
-(For linux is sudo(admin privileges):<br>
+Install python libraries using system commands cmd(windows & linux):<br>
 pip/pip3 install pyvistaqt <br>
 pip/pip3 install ifcopenshell <br>
 pip/pip3 install vtk <br>
@@ -11,9 +10,9 @@ pip/pip3 install numpy-stl <br>
 pip/pip3 install meshio <br>
 pip/pip3 install openxyl <br>
 pip/pip3 install pandas <br>
-or use the script sh file: <br>
+or use the script sh file(linux: <br>
 sudo chmod +x installpip.sh/installpip3.sh <br>
-execute the script using sudo sh installpip.sh(windows)/installpip3.sh(linux) <br>
+execute the script using sudo sh/bash installpip3.sh <br>
 Enable robot function must install ros2 <br>
 ros humble software link:<br>
 https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html <br>

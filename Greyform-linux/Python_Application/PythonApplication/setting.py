@@ -146,7 +146,7 @@ class Setting(QWidget):
         mac = interface_details.get("mac", "N/A")
         if ip_address and ip_address != "N/A":
             open_ports = interface_signals.get_open_ports(ip_address)
-            ports_text = ", ".join(map(str, open_ports)) if open_ports else "No open ports"
+            ports_text = open_ports
         else:
             ports_text = "N/A"
         interface_info = f"Interface: {interface_name}"
