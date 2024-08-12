@@ -17,7 +17,7 @@ execute the script using sudo sh installpip.sh(windows)/installpip3.sh(linux) <b
 Enable robot function must install ros2 <br>
 ros humble software link:<br>
 https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html <br>
-set up your ros script in /.bashsrc <br>
+set up your ros script in ~/.bashsrc <br>
 source /opt/ros/humble/setup.bash <br>
 export ROS_DOMAIN_ID=0 <br>
 export ROS_LOCALHOST_ONLY=1 <br>
