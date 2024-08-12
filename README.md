@@ -1,4 +1,4 @@
-Install python libraries using system commands<br>
+Install python libraries using system commands cmd<br>
 (For linux is sudo(admin privileges):<br>
 pip/pip3 install pyvistaqt <br>
 pip/pip3 install ifcopenshell <br>
