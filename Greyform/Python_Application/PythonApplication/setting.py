@@ -74,12 +74,17 @@ class Setting(QWidget):
         self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
 
         # wifi
+        self.settingform.treeWidget.setColumnWidth(0, 500)
         self.wifi = PyWiFi()
         self.interface = self.wifi.interfaces()[0]
         self.refreshWiFiList()
 
         # setting host services and resolution
-        self.font_size = self.settingform.Text_size.currentText()
+        Text_index = self.settingform.Text_size.findText(
+            str(self.default_settings["font_size"]), Qt.MatchFixedString
+        )
+        if Text_index >= 0:
+            self.settingform.Text_size.setCurrentIndex(Text_index)
         self.font = QFont()
         self.font.setPointSize(int(self.font_size))
         self.apply_font_to_widgets(self.settingform, self.font)
