@@ -63,6 +63,7 @@ class Setting(QWidget):
         # home
         self.settingform.themebox.currentIndexChanged.connect(self.colorchange)
         # wifi
+        self.settingform.treeWidget.setColumnWidth(0, 500)
         self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
         self.interfaces = interface_signals.get_wireless_interfaces()
         interface_info = "Interface: None"
@@ -77,8 +78,12 @@ class Setting(QWidget):
             no_ethernet_item = QTreeWidgetItem(self.settingform.treeWidget)
             no_ethernet_item.setText(0, "No Ethernet Interfaces found.")
         self.settingform.treeWidget.itemClicked.connect(self.ethernet_item_clicked)
-        # setting host services and resolution
-        self.font_size = self.settingform.Text_size.currentText()
+        # setting host services and resolution and font
+        Text_index = self.settingform.Text_size.findText(
+            str(self.default_settings["font_size"]), Qt.MatchFixedString
+        )
+        if Text_index >= 0:
+            self.settingform.Text_size.setCurrentIndex(Text_index)
         self.font = QFont()
         self.font.setPointSize(int(self.font_size))
         self.apply_font_to_widgets(self.settingform, self.font)
@@ -142,10 +147,8 @@ class Setting(QWidget):
 
     def ethernet_item_clicked(self, item, column):
         interface_name = item.text(column)
-        
         interfaces = interface_signals.get_wireless_interfaces()
         interface_details = interfaces.get(interface_name, {})
-        
         ip_address = interface_details.get("ipv4", "N/A")
         mac = interface_details.get("mac", "N/A")
         if ip_address and ip_address != "N/A":
@@ -202,10 +205,12 @@ class Setting(QWidget):
             self.accountinfo,
         )
 
+    #set pass
     def changepassfunction(self):
         password = self.settingform.PasslineEdit.text()
         self.accountinfo[0]["Pass"] = password
 
+    #set time in am/pm format
     def update_time(self):
         now = datetime.datetime.now()
         formatted_time = now.strftime("%I:%M %p").lstrip("0")
@@ -214,6 +219,7 @@ class Setting(QWidget):
             formatted_time = now.strftime("%I:%M ").lstrip("0") + am_pm
         self.settingform.Systemtime.setText(f"Time : {formatted_time}")
 
+    #set time in am/pm format
     def updateTimeLabel(self, index):
         selected_time_zone = self.settingform.country.currentText()
         tz = pytz.timezone(selected_time_zone)
@@ -224,6 +230,7 @@ class Setting(QWidget):
             formatted_time = now.strftime("%I:%M ").lstrip("0") + am_pm
         self.settingform.Systemtime.setText(f"Time : {formatted_time}")
 
+    #update font size
     def update_font(self, index):
         self.font_size = int(self.settingform.Text_size.currentText())
         self.font.setPointSize(self.font_size)
@@ -239,6 +246,7 @@ class Setting(QWidget):
             for child in parent.children():
                 self.apply_font_to_widgets(child, font)
 
+    #update resolution
     def change_resolution(self, index):
         resolution = self.settingform.resolutioncomboBox.currentText()
         width, height = map(int, resolution.split("x"))
@@ -248,6 +256,7 @@ class Setting(QWidget):
             self.MainWindow.showNormal()
             self.MainWindow.resize(width, height)
 
+    #color change
     def colorchange(self, index):
         self.color = self.settingform.themebox.currentText()
         if self.color == "White":
