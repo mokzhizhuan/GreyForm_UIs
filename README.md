@@ -15,7 +15,7 @@ Enable robot function must install ros2 <br>
 ros humble software link:<br>
 https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html <br>
 setting up ros workspaces:<br>
-https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html<br>
+https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorialhttps://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html.html<br>
 ##
 
 Extendsion Used:<br>
@@ -33,12 +33,12 @@ python/python3 mainapplication.py<br>
 for ros running<br>
 make sure the application run in ~/ros2_ws/src<br>
 once the project folder in ~/ros2_ws/src , cd ~/ros2_ws/src/-----/PythonApplication(example)<br>
-Type command colcon build <br>
-after colcon build check for ament-cake and ros distro, rosidl_default_generator) , if dont have the installation . Please Install them <br>
-after colcon build is fixed, type source /opt/ros/humble/setup.bash and source install/setup.bash to source the link of the setup.bash <br>
+source /opt/ros/humble/setup.bash for executing ros app execution <br> 
+Execute command using colcon build <br>
+when executing colcon build check for ament-cake and ros distro, rosidl_default_generator) , if dont have the installation . <br>
+Please Install them , and execute colcon build for checking errors <br>
+if there is no error on colcon build, type and source install/setup.bash to source the link of the setup.bash <br>
 run python/python3 mainapplication.py<br>
-
-##
 For Visual Studio: <br>
 Open Folder to file_path/GreyForm_UIs/GreyForm/Python_Application/<br>
 python/python3 mainapplication.py<br>
