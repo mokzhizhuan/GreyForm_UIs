@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont
 import vtk
+import serial
 
 
 # menu dialog to confirm the robot marking
@@ -45,11 +46,17 @@ class Ui_Dialog_ConfirmAck(QMainWindow):
             | QtWidgets.QDialogButtonBox.StandardButton.Ok
         )
         buttonBox.setObjectName("buttonBox")
-        buttonBox.accepted.connect(lambda: Ui_Dialog_ConfirmAck.appendasSTL(self))
+        buttonBox.accepted.connect(self.trigger_alarm)
         buttonBox.rejected.connect(self.dialog.close)
         dialog_layout.addWidget(buttonBox)
         self.dialog.exec_()
 
-    def appendasSTL(self):
+    def trigger_alarm(self):
+        # Set up serial connection
+        # scan alarm if it is not needed . Dont need to implement it. 
+        #ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+    
+        # Send command to trigger alarm
+        #ser.write(b'ALARM_ON\n')  # Replace with the actual command to trigger the alarm
         self.dialog.close()
         self.close()
