@@ -151,24 +151,6 @@ class settingbuttonUI(object):
         self.stackedWidget_main.setCurrentIndex(0)
         msg.exec_()
 
-    def load_settings(self):
-        try:
-            with open("settings.json", "r") as f:
-                settings = json.load(f)
-                self.themebox.setCurrentText(settings.get("theme", "Gray"))
-                self.fontsizebox.setCurrentText(settings.get("font_size", "15"))
-                self.resolutionbox.setCurrentText(
-                    settings.get(
-                        "resolution", f"{self.windowwidth} x {self.windowheight}"
-                    )
-                )
-                self.timezonebox.setCurrentText(
-                    settings.get("timezone", str(get_localzone()))
-                )
-                self.passwordedit.setText(settings.get("password", "pass"))
-        except FileNotFoundError:
-            pass
-
     def colorchange(self):
         if self.themebox.currentIndex() == 1:
             self.color = "#D3D3D3"
