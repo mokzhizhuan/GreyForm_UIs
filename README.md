@@ -24,8 +24,8 @@ export ROS_LOCALHOST_ONLY=1 <br>
 source /usr/share/colcon_cd/function/colcon_cd.sh <br>
 export _colcon_cd_root=/opt/ros/humble/ <br>
 setting up ros workspaces: <br>
-https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial <br>
-https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html.html<br>
+https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.html <br>
+https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html<br>
 
 ##
 Extendsion Used:<br>
