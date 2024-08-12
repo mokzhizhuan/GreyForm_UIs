@@ -13,3 +13,7 @@ pip3 install meshio
 pip3 install openxyl
 pip3 install pandas 
 pip3 install serial
+pip3 install tzlocal
+pip3 install psutil
+
+
