@@ -154,7 +154,6 @@ class Setting(QWidget):
             self.settingform.PasslineEdit,
             self.MainWindow,
             self.saved_setting,
-            self.settingButton,
             self.stackedWidget_main,
         )
 

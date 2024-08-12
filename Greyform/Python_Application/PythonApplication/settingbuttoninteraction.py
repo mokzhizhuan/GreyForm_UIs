@@ -28,7 +28,6 @@ class settingbuttonUI(object):
         passwordedit,
         MainWindow,
         saved_setting,
-        settingButton,
         stackedWidget_main,
     ):
         self.MarkingbackButton = MarkingbackButton
@@ -123,7 +122,6 @@ class settingbuttonUI(object):
         }
         with open("settings.json", "w") as f:
             json.dump(self.savesettings, f)
-
         self.show_save_dialog()
 
     def show_save_dialog(self):
@@ -132,7 +130,8 @@ class settingbuttonUI(object):
         msg.setText("Settings have been saved successfully!")
         msg.setWindowTitle("Save Settings")
         msg.setStandardButtons(QMessageBox.Ok)
-        msg.setStyleSheet("""
+        msg.setStyleSheet(
+            """
             QMessageBox {
                 min-width: 400px;   
                 min-height: 200px;  
@@ -146,29 +145,12 @@ class settingbuttonUI(object):
                 min-height: 100px; 
                 font-size: 20px;   
             }
-        """)
+        """
+        )
         self.stackedWidgetsetting.setCurrentIndex(0)
         self.homepages()
         self.stackedWidget_main.setCurrentIndex(0)
         msg.exec_()
-
-    def load_settings(self):
-        try:
-            with open("settings.json", "r") as f:
-                settings = json.load(f)
-                self.themebox.setCurrentText(settings.get("theme", "Gray"))
-                self.fontsizebox.setCurrentText(settings.get("font_size", "15"))
-                self.resolutionbox.setCurrentText(
-                    settings.get(
-                        "resolution", f"{self.windowwidth} x {self.windowheight}"
-                    )
-                )
-                self.timezonebox.setCurrentText(
-                    settings.get("timezone", str(datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo))
-                )
-                self.passwordedit.setText(settings.get("password", "pass"))
-        except FileNotFoundError:
-            pass
 
     def colorchange(self):
         if self.themebox.currentIndex() == 1:
