@@ -363,17 +363,7 @@
              </property>
              <item>
               <property name="text">
-               <string>15</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
                <string>16</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>17</string>
               </property>
              </item>
              <item>
@@ -383,17 +373,7 @@
              </item>
              <item>
               <property name="text">
-               <string>19</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
                <string>20</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>21</string>
               </property>
              </item>
              <item>
@@ -403,17 +383,7 @@
              </item>
              <item>
               <property name="text">
-               <string>23</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
                <string>24</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>25</string>
               </property>
              </item>
              <item>
@@ -423,22 +393,52 @@
              </item>
              <item>
               <property name="text">
-               <string>27</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
                <string>28</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>29</string>
+               <string>30</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>30</string>
+               <string>32</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>36</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>40</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>44</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>48</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>52</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>56</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>60</string>
               </property>
              </item>
             </widget>
