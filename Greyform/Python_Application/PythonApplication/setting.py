@@ -195,7 +195,7 @@ class Setting(QWidget):
         )
 
     def update_memory(self):
-        # Update the text of self.SystemMemory
+        # Update the system memory text
         process = psutil.Process(os.getpid())
         memory_usage = process.memory_info().rss / (1024 * 1024)  # in MB
         self.settingform.SystemMemory.setText(
