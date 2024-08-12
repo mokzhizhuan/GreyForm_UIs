@@ -10,6 +10,8 @@ pip/pip3 install numpy-stl <br>
 pip/pip3 install meshio <br>
 pip/pip3 install openxyl <br>
 pip/pip3 install pandas <br>
+pip/pip3 install tzlocal <br>
+pip/pip3 install psutil <br>
 or use the script sh file(linux): <br>
 sudo chmod +x installpip.sh/installpip3.sh <br>
 execute the script using sudo sh/bash installpip3.sh <br>
