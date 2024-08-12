@@ -4,6 +4,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.restoredefault as default
+import PythonApplication.wifiset as wifisetup
 from pywifi import PyWiFi, const
 import PythonApplication.reset as closewindow
 from PyQt5.QtNetwork import QTcpServer, QHostAddress
@@ -11,11 +12,7 @@ import PythonApplication.login as Login
 import PythonApplication.settinglayout as settinglayoutUi
 import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
-import datetime
-import pytz
-import json
-import psutil
-import os
+import datetime, pytz, json, psutil, os
 
 
 # setting page
@@ -55,15 +52,7 @@ class Setting(QWidget):
             ),
             "password": str(self.password),
         }
-        self.saved_setting = {
-            "theme": str(self.theme),
-            "font_size": self.font_size,
-            "resolution": f"{windowwidth} x {windowheight}",
-            "timezone": str(
-                datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
-            ),
-            "password": str(self.password),
-        }
+        self.saved_setting = self.default_settings
         self.settingButton = settingButton
         self.stackedWidget_main = stackedWidget_main
         self.setupUi()
@@ -75,8 +64,6 @@ class Setting(QWidget):
         self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
         # wifi
         self.settingform.treeWidget.setColumnWidth(0, 500)
-        self.wifi = PyWiFi()
-        self.interface = self.wifi.interfaces()[0]
         self.refreshWiFiList()
         # setting host services and resolution
         Text_index = self.settingform.Text_size.findText(
@@ -173,14 +160,9 @@ class Setting(QWidget):
 
     # detect WIFI
     def refreshWiFiList(self):
-        networks = self.interface.scan_results()
-        self.settingform.treeWidget.clear()
-        ssid = networks[0].ssid
-        signal_strength = networks[0].signal
-        item = QTreeWidgetItem([ssid, str(signal_strength)])
-        self.settingform.treeWidget.addTopLevelItem(item)
-        interface_info = f"Interface: {self.interface.name()}"
-        self.settingform.interface_label.setText(interface_info)
+        wifisetup.setup_wifi(
+            self.settingform.treeWidget, self.settingform.interface_label
+        )
 
     # add text
     def retranslateUi(self):
