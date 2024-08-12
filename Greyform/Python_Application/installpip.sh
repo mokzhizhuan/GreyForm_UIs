@@ -1,3 +1,4 @@
+#install python libraries
 pip install pyvistaqt
 pip install ifcopenshell
 pip install vtk
