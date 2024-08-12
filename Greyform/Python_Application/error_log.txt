@@ -1,6 +1,0 @@
-
-Failed to write Excel file: argument of type 'float' is not iterable
-Failed to write Excel file: argument of type 'float' is not iterable
-Failed to write Excel file: 'Class'
-Failed to write Excel file: 'ClassMarking type'
-Failed to write Excel file: [Errno 13] Permission denied: 'exporteddatas.xlsx'
