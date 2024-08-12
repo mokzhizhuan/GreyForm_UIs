@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtWidgets, QtGui, uic
+from PyQt5 import uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -10,9 +10,7 @@ import PythonApplication.interfacesignal as interface_signals
 import PythonApplication.settinglayout as settinglayoutUi
 import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
-import datetime
-import pytz
-import json
+import datetime ,pytz ,json 
 from tzlocal import get_localzone
 
 # setting loader
@@ -48,13 +46,7 @@ class Setting(QWidget):
             "timezone": str(get_localzone()),
             "password": str(self.password),
         }
-        self.saved_setting = {
-            "theme": str(self.theme),
-            "font_size": self.font_size,
-            "resolution": f"{windowwidth} x {windowheight}",
-            "timezone": str(get_localzone()),
-            "password": str(self.password),
-        }
+        self.saved_setting = self.default_settings
         self.stackedWidget_main = stackedWidget_main
         self.setupUi()
 
@@ -145,6 +137,7 @@ class Setting(QWidget):
             )
         )
 
+    #ethernet
     def ethernet_item_clicked(self, item, column):
         interface_name = item.text(column)
         interfaces = interface_signals.get_wireless_interfaces()
@@ -190,7 +183,7 @@ class Setting(QWidget):
     def retranslateUi(self):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_time)
-        self.timer.start(5000)  # Trigger every 5000 milliseconds (5 seconds)
+        self.timer.start(5000) 
         settingtextlayout.SettingText(
             self.settingform.labeltitlsetting,
             self.settingform.ip_label,
@@ -219,7 +212,6 @@ class Setting(QWidget):
             formatted_time = now.strftime("%I:%M ").lstrip("0") + am_pm
         self.settingform.Systemtime.setText(f"Time : {formatted_time}")
 
-    #set time in am/pm format
     def updateTimeLabel(self, index):
         selected_time_zone = self.settingform.country.currentText()
         tz = pytz.timezone(selected_time_zone)
