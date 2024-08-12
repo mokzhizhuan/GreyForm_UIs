@@ -17,7 +17,8 @@ import json
 import psutil
 import os
 
-#setting page
+
+# setting page
 class Setting(QWidget):
     # setting loader
     def __init__(
@@ -27,7 +28,7 @@ class Setting(QWidget):
         windowwidth,
         windowheight,
         settingButton,
-        stackedWidget_main, 
+        stackedWidget_main,
     ):
         super(Setting, self).__init__()
         self.stackedWidget = stackedwidgetpage
@@ -40,10 +41,10 @@ class Setting(QWidget):
             with open("settings.json", "r") as f:
                 data = json.load(f)
         except FileNotFoundError:
-                pass
-        font = data['font_size']
-        self.theme = data['theme']
-        self.password = data['password']
+            pass
+        font = data["font_size"]
+        self.theme = data["theme"]
+        self.password = data["password"]
         self.font_size = int(font)
         self.default_settings = {
             "theme": str(self.theme),
@@ -72,13 +73,11 @@ class Setting(QWidget):
         # home
         self.settingform.themebox.currentIndexChanged.connect(self.colorchange)
         self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
-
         # wifi
         self.settingform.treeWidget.setColumnWidth(0, 500)
         self.wifi = PyWiFi()
         self.interface = self.wifi.interfaces()[0]
         self.refreshWiFiList()
-
         # setting host services and resolution
         Text_index = self.settingform.Text_size.findText(
             str(self.default_settings["font_size"]), Qt.MatchFixedString
@@ -92,13 +91,11 @@ class Setting(QWidget):
         self.settingform.resolutioncomboBox.currentIndexChanged.connect(
             self.change_resolution
         )
-
         resolution_index = self.settingform.resolutioncomboBox.findText(
             self.default_settings["resolution"], Qt.MatchFixedString
         )
         if resolution_index >= 0:
             self.settingform.resolutioncomboBox.setCurrentIndex(resolution_index)
-
         all_timezones = pytz.all_timezones
         for timezone in all_timezones:
             self.settingform.country.addItem(timezone)
@@ -111,10 +108,8 @@ class Setting(QWidget):
         if index >= 0:
             self.settingform.country.setCurrentIndex(index)
         self.settingform.country.currentIndexChanged.connect(self.updateTimeLabel)
-
         self.userlabel = QLabel(self.settingform.UserPage)
         self.userlabel.setFont(self.font)
-
         # User info login
         self.file = []
         self.loginwidget = QStackedWidget(self.settingform.UserPage)
@@ -126,7 +121,6 @@ class Setting(QWidget):
             self.settingform.UserPage,
         )
         self.loginwidget.addWidget(self.loginwindow)
-
         # power and restart
         self.restartwidgetwindow = closewindow.RestartCloseWidget(self.MainWindow)
         self.restartwidgetwindow.show()
@@ -136,7 +130,6 @@ class Setting(QWidget):
         self.button_UI()
         self.setStretch()
         self.retranslateUi()
-
         self.settingform.restoreDefaultsButton.clicked.connect(
             lambda: default.restoredefaultsetting(
                 self.accountinfo,
@@ -152,6 +145,7 @@ class Setting(QWidget):
                 self.windowheight,
             )
         )
+
     # button interaction page
     def button_UI(self):
         settingbuttonUIinteraction.settingbuttonUI(
@@ -196,7 +190,9 @@ class Setting(QWidget):
         self.timer.start(5000)  # Trigger every 5000 milliseconds (5 seconds)
         process = psutil.Process(os.getpid())
         memory_usage = process.memory_info().rss / (1024 * 1024)  # in MB
-        self.settingform.SystemMemory.setText(f"System Memory Usage : {memory_usage:.2f} MB")
+        self.settingform.SystemMemory.setText(
+            f"System Memory Usage : {memory_usage:.2f} MB"
+        )
         self.memorytimer = QTimer(self)
         self.memorytimer.timeout.connect(self.update_memory)
         self.memorytimer.start(1000)
@@ -220,7 +216,9 @@ class Setting(QWidget):
         # Update the text of self.SystemMemory
         process = psutil.Process(os.getpid())
         memory_usage = process.memory_info().rss / (1024 * 1024)  # in MB
-        self.settingform.SystemMemory.setText(f"System Memory Usage : {memory_usage:.2f} MB")
+        self.settingform.SystemMemory.setText(
+            f"System Memory Usage : {memory_usage:.2f} MB"
+        )
 
     def update_time(self):
         now = datetime.datetime.now()
