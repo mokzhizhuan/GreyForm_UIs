@@ -17,10 +17,17 @@ execute the script using sudo sh installpip.sh(windows)/installpip3.sh(linux) <b
 Enable robot function must install ros2 <br>
 ros humble software link:<br>
 https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html <br>
-setting up ros workspaces:<br>
-https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorialhttps://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html.html<br>
-##
+set up your ros script in /.bashsrc <br>
+source /opt/ros/humble/setup.bash <br>
+export ROS_DOMAIN_ID=0 <br>
+export ROS_LOCALHOST_ONLY=1 <br>
+source /usr/share/colcon_cd/function/colcon_cd.sh <br>
+export _colcon_cd_root=/opt/ros/humble/ <br>
+setting up ros workspaces: <br>
+https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutorial <br>
+https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html.html<br>
 
+##
 Extendsion Used:<br>
 QtPython <br>
 Python 3.11 <br> 
@@ -36,7 +43,6 @@ python/python3 mainapplication.py<br>
 for ros running<br>
 make sure the application run in ~/ros2_ws/src<br>
 once the project folder in ~/ros2_ws/src , cd ~/ros2_ws/src/-----/PythonApplication(example)<br>
-source /opt/ros/humble/setup.bash for executing ros app execution <br> 
 Execute command using colcon build <br>
 when executing colcon build check for ament-cake and ros distro, rosidl_default_generator) , if dont have the installation . <br>
 Please Install them , and execute colcon build for checking errors <br>
