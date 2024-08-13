@@ -20,6 +20,7 @@ class restoredefaultsetting(object):
         MainWindow,
         windowwidth,
         windowheight,
+        stackedWidget_main,
     ):
         self.stackedWidget = stackedwidgetpage
         self.MainWindow = MainWindow
@@ -32,6 +33,7 @@ class restoredefaultsetting(object):
         self.PasslineEdit = PasslineEdit
         self.windowwidth = windowwidth
         self.windowheight = windowheight
+        self.stackedWidget_main = stackedWidget_main
         self.restore_defaults()
 
     def restore_defaults(self):
@@ -43,7 +45,7 @@ class restoredefaultsetting(object):
         if theme_index >= 0:
             self.themebox.setCurrentIndex(theme_index)
         font_index = self.Text_size.findText(
-            self.default_settings["font_size"], Qt.MatchFixedString
+            str(self.default_settings["font_size"]), Qt.MatchFixedString
         )
         if font_index >= 0:
             self.Text_size.setCurrentIndex(font_index)
@@ -60,7 +62,12 @@ class restoredefaultsetting(object):
         self.accountinfo[0]["Pass"] = self.default_settings["password"]
         self.PasslineEdit.setText(self.default_settings["password"])
         self.settingchange = setting.Setting(
-            self.stackedWidget, self.MainWindow, self.windowwidth, self.windowheight
+            self.stackedWidget,
+            self.MainWindow,
+            self.windowwidth,
+            self.windowheight,
+            self.default_settings,
+            self.stackedWidget_main,
         )
         self.settingchange.colorchange(theme_index)
         self.settingchange.update_font(font_index)

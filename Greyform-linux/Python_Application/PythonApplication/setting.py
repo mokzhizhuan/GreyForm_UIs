@@ -125,6 +125,7 @@ class Setting(QWidget):
                 self.MainWindow,
                 self.windowwidth,
                 self.windowheight,
+                self.stackedWidget_main,
             )
         )
 
