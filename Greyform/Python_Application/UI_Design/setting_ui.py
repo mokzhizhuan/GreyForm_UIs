@@ -382,7 +382,7 @@ class Ui_Form(object):
         ___qtreewidgetitem.setText(0, QCoreApplication.translate("Form", u"SSID", None));
         self.ip_label.setText("")
         self.Portnumipadd.setText("")
-        self.Textsizelab.setText(QCoreApplication.translate("Form", u"Text Size:", None))
+        self.Textsizelab.setText(QCoreApplication.translate("Form", u"Font Size:", None))
         self.Text_size.setItemText(0, QCoreApplication.translate("Form", u"16", None))
         self.Text_size.setItemText(1, QCoreApplication.translate("Form", u"18", None))
         self.Text_size.setItemText(2, QCoreApplication.translate("Form", u"20", None))

@@ -350,7 +350,7 @@
               </font>
              </property>
              <property name="text">
-              <string>Text Size:</string>
+              <string>Font Size:</string>
              </property>
             </widget>
            </item>
