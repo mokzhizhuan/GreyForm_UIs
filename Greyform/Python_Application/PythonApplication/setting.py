@@ -73,11 +73,11 @@ class Setting(QWidget):
         all_timezones = pytz.all_timezones
         for timezone in all_timezones:
             self.settingform.country.addItem(timezone)
-        index = self.settingform.country.findText(
+        timezone_index = self.settingform.country.findText(
             self.selected_time_zone, Qt.MatchFixedString
         )
-        if index >= 0:
-            self.settingform.country.setCurrentIndex(index)
+        if timezone_index >= 0:
+            self.settingform.country.setCurrentIndex(timezone_index)
         self.settingform.country.currentIndexChanged.connect(self.updateTimeLabel)
         self.userlabel = QLabel(self.settingform.UserPage)
         self.userlabel.setFont(self.font)
