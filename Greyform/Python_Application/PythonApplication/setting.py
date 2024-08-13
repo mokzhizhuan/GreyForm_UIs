@@ -25,6 +25,7 @@ class Setting(QWidget):
         windowwidth,
         windowheight,
         settingButton,
+        default_settings,
         stackedWidget_main,
     ):
         super(Setting, self).__init__()
@@ -44,13 +45,7 @@ class Setting(QWidget):
         self.password = data["password"]
         self.font_size = int(font)
         self.selected_time_zone = data["timezone"]
-        self.default_settings = {
-            "theme": str(self.theme),
-            "font_size": self.font_size,
-            "resolution": f"{windowwidth} x {windowheight}",
-            "timezone": self.selected_time_zone,
-            "password": str(self.password),
-        }
+        self.default_settings = default_settings
         self.saved_setting = self.default_settings
         self.settingButton = settingButton
         self.stackedWidget_main = stackedWidget_main
