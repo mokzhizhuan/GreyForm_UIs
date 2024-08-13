@@ -86,7 +86,7 @@ class Setting(QWidget):
         for timezone in all_timezones:
             self.settingform.country.addItem(timezone)
         index = self.settingform.country.findText(
-            str(self.selected_time_zone), Qt.MatchFixedString
+            self.selected_time_zone, Qt.MatchFixedString
         )
         if index >= 0:
             self.settingform.country.setCurrentIndex(index)
@@ -173,11 +173,7 @@ class Setting(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_time)
         self.timer.start(5000)  # Trigger every 5000 milliseconds (5 seconds)
-        process = psutil.Process(os.getpid())
-        memory_usage = process.memory_info().rss / (1024 * 1024)  # in MB
-        self.settingform.SystemMemory.setText(
-            f"System Memory Usage : {memory_usage:.2f} MB"
-        )
+        self.update_memory()
         self.memorytimer = QTimer(self)
         self.memorytimer.timeout.connect(self.update_memory)
         self.memorytimer.start(1000)
@@ -205,6 +201,7 @@ class Setting(QWidget):
             f"System Memory Usage : {memory_usage:.2f} MB"
         )
 
+    # set time in am/pm format
     def update_time(self):
         tz = pytz.timezone(self.selected_time_zone)
         now = datetime.datetime.now(tz)
