@@ -367,7 +367,7 @@ class Ui_Form(object):
         self.UserButton.setText(QCoreApplication.translate("Form", u"User", None))
         self.PowerButton.setText(QCoreApplication.translate("Form", u"Power/ShutDown/Restart", None))
         self.AboutButton.setText(QCoreApplication.translate("Form", u"About", None))
-        self.MarkingbackButton.setText(QCoreApplication.translate("Form", u"Back to Marking Button UI", None))
+        self.MarkingbackButton.setText(QCoreApplication.translate("Form", u"Back to Greyform UI", None))
         self.maintitlelabel.setText("")
         self.colortitlelabel.setText(QCoreApplication.translate("Form", u"Color Theme", None))
         self.themebox.setItemText(0, QCoreApplication.translate("Form", u"Gray", None))
