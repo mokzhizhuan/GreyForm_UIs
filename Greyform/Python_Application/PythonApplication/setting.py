@@ -102,6 +102,7 @@ class Setting(QWidget):
             self.settingform.Text_size,
             self.settingform.resolutioncomboBox,
             self.settingform.country,
+            self.font_size,
             self.password,
         )
         self.restartwidgetwindow.show()
