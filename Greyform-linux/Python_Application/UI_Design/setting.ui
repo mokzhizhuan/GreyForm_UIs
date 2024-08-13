@@ -163,7 +163,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Back to Marking Button UI</string>
+         <string>Back to GreyForm UI</string>
         </property>
        </widget>
       </item>
