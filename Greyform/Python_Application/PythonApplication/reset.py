@@ -56,7 +56,7 @@ class RestartCloseWidget(QWidget):
     def show_restart_dialog(self):
         reply = QMessageBox(self)
         reply.setIcon(QMessageBox.Question)
-        reply.setWindowTitle("Close App")
+        reply.setWindowTitle("Restart App")
         reply.setText("Are you sure you want to restart the app?")
         reply.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         reply.setDefaultButton(QMessageBox.No)
