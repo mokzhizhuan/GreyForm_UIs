@@ -8,13 +8,12 @@ from PyQt5.QtGui import *
 
 # user login function will include profile also later
 class Login(QDialog):
-    def __init__(self, accountinfo, widget, userlabel, file, stackedWidgetusersetting):
+    def __init__(self, accountinfo, widget, userlabel, stackedWidgetusersetting):
         super(Login, self).__init__()
         self.form = uic.loadUi("UI_Design/login.ui", self)
         self.accountinfo = accountinfo
         self.widget = widget
         self.userlabel = userlabel
-        self.file = file
         self.stackedWidgetusersetting = stackedWidgetusersetting
         self.form.userid = self.accountinfo[0]["UserID"]
         self.setupUI()
@@ -59,7 +58,6 @@ class Login(QDialog):
                     self.accountinfo,
                     self.widget,
                     self.userlabel,
-                    self.file,
                     self.stackedWidgetusersetting,
                 )
             self.widget.addWidget(profile)
@@ -83,7 +81,6 @@ class Login(QDialog):
             self.accountinfo,
             self.widget,
             self.userlabel,
-            self.file,
             self.stackedWidgetusersetting,
         )
         self.widget.addWidget(ChangePassword)
@@ -92,7 +89,7 @@ class Login(QDialog):
 
 # change password.
 class ChangePass(QDialog):
-    def __init__(self, accountinfo, widget, userlabel, file, stackedWidgetusersetting):
+    def __init__(self, accountinfo, widget, userlabel, stackedWidgetusersetting):
         super(ChangePass, self).__init__()
         self.form = uic.loadUi("UI_Design/changepass.ui", self)
         self.form.changepassbutton.clicked.connect(self.changepassfunction)
@@ -102,7 +99,6 @@ class ChangePass(QDialog):
         self.accountinfo = accountinfo
         self.widget = widget
         self.userlabel = userlabel
-        self.file = file
         self.stackedWidgetusersetting = stackedWidgetusersetting
         self.setupUI()
 
@@ -126,7 +122,7 @@ class ChangePass(QDialog):
         password = self.form.password.text()
         if password != self.accountinfo[0]["Pass"]:
             self.accountinfo[0]["Pass"] = password
-            login = Login(self.accountinfo, self.widget, self.userlabel, self.file)
+            login = Login(self.accountinfo, self.widget, self.userlabel , self.stackedWidgetusersetting)
             self.widget.addWidget(login)
             self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
         else:
@@ -148,7 +144,6 @@ class ChangePass(QDialog):
             self.accountinfo,
             self.widget,
             self.userlabel,
-            self.file,
             self.stackedWidgetusersetting,
         )
         self.widget.addWidget(login)
@@ -156,13 +151,12 @@ class ChangePass(QDialog):
 
 
 class Profile(QDialog):
-    def __init__(self, accountinfo, widget, userlabel, file, stackedWidgetusersetting):
+    def __init__(self, accountinfo, widget, userlabel, stackedWidgetusersetting):
         super(Profile, self).__init__()
         self.form = uic.loadUi("UI_Design/Profile.ui", self)
         self.accountinfo = accountinfo
         self.widget = widget
         self.userlabel = userlabel
-        self.file = file
         self.stackedWidgetusersetting = stackedWidgetusersetting
         self.form.userlabel.setText(self.accountinfo[0]["UserID"])
         self.setupUI()
@@ -195,7 +189,6 @@ class Profile(QDialog):
             self.accountinfo,
             self.widget,
             self.userlabel,
-            self.file,
             self.stackedWidgetusersetting,
         )
         self.widget.addWidget(login)

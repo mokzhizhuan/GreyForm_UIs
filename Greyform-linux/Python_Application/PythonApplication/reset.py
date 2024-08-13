@@ -12,12 +12,28 @@ from PyQt5.QtWidgets import (
     QSizePolicy,
 )
 from PyQt5.QtGui import *
+import json
 
 
 class RestartCloseWidget(QWidget):
-    def __init__(self, MainWindow):
+    def __init__(
+        self,
+        MainWindow,
+        saved_setting,
+        themebox,
+        Text_size,
+        resolutioncomboBox,
+        country,
+        password
+    ):
         super().__init__()
         self.MainWindow = MainWindow
+        self.savesetting = saved_setting
+        self.themebox = themebox
+        self.Text_size = Text_size
+        self.resolutioncomboBox = resolutioncomboBox
+        self.country = country
+        self.password = password
         self.initUI()
 
     def initUI(self):
@@ -33,25 +49,72 @@ class RestartCloseWidget(QWidget):
         self.setLayout(button_layout)
 
     def show_restart_dialog(self):
-        reply = QMessageBox.question(
-            self,
-            "Restart App",
-            "Are you sure you want to restart the app?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
+        reply = QMessageBox(self)
+        reply.setIcon(QMessageBox.Question)
+        reply.setWindowTitle("Close App")
+        reply.setText("Are you sure you want to close the app?")
+        reply.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        reply.setDefaultButton(QMessageBox.No)
+        reply.setStyleSheet(
+            """
+            QMessageBox {
+                min-width: 400px;   
+                min-height: 200px;  
+            }
+            QLabel {
+                min-width: 300px;   
+                font-size: 20px;    
+            }
+            QPushButton {
+                min-width: 200px;   
+                min-height: 100px; 
+                font-size: 20px;   
+            }
+        """
         )
+        reply = reply.exec_()
         if reply == QMessageBox.Yes:
+            self.save_settings()
             self.restart()
 
+    def save_settings(self):
+        self.savesettings = {
+            "theme": self.themebox.currentText(),
+            "font_size": self.Text_size.currentText(),
+            "resolution": self.resolutioncomboBox.currentText(),
+            "timezone": self.country.currentText(),
+            "password": self.password,
+        }
+        with open("settings.json", "w") as f:
+            json.dump(self.savesettings, f)
+
     def show_close_dialog(self):
-        reply = QMessageBox.question(
-            self,
-            "Close App",
-            "Are you sure you want to close the app?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
+        reply = QMessageBox(self)
+        reply.setIcon(QMessageBox.Question)
+        reply.setWindowTitle("Close App")
+        reply.setText("Are you sure you want to close the app?")
+        reply.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        reply.setDefaultButton(QMessageBox.No)
+        reply.setStyleSheet(
+            """
+            QMessageBox {
+                min-width: 400px;   
+                min-height: 200px;  
+            }
+            QLabel {
+                min-width: 300px;   
+                font-size: 20px;    
+            }
+            QPushButton {
+                min-width: 200px;   
+                min-height: 100px; 
+                font-size: 20px;   
+            }
+        """
         )
+        reply = reply.exec_()
         if reply == QMessageBox.Yes:
+            self.save_settings()
             self.MainWindow.close()
 
     def restart(self):

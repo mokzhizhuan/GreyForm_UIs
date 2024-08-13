@@ -10,8 +10,9 @@ import PythonApplication.interfacesignal as interface_signals
 import PythonApplication.settinglayout as settinglayoutUi
 import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
-import datetime ,pytz ,json 
+import datetime, pytz, json
 from tzlocal import get_localzone
+
 
 # setting loader
 class Setting(QWidget):
@@ -35,9 +36,9 @@ class Setting(QWidget):
                 data = json.load(f)
         except FileNotFoundError:
             pass
-        font = data['font_size']
-        self.theme = data['theme']
-        self.password = data['password']
+        font = data["font_size"]
+        self.theme = data["theme"]
+        self.password = data["password"]
         self.font_size = int(font)
         self.default_settings = {
             "theme": str(self.theme),
@@ -101,19 +102,25 @@ class Setting(QWidget):
         self.userlabel = QLabel(self.settingform.UserPage)
         self.userlabel.setGeometry(10, 10, 400, 40)
         # User info login
-        self.file = []
         self.loginwidget = QStackedWidget(self.settingform.UserPage)
         loginwindow = Login.Login(
             self.accountinfo,
             self.loginwidget,
             self.userlabel,
-            self.file,
             self.settingform.UserPage,
         )
         self.loginwidget.addWidget(loginwindow)
         self.loginwidget.setGeometry(10, 70, 700, 800)
         # power and restart
-        self.restartwidgetwindow = closewindow.RestartCloseWidget(self.MainWindow)
+        self.restartwidgetwindow = closewindow.RestartCloseWidget(
+            self.MainWindow,
+            self.saved_setting,
+            self.settingform.themebox,
+            self.settingform.Text_size,
+            self.settingform.resolutioncomboBox,
+            self.settingform.country,
+            self.password
+        )
         self.restartwidgetwindow.show()
         self.restartwidget = QStackedWidget(self.settingform.RestartPowerOffPage)
         self.restartwidget.addWidget(self.restartwidgetwindow)
@@ -137,7 +144,7 @@ class Setting(QWidget):
             )
         )
 
-    #ethernet
+    # ethernet
     def ethernet_item_clicked(self, item, column):
         interface_name = item.text(column)
         interfaces = interface_signals.get_wireless_interfaces()
@@ -183,7 +190,7 @@ class Setting(QWidget):
     def retranslateUi(self):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_time)
-        self.timer.start(5000) 
+        self.timer.start(5000)
         settingtextlayout.SettingText(
             self.settingform.labeltitlsetting,
             self.settingform.ip_label,
@@ -198,12 +205,12 @@ class Setting(QWidget):
             self.accountinfo,
         )
 
-    #set pass
+    # set pass
     def changepassfunction(self):
         password = self.settingform.PasslineEdit.text()
         self.accountinfo[0]["Pass"] = password
 
-    #set time in am/pm format
+    # set time in am/pm format
     def update_time(self):
         now = datetime.datetime.now()
         formatted_time = now.strftime("%I:%M %p").lstrip("0")
@@ -222,7 +229,7 @@ class Setting(QWidget):
             formatted_time = now.strftime("%I:%M ").lstrip("0") + am_pm
         self.settingform.Systemtime.setText(f"Time : {formatted_time}")
 
-    #update font size
+    # update font size
     def update_font(self, index):
         self.font_size = int(self.settingform.Text_size.currentText())
         self.font.setPointSize(self.font_size)
@@ -238,7 +245,7 @@ class Setting(QWidget):
             for child in parent.children():
                 self.apply_font_to_widgets(child, font)
 
-    #update resolution
+    # update resolution
     def change_resolution(self, index):
         resolution = self.settingform.resolutioncomboBox.currentText()
         width, height = map(int, resolution.split("x"))
@@ -248,7 +255,7 @@ class Setting(QWidget):
             self.MainWindow.showNormal()
             self.MainWindow.resize(width, height)
 
-    #color change
+    # color change
     def colorchange(self, index):
         self.color = self.settingform.themebox.currentText()
         if self.color == "White":
