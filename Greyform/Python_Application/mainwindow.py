@@ -26,7 +26,7 @@ class Ui_MainWindow(QMainWindow):
                 data = json.load(f)
         except FileNotFoundError:
             pass
-        resolution = data['resolution']
+        resolution = data["resolution"]
         font = data["font_size"]
         self.theme = data["theme"]
         self.password = data["password"]
@@ -48,13 +48,13 @@ class Ui_MainWindow(QMainWindow):
             "password": str(self.password),
         }
         self.renderer = vtk.vtkRenderer()
-        self.apply_font_to_widgets(self.mainwindow, self.font)  
+        self.apply_font_to_widgets(self.mainwindow, self.font)
         self._translate = QCoreApplication.translate
         self.setupUi()
 
     def apply_font_to_widgets(self, parent, font):
         if hasattr(parent, "setFont"):
-            parent.setFont(font) 
+            parent.setFont(font)
         if hasattr(parent, "children"):
             for child in parent.children():
                 self.apply_font_to_widgets(child, font)

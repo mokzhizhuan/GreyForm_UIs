@@ -57,9 +57,16 @@ class RestartCloseWidget(QWidget):
         reply = QMessageBox(self)
         reply.setIcon(QMessageBox.Question)
         reply.setWindowTitle("Close App")
-        reply.setText("Are you sure you want to close the app?")
+        reply.setText("Are you sure you want to restart the app?")
         reply.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         reply.setDefaultButton(QMessageBox.No)
+        self.setstylesheet(reply)
+        reply = reply.exec_()
+        if reply == QMessageBox.Yes:
+            self.save_settings()
+            self.restart()
+
+    def setstylesheet(self, reply):
         reply.setStyleSheet(
             """
             QMessageBox {
@@ -78,12 +85,8 @@ class RestartCloseWidget(QWidget):
                 font-size: 20px;   
                 icon-size: 100px 100px; 
             }
-        """
+            """
         )
-        reply = reply.exec_()
-        if reply == QMessageBox.Yes:
-            self.save_settings()
-            self.restart()
 
     def save_settings(self):
         self.savesettings = {
@@ -103,23 +106,7 @@ class RestartCloseWidget(QWidget):
         reply.setText("Are you sure you want to close the app?")
         reply.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         reply.setDefaultButton(QMessageBox.No)
-        reply.setStyleSheet(
-            """
-            QMessageBox {
-                min-width: 400px;   
-                min-height: 200px;  
-            }
-            QLabel {
-                min-width: 300px;   
-                font-size: 20px;    
-            }
-            QPushButton {
-                min-width: 200px;   
-                min-height: 100px; 
-                font-size: 20px;   
-            }
-        """
-        )
+        self.setstylesheet(reply)
         reply = reply.exec_()
         if reply == QMessageBox.Yes:
             self.save_settings()
