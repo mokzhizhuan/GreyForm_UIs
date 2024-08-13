@@ -12,7 +12,7 @@ import PythonApplication.login as Login
 import PythonApplication.settinglayout as settinglayoutUi
 import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
-import datetime, pytz, json, psutil, os
+import datetime, pytz, psutil, os
 
 
 # setting page
@@ -35,16 +35,11 @@ class Setting(QWidget):
         self.settingform = uic.loadUi("UI_Design/setting.ui", self)
         self.MainWindow = MainWindow
         self.accountinfo = [{"UserID": "admin", "Pass": "pass"}]
-        try:
-            with open("settings.json", "r") as f:
-                data = json.load(f)
-        except FileNotFoundError:
-            pass
-        font = data["font_size"]
-        self.theme = data["theme"]
-        self.password = data["password"]
+        font = default_settings["font_size"]
+        self.theme = default_settings["theme"]
+        self.password = default_settings["password"]
         self.font_size = int(font)
-        self.selected_time_zone = data["timezone"]
+        self.selected_time_zone = default_settings["timezone"]
         self.default_settings = default_settings
         self.saved_setting = self.default_settings
         self.settingButton = settingButton
@@ -107,6 +102,7 @@ class Setting(QWidget):
             self.settingform.Text_size,
             self.settingform.resolutioncomboBox,
             self.settingform.country,
+            self.font_size,
             self.password,
         )
         self.restartwidgetwindow.show()
