@@ -11,7 +11,6 @@ import PythonApplication.settinglayout as settinglayoutUi
 import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
 import datetime, pytz, psutil, os
-from tzlocal import get_localzone
 
 
 # setting loader
@@ -103,12 +102,13 @@ class Setting(QWidget):
             self.settingform.Text_size,
             self.settingform.resolutioncomboBox,
             self.settingform.country,
+            self.font_size,
             self.password,
         )
         self.restartwidgetwindow.show()
         self.restartwidget = QStackedWidget(self.settingform.RestartPowerOffPage)
         self.restartwidget.addWidget(self.restartwidgetwindow)
-        self.restartwidget.setGeometry(150, 460, 300, 200)
+        self.restartwidget.setGeometry(150, 460, 300, 300)
         self.button_UI()
         self.setStretch()
         self.retranslateUi()
