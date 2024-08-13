@@ -25,7 +25,7 @@ class RestartCloseWidget(QWidget):
         resolutioncomboBox,
         country,
         font_size,
-        password
+        password,
     ):
         super().__init__()
         self.MainWindow = MainWindow
@@ -65,15 +65,18 @@ class RestartCloseWidget(QWidget):
             QMessageBox {
                 min-width: 400px;   
                 min-height: 200px;  
+                icon-size: 100px 100px; 
             }
             QLabel {
                 min-width: 300px;   
-                font-size: 20px;    
+                font-size: 20px;
+                icon-size: 100px 100px;     
             }
             QPushButton {
                 min-width: 200px;   
                 min-height: 100px; 
                 font-size: 20px;   
+                icon-size: 100px 100px; 
             }
         """
         )
