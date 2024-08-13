@@ -83,6 +83,8 @@ class SettingLayout(object):
         self.settingboxhomelayout = QVBoxLayout()
         self.settingboxhomelayout.addWidget(self.layoutWidgethome)
         self.settingboxhomelayout.addWidget(self.restoreDefaultsButton)
+        self.settingboxhomelayout.setStretch(0,1)
+        self.settingboxhomelayout.setStretch(1,1)
         self.settingHomepage.setLayout(self.settingboxhomelayout)
         self.settingboxwifilayout = QVBoxLayout()
         self.settingboxwifilayout.addWidget(self.interface_label)

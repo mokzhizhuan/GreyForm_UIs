@@ -24,7 +24,6 @@ class Setting(QWidget):
         MainWindow,
         windowwidth,
         windowheight,
-        settingButton,
         default_settings,
         stackedWidget_main,
     ):
@@ -42,7 +41,6 @@ class Setting(QWidget):
         self.selected_time_zone = default_settings["timezone"]
         self.default_settings = default_settings
         self.saved_setting = self.default_settings
-        self.settingButton = settingButton
         self.stackedWidget_main = stackedWidget_main
         self.setupUi()
 
@@ -125,6 +123,7 @@ class Setting(QWidget):
                 self.MainWindow,
                 self.windowwidth,
                 self.windowheight,
+                self.stackedWidget_main,
             )
         )
 

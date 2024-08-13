@@ -92,7 +92,6 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow,
             self.width,
             self.height,
-            self.mainwindow.SettingButton,
             self.default_settings,
             self.mainwindow.stackedWidget_main,
         )  # insert setting
