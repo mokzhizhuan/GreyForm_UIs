@@ -1,6 +1,10 @@
 import psutil
 import socket
 import subprocess
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
 def get_wireless_interfaces():
     interfaces = psutil.net_if_addrs()
@@ -55,4 +59,29 @@ def get_dns_servers():
     except Exception as e:
         print(f"Error reading DNS servers: {e}")
     return dns_servers
+
+def get_interface(interfaces, interfaces_name):
+    interface_details = interfaces.get(interfaces_name, {})
+    ip_address = interface_details.get("ipv4", "N/A")
+    mac = interface_details.get("mac", "N/A")
+    if ip_address and ip_address != "N/A":
+        open_ports = get_open_ports(ip_address)
+        ports_text = open_ports
+    else:
+        ports_text = "N/A"
+    interface_info = f"Interface: {interfaces_name}"
+    return interface_info, ip_address, mac , ports_text
+
+def show_interface(interfaces ,interface_label, treeWidget):
+    interface_info = "Interface: None"
+    interface_label.setText(interface_info)
+    if interfaces:
+        group_item = QTreeWidgetItem(treeWidget)
+        group_item.setText(0, "Ethernet Interfaces")
+        for interface in interfaces:
+            item = QTreeWidgetItem(group_item)
+            item.setText(0, interface)
+    else:
+        no_ethernet_item = QTreeWidgetItem(treeWidget)
+        no_ethernet_item.setText(0, "No Ethernet Interfaces found.")
 

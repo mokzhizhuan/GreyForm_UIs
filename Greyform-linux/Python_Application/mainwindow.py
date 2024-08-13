@@ -37,7 +37,10 @@ class Ui_MainWindow(QMainWindow):
         except FileNotFoundError:
             pass
         resolution = data['resolution']
-        font = data['font_size']
+        font = data["font_size"]
+        self.theme = data["theme"]
+        self.password = data["password"]
+        self.selected_time_zone = data["timezone"]
         self.width, self.height = map(int, resolution.split(' x '))
         self.font_size = int(font)
         self.font = QFont()
@@ -51,6 +54,13 @@ class Ui_MainWindow(QMainWindow):
         self.file = None
         self.file_path = None
         self.ros_node = ros_node
+        self.default_settings = {
+            "theme": str(self.theme),
+            "font_size": self.font_size,
+            "resolution": f"{self.width} x {self.height}",
+            "timezone": self.selected_time_zone,
+            "password": str(self.password),
+        }
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
         self.apply_font_to_widgets(self.mainwindow, self.font)  
@@ -99,6 +109,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow,
             self.width,
             self.height,
+            self.default_settings,
             self.mainwindow.stackedWidget_main,
         )  # insert setting
         self.setStretch()

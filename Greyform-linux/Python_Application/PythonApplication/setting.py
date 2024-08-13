@@ -22,6 +22,7 @@ class Setting(QWidget):
         MainWindow,
         windowwidth,
         windowheight,
+        default_settings,
         stackedWidget_main,
     ):
         super(Setting, self).__init__()
@@ -41,13 +42,7 @@ class Setting(QWidget):
         self.password = data["password"]
         self.font_size = int(font)
         self.selected_time_zone = data["timezone"]
-        self.default_settings = {
-            "theme": str(self.theme),
-            "font_size": self.font_size,
-            "resolution": f"{windowwidth} x {windowheight}",
-            "timezone": self.selected_time_zone,
-            "password": str(self.password),
-        }
+        self.default_settings = default_settings
         self.saved_setting = self.default_settings
         self.stackedWidget_main = stackedWidget_main
         self.setupUi()
@@ -60,17 +55,7 @@ class Setting(QWidget):
         self.settingform.treeWidget.setColumnWidth(0, 500)
         self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
         self.interfaces = interface_signals.get_wireless_interfaces()
-        interface_info = "Interface: None"
-        self.settingform.interface_label.setText(interface_info)
-        if self.interfaces:
-            group_item = QTreeWidgetItem(self.settingform.treeWidget)
-            group_item.setText(0, "Ethernet Interfaces")
-            for interface in self.interfaces:
-                item = QTreeWidgetItem(group_item)
-                item.setText(0, interface)
-        else:
-            no_ethernet_item = QTreeWidgetItem(self.settingform.treeWidget)
-            no_ethernet_item.setText(0, "No Ethernet Interfaces found.")
+        interface_signals.show_interface(self.interfaces , self.settingform.interface_label, self.settingform.treeWidget)
         self.settingform.treeWidget.itemClicked.connect(self.ethernet_item_clicked)
         # setting host services and resolution and font
         Text_index = self.settingform.Text_size.findText(
@@ -148,15 +133,9 @@ class Setting(QWidget):
     def ethernet_item_clicked(self, item, column):
         interface_name = item.text(column)
         interfaces = interface_signals.get_wireless_interfaces()
-        interface_details = interfaces.get(interface_name, {})
-        ip_address = interface_details.get("ipv4", "N/A")
-        mac = interface_details.get("mac", "N/A")
-        if ip_address and ip_address != "N/A":
-            open_ports = interface_signals.get_open_ports(ip_address)
-            ports_text = open_ports
-        else:
-            ports_text = "N/A"
-        interface_info = f"Interface: {interface_name}"
+        interface_info, ip_address, mac, ports_text = interface_signals.get_interface(
+            interfaces, interface_name
+        )
         self.settingform.interface_label.setText(interface_info)
         self.settingform.ip_label.setText(f"IP Address : {ip_address}")
         self.settingform.host.setText(f"Mac Address: {mac}")
