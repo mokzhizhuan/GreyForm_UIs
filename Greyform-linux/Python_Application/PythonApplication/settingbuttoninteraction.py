@@ -134,15 +134,18 @@ class settingbuttonUI(object):
             QMessageBox {
                 min-width: 400px;   
                 min-height: 200px;  
+                icon-size: 100px 100px; 
             }
             QLabel {
                 min-width: 300px;   
                 font-size: 20px;    
+                icon-size: 100px 100px; 
             }
             QPushButton {
                 min-width: 200px;   
                 min-height: 100px; 
                 font-size: 20px;   
+                icon-size: 100px 100px; 
             }
         """)
         self.stackedWidgetsetting.setCurrentIndex(0)

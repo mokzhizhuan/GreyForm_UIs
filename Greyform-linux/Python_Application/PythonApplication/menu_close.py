@@ -25,7 +25,6 @@ class Ui_Dialog_Close(QMainWindow):
         dialog_layout.addWidget(label)
         dialog.setLayout(dialog_layout)
         buttonBox = QtWidgets.QDialogButtonBox()
-        button_font = QFont('Arial', 20)
         buttonBox.setStyleSheet(
             """
             QDialogButtonBox QPushButton {
