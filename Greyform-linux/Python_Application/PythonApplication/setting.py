@@ -170,7 +170,7 @@ class Setting(QWidget):
         self.update_time()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_time)
-        self.timer.start(5000)  # Trigger every 5000 milliseconds (5 seconds)
+        self.timer.start(1000) 
         self.update_memory()
         self.memorytimer = QTimer(self)
         self.memorytimer.timeout.connect(self.update_memory)
