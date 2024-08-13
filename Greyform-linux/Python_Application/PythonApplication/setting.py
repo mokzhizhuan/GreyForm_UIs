@@ -11,7 +11,6 @@ import PythonApplication.settinglayout as settinglayoutUi
 import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
 import datetime, pytz, psutil, os
-from tzlocal import get_localzone
 
 
 # setting loader
