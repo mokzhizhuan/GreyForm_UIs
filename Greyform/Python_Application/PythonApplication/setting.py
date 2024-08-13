@@ -43,13 +43,12 @@ class Setting(QWidget):
         self.theme = data["theme"]
         self.password = data["password"]
         self.font_size = int(font)
+        self.selected_time_zone = data["timezone"]
         self.default_settings = {
             "theme": str(self.theme),
             "font_size": self.font_size,
             "resolution": f"{windowwidth} x {windowheight}",
-            "timezone": str(
-                datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
-            ),
+            "timezone": self.selected_time_zone,
             "password": str(self.password),
         }
         self.saved_setting = self.default_settings
@@ -86,11 +85,8 @@ class Setting(QWidget):
         all_timezones = pytz.all_timezones
         for timezone in all_timezones:
             self.settingform.country.addItem(timezone)
-        local_timezone = (
-            datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
-        )
         index = self.settingform.country.findText(
-            str(local_timezone), Qt.MatchFixedString
+            str(self.selected_time_zone), Qt.MatchFixedString
         )
         if index >= 0:
             self.settingform.country.setCurrentIndex(index)
@@ -116,7 +112,7 @@ class Setting(QWidget):
             self.settingform.Text_size,
             self.settingform.resolutioncomboBox,
             self.settingform.country,
-            self.password
+            self.password,
         )
         self.restartwidgetwindow.show()
         self.restartwidget = QStackedWidget(self.settingform.RestartPowerOffPage)
@@ -210,7 +206,11 @@ class Setting(QWidget):
         )
 
     def update_time(self):
-        now = datetime.datetime.now()
+        tz = pytz.timezone(self.selected_time_zone)
+        now = datetime.datetime.now(tz)
+        self.updatingtime(now)
+
+    def updatingtime(self, now):
         formatted_time = now.strftime("%I:%M %p").lstrip("0")
         if "AM" not in formatted_time and "PM" not in formatted_time:
             am_pm = "AM" if now.hour < 12 else "PM"
@@ -218,14 +218,10 @@ class Setting(QWidget):
         self.settingform.Systemtime.setText(f"Time : {formatted_time}")
 
     def updateTimeLabel(self, index):
-        selected_time_zone = self.settingform.country.currentText()
-        tz = pytz.timezone(selected_time_zone)
+        self.selected_time_zone = self.settingform.country.currentText()
+        tz = pytz.timezone(self.selected_time_zone)
         now = datetime.datetime.now(tz)
-        formatted_time = now.strftime("%I:%M %p").lstrip("0")
-        if "AM" not in formatted_time and "PM" not in formatted_time:
-            am_pm = "AM" if now.hour < 12 else "PM"
-            formatted_time = now.strftime("%I:%M ") + am_pm
-        self.settingform.Systemtime.setText(f"Time : {formatted_time}")
+        self.updatingtime(now)
 
     def update_font(self, index):
         self.font_size = int(self.settingform.Text_size.currentText())
