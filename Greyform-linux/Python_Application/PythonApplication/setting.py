@@ -10,7 +10,7 @@ import PythonApplication.interfacesignal as interface_signals
 import PythonApplication.settinglayout as settinglayoutUi
 import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
-import datetime, pytz, json, psutil, os
+import datetime, pytz, psutil, os
 from tzlocal import get_localzone
 
 
@@ -32,16 +32,11 @@ class Setting(QWidget):
         self.settingform = uic.loadUi("UI_Design/setting.ui", self)
         self.MainWindow = MainWindow
         self.accountinfo = [{"UserID": "admin", "Pass": "pass"}]
-        try:
-            with open("settings.json", "r") as f:
-                data = json.load(f)
-        except FileNotFoundError:
-            pass
-        font = data["font_size"]
-        self.theme = data["theme"]
-        self.password = data["password"]
+        font = default_settings["font_size"]
+        self.theme = default_settings["theme"]
+        self.password = default_settings["password"]
         self.font_size = int(font)
-        self.selected_time_zone = data["timezone"]
+        self.selected_time_zone = default_settings["timezone"]
         self.default_settings = default_settings
         self.saved_setting = self.default_settings
         self.stackedWidget_main = stackedWidget_main
@@ -55,7 +50,11 @@ class Setting(QWidget):
         self.settingform.treeWidget.setColumnWidth(0, 500)
         self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
         self.interfaces = interface_signals.get_wireless_interfaces()
-        interface_signals.show_interface(self.interfaces , self.settingform.interface_label, self.settingform.treeWidget)
+        interface_signals.show_interface(
+            self.interfaces,
+            self.settingform.interface_label,
+            self.settingform.treeWidget,
+        )
         self.settingform.treeWidget.itemClicked.connect(self.ethernet_item_clicked)
         # setting host services and resolution and font
         Text_index = self.settingform.Text_size.findText(
