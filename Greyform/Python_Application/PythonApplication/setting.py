@@ -109,7 +109,15 @@ class Setting(QWidget):
         )
         self.loginwidget.addWidget(self.loginwindow)
         # power and restart
-        self.restartwidgetwindow = closewindow.RestartCloseWidget(self.MainWindow)
+        self.restartwidgetwindow = closewindow.RestartCloseWidget(
+            self.MainWindow,
+            self.saved_setting,
+            self.settingform.themebox,
+            self.settingform.Text_size,
+            self.settingform.resolutioncomboBox,
+            self.settingform.country,
+            self.password
+        )
         self.restartwidgetwindow.show()
         self.restartwidget = QStackedWidget(self.settingform.RestartPowerOffPage)
         self.restartwidget.addWidget(self.restartwidgetwindow)
