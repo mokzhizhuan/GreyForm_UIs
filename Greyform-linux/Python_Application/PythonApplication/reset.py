@@ -24,6 +24,7 @@ class RestartCloseWidget(QWidget):
         Text_size,
         resolutioncomboBox,
         country,
+        font_size,
         password
     ):
         super().__init__()
@@ -33,17 +34,20 @@ class RestartCloseWidget(QWidget):
         self.Text_size = Text_size
         self.resolutioncomboBox = resolutioncomboBox
         self.country = country
+        self.font_size = font_size
         self.password = password
         self.initUI()
 
     def initUI(self):
         button_layout = QHBoxLayout()
         restart_btn = QPushButton("Restart App", self)
-        restart_btn.setFont(QFont("Arial", 18))
+        restart_btn.setFont(QFont("Arial", self.font_size))
+        restart_btn.setFixedHeight(200)
         restart_btn.clicked.connect(self.show_restart_dialog)
         button_layout.addWidget(restart_btn)
         close_btn = QPushButton("Close App", self)
-        close_btn.setFont(QFont("Arial", 18))
+        close_btn.setFont(QFont("Arial", self.font_size))
+        close_btn.setFixedHeight(200)
         close_btn.clicked.connect(self.show_close_dialog)
         button_layout.addWidget(close_btn)
         self.setLayout(button_layout)
