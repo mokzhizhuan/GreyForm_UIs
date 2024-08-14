@@ -8,7 +8,6 @@ from vtk import *
 from vtkmodules.vtkCommonColor import vtkNamedColors
 import numpy as np
 from stl import mesh
-import gc
 import PythonApplication.interactiveevent as events
 import PythonApplication.doormeshvtk as doormeshVTK
 

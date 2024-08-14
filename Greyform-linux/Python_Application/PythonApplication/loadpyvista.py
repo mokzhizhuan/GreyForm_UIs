@@ -1,17 +1,3 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-    QDialog,
-    QProgressBar,
-    QLabel,
-)
-import pyvista as pv
-
-
 class StLloaderpyvista(object):
     def __init__(self, meshsplot, loader, loader_2):
         self.meshsplot = meshsplot

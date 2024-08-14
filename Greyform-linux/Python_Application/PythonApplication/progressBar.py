@@ -1,10 +1,6 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QPushButton,
     QVBoxLayout,
-    QWidget,
     QDialog,
     QProgressBar,
     QLabel,
@@ -14,7 +10,6 @@ from PyQt5.QtGui import QFont
 import pyvista as pv
 import numpy as np
 from stl import mesh
-import vtk
 import meshio
 import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl

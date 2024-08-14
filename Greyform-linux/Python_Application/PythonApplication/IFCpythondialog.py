@@ -1,10 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QPushButton,
     QVBoxLayout,
-    QWidget,
     QDialog,
     QProgressBar,
     QLabel,
@@ -15,13 +11,11 @@ import ifcopenshell
 import ifcopenshell.geom
 import meshio
 import multiprocessing
-import pandas as pd
 import pyvista as pv
 import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl
 import PythonApplication.excel_export_info as biminfo
 import numpy as np
-import openpyxl
 
 
 class ProgressBarDialogIFC(QDialog):

@@ -6,6 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
+
 def get_wireless_interfaces():
     interfaces = psutil.net_if_addrs()
     stats = psutil.net_if_stats()
