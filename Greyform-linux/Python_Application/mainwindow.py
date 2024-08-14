@@ -26,22 +26,27 @@ from threading import Thread
 
 # load the mainwindow application
 class Ui_MainWindow(QMainWindow):
+    # starting ui
     def __init__(self, ros_node):
         super(Ui_MainWindow, self).__init__()
         self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
-        self.width = 800
-        self.height = 600
         try:
             with open("settings.json", "r") as f:
                 data = json.load(f)
+                resolution = data["resolution"]
+                font = data["font_size"]
+                self.theme = data["theme"]
+                self.password = data["password"]
+                self.selected_time_zone = data["timezone"]
+                self.width, self.height = map(int, resolution.split(" x "))
         except FileNotFoundError:
+            font = 30
+            self.theme = "Gray"
+            self.password = "pass"
+            self.selected_time_zone = "Asia/Singapore"
+            self.width = 800 
+            self.height = 600
             pass
-        resolution = data['resolution']
-        font = data["font_size"]
-        self.theme = data["theme"]
-        self.password = data["password"]
-        self.selected_time_zone = data["timezone"]
-        self.width, self.height = map(int, resolution.split(' x '))
         self.font_size = int(font)
         self.font = QFont()
         self.font.setPointSize(self.font_size)
@@ -63,16 +68,16 @@ class Ui_MainWindow(QMainWindow):
         }
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
-        self.apply_font_to_widgets(self.mainwindow, self.font)  
+        self.apply_font_to_widgets(self.mainwindow, self.font)
         self.setupUi()
 
+    # apply font
     def apply_font_to_widgets(self, parent, font):
         if hasattr(parent, "setFont"):
-            parent.setFont(font) 
+            parent.setFont(font)
         if hasattr(parent, "children"):
             for child in parent.children():
                 self.apply_font_to_widgets(child, font)
-
 
     # setup UI
     def setupUi(self):
@@ -136,7 +141,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.MarkingButton,
         )
         self.mainwindow.EnableRobotButton.clicked.connect(self.publish_message)
-    
+
     def directtosettingpage(self):
         self.mainwindow.stackedWidget_main.setCurrentIndex(1)
 
@@ -199,7 +204,6 @@ class Ui_MainWindow(QMainWindow):
                 self.ros_node.publish_file_message(file, self.exceldata)
         else:
             print("No STL file selected.")
-
 
     def setStretch(self):
         self.boxLayout = QVBoxLayout()
