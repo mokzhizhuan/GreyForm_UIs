@@ -12,7 +12,9 @@ import PythonApplication.login as Login
 import PythonApplication.settinglayout as settinglayoutUi
 import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
-import datetime, pytz, psutil, os
+import pytz
+import psutil
+import os
 
 
 # setting page
@@ -47,6 +49,7 @@ class Setting(QWidget):
     # setup ui setting from the page
     def setupUi(self):
         # home
+        self.button_UI()
         self.settingform.themebox.currentIndexChanged.connect(self.colorchange)
         self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
         # wifi
@@ -107,7 +110,6 @@ class Setting(QWidget):
         self.restartwidget = QStackedWidget(self.settingform.RestartPowerOffPage)
         self.restartwidget.addWidget(self.restartwidgetwindow)
         self.restartwidget.setGeometry(50, 260, 300, 200)
-        self.button_UI()
         self.setStretch()
         self.retranslateUi()
         self.settingform.restoreDefaultsButton.clicked.connect(
@@ -129,7 +131,7 @@ class Setting(QWidget):
 
     # button interaction page
     def button_UI(self):
-        settingbuttonUIinteraction.settingbuttonUI(
+        self.settingbutton = settingbuttonUIinteraction.settingbuttonUI(
             self.settingform.MarkingbackButton,
             self.settingform.stackedWidgetsetting,
             self.stackedWidget,
@@ -162,7 +164,7 @@ class Setting(QWidget):
         self.update_time()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_time)
-        self.timer.start(1000)  
+        self.timer.start(1000)
         self.update_memory()
         self.memorytimer = QTimer(self)
         self.memorytimer.timeout.connect(self.update_memory)
@@ -193,20 +195,15 @@ class Setting(QWidget):
 
     # set time in am/pm format
     def update_time(self):
-        self.updatingtime()
+        self.settingbutton.updatingtime(
+            self.selected_time_zone, self.settingform.Systemtime
+        )
 
     def updateTimeLabel(self, index):
         self.selected_time_zone = self.settingform.country.currentText()
-        self.updatingtime()
-
-    def updatingtime(self):
-        tz = pytz.timezone(self.selected_time_zone)
-        now = datetime.datetime.now(tz)
-        formatted_time = now.strftime("%I:%M %p").lstrip("0")
-        if "AM" not in formatted_time and "PM" not in formatted_time:
-            am_pm = "AM" if now.hour < 12 else "PM"
-            formatted_time = now.strftime("%I:%M ") + am_pm
-        self.settingform.Systemtime.setText(f"Time : {formatted_time}")
+        self.settingbutton.updatingtime(
+            self.selected_time_zone, self.settingform.Systemtime
+        )
 
     def update_font(self, index):
         self.font_size = int(self.settingform.Text_size.currentText())

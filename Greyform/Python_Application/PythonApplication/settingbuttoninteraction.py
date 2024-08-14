@@ -162,3 +162,12 @@ class settingbuttonUI(object):
         else:
             color = QColorDialog.getColor()
             self.MainWindow.setStyleSheet(f"background-color : {color.name()}")
+
+    def updatingtime(self , selected_time_zone , Systemtime):
+        tz = pytz.timezone(selected_time_zone)
+        now = datetime.datetime.now(tz)
+        formatted_time = now.strftime("%I:%M %p").lstrip("0")
+        if "AM" not in formatted_time and "PM" not in formatted_time:
+            am_pm = "AM" if now.hour < 12 else "PM"
+            formatted_time = now.strftime("%I:%M ") + am_pm
+        Systemtime.setText(f"Time : {formatted_time}")
