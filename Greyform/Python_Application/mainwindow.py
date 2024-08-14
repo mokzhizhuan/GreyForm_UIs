@@ -17,21 +17,26 @@ import os
 
 # load the mainwindow application
 class Ui_MainWindow(QMainWindow):
+    # starting ui interface
     def __init__(self):
         super(Ui_MainWindow, self).__init__()
-        self.width = 800
-        self.height = 600
         try:
             with open("settings.json", "r") as f:
                 data = json.load(f)
+                resolution = data["resolution"]
+                font = data["font_size"]
+                self.theme = data["theme"]
+                self.password = data["password"]
+                self.selected_time_zone = data["timezone"]
+                self.width, self.height = map(int, resolution.split(" x "))
         except FileNotFoundError:
+            font = 30
+            self.theme = "Gray"
+            self.password = "pass"
+            self.selected_time_zone = "Asia/Singapore"
+            self.width = 800
+            self.height = 600
             pass
-        resolution = data["resolution"]
-        font = data["font_size"]
-        self.theme = data["theme"]
-        self.password = data["password"]
-        self.selected_time_zone = data["timezone"]
-        self.width, self.height = map(int, resolution.split(" x "))
         self.font_size = int(font)
         self.font = QFont()
         self.font.setPointSize(self.font_size)
@@ -52,6 +57,7 @@ class Ui_MainWindow(QMainWindow):
         self._translate = QCoreApplication.translate
         self.setupUi()
 
+    # apply font
     def apply_font_to_widgets(self, parent, font):
         if hasattr(parent, "setFont"):
             parent.setFont(font)
