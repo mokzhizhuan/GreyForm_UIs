@@ -447,7 +447,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_3.addLayout(self.verticalLayout_20)
 
-        self.horizontalLayout_3.setStretch(0, 1)
+        self.horizontalLayout_3.setStretch(0, 2)
         self.horizontalLayout_3.setStretch(1, 1)
         self.horizontalLayout_3.setStretch(2, 1)
         self.stackedWidget.addWidget(self.page_3)
