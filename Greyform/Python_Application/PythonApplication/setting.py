@@ -48,8 +48,8 @@ class Setting(QWidget):
 
     # setup ui setting from the page
     def setupUi(self):
-        # home
         self.button_UI()
+        # home
         self.settingform.themebox.currentIndexChanged.connect(self.colorchange)
         self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
         # wifi

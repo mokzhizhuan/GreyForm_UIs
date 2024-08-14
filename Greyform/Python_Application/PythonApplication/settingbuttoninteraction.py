@@ -155,6 +155,7 @@ class settingbuttonUI(object):
         self.stackedWidget_main.setCurrentIndex(0)
         msg.exec_()
 
+    #color change
     def colorchange(self):
         if self.themebox.currentIndex() == 1:
             self.color = "#D3D3D3"
@@ -163,6 +164,7 @@ class settingbuttonUI(object):
             color = QColorDialog.getColor()
             self.MainWindow.setStyleSheet(f"background-color : {color.name()}")
 
+    #time updated
     def updatingtime(self , selected_time_zone , Systemtime):
         tz = pytz.timezone(selected_time_zone)
         now = datetime.datetime.now(tz)

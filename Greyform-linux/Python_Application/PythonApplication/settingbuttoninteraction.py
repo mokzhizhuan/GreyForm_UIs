@@ -3,6 +3,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 import PythonApplication.savesetting as SaveSettingsDialog
 import json
+import pytz
+import datetime
 from tzlocal import get_localzone
 
 
@@ -130,7 +132,8 @@ class settingbuttonUI(object):
         msg.setText("Settings have been saved successfully!")
         msg.setWindowTitle("Save Settings")
         msg.setStandardButtons(QMessageBox.Ok)
-        msg.setStyleSheet("""
+        msg.setStyleSheet(
+            """
             QMessageBox {
                 min-width: 400px;   
                 min-height: 200px;  
@@ -147,7 +150,8 @@ class settingbuttonUI(object):
                 font-size: 20px;   
                 icon-size: 100px 100px; 
             }
-        """)
+            """
+        )
         self.stackedWidgetsetting.setCurrentIndex(0)
         self.homepages()
         self.stackedWidget_main.setCurrentIndex(0)
@@ -160,3 +164,13 @@ class settingbuttonUI(object):
         else:
             color = QColorDialog.getColor()
             self.MainWindow.setStyleSheet(f"background-color : {color.name()}")
+
+    #time updated
+    def updatingtime(self , selected_time_zone , Systemtime):
+        tz = pytz.timezone(selected_time_zone)
+        now = datetime.datetime.now(tz)
+        formatted_time = now.strftime("%I:%M %p").lstrip("0")
+        if "AM" not in formatted_time and "PM" not in formatted_time:
+            am_pm = "AM" if now.hour < 12 else "PM"
+            formatted_time = now.strftime("%I:%M ") + am_pm
+        Systemtime.setText(f"Time : {formatted_time}")
