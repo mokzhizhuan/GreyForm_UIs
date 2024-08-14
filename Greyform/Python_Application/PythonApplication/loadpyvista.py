@@ -9,8 +9,6 @@ from PyQt5.QtWidgets import (
     QProgressBar,
     QLabel,
 )
-import pyvista as pv
-import numpy as np
 
 
 class StLloaderpyvista(object):

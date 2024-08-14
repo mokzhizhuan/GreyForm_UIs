@@ -3,9 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-import PythonApplication.restoredefault as default
-from pywifi import PyWiFi, const
-import datetime, pytz, json, psutil, os
+from pywifi import PyWiFi
 
 
 class setup_wifi(object):

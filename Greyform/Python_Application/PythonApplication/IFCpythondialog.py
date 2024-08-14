@@ -18,7 +18,6 @@ import PythonApplication.excel_export_info as biminfo
 import numpy as np
 
 
-
 class ProgressBarDialogIFC(QDialog):
     def __init__(
         self,

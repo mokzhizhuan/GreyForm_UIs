@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont
 
+
 #menu dialog to go back to the menu
 class Ui_Dialog_Confirm(QMainWindow):
     def show_dialog_confirm(self, stacked_widget):

@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from pywifi import PyWiFi, const
 import PythonApplication.serveraddress as server
-import os
 import datetime
 import socket
 

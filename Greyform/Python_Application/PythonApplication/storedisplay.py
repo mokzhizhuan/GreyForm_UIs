@@ -1,7 +1,5 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
-import vtk
-from vtk import *
 import PythonApplication.interactiveevent as mainInteraction
 
 

@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QFont
 
+
 #menu dialog to close the app
 class Ui_Dialog_Close(QMainWindow):
     def show_dialog_close(self):
