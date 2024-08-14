@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, uic, QtGui, QtCore
+from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QDialog, QMessageBox
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *

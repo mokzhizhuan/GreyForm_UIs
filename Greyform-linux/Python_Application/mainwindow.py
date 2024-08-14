@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtWidgets, QtGui, uic
+from PyQt5 import uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -44,7 +44,7 @@ class Ui_MainWindow(QMainWindow):
             self.theme = "Gray"
             self.password = "pass"
             self.selected_time_zone = "Asia/Singapore"
-            self.width = 800 
+            self.width = 800
             self.height = 600
             pass
         self.font_size = int(font)

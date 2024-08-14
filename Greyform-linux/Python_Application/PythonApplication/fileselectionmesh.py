@@ -1,4 +1,3 @@
-import sys
 from PyQt5 import QtCore, QtWidgets, QtOpenGL, QtGui, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -9,8 +8,6 @@ import pyqtgraph.opengl as gl
 import ifcopenshell
 import ifcopenshell.geom
 from ifcopenshell.util.placement import get_local_placement
-from pyvistaqt import QtInteractor
-import multiprocessing
 import PythonApplication.progressBar as Progress
 import PythonApplication.IFCpythondialog as ProgressIFCFile
 

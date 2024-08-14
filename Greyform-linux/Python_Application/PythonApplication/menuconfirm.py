@@ -1,14 +1,12 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import (
-    QApplication,
     QMainWindow,
-    QPushButton,
     QDialog,
     QVBoxLayout,
     QLabel,
-    QWidget,
 )
 from PyQt5.QtGui import QFont
+
 
 #menu dialog to go back to the menu
 class Ui_Dialog_Confirm(QMainWindow):
