@@ -10,7 +10,6 @@ from PyQt5.QtGui import QFont
 import pyvista as pv
 import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl
-import numpy as np
 from stl import mesh
 
 
