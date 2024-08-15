@@ -69,6 +69,7 @@ class ProgressBarDialogIFC(QDialog):
         label.setFont(QFont('Arial', 30)) 
         label.setWordWrap(True)
         label.setObjectName("label")
+        self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
         self.timer.start(100)
         progress_layout.addWidget(label)

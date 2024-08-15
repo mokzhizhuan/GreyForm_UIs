@@ -61,7 +61,7 @@ class FileSelectionMesh(QMainWindow):
     def meshdata(self):
         if ".stl" in self.file_path:
             progressbarprogram = Progress.pythonProgressBar(
-                100000,
+                80000,
                 self.plotterloader,
                 self.plotterloader_2,
                 self.file_path,
@@ -86,7 +86,7 @@ class FileSelectionMesh(QMainWindow):
                 self.log_error(f"Failed to open IFC file: {e}")
             else:
                 progressbarprogram = ProgressIFCFile.ProgressBarDialogIFC(
-                    80000,
+                    30000,
                     ifc_file,
                     self.plotterloader,
                     self.plotterloader_2,
