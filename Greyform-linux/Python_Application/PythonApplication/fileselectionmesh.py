@@ -19,8 +19,6 @@ class FileSelectionMesh(QMainWindow):
         file_path,
         plotterloader,
         plotterloader_2,
-        pyvistaframe,
-        pyvistaframe_2,
         layoutWidget,
         layoutWidget_page2,
         renderer,
@@ -38,8 +36,6 @@ class FileSelectionMesh(QMainWindow):
     ):
         self.plotterloader = plotterloader
         self.plotterloader_2 = plotterloader_2
-        self.pyvistaframe = pyvistaframe
-        self.pyvistaframe_2 = pyvistaframe_2
         self.layoutwidget = layoutWidget
         self.layoutwidget_page2 = layoutWidget_page2
         self.file_path = file_path

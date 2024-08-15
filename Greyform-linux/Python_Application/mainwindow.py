@@ -165,8 +165,6 @@ class Ui_MainWindow(QMainWindow):
             self.file_path,
             self.plotterloader,
             self.plotterloader_2,
-            self.mainwindow.pyvistaframe,
-            self.mainwindow.pyvistaframe_2,
             self.mainwindow.layoutWidgetframe,
             self.mainwindow.layoutWidgetpage3,
             self.renderer,
