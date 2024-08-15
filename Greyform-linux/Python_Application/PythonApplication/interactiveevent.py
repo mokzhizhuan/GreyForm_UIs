@@ -174,7 +174,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.SetMotionFactor(8)
         key = self.GetInteractor().GetKeySym()
         actor_position = []
-        delay = 0.1
+        delay = 1
         camera = self.render.GetActiveCamera()
         for i in range(3):
             actor_position.append(self.cubeactor.GetPosition()[i])
