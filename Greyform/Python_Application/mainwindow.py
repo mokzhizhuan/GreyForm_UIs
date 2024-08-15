@@ -150,8 +150,6 @@ class Ui_MainWindow(QMainWindow):
             self.file_path,
             self.plotterloader,
             self.plotterloader_2,
-            self.mainwindow.layoutWidgetframe,
-            self.mainwindow.layoutWidgetpage3,
             self.renderer,
             self.renderWindowInteractor,
             self.mainwindow.Ylabel,
