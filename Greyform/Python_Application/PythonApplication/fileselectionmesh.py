@@ -18,61 +18,16 @@ import pyvista as pv
 
 # load pyvista in the frame
 class FileSelectionMesh(QMainWindow):
-    def __init__(
-        self,
-        file_path,
-        plotterloader,
-        plotterloader_2,
-        renderer,
-        renderWindowInteractor,
-        Ylabel,
-        Xlabel,
-        Xlabel_before,
-        Ylabel_before,
-        Zlabel_before,
-        seq1Button,
-        seq2Button,
-        seq3Button,
-        NextButton_Page_3,
-        Seqlabel,
-    ):
-        self.plotterloader = plotterloader
-        self.plotterloader_2 = plotterloader_2
+    def __init__(self, file_path, mainwindowforfileselection):
         self.file_path = file_path
-        self.renderer = renderer
-        self.renderWindowInteractor = renderWindowInteractor
-        self.Ylabel = Ylabel
-        self.Xlabel = Xlabel
-        self.Xlabel_before = Xlabel_before
-        self.Ylabel_before = Ylabel_before
-        self.Zlabel_before = Zlabel_before
-        self.seq1Button = seq1Button
-        self.seq2Button = seq2Button
-        self.seq3Button = seq3Button
-        self.NextButton_Page_3 = NextButton_Page_3
-        self.Seqlabel = Seqlabel
+        self.mainwindowforfileselection = mainwindowforfileselection
         self.meshdata()
 
     # load meshdata from file
     def meshdata(self):
         if ".stl" in self.file_path:
             progressbarprogram = Progress.pythonProgressBar(
-                80000,
-                self.plotterloader,
-                self.plotterloader_2,
-                self.file_path,
-                self.renderer,
-                self.renderWindowInteractor,
-                self.Xlabel,
-                self.Ylabel,
-                self.Xlabel_before,
-                self.Ylabel_before,
-                self.Zlabel_before,
-                self.seq1Button,
-                self.seq2Button,
-                self.seq3Button,
-                self.NextButton_Page_3,
-                self.Seqlabel,
+                80000, self.file_path, self.mainwindowforfileselection
             )
             progressbarprogram.exec_()
         elif ".ifc" in self.file_path:
@@ -82,22 +37,7 @@ class FileSelectionMesh(QMainWindow):
                 self.log_error(f"Failed to open IFC file: {e}")
             else:
                 progressbarprogram = ProgressIFCFile.ProgressBarDialogIFC(
-                    30000,
-                    ifc_file,
-                    self.plotterloader,
-                    self.plotterloader_2,
-                    self.renderer,
-                    self.renderWindowInteractor,
-                    self.Xlabel,
-                    self.Ylabel,
-                    self.Xlabel_before,
-                    self.Ylabel_before,
-                    self.Zlabel_before,
-                    self.seq1Button,
-                    self.seq2Button,
-                    self.seq3Button,
-                    self.NextButton_Page_3,
-                    self.Seqlabel,
+                    30000, ifc_file, self.mainwindowforfileselection
                 )
                 progressbarprogram.exec_()
 

@@ -15,25 +15,7 @@ from stl import mesh
 
 # progress bar to load the imported stl to pyvista or gl view widget
 class pythonProgressBar(QDialog):
-    def __init__(
-        self,
-        value,
-        plotterloader,
-        plotterloader_2,
-        file_path,
-        renderer,
-        renderWindowInteractor,
-        Xlabel,
-        Ylabel,
-        Xlabel_before,
-        Ylabel_before,
-        Zlabel_before,
-        seq1Button,
-        seq2Button,
-        seq3Button,
-        NextButton_Page_3,
-        Seqlabel,
-    ):
+    def __init__(self, value, file_path, mainwindowforfileselection):
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setWindowTitle("Progress Window")
@@ -41,30 +23,30 @@ class pythonProgressBar(QDialog):
         self.setLayout(progress_layout)
         label = QLabel("Graphics is loading , please wait.")
         label.setGeometry(QtCore.QRect(50, 30, 200, 100))
-        label.setFont(QFont('Arial', 30)) 
+        label.setFont(QFont("Arial", 30))
         label.setWordWrap(True)
         label.setObjectName("label")
         self.progress_bar = QProgressBar(self)
-        self.progress_bar.setFont(QFont('Arial', 30))
+        self.progress_bar.setFont(QFont("Arial", 30))
         self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)
         self.progress_bar.setGeometry(30, 130, 340, 200)
         self.value = value
-        self.loader = plotterloader
-        self.loader_2 = plotterloader_2
+        self.loader = mainwindowforfileselection[0]
+        self.loader_2 = mainwindowforfileselection[1]
         self.filepath = file_path
         self.meshsplot = None
-        self.renderer = renderer
-        self.renderWindowInteractor = renderWindowInteractor
-        self.Ylabel = Ylabel
-        self.Xlabel = Xlabel
-        self.Xlabel_before = Xlabel_before
-        self.Ylabel_before = Ylabel_before
-        self.Zlabel_before = Zlabel_before
-        self.seq1Button = seq1Button
-        self.seq2Button = seq2Button
-        self.seq3Button = seq3Button
-        self.NextButton_Page_3 = NextButton_Page_3
-        self.Seqlabel = Seqlabel
+        self.renderer = mainwindowforfileselection[2]
+        self.renderWindowInteractor = mainwindowforfileselection[3]
+        self.Ylabel = mainwindowforfileselection[4]
+        self.Xlabel = mainwindowforfileselection[5]
+        self.Xlabel_before = mainwindowforfileselection[6]
+        self.Ylabel_before = mainwindowforfileselection[7]
+        self.Zlabel_before = mainwindowforfileselection[8]
+        self.seq1Button = mainwindowforfileselection[9]
+        self.seq2Button = mainwindowforfileselection[10]
+        self.seq3Button = mainwindowforfileselection[11]
+        self.NextButton_Page_3 = mainwindowforfileselection[12]
+        self.Seqlabel = mainwindowforfileselection[13]
         self.start_progress()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
@@ -84,7 +66,7 @@ class pythonProgressBar(QDialog):
             self.progress_bar.setValue(value + 1)
             QTimer.singleShot(100, self.update_progress)
         else:
-            self.timer.stop()  
+            self.timer.stop()
             self.progress_bar.setValue(0)  # Reset progress to 0
             self.timer.start(100)
 
@@ -96,7 +78,7 @@ class pythonProgressBar(QDialog):
         output_stl_path = "output.stl"
         self.resize_stl(input_stl_path, scale_factor, output_stl_path)
         self.meshsplot = pv.read(output_stl_path)
-        loadingstl.StLloaderpyvista(self.meshsplot, self.loader , self.loader_2)
+        loadingstl.StLloaderpyvista(self.meshsplot, self.loader, self.loader_2)
         Createmesh.createMesh(
             self.renderer,
             output_stl_path,

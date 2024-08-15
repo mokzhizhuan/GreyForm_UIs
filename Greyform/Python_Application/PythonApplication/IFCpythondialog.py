@@ -19,25 +19,7 @@ import numpy as np
 
 
 class ProgressBarDialogIFC(QDialog):
-    def __init__(
-        self,
-        total_steps,
-        ifc_file,
-        plotterloader,
-        plotterloader_2,
-        renderer,
-        renderWindowInteractor,
-        Xlabel,
-        Ylabel,
-        Xlabel_before,
-        Ylabel_before,
-        Zlabel_before,
-        seq1Button,
-        seq2Button,
-        seq3Button,
-        NextButton_Page_3,
-        Seqlabel,
-    ):
+    def __init__(self, total_steps, ifc_file, mainwindowforfileselection):
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setLayout(progress_layout)
@@ -45,21 +27,20 @@ class ProgressBarDialogIFC(QDialog):
         self.setGeometry(100, 100, 600, 200)
         self.ifc_file = ifc_file
         self.totalsteps = total_steps
-        self.loader = plotterloader
-        self.loader_2 = plotterloader_2
-        self.renderer = renderer
-        self.renderWindowInteractor = renderWindowInteractor
-        self.Ylabel = Ylabel
-        self.Xlabel = Xlabel
-        self.Xlabel_before = Xlabel_before
-        self.Ylabel_before = Ylabel_before
-        self.Zlabel_before = Zlabel_before
-        self.meshsplot = None
-        self.seq1Button = seq1Button
-        self.seq2Button = seq2Button
-        self.seq3Button = seq3Button
-        self.NextButton_Page_3 = NextButton_Page_3
-        self.Seqlabel = Seqlabel
+        self.loader = mainwindowforfileselection[0]
+        self.loader_2 = mainwindowforfileselection[1]
+        self.renderer = mainwindowforfileselection[2]
+        self.renderWindowInteractor = mainwindowforfileselection[3]
+        self.Ylabel = mainwindowforfileselection[4]
+        self.Xlabel = mainwindowforfileselection[5]
+        self.Xlabel_before = mainwindowforfileselection[6]
+        self.Ylabel_before = mainwindowforfileselection[7]
+        self.Zlabel_before = mainwindowforfileselection[8]
+        self.seq1Button = mainwindowforfileselection[9]
+        self.seq2Button = mainwindowforfileselection[10]
+        self.seq3Button = mainwindowforfileselection[11]
+        self.NextButton_Page_3 = mainwindowforfileselection[12]
+        self.Seqlabel = mainwindowforfileselection[13]
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFont(QFont('Arial', 30))
         self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)

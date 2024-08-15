@@ -17,25 +17,7 @@ import PythonApplication.loadpyvista as loadingstl
 
 # progress bar to load the imported stl to pyvista or gl view widget
 class pythonProgressBar(QDialog):
-    def __init__(
-        self,
-        value,
-        plotterloader,
-        plotterloader_2,
-        file_path,
-        renderer,
-        renderWindowInteractor,
-        Xlabel,
-        Ylabel,
-        Xlabel_before,
-        Ylabel_before,
-        Zlabel_before,
-        seq1Button,
-        seq2Button,
-        seq3Button,
-        NextButton_Page_3,
-        Seqlabel,
-    ):
+    def __init__(self, value, file_path, mainwindowforfileselection):
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setWindowTitle("Progress Window")
@@ -51,22 +33,22 @@ class pythonProgressBar(QDialog):
         self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)
         self.progress_bar.setGeometry(30, 130, 340, 200)
         self.value = value
-        self.loader = plotterloader
-        self.loader_2 = plotterloader_2
+        self.loader = mainwindowforfileselection[0]
+        self.loader_2 = mainwindowforfileselection[1]
         self.filepath = file_path
         self.meshsplot = None
-        self.renderer = renderer
-        self.renderWindowInteractor = renderWindowInteractor
-        self.Ylabel = Ylabel
-        self.Xlabel = Xlabel
-        self.Xlabel_before = Xlabel_before
-        self.Ylabel_before = Ylabel_before
-        self.Zlabel_before = Zlabel_before
-        self.seq1Button = seq1Button
-        self.seq2Button = seq2Button
-        self.seq3Button = seq3Button
-        self.NextButton_Page_3 = NextButton_Page_3
-        self.Seqlabel = Seqlabel
+        self.renderer = mainwindowforfileselection[2]
+        self.renderWindowInteractor = mainwindowforfileselection[3]
+        self.Ylabel = mainwindowforfileselection[4]
+        self.Xlabel = mainwindowforfileselection[5]
+        self.Xlabel_before = mainwindowforfileselection[6]
+        self.Ylabel_before = mainwindowforfileselection[7]
+        self.Zlabel_before = mainwindowforfileselection[8]
+        self.seq1Button = mainwindowforfileselection[9]
+        self.seq2Button = mainwindowforfileselection[10]
+        self.seq3Button = mainwindowforfileselection[11]
+        self.NextButton_Page_3 = mainwindowforfileselection[12]
+        self.Seqlabel = mainwindowforfileselection[13]
         self.start_progress()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)

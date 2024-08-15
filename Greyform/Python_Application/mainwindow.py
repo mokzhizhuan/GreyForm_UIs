@@ -146,8 +146,7 @@ class Ui_MainWindow(QMainWindow):
         model = self.mainwindow.Selectivefilelistview.model()
         self.file_path = model.filePath(index)
         file = self.mainwindow.Selectivefilelistview.model().itemData(index)[0]
-        fileselectionmesh.FileSelectionMesh(
-            self.file_path,
+        mainwindowforfileselection = [
             self.plotterloader,
             self.plotterloader_2,
             self.renderer,
@@ -162,7 +161,8 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.seq3Button,
             self.mainwindow.NextButton_Page_3,
             self.mainwindow.Seqlabel,
-        )
+        ]
+        fileselectionmesh.FileSelectionMesh(self.file_path, mainwindowforfileselection)
         if ".stl" in file:
             self.file = file.replace(".stl", "")
         elif ".ifc" in file:
