@@ -67,7 +67,7 @@ middle click is to insert an object tht was marked <br>
 l key is to remove the actor in the room view and set the mesh to the original position <br>
 m Key is to restore moving position <br>
 Lastly , disable one movement. if the mesh struck collision . it will disable one movement key, this will prevent crashing the cameraactor program <br>
-include thickness based on the dorr using revit and vtk thickness for stl <br>
+include thickness based on the door using revit and vtk thickness for stl <br>
 
 ##
 IFC format: <br>
