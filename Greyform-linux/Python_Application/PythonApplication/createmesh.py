@@ -193,7 +193,7 @@ class createMesh(QMainWindow):
         internal_mesh.SetPolys(polydata.GetPolys())"""
         append_filter = vtkAppendPolyData()
         append_filter.AddInputData(transformedPolyData)
-        append_filter.AddInputData(internal_mesh)
+        #append_filter.AddInputData(internal_mesh)
         append_filter.Update()
         combined_mesh = append_filter.GetOutput()
         mapper = vtkPolyDataMapper()
