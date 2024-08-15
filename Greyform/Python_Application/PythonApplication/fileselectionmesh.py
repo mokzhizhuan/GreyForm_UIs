@@ -108,40 +108,6 @@ class FileSelectionMesh(QMainWindow):
                     self.Seqlabel,
                 )
                 progressbarprogram.exec_()
-        elif ".xml" in self.file_path:
-            tree = ET.parse(self.file_path)
-            root = tree.getroot()
-            # Extract the point and face data
-            points = []
-            faces = []
-
-            # Namespace dictionary for XML parsing
-            ns = {"gbXML": "http://www.gbxml.org/schema"}
-
-            for shell in root.findall(".//gbXML:ClosedShell", ns):
-                for polyloop in shell.findall("gbXML:PolyLoop", ns):
-                    poly_points = []
-                    for point in polyloop.findall("gbXML:CartesianPoint", ns):
-                        coords = [
-                            float(coord.text)
-                            for coord in point.findall("gbXML:Coordinate", ns)
-                        ]
-                        if coords not in points:
-                            points.append(coords)
-                        poly_points.append(points.index(coords))
-                    # Create triangular faces from the polyloop points
-                    for i in range(1, len(poly_points) - 1):
-                        faces.append(
-                            [poly_points[0], poly_points[i], poly_points[i + 1]]
-                        )
-            points = np.array(points)
-            faces = np.array(faces)
-            mesh = meshio.Mesh(points, [("triangle", faces)])
-            meshio.write("output.stl", mesh)
-            self.meshsplot = pv.read("output.stl")
-            loadingstl.StLloaderpyvista(
-                self.meshsplot, self.plotterloader, self.plotterloader_2
-            )
 
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
