@@ -9,11 +9,6 @@ import PythonApplication.progressBar as Progress
 import ifcopenshell
 import ifcopenshell.geom
 import PythonApplication.IFCpythondialog as ProgressIFCFile
-import PythonApplication.loadpyvista as loadingstl
-import xml.etree.ElementTree as ET
-import numpy as np
-import meshio
-import pyvista as pv
 
 
 # load pyvista in the frame
