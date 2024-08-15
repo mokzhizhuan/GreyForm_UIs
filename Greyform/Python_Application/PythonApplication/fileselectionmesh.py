@@ -2,9 +2,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QThread, pyqtSignal
-from pyvistaqt import QtInteractor
 import PythonApplication.progressBar as Progress
 import ifcopenshell
 import ifcopenshell.geom
