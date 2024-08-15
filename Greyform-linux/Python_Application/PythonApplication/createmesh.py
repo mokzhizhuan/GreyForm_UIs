@@ -175,7 +175,7 @@ class createMesh(QMainWindow):
         transformFilter.SetTransform(transform)
         transformFilter.Update()
         transformedPolyData = transformFilter.GetOutput()
-        normals = vtkPolyDataNormals()
+        """normals = vtkPolyDataNormals()
         normals.SetInputData(transformedPolyData)
         normals.ComputePointNormalsOn()
         normals.ComputeCellNormalsOff()
@@ -190,7 +190,7 @@ class createMesh(QMainWindow):
             internal_points.InsertNextPoint(new_point)
         internal_mesh = vtkPolyData()
         internal_mesh.SetPoints(internal_points)
-        internal_mesh.SetPolys(self.reader.GetPolys())
+        internal_mesh.SetPolys(polydata.GetPolys())"""
         append_filter = vtkAppendPolyData()
         append_filter.AddInputData(transformedPolyData)
         append_filter.AddInputData(internal_mesh)
@@ -234,12 +234,11 @@ class createMesh(QMainWindow):
         the actor."""
         mapper = vtk.vtkPolyDataMapper()
         mapper.SetInputData(self.reader)
-        actor = vtk.vtkActor()
-        actor.SetMapper(mapper)
-        actor.GetProperty().SetRepresentationToSurface()
+        self.actor = vtk.vtkActor()
+        self.actor.SetMapper(mapper)
         self.meshbounds = []
         for i in range(6):
-            self.meshbounds.append(actor.GetBounds()[i])
+            self.meshbounds.append(self.actor.GetBounds()[i])
 
     def addseqtext(self, buttonseq, buttonnextpage, label):
         dataseqtext = buttonseq.text()

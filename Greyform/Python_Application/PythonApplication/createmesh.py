@@ -9,6 +9,7 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 import PythonApplication.interactiveevent as events
 import PythonApplication.doormeshvtk as doormeshVTK
 
+
 # create the imported stl mesh in vtk frame
 class createMesh(QMainWindow):
     def __init__(
@@ -150,7 +151,7 @@ class createMesh(QMainWindow):
         transformFilter.SetTransform(transform)
         transformFilter.Update()
         transformedPolyData = transformFilter.GetOutput()
-        normals = vtkPolyDataNormals()
+        """normals = vtkPolyDataNormals()
         normals.SetInputData(transformedPolyData)
         normals.ComputePointNormalsOn()
         normals.ComputeCellNormalsOff()
@@ -165,10 +166,10 @@ class createMesh(QMainWindow):
             internal_points.InsertNextPoint(new_point)
         internal_mesh = vtkPolyData()
         internal_mesh.SetPoints(internal_points)
-        internal_mesh.SetPolys(polydata.GetPolys())
+        internal_mesh.SetPolys(polydata.GetPolys())"""
         append_filter = vtkAppendPolyData()
         append_filter.AddInputData(transformedPolyData)
-        append_filter.AddInputData(internal_mesh)
+        # append_filter.AddInputData(internal_mesh)
         append_filter.Update()
         combined_mesh = append_filter.GetOutput()
         mapper = vtkPolyDataMapper()
@@ -218,11 +219,11 @@ class createMesh(QMainWindow):
         the actor."""
         mapper = vtk.vtkPolyDataMapper()
         mapper.SetInputConnection(self.reader.GetOutputPort())
-        actor = vtk.vtkActor()
-        actor.SetMapper(mapper)
+        self.actor = vtk.vtkActor()
+        self.actor.SetMapper(mapper)
         self.meshbounds = []
         for i in range(6):
-            self.meshbounds.append(actor.GetBounds()[i])
+            self.meshbounds.append(self.actor.GetBounds()[i])
 
     def addseqtext(self, buttonseq, buttonnextpage, label):
         dataseqtext = buttonseq.text()
