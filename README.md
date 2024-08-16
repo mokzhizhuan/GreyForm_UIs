@@ -100,6 +100,7 @@ setting UI > Wifi <br>
                                                       > Delete BIM FIle <br>
            > Restart/Shutdown <br>
            > About <br>
+User Manual Page <br>
 
 ##
 Loading the STL link , using the STL file extension. <br>
