@@ -19,7 +19,6 @@ class SettingText(object):
         author_label,
         Portnumipadd,
         host,
-        Port,
         SystemDate,
         PasslineEdit,
         userlabel,
@@ -33,7 +32,6 @@ class SettingText(object):
         self.author_label = author_label
         self.Portnumipadd = Portnumipadd
         self.host = host
-        self.Port = Port
         self.SystemDate = SystemDate
         self.PasslineEdit = PasslineEdit
         self.userlabel = userlabel
@@ -56,7 +54,6 @@ class SettingText(object):
         servers = server.MyServer()
         self.Portnumipadd.setText(f"Port: {servers.serverPort()}")
         self.host.setText(f"Host: {servers.serverAddress().toString()}")
-        self.Port.setText(f"Port: {servers.serverPort()}")
         datetoday = datetime.date.today()
         datetodayformatted = (
             f"{datetoday.day}/{datetoday.month}/{datetoday.strftime('%y')}"

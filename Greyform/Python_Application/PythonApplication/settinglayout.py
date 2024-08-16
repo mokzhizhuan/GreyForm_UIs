@@ -28,7 +28,6 @@ class SettingLayout(object):
         SystemDate,
         Systemtime,
         SystemMemory,
-        Port,
         servicespage,
         userlabel,
         loginwidget,
@@ -61,7 +60,6 @@ class SettingLayout(object):
         self.SystemDate = SystemDate
         self.Systemtime = Systemtime
         self.SystemMemory = SystemMemory
-        self.Port = Port
         self.servicespage = servicespage
         self.userlabel = userlabel
         self.loginwidget = loginwidget
@@ -103,7 +101,6 @@ class SettingLayout(object):
         self.settingboxserviceslayout.addWidget(self.SystemDate)
         self.settingboxserviceslayout.addWidget(self.Systemtime)
         self.settingboxserviceslayout.addWidget(self.SystemMemory)
-        self.settingboxserviceslayout.addWidget(self.Port)
         self.servicespage.setLayout(self.settingboxserviceslayout)
         self.settingformuserlayout = QVBoxLayout()
         self.settingformuserlayout.addWidget(self.userlabel)
