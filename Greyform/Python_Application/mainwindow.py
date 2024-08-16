@@ -106,7 +106,7 @@ class Ui_MainWindow(QMainWindow):
             self.font,
             self.mainwindow.stackedWidget_main,
             self.mainwindow.usermanualpage,
-        )
+        ) #insert user manual instruction page
         self.retranslateUi()
         self.setStretch()
         self.button_UI()
