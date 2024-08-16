@@ -17,6 +17,7 @@ import PythonApplication.loadpyvista as loadingstl
 import PythonApplication.excel_export_info as biminfo
 import numpy as np
 import warnings
+
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
@@ -44,12 +45,12 @@ class ProgressBarDialogIFC(QDialog):
         self.NextButton_Page_3 = mainwindowforfileselection[12]
         self.Seqlabel = mainwindowforfileselection[13]
         self.progress_bar = QProgressBar(self)
-        self.progress_bar.setFont(QFont('Arial', 30))
+        self.progress_bar.setFont(QFont("Arial", 30))
         self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)
         self.progress_bar.setGeometry(30, 130, 340, 200)
         label = QLabel("Graphics is converting , please wait.")
         label.setGeometry(QtCore.QRect(50, 30, 200, 100))
-        label.setFont(QFont('Arial', 30)) 
+        label.setFont(QFont("Arial", 30))
         label.setWordWrap(True)
         label.setObjectName("label")
         self.timer = QTimer(self)
@@ -85,7 +86,7 @@ class ProgressBarDialogIFC(QDialog):
                 stl_data = {"points": [], "cells": [], "material_ids": []}
                 scale_factor = 1500.0
                 # Collect all unique element types
-                #biminfo.Exportexcelinfo(self.ifc_file, "IfcElement")
+                # biminfo.Exportexcelinfo(self.ifc_file, "IfcElement")
                 try:
                     while True:
                         shape = iterator.get()
@@ -94,7 +95,7 @@ class ProgressBarDialogIFC(QDialog):
                         element_type = element.is_a() if element else "Unknown"
                         faces = shape.geometry.faces
                         verts = shape.geometry.verts
-                        material_ids = shape.geometry.material_ids  
+                        material_ids = shape.geometry.material_ids
                         grouped_verts = [
                             [verts[i], verts[i + 1], verts[i + 2]]
                             for i in range(0, len(verts), 3)

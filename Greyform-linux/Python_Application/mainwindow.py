@@ -9,6 +9,7 @@ import PythonApplication.fileselectionmesh as fileselectionmesh
 from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
+import PythonApplication.usermanual as userHelper
 import PythonApplication.setting as setting
 import vtk
 import json
@@ -117,13 +118,19 @@ class Ui_MainWindow(QMainWindow):
             self.default_settings,
             self.mainwindow.stackedWidget_main,
         )  # insert setting
+        self.usermanualinstruct = userHelper.Usermanual(
+            self.font,
+            self.mainwindow.stackedWidget_main,
+            self.mainwindow.usermanualpage,
+        )
         self.setStretch()
 
     # button interaction
     def button_UI(self):
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_selection_changed)
         self.mainwindow.FilePathButton.clicked.connect(self.browsefilesdirectory)
-        self.SettingButton.clicked.connect(self.directtosettingpage)
+        self.mainwindow.SettingButton.clicked.connect(self.directtosettingpage)
+        self.mainwindow.usermanualButton.clicked.connect(self.directtousermanualpage)
         self.buttonui = mainwindowbuttonUIinteraction.mainwindowbuttonUI(
             self.mainwindow,
             self.mainwindow.stackedWidget,
@@ -144,6 +151,9 @@ class Ui_MainWindow(QMainWindow):
 
     def directtosettingpage(self):
         self.mainwindow.stackedWidget_main.setCurrentIndex(1)
+
+    def directtousermanualpage(self):
+        self.mainwindow.stackedWidget_main.setCurrentIndex(2)
 
     def browsefilesdirectory(self):
         self.filepaths = QFileDialog.getExistingDirectory(
@@ -224,6 +234,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.page_4,
             self.settingpageuipage,
             self.mainwindow.mainconfiguration,
+            self.mainwindow.usermanualButton,
             self.mainwindow.SettingButton,
             self.mainwindow.settingpage,
         )

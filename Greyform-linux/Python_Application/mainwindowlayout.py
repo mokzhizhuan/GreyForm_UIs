@@ -25,6 +25,7 @@ class Ui_MainWindow_layout(object):
         page5,
         settinguipage,
         stackedWidget_main,
+        usermanualButton,
         SettingButton,
         settingpage,
     ):
@@ -48,19 +49,22 @@ class Ui_MainWindow_layout(object):
         self.settingpage = settingpage
         self.stackedWidget_main = stackedWidget_main
         self.SettingButton = SettingButton
+        self.usermanualButton = usermanualButton
         self.setStretch()
 
     def setStretch(self):
         self.boxLayout = QVBoxLayout()
-        self.settinglayout = QHBoxLayout()
+        self.settingusermanuallayout = QHBoxLayout()
         self.horizontalSpacer = QSpacerItem(
             40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
         )
-        self.settinglayout.addItem(self.horizontalSpacer)
-        self.settinglayout.addWidget(self.SettingButton)
-        self.settinglayout.setStretch(0, 2)
-        self.settinglayout.setStretch(1, 1)
-        self.boxLayout.addLayout(self.settinglayout)
+        self.settingusermanuallayout.addWidget(self.usermanualButton)
+        self.settingusermanuallayout.addItem(self.horizontalSpacer)
+        self.settingusermanuallayout.addWidget(self.SettingButton)
+        self.settingusermanuallayout.setStretch(0, 1)
+        self.settingusermanuallayout.setStretch(1, 4)
+        self.settingusermanuallayout.setStretch(2, 1)
+        self.boxLayout.addLayout(self.settingusermanuallayout)
         self.boxLayout.addWidget(self.stackedWidget)
         self.boxLayout.setStretch(0, 1)
         self.boxLayout.setStretch(1, 4)

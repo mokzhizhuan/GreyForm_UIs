@@ -61,13 +61,13 @@ class Exportexcelinfo(object):
                 self.determine_wall_number, axis=1
             )
             dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
-            file_name = f"exporteddatass.xlsx"
-            with pd.ExcelWriter(file_name) as writer:
+            file_name = "exporteddatass.xlsx"
+            with pd.ExcelWriter(file_name, engine="openpyxl") as writer:
                 for object_class in dataframe["Class"].unique():
                     df_class = dataframe[dataframe["Class"] == object_class]
                     df_class = df_class.drop(["Class"], axis=1)
                     df_class = df_class.dropna(axis=1, how="all")
-                    df_class.to_excel(writer, sheet_name=object_class)
+                    df_class.to_excel(writer, sheet_name=object_class, engine="openpyxl")
                     worksheet = writer.sheets[object_class]
                     self.apply_rotation_to_markers(worksheet, df_class)
         except Exception as e:
