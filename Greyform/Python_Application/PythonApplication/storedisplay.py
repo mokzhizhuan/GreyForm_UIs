@@ -8,23 +8,8 @@ class storage(object):
     def __init__(self, setcamerainteraction):
         # starting initialize
         self.setcamerainteraction = setcamerainteraction
-        self.xlabels = setcamerainteraction[0]
-        self.ylabels = setcamerainteraction[1]
-        self.render = setcamerainteraction[2]
-        self.renderwindowinteractor = setcamerainteraction[3]
-        self.meshbound = setcamerainteraction[4]
-        self.xlabelbefore = setcamerainteraction[5]
-        self.ylabelbefore = setcamerainteraction[6]
-        self.zlabelbefore = setcamerainteraction[7]
-        self.mesh = setcamerainteraction[8]
-        self.polys = setcamerainteraction[9]
-        self.reader = setcamerainteraction[10]
         self.cubeactor = setcamerainteraction[11]
-        self.cameraactor = setcamerainteraction[12]
-        self.oldcamerapos = setcamerainteraction[13]
-        self.old_actor_position = setcamerainteraction[13]
-        self.collisionFilter = setcamerainteraction[14]
-        self.spaceseperation = setcamerainteraction[15]
+
 
     def storedisplay(self):
         self.oldcamerapos = [
