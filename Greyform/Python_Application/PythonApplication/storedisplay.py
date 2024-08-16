@@ -5,51 +5,26 @@ import PythonApplication.interactiveevent as mainInteraction
 
 # storing variable for refreshing and storing variable that are saved
 class storage(object):
-    def __init__(
-        self,
-        xlabel,
-        ylabel,
-        ren,
-        renderwindowinteractor,
-        meshbounds,
-        xlabelbefore,
-        ylabelbefore,
-        zlabelbefore,
-        polydata,
-        polys,
-        reader,
-        cubeactor,
-        cameraactor,
-        oldcamerapos,
-        collisionFilter,
-        spaceseperation,
-        default_pos,
-        center,
-    ):
+    def __init__(self, setcamerainteraction):
         # starting initialize
-        self.movement = None
-        self.default_pos = default_pos
-        self.spaceseperation = spaceseperation
-        self.xlabels = xlabel
-        self.ylabels = ylabel
-        self.render = ren
-        self.cameraactor = cameraactor
-        self.renderwindowinteractor = renderwindowinteractor
-        self.meshbound = meshbounds
-        self.mesh = polydata
-        self.polys = polys
-        self.reader = reader
-        self.actor_speed = 20
-        self.cubeactor = cubeactor
-        self.defaultposition = [0, 0, 1]
-        self.oldcamerapos = oldcamerapos
-        self.renderwindowinteractor.GetRenderWindow().Render()
-        self._translate = QtCore.QCoreApplication.translate
-        self.xlabelbefore = xlabelbefore
-        self.ylabelbefore = ylabelbefore
-        self.zlabelbefore = zlabelbefore
-        self.collisionFilter = collisionFilter
-        self.center = center
+        self.setcamerainteraction = setcamerainteraction
+        self.xlabels = setcamerainteraction[0]
+        self.ylabels = setcamerainteraction[1]
+        self.render = setcamerainteraction[2]
+        self.renderwindowinteractor = setcamerainteraction[3]
+        self.meshbound = setcamerainteraction[4]
+        self.xlabelbefore = setcamerainteraction[5]
+        self.ylabelbefore = setcamerainteraction[6]
+        self.zlabelbefore = setcamerainteraction[7]
+        self.mesh = setcamerainteraction[8]
+        self.polys = setcamerainteraction[9]
+        self.reader = setcamerainteraction[10]
+        self.cubeactor = setcamerainteraction[11]
+        self.cameraactor = setcamerainteraction[12]
+        self.oldcamerapos = setcamerainteraction[13]
+        self.old_actor_position = setcamerainteraction[13]
+        self.collisionFilter = setcamerainteraction[14]
+        self.spaceseperation = setcamerainteraction[15]
 
     def storedisplay(self):
         self.oldcamerapos = [
@@ -58,21 +33,5 @@ class storage(object):
             self.cubeactor.GetPosition()[2],
         ]
         self.maininteractor = mainInteraction.myInteractorStyle(
-            self.xlabels,
-            self.ylabels,
-            self.render,
-            self.renderwindowinteractor,
-            self.meshbound,
-            self.xlabelbefore,
-            self.ylabelbefore,
-            self.zlabelbefore,
-            self.mesh,
-            self.polys,
-            self.reader,
-            self.cubeactor,
-            self.cameraactor,
-            self.oldcamerapos,
-            self.collisionFilter,
-            self.spaceseperation,
-            self.center,
+            self.setcamerainteraction
         )

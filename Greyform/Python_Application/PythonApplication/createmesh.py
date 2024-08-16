@@ -110,7 +110,7 @@ class createMesh(QMainWindow):
         self.collisionFilter.SetMatrix(1, self.actor.GetMatrix())
         self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()
-        camera = events.myInteractorStyle(
+        setcamerainteraction = [
             self.xlabels,
             self.ylabels,
             self.ren,
@@ -128,7 +128,8 @@ class createMesh(QMainWindow):
             self.collisionFilter,
             spaceseperation,
             center,
-        )
+        ]
+        camera = events.myInteractorStyle(setcamerainteraction)
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
         self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
