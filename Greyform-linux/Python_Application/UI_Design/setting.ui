@@ -417,31 +417,6 @@
                <string>40</string>
               </property>
              </item>
-             <item>
-              <property name="text">
-               <string>44</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>48</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>52</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>56</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>60</string>
-              </property>
-             </item>
             </widget>
            </item>
           </layout>
