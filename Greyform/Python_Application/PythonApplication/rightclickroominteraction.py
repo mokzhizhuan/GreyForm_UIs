@@ -30,13 +30,7 @@ class rightclickRoomInteract(object):
         self.spaceseperation = setcamerainteraction[15]
         self.center = setcamerainteraction[16]
         camera = self.render.GetActiveCamera()
-        self.center = center
         self.defaultposition = [0, 0, 1]
-        self.center = [
-            (self.meshbound[0] + self.meshbound[1]) / 2,
-            (self.meshbound[2] + self.meshbound[3]) / 2,
-            (self.meshbound[4] + self.meshbound[5]) / 2,
-        ]
         self.renderwindowinteractor.GetRenderWindow().Render()
         self._translate = QCoreApplication.translate
         self.displaystore = displaystoring.storage(setcamerainteraction)
