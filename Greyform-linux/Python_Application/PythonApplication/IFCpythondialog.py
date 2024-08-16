@@ -16,6 +16,8 @@ import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl
 import PythonApplication.excel_export_info as biminfo
 import numpy as np
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 class ProgressBarDialogIFC(QDialog):
@@ -173,10 +175,8 @@ class ProgressBarDialogIFC(QDialog):
             cell_types.append(cell_type)
         if len(cells) > 1:
             vtk_cells = np.concatenate(cells)
-            vtk_offsets = np.concatenate(offset)
         else:
             vtk_cells = cells[0]
-            vtk_offsets = offset[0]
         self.meshsplot = pv.PolyData(meshs.points, vtk_cells)
         loadingstl.StLloaderpyvista(self.meshsplot, self.loader, self.loader_2)
         Createmesh.createMesh(

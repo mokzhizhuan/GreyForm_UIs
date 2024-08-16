@@ -63,14 +63,13 @@ class Exportexcelinfo(object):
             dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
             file_name = f"exporteddatass.xlsx"
             with pd.ExcelWriter(file_name) as writer:
-                workbook = writer.book
                 for object_class in dataframe["Class"].unique():
                     df_class = dataframe[dataframe["Class"] == object_class]
                     df_class = df_class.drop(["Class"], axis=1)
                     df_class = df_class.dropna(axis=1, how="all")
                     df_class.to_excel(writer, sheet_name=object_class)
                     worksheet = writer.sheets[object_class]
-                    self.apply_rotation_to_markers(workbook, worksheet, df_class)
+                    self.apply_rotation_to_markers(worksheet, df_class)
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
 
@@ -122,7 +121,7 @@ class Exportexcelinfo(object):
                 return "+"
         return "6"
 
-    def apply_rotation_to_markers(self, workbook, worksheet, df_class):
+    def apply_rotation_to_markers(self, worksheet, df_class):
         marker_col_index = df_class.columns.get_loc("Shape type")
         for row_idx, (name, marker) in enumerate(
             zip(
