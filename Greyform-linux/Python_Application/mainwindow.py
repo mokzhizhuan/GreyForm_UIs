@@ -161,8 +161,7 @@ class Ui_MainWindow(QMainWindow):
         model = self.mainwindow.Selectivefilelistview.model()
         self.file_path = model.filePath(index)
         file = self.mainwindow.Selectivefilelistview.model().itemData(index)[0]
-        fileselectionmesh.FileSelectionMesh(
-            self.file_path,
+        mainwindowforfileselection = [
             self.plotterloader,
             self.plotterloader_2,
             self.renderer,
@@ -177,7 +176,8 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.seq3Button,
             self.mainwindow.NextButton_Page_3,
             self.mainwindow.Seqlabel,
-        )
+        ]
+        fileselectionmesh.FileSelectionMesh(self.file_path, mainwindowforfileselection)
         if ".stl" in file:
             self.file = file.replace(".stl", "")
         elif ".ifc" in file:
@@ -205,23 +205,28 @@ class Ui_MainWindow(QMainWindow):
         self.boxLayout = QVBoxLayout()
         self.boxLayout.addWidget(self.mainwindow.stackedWidget_main)
         self.mainwindow.centralwidget.setLayout(self.boxLayout)
-        mainwindowforfileselection = [
-            self.plotterloader,
-            self.plotterloader_2,
-            self.renderer,
-            self.renderWindowInteractor,
-            self.mainwindow.Ylabel,
-            self.mainwindow.Xlabel,
-            self.mainwindow.Xlabel_2,
-            self.mainwindow.Ylabel_2,
-            self.mainwindow.Zlabel,
-            self.mainwindow.seq1Button,
-            self.mainwindow.seq2Button,
-            self.mainwindow.seq3Button,
-            self.mainwindow.NextButton_Page_3,
-            self.mainwindow.Seqlabel,
-        ]
-        fileselectionmesh.FileSelectionMesh(self.file_path, mainwindowforfileselection)
+        mainwindowuilayout.Ui_MainWindow_layout(
+            self.mainwindow.stackedWidget,
+            self.mainwindow.QTitle,
+            self.mainwindow.layoutWidget,
+            self.mainwindow.horizontalLayout,
+            self.mainwindow.mainmenu,
+            self.mainwindow.layoutWidgetpage2,
+            self.mainwindow.layoutWidgetframe,
+            self.mainwindow.page,
+            self.mainwindow.Itemlabel,
+            self.mainwindow.layoutWidgetpage3,
+            self.mainwindow.page_2,
+            self.mainwindow.layoutWidgetpage4,
+            self.mainwindow.horizontalLayoutWidgetpage4,
+            self.mainwindow.page_3,
+            self.mainwindow.layoutWidgetpage5,
+            self.mainwindow.page_4,
+            self.settingpageuipage,
+            self.mainwindow.mainconfiguration,
+            self.mainwindow.SettingButton,
+            self.mainwindow.settingpage,
+        )
 
     # clean layout
     def clearLayout(self):

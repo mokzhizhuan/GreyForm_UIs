@@ -6,38 +6,25 @@ import math
 
 
 class LeftInteractorStyle(object):
-    def __init__(
-        self,
-        interactor_style,
-        xlabel,
-        ylabel,
-        ren,
-        renderwindowinteractor,
-        meshbounds,
-        xlabelbefore,
-        ylabelbefore,
-        zlabelbefore,
-        polydata,
-        polys,
-        reader,
-        cubeactor,
-        cameraactor,
-        camdisplay,
-        spaceseperation,
-        center,
-    ):
+    def __init__(self, interactor_style, setcamerainteraction):
         self.interactor_style = interactor_style
-        self.cameraactor = cameraactor
-        self.xlabels = xlabel
-        self.ylabels = ylabel
-        self.render = ren
-        self.spaceseperation = spaceseperation
-        self.renderwindowinteractor = renderwindowinteractor
-        self.meshbound = meshbounds
-        self.mesh = polydata
-        self.polys = polys
-        self.reader = reader
-        self.cubeactor = cubeactor
+        self.xlabels = setcamerainteraction[0]
+        self.ylabels = setcamerainteraction[1]
+        self.render = setcamerainteraction[2]
+        self.renderwindowinteractor = setcamerainteraction[3]
+        self.meshbound = setcamerainteraction[4]
+        self.xlabelbefore = setcamerainteraction[5]
+        self.ylabelbefore = setcamerainteraction[6]
+        self.zlabelbefore = setcamerainteraction[7]
+        self.mesh = setcamerainteraction[8]
+        self.polys = setcamerainteraction[9]
+        self.reader = setcamerainteraction[10]
+        self.cubeactor = setcamerainteraction[11]
+        self.cameraactor = setcamerainteraction[12]
+        self.displayoldpos = setcamerainteraction[13]
+        self.old_actor_position = setcamerainteraction[13]
+        self.spaceseperation = setcamerainteraction[15]
+        self.center = setcamerainteraction[16]
         self.defaultposition = [0, 0, 1]
         self.center = center
         self.collisionFilter = vtk.vtkCollisionDetectionFilter()
@@ -61,15 +48,11 @@ class LeftInteractorStyle(object):
         self.leftbuttoninteraction = False
         self.renderwindowinteractor.GetRenderWindow().Render()
         self._translate = QCoreApplication.translate
-        self.xlabelbefore = xlabelbefore
-        self.ylabelbefore = ylabelbefore
-        self.zlabelbefore = zlabelbefore
         self.max_zoom_in_factor = 2.0
         self.min_zoom_out_factor = 0.1
         self.current_zoom_factor = 1.0
         self.last_update_time = 0
         self.update_interval = 0.1  # Update every 0.1 seconds
-        self.displayoldpos = camdisplay
 
     def leftButtonPressEvent(self, obj, event):
         self.leftbuttoninteraction = True

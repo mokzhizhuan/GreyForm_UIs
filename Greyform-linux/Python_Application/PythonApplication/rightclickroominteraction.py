@@ -7,77 +7,34 @@ import PythonApplication.storedisplay as displaystoring
 
 # interaction with room based on the cell picker
 class rightclickRoomInteract(object):
-    def __init__(
-        self,
-        interactor_style,
-        xlabel,
-        ylabel,
-        ren,
-        renderwindowinteractor,
-        meshbounds,
-        xlabelbefore,
-        ylabelbefore,
-        zlabelbefore,
-        polydata,
-        polys,
-        reader,
-        cubeactor,
-        cameraactor,
-        oldcamerapos,
-        collisionFilter,
-        spaceseperation,
-        default_pos,
-        center,
-    ):
+    def __init__(self, interactor_style, setcamerainteraction , default_pos):
         # starting initialize
         self.interactor_style = interactor_style
+        self.interactor_style = interactor_style
+        self.xlabels = setcamerainteraction[0]
+        self.ylabels = setcamerainteraction[1]
+        self.render = setcamerainteraction[2]
+        self.renderwindowinteractor = setcamerainteraction[3]
+        self.meshbound = setcamerainteraction[4]
+        self.xlabelbefore = setcamerainteraction[5]
+        self.ylabelbefore = setcamerainteraction[6]
+        self.zlabelbefore = setcamerainteraction[7]
+        self.mesh = setcamerainteraction[8]
+        self.polys = setcamerainteraction[9]
+        self.reader = setcamerainteraction[10]
+        self.cubeactor = setcamerainteraction[11]
+        self.cameraactor = setcamerainteraction[12]
+        self.oldcamerapos = setcamerainteraction[13]
+        self.old_actor_position = setcamerainteraction[13]
+        self.collisionFilter = setcamerainteraction[14]
+        self.spaceseperation = setcamerainteraction[15]
+        self.center = setcamerainteraction[16]
         self.default_pos = default_pos
-        self.spaceseperation = spaceseperation
-        self.xlabels = xlabel
-        self.ylabels = ylabel
-        self.render = ren
-        self.cameraactor = cameraactor
         camera = self.render.GetActiveCamera()
-        self.renderwindowinteractor = renderwindowinteractor
-        self.meshbound = meshbounds
-        self.mesh = polydata
-        self.polys = polys
-        self.reader = reader
-        self.cubeactor = cubeactor
-        self.center = center
         self.defaultposition = [0, 0, 1]
-        self.center = [
-            (self.meshbound[0] + self.meshbound[1]) / 2,
-            (self.meshbound[2] + self.meshbound[3]) / 2,
-            (self.meshbound[4] + self.meshbound[5]) / 2,
-        ]
-        self.oldcamerapos = oldcamerapos
         self.renderwindowinteractor.GetRenderWindow().Render()
         self._translate = QtCore.QCoreApplication.translate
-        self.xlabelbefore = xlabelbefore
-        self.ylabelbefore = ylabelbefore
-        self.zlabelbefore = zlabelbefore
-        self.collisionFilter = collisionFilter
-        self.displaystore = displaystoring.storage(
-            xlabel,
-            ylabel,
-            ren,
-            renderwindowinteractor,
-            meshbounds,
-            xlabelbefore,
-            ylabelbefore,
-            zlabelbefore,
-            polydata,
-            polys,
-            reader,
-            cubeactor,
-            cameraactor,
-            oldcamerapos,
-            self.collisionFilter,
-            spaceseperation,
-            self.default_pos,
-            center
-        )
+        self.displaystore = displaystoring.storage(setcamerainteraction)
         self.displaytext(camera)
 
     def click_event(self, obj, event):

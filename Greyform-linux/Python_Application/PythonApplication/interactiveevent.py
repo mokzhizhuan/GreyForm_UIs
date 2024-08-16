@@ -12,115 +12,43 @@ import time
 # right click is to insert the actor in the room view , right click for room interact shower and toilet
 # l key is to remove the actor in the room view and set the mesh to the original position
 class myInteractorStyle(vtkInteractorStyleTrackballCamera):
-    def __init__(
-        self,
-        xlabel,
-        ylabel,
-        ren,
-        renderwindowinteractor,
-        meshbounds,
-        xlabelbefore,
-        ylabelbefore,
-        zlabelbefore,
-        polydata,
-        polys,
-        reader,
-        cubeactor,
-        cameraactor,
-        oldcamerapos,
-        collisionFilter,
-        spaceseperation,
-        center,
-    ):
+    def __init__(self, setcamerainteraction):
         # starting initalize
         self.addactor = self.AddObserver(
             "RightButtonPressEvent", self.RightButtonPressEvent
         )
-        self.spaceseperation = spaceseperation
-        self.xlabels = xlabel
-        self.ylabels = ylabel
-        self.render = ren
-        self.cameraactor = cameraactor
+        self.xlabels = setcamerainteraction[0]
+        self.ylabels = setcamerainteraction[1]
+        self.render = setcamerainteraction[2]
+        self.renderwindowinteractor = setcamerainteraction[3]
+        self.meshbound = setcamerainteraction[4]
+        self.xlabelbefore = setcamerainteraction[5]
+        self.ylabelbefore = setcamerainteraction[6]
+        self.zlabelbefore = setcamerainteraction[7]
+        self.mesh = setcamerainteraction[8]
+        self.polys = setcamerainteraction[9]
+        self.reader = setcamerainteraction[10]
+        self.cubeactor = setcamerainteraction[11]
+        self.cameraactor = setcamerainteraction[12]
+        self.oldcamerapos = setcamerainteraction[13]
+        self.old_actor_position = setcamerainteraction[13]
+        self.collisionFilter = setcamerainteraction[14]
+        self.spaceseperation = setcamerainteraction[15]
+        self.center = setcamerainteraction[16]
         camera = self.render.GetActiveCamera()
-        self.renderwindowinteractor = renderwindowinteractor
-        self.meshbound = meshbounds
-        self.mesh = polydata
-        self.polys = polys
-        self.reader = reader
         self.actor_speed = 20
-        self.cubeactor = cubeactor
         self.defaultposition = [0, 0, 1]
-        self.center = center
-        self.oldcamerapos = oldcamerapos
         self.leftbuttoninteraction = leftbuttoninteraction.LeftInteractorStyle(
-            self,
-            xlabel,
-            ylabel,
-            ren,
-            renderwindowinteractor,
-            meshbounds,
-            xlabelbefore,
-            ylabelbefore,
-            zlabelbefore,
-            polydata,
-            polys,
-            reader,
-            cubeactor,
-            cameraactor,
-            self.oldcamerapos,
-            spaceseperation,
-            center,
+            self, setcamerainteraction
         )
         self.old_actor_position = [160, self.center[1], self.center[2]]
         self.default_pos = [160, self.center[1], self.center[2]]
-        self.collisionFilter = collisionFilter
-        self.old_actor_position = oldcamerapos
         self.refresh()
         self._translate = QCoreApplication.translate
-        self.xlabelbefore = xlabelbefore
-        self.ylabelbefore = ylabelbefore
-        self.zlabelbefore = zlabelbefore
         self.rightclickinteract = roominteraction.rightclickRoomInteract(
-            self,
-            xlabel,
-            ylabel,
-            ren,
-            renderwindowinteractor,
-            meshbounds,
-            xlabelbefore,
-            ylabelbefore,
-            zlabelbefore,
-            polydata,
-            polys,
-            reader,
-            cubeactor,
-            cameraactor,
-            oldcamerapos,
-            self.collisionFilter,
-            spaceseperation,
-            self.default_pos,
-            center,
+            self, setcamerainteraction, self.default_pos
         )
-        self.displaystore = displaystoring.storage(
-            xlabel,
-            ylabel,
-            ren,
-            renderwindowinteractor,
-            meshbounds,
-            xlabelbefore,
-            ylabelbefore,
-            zlabelbefore,
-            polydata,
-            polys,
-            reader,
-            cubeactor,
-            cameraactor,
-            oldcamerapos,
-            self.collisionFilter,
-            spaceseperation,
-            self.default_pos,
-            center,
-        )
+        self.displaystore = displaystoring.storage(setcamerainteraction)
         self.setkeypreventcontrols()
         self.leftbuttoninteraction.displaytext(camera)
 

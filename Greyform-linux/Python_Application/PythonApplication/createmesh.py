@@ -137,7 +137,7 @@ class createMesh(QMainWindow):
         )  # Static object transform
         self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()
-        camera = events.myInteractorStyle(
+        setcamerainteraction = [
             self.xlabels,
             self.ylabels,
             self.ren,
@@ -155,7 +155,8 @@ class createMesh(QMainWindow):
             self.collisionFilter,
             spaceseperation,
             center,
-        )
+        ]
+        camera = events.myInteractorStyle(setcamerainteraction)
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
         self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
@@ -175,7 +176,7 @@ class createMesh(QMainWindow):
         transformFilter.SetTransform(transform)
         transformFilter.Update()
         transformedPolyData = transformFilter.GetOutput()
-        """normals = vtkPolyDataNormals()
+        normals = vtkPolyDataNormals()
         normals.SetInputData(transformedPolyData)
         normals.ComputePointNormalsOn()
         normals.ComputeCellNormalsOff()
@@ -190,10 +191,10 @@ class createMesh(QMainWindow):
             internal_points.InsertNextPoint(new_point)
         internal_mesh = vtkPolyData()
         internal_mesh.SetPoints(internal_points)
-        internal_mesh.SetPolys(polydata.GetPolys())"""
+        internal_mesh.SetPolys(self.reader.GetPolys())
         append_filter = vtkAppendPolyData()
         append_filter.AddInputData(transformedPolyData)
-        #append_filter.AddInputData(internal_mesh)
+        append_filter.AddInputData(internal_mesh)
         append_filter.Update()
         combined_mesh = append_filter.GetOutput()
         mapper = vtkPolyDataMapper()
@@ -234,11 +235,12 @@ class createMesh(QMainWindow):
         the actor."""
         mapper = vtk.vtkPolyDataMapper()
         mapper.SetInputData(self.reader)
-        self.actor = vtk.vtkActor()
-        self.actor.SetMapper(mapper)
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        actor.GetProperty().SetRepresentationToSurface()
         self.meshbounds = []
         for i in range(6):
-            self.meshbounds.append(self.actor.GetBounds()[i])
+            self.meshbounds.append(actor.GetBounds()[i])
 
     def addseqtext(self, buttonseq, buttonnextpage, label):
         dataseqtext = buttonseq.text()
