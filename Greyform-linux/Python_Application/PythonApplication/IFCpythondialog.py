@@ -85,7 +85,7 @@ class ProgressBarDialogIFC(QDialog):
                 stl_data = {"points": [], "cells": [], "material_ids": []}
                 scale_factor = 1500.0
                 # Collect all unique element types
-                biminfo.Exportexcelinfo(self.ifc_file, "IfcElement")
+                #biminfo.Exportexcelinfo(self.ifc_file, "IfcElement")
                 try:
                     while True:
                         shape = iterator.get()
