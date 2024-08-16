@@ -30,6 +30,9 @@ class Usermanual(QWidget):
         self.usermanualboxlayout.addWidget(self.usermanual.usermanuallabel)
         self.usermanualboxlayout.addWidget(self.usermanual.texthelperBrowser)
         self.usermanualboxlayout.addWidget(self.usermanual.backtoUIButton)
+        self.usermanualboxlayout.setStretch(0, 1)
+        self.usermanualboxlayout.setStretch(1, 3)
+        self.usermanualboxlayout.setStretch(2, 1)
         self.usermanualpage.setLayout(self.usermanualboxlayout)
         self.button_UI()
 
