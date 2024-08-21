@@ -16,7 +16,7 @@ class Ui_Dialog_ConfirmAck(QMainWindow):
         self.dialog.resize(400, 300)
         label = QLabel("Are you sure you want to finalize the marking?")
         label.setGeometry(QtCore.QRect(100, 40, 171, 31))
-        label.setFont(QFont('Arial', 20)) 
+        label.setFont(QFont("Arial", 20))
         label.setWordWrap(True)
         label.setObjectName("label")
         dialog_layout = QVBoxLayout()
@@ -40,17 +40,17 @@ class Ui_Dialog_ConfirmAck(QMainWindow):
             | QtWidgets.QDialogButtonBox.StandardButton.Ok
         )
         buttonBox.setObjectName("buttonBox")
-        #buttonBox.accepted.connect(self.trigger_alarm)
+        # buttonBox.accepted.connect(self.trigger_alarm)
         buttonBox.rejected.connect(self.dialog.close)
         dialog_layout.addWidget(buttonBox)
         self.dialog.exec_()
 
     def trigger_alarm(self):
         # Set up serial connection
-        # scan alarm if it is not needed . Dont need to implement it. 
-        #ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
-    
+        # scan alarm if it is not needed . Dont need to implement it.
+        # ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1)
+
         # Send command to trigger alarm
-        #ser.write(b'ALARM_ON\n')  # Replace with the actual command to trigger the alarm
+        # ser.write(b'ALARM_ON\n')  # Replace with the actual command to trigger the alarm
         self.dialog.close()
         self.close()

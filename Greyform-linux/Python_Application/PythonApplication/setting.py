@@ -135,12 +135,12 @@ class Setting(QWidget):
     def ethernet_item_clicked(self, item, column):
         interface_name = item.text(column)
         interfaces = interface_signals.get_wireless_interfaces()
-        interface_info, ip_address, mac, ports_text = interface_signals.get_interface(
+        interface_info, ip_address, host, ports_text = interface_signals.get_interface(
             interfaces, interface_name
         )
         self.settingform.interface_label.setText(interface_info)
         self.settingform.ip_label.setText(f"IP Address : {ip_address}")
-        self.settingform.host.setText(f"Mac Address: {mac}")
+        self.settingform.host.setText(f"Host: {host}")
         self.settingform.Portnumipadd.setText(f"Port: {ports_text}")
 
     # button interaction page
