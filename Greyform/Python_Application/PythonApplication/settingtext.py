@@ -59,7 +59,7 @@ class SettingText(object):
         
     def get_open_port_and_host(self, ip_address):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind((ip_address, 0)) 
+        s.bind(ip_address, 0) 
         host, port = s.getsockname()  
         s.close()
         return host, port
