@@ -3,9 +3,12 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from pywifi import PyWiFi, const
-import PythonApplication.serveraddress as server
 import datetime
 import socket
+import netifaces as ni
+import subprocess
+import re
+from pywifi import PyWiFi
 
 
 class SettingText(object):
@@ -36,24 +39,43 @@ class SettingText(object):
         self.PasslineEdit = PasslineEdit
         self.userlabel = userlabel
         self.accountinfo = accountinfo
-        self.retranslateUi()
-
-    def get_ip_address(self):
-        ip_address = socket.gethostbyname(socket.gethostname())
+        self.retranslateUi()        
+    
+    def get_active_wifi_interface(self):
+        result = subprocess.run(['ipconfig'], capture_output=True, text=True)
+        interface_pattern = re.compile(r"Wireless LAN adapter (.+):")
+        ip_pattern = re.compile(r"\s+IPv4 Address.*:\s*(.+)")
+        active_interface = None
+        ip_address = None
+        for line in result.stdout.splitlines():
+            interface_match = interface_pattern.match(line)
+            if interface_match:
+                active_interface = interface_match.group(1).strip()
+            ip_match = ip_pattern.match(line)
+            if ip_match and active_interface:
+                ip_address = ip_match.group(1).strip()
+                return ip_address
         return ip_address
+        
+    def get_open_port_and_host(self, ip_address):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind((ip_address, 0)) 
+        host, port = s.getsockname()  
+        s.close()
+        return host, port
 
     # add text
     def retranslateUi(self):
-        ip_address = self.get_ip_address()
+        ip_address = self.get_active_wifi_interface()
         self.labeltitlsetting.setText("<h3>Setting</h3>")
         self.ip_label.setText(f"IP Address: {ip_address}")
+        host, port = self.get_open_port_and_host(ip_address)
         self.titlelabel.setText("<h3>About My Application</h3>")
         self.info_label.setText("This is a Robot Marking Application program")
         self.version_label.setText("Version: 1.0")
         self.author_label.setText("Created by Mok Zhi Zhuan")
-        servers = server.MyServer()
-        self.Portnumipadd.setText(f"Port: {servers.serverPort()}")
-        self.host.setText(f"Host: {servers.serverAddress().toString()}")
+        self.Portnumipadd.setText(f"Port: {port}")
+        self.host.setText(f"Host: {host}")
         datetoday = datetime.date.today()
         datetodayformatted = (
             f"{datetoday.day}/{datetoday.month}/{datetoday.strftime('%y')}"
