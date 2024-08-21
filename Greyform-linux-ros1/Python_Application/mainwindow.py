@@ -272,26 +272,15 @@ def ros_spin():
 if __name__ == "__main__":
     # Initialize the ROS node
     rospy.init_node('talker_node', anonymous=True)
-    
-    # Create an instance of your ROS node
     talker_node = RosPublisher.TalkerNode()
-
-    # Initialize the Qt application
     app = QApplication(sys.argv)
-    
-    # Create and show the main window, passing in the ROS node if necessary
     main_window = Ui_MainWindow(talker_node)
     main_window.show()
-
-    # Start the ROS spinning thread
     talker_thread = Thread(target=ros_spin)
     talker_thread.start()
-
     try:
-        # Execute the Qt application
         sys.exit(app.exec_())
     except SystemExit:
         pass
     finally:
-        # Shutdown the ROS node when the application exits
         rospy.signal_shutdown("Shutting down ROS node")
