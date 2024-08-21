@@ -3,11 +3,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-import OpenGL.GL as gl
-import pyqtgraph.opengl as gl
-"""import ifcopenshell
-import ifcopenshell.geom
-from ifcopenshell.util.placement import get_local_placement"""
 import PythonApplication.progressBar as Progress
 import PythonApplication.IFCpythondialog as ProgressIFCFile
 
@@ -26,15 +21,4 @@ class FileSelectionMesh(QMainWindow):
                 80000, self.file_path, self.mainwindowforfileselection
             )
             progressbarprogram.exec_()
-        """elif ".ifc" in self.file_path:
-            try:
-                ifc_file = ifcopenshell.open(self.file_path)
-            except Exception as e:
-                self.log_error(f"Failed to open IFC file: {e}")
-            else:
-                progressbarprogram = ProgressIFCFile.ProgressBarDialogIFC(
-                    30000, ifc_file, self.mainwindowforfileselection
-                )
-                progressbarprogram.exec_()"""
-
 
