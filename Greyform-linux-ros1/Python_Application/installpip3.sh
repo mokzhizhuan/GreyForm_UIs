@@ -10,7 +10,7 @@ pip3 install pyqtgraph
 pip3 install OpenGL
 pip3 install numpy-stl
 pip3 install meshio
-pip3 install openxyl
+pip3 install openpxyl
 pip3 install pandas 
 pip3 install serial
 pip3 install tzlocal

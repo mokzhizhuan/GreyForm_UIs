@@ -7,8 +7,9 @@ pip install pyqtgraph
 pip install OpenGL
 pip install numpy-stl
 pip install meshio
-pip install openxyl
+pip install openpxyl
 pip install pandas 
 pip install serial
 pip install tzlocal
 pip install psutil
+pip install netifaces
