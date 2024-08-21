@@ -8,7 +8,7 @@ pip/pip3 install pyqtgraph <br>
 pip/pip3 install OpenGL <br>
 pip/pip3 install numpy-stl <br>
 pip/pip3 install meshio <br>
-pip/pip3 install openxyl <br>
+pip/pip3 install openpxyl <br>
 pip/pip3 install pandas <br>
 pip/pip3 install tzlocal <br>
 pip/pip3 install psutil <br>
