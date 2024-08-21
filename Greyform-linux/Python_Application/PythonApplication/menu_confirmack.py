@@ -40,7 +40,7 @@ class Ui_Dialog_ConfirmAck(QMainWindow):
             | QtWidgets.QDialogButtonBox.StandardButton.Ok
         )
         buttonBox.setObjectName("buttonBox")
-        buttonBox.accepted.connect(self.trigger_alarm)
+        #buttonBox.accepted.connect(self.trigger_alarm)
         buttonBox.rejected.connect(self.dialog.close)
         dialog_layout.addWidget(buttonBox)
         self.dialog.exec_()
