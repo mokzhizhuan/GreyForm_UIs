@@ -39,10 +39,10 @@ class SettingText(object):
         self.PasslineEdit = PasslineEdit
         self.userlabel = userlabel
         self.accountinfo = accountinfo
-        self.retranslateUi()        
-    
+        self.retranslateUi()
+
     def get_active_wifi_interface(self):
-        result = subprocess.run(['ipconfig'], capture_output=True, text=True)
+        result = subprocess.run(["ipconfig"], capture_output=True, text=True)
         interface_pattern = re.compile(r"Wireless LAN adapter (.+):")
         ip_pattern = re.compile(r"\s+IPv4 Address.*:\s*(.+)")
         active_interface = None
@@ -56,11 +56,11 @@ class SettingText(object):
                 ip_address = ip_match.group(1).strip()
                 return ip_address
         return ip_address
-        
+
     def get_open_port_and_host(self, ip_address):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(ip_address, 0) 
-        host, port = s.getsockname()  
+        s.bind((ip_address, 0))
+        host, port = s.getsockname()
         s.close()
         return host, port
 
