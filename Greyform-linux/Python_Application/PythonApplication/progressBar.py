@@ -103,10 +103,8 @@ class pythonProgressBar(QDialog):
             cell_types.append(cell_type)
         if len(cells) > 1:
             vtk_cells = np.concatenate(cells)
-            vtk_offsets = np.concatenate(offset)
         else:
             vtk_cells = cells[0]
-            vtk_offsets = offset[0]
         # Create PyVista mesh
         self.meshsplot = pv.PolyData(meshs.points, vtk_cells)
         loadingstl.StLloaderpyvista(self.meshsplot, self.loader, self.loader_2)

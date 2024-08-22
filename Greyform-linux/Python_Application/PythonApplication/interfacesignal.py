@@ -1,6 +1,7 @@
 import psutil
 import socket
 import subprocess
+import re
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -32,6 +33,22 @@ def get_wireless_interfaces():
                 ].speed
     return ethernet_interfaces
 
+def get_active_wifi_interface():
+    result = subprocess.run(['ip', 'addr', 'show'], capture_output=True, text=True)
+    interface_pattern = re.compile(r"\d+: (\w+):.*state UP")
+    ip_pattern = re.compile(r"\s+inet (\d+\.\d+\.\d+\.\d+)/\d+")
+    active_interface = None
+    ip_address = None
+    for line in result.stdout.splitlines():
+        interface_match = interface_pattern.match(line)
+        if interface_match:
+            active_interface = interface_match.group(1).strip()
+        ip_match = ip_pattern.match(line)
+        if ip_match and active_interface:
+            ip_address = ip_match.group(1).strip()
+            host , port = get_open_ports(ip_address)
+            return active_interface, ip_address ,host, port
+    return None, None , None , None
 
 def get_open_ports(interface_ip):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -77,9 +94,7 @@ def get_interface(interfaces, interfaces_name):
     return interface_info, ip_address, host, ports_text
 
 
-def show_interface(interfaces, interface_label, treeWidget):
-    interface_info = "Interface: None"
-    interface_label.setText(interface_info)
+def show_interface(interfaces, treeWidget):
     if interfaces:
         group_item = QTreeWidgetItem(treeWidget)
         group_item.setText(0, "Ethernet Interfaces")

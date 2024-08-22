@@ -119,7 +119,7 @@ class Ui_MainWindow(QMainWindow):
             self.font,
             self.mainwindow.stackedWidget_main,
             self.mainwindow.usermanualpage,
-        ) #insert user manual instruction page
+        )  # insert user manual instruction page
         self.setStretch()
 
     # button interaction
@@ -269,9 +269,10 @@ class Ui_MainWindow(QMainWindow):
 def ros_spin():
     rospy.spin()
 
+
 if __name__ == "__main__":
     # Initialize the ROS node
-    rospy.init_node('talker_node', anonymous=True)
+    rospy.init_node("talker_node", anonymous=True)
     talker_node = RosPublisher.TalkerNode()
     app = QApplication(sys.argv)
     main_window = Ui_MainWindow(talker_node)

@@ -46,6 +46,11 @@ class Setting(QWidget):
     # setup ui setting from the page
     def setupUi(self):
         self.button_UI()
+        interface_name, ip_address, host, ports_text = (
+            interface_signals.get_active_wifi_interface()
+        )
+        interface_info = f"Interface: {interface_name}"
+        self.setinterfacelabel(interface_info, ip_address, host, ports_text)
         # home
         self.settingform.themebox.currentIndexChanged.connect(self.colorchange)
         # wifi
@@ -54,7 +59,6 @@ class Setting(QWidget):
         self.interfaces = interface_signals.get_wireless_interfaces()
         interface_signals.show_interface(
             self.interfaces,
-            self.settingform.interface_label,
             self.settingform.treeWidget,
         )
         self.settingform.treeWidget.itemClicked.connect(self.ethernet_item_clicked)
@@ -138,6 +142,9 @@ class Setting(QWidget):
         interface_info, ip_address, host, ports_text = interface_signals.get_interface(
             interfaces, interface_name
         )
+        self.setinterfacelabel(interface_info, ip_address, host, ports_text)
+
+    def setinterfacelabel(self, interface_info, ip_address, host, ports_text):
         self.settingform.interface_label.setText(interface_info)
         self.settingform.ip_label.setText(f"IP Address : {ip_address}")
         self.settingform.host.setText(f"Host: {host}")

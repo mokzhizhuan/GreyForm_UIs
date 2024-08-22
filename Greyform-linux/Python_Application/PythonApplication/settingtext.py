@@ -11,7 +11,6 @@ class SettingText(object):
     def __init__(
         self,
         labeltitlsetting,
-        ip_label,
         titlelabel,
         info_label,
         version_label,
@@ -23,7 +22,6 @@ class SettingText(object):
         accountinfo,
     ):
         self.labeltitlsetting = labeltitlsetting
-        self.ip_label = ip_label
         self.titlelabel = titlelabel
         self.info_label = info_label
         self.version_label = version_label

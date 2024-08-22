@@ -4,10 +4,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.progressBar as Progress
-import PythonApplication.IFCpythondialog as ProgressIFCFile
 
 
-#load pyvista in the frame
+# load pyvista in the frame
 class FileSelectionMesh(QMainWindow):
     def __init__(self, file_path, mainwindowforfileselection):
         self.file_path = file_path
@@ -21,4 +20,3 @@ class FileSelectionMesh(QMainWindow):
                 80000, self.file_path, self.mainwindowforfileselection
             )
             progressbarprogram.exec_()
-

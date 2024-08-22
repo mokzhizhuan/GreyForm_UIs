@@ -14,14 +14,9 @@ import PythonApplication.setting as setting
 import vtk
 import json
 import os
-from stl import mesh
-import numpy as np
 import talker_listener.talker_node as RosPublisher
-import talker_listener.lidar_publisher as RosLidarPublisher
 import rclpy
-from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
-from std_msgs.msg import String
 from threading import Thread
 
 
@@ -122,7 +117,7 @@ class Ui_MainWindow(QMainWindow):
             self.font,
             self.mainwindow.stackedWidget_main,
             self.mainwindow.usermanualpage,
-        ) #insert user manual instruction page
+        )  # users manual instruction page
         self.setStretch()
 
     # button interaction
