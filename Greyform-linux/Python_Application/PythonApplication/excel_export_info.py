@@ -1,6 +1,7 @@
 import pandas as pd
 import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
+from openpyxl.utils import get_column_letter
 
 
 class Exportexcelinfo(object):
@@ -19,7 +20,7 @@ class Exportexcelinfo(object):
                 "Status",
             ]
             dataframe_Legend = pd.read_excel(
-                "Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2
+                "Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2 , engine='openpyxl'
             )
             self.pen_column = dataframe_Legend.columns[3]
             self.pin_id_column = dataframe_Legend.columns[9]
@@ -67,7 +68,7 @@ class Exportexcelinfo(object):
                     df_class = dataframe[dataframe["Class"] == object_class]
                     df_class = df_class.drop(["Class"], axis=1)
                     df_class = df_class.dropna(axis=1, how="all")
-                    df_class.to_excel(writer, sheet_name=object_class, engine="openpyxl")
+                    df_class.to_excel(writer, sheet_name=object_class, )
                     worksheet = writer.sheets[object_class]
                     self.apply_rotation_to_markers(worksheet, df_class)
         except Exception as e:
@@ -123,31 +124,33 @@ class Exportexcelinfo(object):
 
     def apply_rotation_to_markers(self, worksheet, df_class):
         marker_col_index = df_class.columns.get_loc("Shape type")
+        marker_col_letter = get_column_letter(marker_col_index + 2)  # +2 to account for 1-based indexing in Excel
+    
         for row_idx, (name, marker) in enumerate(
             zip(
                 df_class["Point number/name"],
                 df_class["Shape type"],
             ),
-            start=1,
+            start=2,  # Start from the second row (considering headers are in the first row)
         ):
             if name and name.startswith("TMP") and name[8] == "s" and name[3] == "7":
                 print(f"Rotating marker for row {row_idx}: {marker}")
                 if "b" in name:
                     marker = 4
-                    worksheet.write(row_idx, marker_col_index + 1, marker)
+                    worksheet[f'{marker_col_letter}{row_idx}'].value = marker
                 else:
                     marker = 3
-                    worksheet.write(row_idx, marker_col_index + 1, marker)
+                    worksheet[f'{marker_col_letter}{row_idx}'].value = marker
             else:
                 if marker == "T":
                     marker = 2
-                    worksheet.write(row_idx, marker_col_index + 1, marker)
+                    worksheet[f'{marker_col_letter}{row_idx}'].value = marker
                 elif marker == "+":
                     marker = 1
-                    worksheet.write(row_idx, marker_col_index + 1, marker)
+                    worksheet[f'{marker_col_letter}{row_idx}'].value = marker
                 elif marker == "6":
                     marker = 6
-                    worksheet.write(row_idx, marker_col_index + 1, marker)
+                    worksheet[f'{marker_col_letter}{row_idx}'].value = marker
 
     def get_attribute_value(self, object_data, attribute):
         if "." not in attribute:

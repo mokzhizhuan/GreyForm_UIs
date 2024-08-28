@@ -15,5 +15,7 @@ pip3 install pandas
 pip3 install serial
 pip3 install tzlocal
 pip3 install psutil
+pip3 install fiona
+pip3 install geopandas
 
 

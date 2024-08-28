@@ -1,19 +1,19 @@
 #install python libraries
 sudo apt install python3-colcon-common-extensions
 sudo apt install python3-pip
-pip3 install pyvistaqt
-pip3 install ifcopenshell
-pip3 install vtk
-pip3 install PyQt5
-pip3 install multiprocess
-pip3 install pyqtgraph
-pip3 install OpenGL
-pip3 install numpy-stl
-pip3 install meshio
-pip3 install openpxyl
-pip3 install pandas 
-pip3 install serial
-pip3 install tzlocal
-pip3 install psutil
+pip install pyvistaqt
+pip install ifcopenshell
+pip install vtk
+pip install PyQt5
+pip install multiprocess
+pip install pyqtgraph
+pip install PyOpenGL PyOpenGL-accelerate
+pip install numpy-stl
+pip install meshio
+pip install openpxyl
+pip install pandas 
+pip install serial
+pip install tzlocal
+pip install psutil
 
 

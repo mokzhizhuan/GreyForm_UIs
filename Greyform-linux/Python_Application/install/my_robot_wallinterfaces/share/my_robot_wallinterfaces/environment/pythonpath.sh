@@ -1,3 +1,1 @@
-# generated from ament_package/template/environment_hook/pythonpath.sh.in
-
-ament_prepend_unique_value PYTHONPATH "$AMENT_CURRENT_PREFIX/local/lib/python3.10/dist-packages"
+/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/ament_cmake_environment_hooks/pythonpath.sh

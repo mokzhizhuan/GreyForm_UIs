@@ -67,7 +67,7 @@ include CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/comp
 include CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/progress.make
 
 CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg:
-	cd /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/ament_cmake_python/my_robot_wallinterfaces && /usr/bin/python3 setup.py egg_info
+	cd /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/ament_cmake_python/my_robot_wallinterfaces && /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/bin/python3 setup.py egg_info
 
 ament_cmake_python_build_my_robot_wallinterfaces_egg: CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg
 ament_cmake_python_build_my_robot_wallinterfaces_egg: CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/build.make

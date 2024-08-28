@@ -10,6 +10,8 @@ import numpy as np
 from stl import mesh
 import PythonApplication.interactiveevent as events
 import PythonApplication.doormeshvtk as doormeshVTK
+import PythonApplication.exceldatavtk as vtk_data_excel
+
 
 
 # create the imported stl mesh in vtk frame
@@ -28,7 +30,10 @@ class createMesh(QMainWindow):
         seq2Button,
         seq3Button,
         NextButton_Page_3,
-        Seqlabel,   
+        Seqlabel,
+        localizebutton,
+        ros_node,
+        file_path
     ):
         # variable for loading bar ui
         self.defaultposition = [0, 0, 1]
@@ -43,51 +48,35 @@ class createMesh(QMainWindow):
         self.zlabelbefore = zlabelbefore
         self.xlabels = xlabel
         self.ylabels = ylabel
-        self.seq1Button = seq1Button
-        self.seq2Button = seq2Button
-        self.seq3Button = seq3Button
-        self.NextButton_Page_3 = NextButton_Page_3
-        self.Seqlabel = Seqlabel
+        self.localizebutton = localizebutton
+        self.ros_node = ros_node
+        self.filepath = file_path
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
         self.door = doormeshVTK.doorMesh()
-        self.seq1Button.clicked.connect(
-            lambda: self.addseqtext(
-                self.seq1Button, self.NextButton_Page_3, self.Seqlabel
-            )
+        seq1Button.clicked.connect(
+            lambda: self.addseqtext(seq1Button, NextButton_Page_3, Seqlabel)
         )
-        self.seq2Button.clicked.connect(
-            lambda: self.addseqtext(
-                self.seq2Button,
-                self.NextButton_Page_3,
-                self.Seqlabel,
-            )
+        seq2Button.clicked.connect(
+            lambda: self.addseqtext(seq2Button, NextButton_Page_3, Seqlabel)
         )
-        self.seq3Button.clicked.connect(
-            lambda: self.addseqtext(
-                self.seq3Button,
-                self.NextButton_Page_3,
-                self.Seqlabel,
-            )
+        seq3Button.clicked.connect(
+            lambda: self.addseqtext(seq3Button, NextButton_Page_3, Seqlabel)
         )
+        self.wall_identifiers = vtk_data_excel.exceldataextractor()
         self.loadStl()
-
 
     def loadStl(self):
         """Load the given STL file, and return a vtkPolyData object for it."""
         meshs = mesh.Mesh.from_file(self.polydata)
-        shape = meshs.points.shape
         points = meshs.points.reshape(-1, 3)
         faces = np.arange(points.shape[0]).reshape(-1, 3)
-        # Create VTK Points
         vtk_points = vtk.vtkPoints()
         for vertex in points:
             vtk_points.InsertNextPoint(vertex)
-        # Create VTK CellArray
         vtk_faces = vtk.vtkCellArray()
         for face in faces:
-            # Create VTK Polygon (assuming all faces are polygons)
             polygon = vtk.vtkPolygon()
             for vertex_index in face:
                 polygon.GetPointIds().InsertNextId(vertex_index)
@@ -102,6 +91,18 @@ class createMesh(QMainWindow):
             (self.meshbounds[2] + self.meshbounds[3]) / 2,
             (self.meshbounds[4] + self.meshbounds[5]) / 2,
         ]
+        x_coords = []
+        y_coords = []
+        z_coords = []
+        for wall_identify in self.wall_identifiers:
+            x_coords.append(wall_identify["Position X (m)"])
+            y_coords.append(wall_identify["Position Y (m)"])
+            z_coords.append(wall_identify["Position Z (m)"])
+        for wall_identify, x, y, z in zip(
+            self.wall_identifiers, x_coords, y_coords, z_coords
+        ):
+            point_id = self.find_closest_point(self.reader, (x, y, z))
+            wall_identify["Point ID"] = point_id
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
         self.cubeactor.SetPosition(160, center[1], center[2])
@@ -155,8 +156,14 @@ class createMesh(QMainWindow):
             self.collisionFilter,
             spaceseperation,
             center,
+            self.filepath
         ]
-        camera = events.myInteractorStyle(setcamerainteraction)
+        camera = events.myInteractorStyle(
+            setcamerainteraction,
+            self.wall_identifiers,
+            self.localizebutton,
+            self.ros_node,
+        )
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
         self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
@@ -166,6 +173,13 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
+
+    def find_closest_point(self, polydata, target_position):
+        point_locator = vtk.vtkKdTreePointLocator()
+        point_locator.SetDataSet(polydata)
+        point_locator.BuildLocator()
+        point_id = point_locator.FindClosestPoint(target_position)
+        return point_id
 
     def fixedposition(self):
         minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]

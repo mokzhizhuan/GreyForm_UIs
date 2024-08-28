@@ -411,34 +411,6 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <widget class="QWidget" name="layoutWidgetpage4">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>10</y>
-          <width>791</width>
-          <height>261</height>
-         </rect>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
-         <item>
-          <widget class="QFrame" name="vtkframe">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-             <horstretch>5</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
        <widget class="QWidget" name="horizontalLayoutWidgetpage4">
         <property name="geometry">
          <rect>
@@ -649,6 +621,51 @@
          </item>
         </layout>
        </widget>
+       <widget class="QWidget" name="layoutWidgetpage4">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>781</width>
+          <height>251</height>
+         </rect>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="2,1">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <widget class="QFrame" name="vtkframe">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+               <horstretch>5</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QPushButton" name="LocalizationButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Localization</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
       </widget>
       <widget class="QWidget" name="page_4">
        <property name="sizePolicy">
@@ -688,7 +705,7 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_24" stretch="1,1">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="1,1">
+            <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="1">
              <item>
               <widget class="QPushButton" name="HomeButton">
                <property name="sizePolicy">
@@ -704,24 +721,6 @@
                </property>
                <property name="text">
                 <string>Home</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="EnableRobotButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>40</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Enable Robot</string>
                </property>
               </widget>
              </item>

@@ -315,17 +315,17 @@ my_robot_wallinterfaces__rosidl_typesupport_cpp/fast:
 .PHONY : my_robot_wallinterfaces__rosidl_typesupport_cpp/fast
 
 #=============================================================================
-# Target rules for targets named ament_cmake_python_copy_my_robot_wallinterfaces
+# Target rules for targets named ament_cmake_python_symlink_my_robot_wallinterfaces
 
 # Build rule for target.
-ament_cmake_python_copy_my_robot_wallinterfaces: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ament_cmake_python_copy_my_robot_wallinterfaces
-.PHONY : ament_cmake_python_copy_my_robot_wallinterfaces
+ament_cmake_python_symlink_my_robot_wallinterfaces: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 ament_cmake_python_symlink_my_robot_wallinterfaces
+.PHONY : ament_cmake_python_symlink_my_robot_wallinterfaces
 
 # fast build rule for target.
-ament_cmake_python_copy_my_robot_wallinterfaces/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ament_cmake_python_copy_my_robot_wallinterfaces.dir/build.make CMakeFiles/ament_cmake_python_copy_my_robot_wallinterfaces.dir/build
-.PHONY : ament_cmake_python_copy_my_robot_wallinterfaces/fast
+ament_cmake_python_symlink_my_robot_wallinterfaces/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ament_cmake_python_symlink_my_robot_wallinterfaces.dir/build.make CMakeFiles/ament_cmake_python_symlink_my_robot_wallinterfaces.dir/build
+.PHONY : ament_cmake_python_symlink_my_robot_wallinterfaces/fast
 
 #=============================================================================
 # Target rules for targets named ament_cmake_python_build_my_robot_wallinterfaces_egg
@@ -1067,7 +1067,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... test"
 	@echo "... ament_cmake_python_build_my_robot_wallinterfaces_egg"
-	@echo "... ament_cmake_python_copy_my_robot_wallinterfaces"
+	@echo "... ament_cmake_python_symlink_my_robot_wallinterfaces"
 	@echo "... my_robot_wallinterfaces"
 	@echo "... my_robot_wallinterfaces__cpp"
 	@echo "... my_robot_wallinterfaces__py"

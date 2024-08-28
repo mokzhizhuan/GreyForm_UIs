@@ -44,6 +44,8 @@ class ProgressBarDialogIFC(QDialog):
         self.seq3Button = mainwindowforfileselection[11]
         self.NextButton_Page_3 = mainwindowforfileselection[12]
         self.Seqlabel = mainwindowforfileselection[13]
+        self.localizebutton = mainwindowforfileselection[14]
+        self.rosnode = mainwindowforfileselection[15]
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFont(QFont("Arial", 30))
         self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)
@@ -86,7 +88,7 @@ class ProgressBarDialogIFC(QDialog):
                 stl_data = {"points": [], "cells": [], "material_ids": []}
                 scale_factor = 1500.0
                 # Collect all unique element types
-                # biminfo.Exportexcelinfo(self.ifc_file, "IfcElement")
+                biminfo.Exportexcelinfo(self.ifc_file, "IfcElement")
                 try:
                     while True:
                         shape = iterator.get()
@@ -194,5 +196,7 @@ class ProgressBarDialogIFC(QDialog):
             self.seq3Button,
             self.NextButton_Page_3,
             self.Seqlabel,
+            self.localizebutton,
+            self.rosnode,
         )
         self.close()

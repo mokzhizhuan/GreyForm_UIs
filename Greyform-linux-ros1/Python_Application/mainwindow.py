@@ -119,7 +119,8 @@ class Ui_MainWindow(QMainWindow):
             self.font,
             self.mainwindow.stackedWidget_main,
             self.mainwindow.usermanualpage,
-        )  # insert user manual instruction page
+        )  # users manual instruction page
+        self.mainwindow.LocalizationButton.hide()
         self.setStretch()
 
     # button interaction
@@ -144,7 +145,6 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.ConfirmAckButton,
             self.mainwindow.MarkingButton,
         )
-        self.mainwindow.EnableRobotButton.clicked.connect(self.publish_message)
 
     def directtosettingpage(self):
         self.mainwindow.stackedWidget_main.setCurrentIndex(1)
@@ -183,12 +183,16 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.seq3Button,
             self.mainwindow.NextButton_Page_3,
             self.mainwindow.Seqlabel,
+            self.mainwindow.LocalizationButton,
+            self.ros_node,
         ]
         fileselectionmesh.FileSelectionMesh(self.file_path, mainwindowforfileselection)
         if ".stl" in file:
             self.file = file.replace(".stl", "")
         elif ".ifc" in file:
             self.file = file.replace(".ifc", "")
+        elif ".dxf" in file:
+            self.file = file.replace(".dxf", "")
         self.mainwindow.NextButton_Page_2.show()
         self.mainwindow.Itemlabel.setText(
             self._translate("MainWindow", "Product : " + str(self.file))
@@ -264,7 +268,6 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.label_2.setText(
             self._translate("MainWindow", "Click Position", None)
         )
-
 
 def ros_spin():
     rospy.spin()

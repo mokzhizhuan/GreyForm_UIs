@@ -49,6 +49,8 @@ class pythonProgressBar(QDialog):
         self.seq3Button = mainwindowforfileselection[11]
         self.NextButton_Page_3 = mainwindowforfileselection[12]
         self.Seqlabel = mainwindowforfileselection[13]
+        self.localizebutton = mainwindowforfileselection[14]
+        self.rosnode = mainwindowforfileselection[15]
         self.start_progress()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
@@ -105,7 +107,6 @@ class pythonProgressBar(QDialog):
             vtk_cells = np.concatenate(cells)
         else:
             vtk_cells = cells[0]
-        # Create PyVista mesh
         self.meshsplot = pv.PolyData(meshs.points, vtk_cells)
         loadingstl.StLloaderpyvista(self.meshsplot, self.loader, self.loader_2)
         Createmesh.createMesh(
@@ -122,6 +123,9 @@ class pythonProgressBar(QDialog):
             self.seq3Button,
             self.NextButton_Page_3,
             self.Seqlabel,
+            self.localizebutton,
+            self.rosnode,
+            self.filepath,
         )
         self.close()
 
