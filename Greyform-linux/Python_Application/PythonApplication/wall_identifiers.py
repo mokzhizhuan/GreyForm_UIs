@@ -1,6 +1,7 @@
 from PyQt5.QtCore import *
 from vtk import *
 import vtk
+import pandas as pd
 
 
 class wall_Interaction(object):
@@ -46,33 +47,59 @@ class wall_Interaction(object):
 
     def publish_message(self):
         self.exceldata = "exporteddatas.xlsx"
-        print(self.file_path)
+        self.wall_filtered_identifiers = self.fliterbywallnum()
+        wallnumber = self.distance()
         if self.file_path:
             if ".stl" in self.file_path:
-                self.ros_node.publish_file_message(
-                    self.file_path,
-                    self.exceldata,
-                    self.picked_position,
-                    self.point_id,
-                    self.reader,
-                )
+                self.publish_message_ros(self.file_path, wallnumber)
             elif ".ifc" in self.file_path:
                 file = "output.stl"
-                self.ros_node.publish_file_message(
-                    file,
-                    self.exceldata,
-                    self.picked_position,
-                    self.point_id,
-                    self.reader,
-                )
+                self.publish_message_ros(file, wallnumber)
             elif ".dxf" in self.file_path:
                 file = "output.stl"
-                self.ros_node.publish_file_message(
-                    file,
-                    self.exceldata,
-                    self.picked_position,
-                    self.point_id,
-                    self.reader,
-                )
+                self.publish_message_ros(file, wallnumber)
         else:
             print("No STL file selected.")
+
+    def fliterbywallnum(self):
+        df = pd.DataFrame(self.wall_identifiers)
+        grouped = df.groupby("Wall Number")
+        return grouped
+
+    def publish_message_ros(self, file, wallnumber):
+        self.ros_node.publish_file_message(file, self.exceldata)
+        self.ros_node.publish_selection_message(wallnumber,self.picked_position)
+
+    def distance(self):
+        self.threshold_distance = 220
+        self.distances = 50
+        wall_number = None
+        for wall_numbers, group in self.wall_filtered_identifiers:
+            min_x, max_x = (
+                group["Position X (m)"].min(),
+                group["Position X (m)"].max(),
+            )
+            min_y, max_y = (
+                group["Position Y (m)"].min(),
+                group["Position Y (m)"].max(),
+            )
+            min_z, max_z = (
+                group["Position Z (m)"].min(),
+                group["Position Z (m)"].max(),
+            )
+            if max_x - min_x <= self.threshold_distance:
+                distance = self.calculate_distance(self.picked_position[0], max_x)
+                if distance <= self.distances:
+                    wall_number = wall_numbers
+            elif max_y - min_y <= self.distances:
+                distance = self.calculate_distance(self.picked_position[1], max_y)
+                if distance <= self.distances:
+                    wall_number = wall_numbers
+            elif max_z - min_z <= self.threshold_distance:
+                distance = self.calculate_distance(self.picked_position[2], max_z)
+                if distance <= self.distances:
+                    wall_number = wall_numbers
+        return wall_number
+
+    def calculate_distance(self, point1, point2):
+        return point1 - point2

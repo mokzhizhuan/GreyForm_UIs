@@ -1,0 +1,18 @@
+[  2%] Built target my_robot_wallinterfaces__cpp
+[ 12%] Built target my_robot_wallinterfaces__rosidl_generator_c
+[ 12%] Built target ament_cmake_python_symlink_my_robot_wallinterfaces
+[ 23%] Built target my_robot_wallinterfaces__rosidl_typesupport_cpp
+[ 34%] Built target my_robot_wallinterfaces__rosidl_typesupport_introspection_cpp
+[ 44%] Built target my_robot_wallinterfaces__rosidl_typesupport_introspection_c
+[ 55%] Built target my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c
+[ 65%] Built target my_robot_wallinterfaces__rosidl_typesupport_c
+[ 76%] Built target my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cpp
+[ 76%] Built target my_robot_wallinterfaces
+[ 78%] [34m[1mGenerating Python code for ROS interfaces[0m
+running egg_info
+writing my_robot_wallinterfaces.egg-info/PKG-INFO
+writing dependency_links to my_robot_wallinterfaces.egg-info/dependency_links.txt
+writing top-level names to my_robot_wallinterfaces.egg-info/top_level.txt
+reading manifest file 'my_robot_wallinterfaces.egg-info/SOURCES.txt'
+writing manifest file 'my_robot_wallinterfaces.egg-info/SOURCES.txt'
+[ 78%] Built target ament_cmake_python_build_my_robot_wallinterfaces_egg

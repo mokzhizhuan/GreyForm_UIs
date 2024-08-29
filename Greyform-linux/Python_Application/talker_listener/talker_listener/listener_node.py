@@ -50,12 +50,12 @@ class ListenerNode(Node):
         try:
             self.get_logger().info(
                 "Selection message received: wallselections=%d, typeselection=%s, sectionselection=%d"
-                % (msg.wallselections, msg.typeselection, msg.sectionselection)
+                % (msg.wallselection, msg.typeselection, msg.sectionselection)
             )
             if self.selection_callback:
                 self.selection_callback(msg)
         except Exception as e:
-            self.get_logger().error(f"Failed to process received selection message: %e")
+            self.get_logger().error(f"Failed to publish selection message: {e}")
 
     def process_excel_data(self, excel_filepath):
         try:

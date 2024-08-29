@@ -1,0 +1,16 @@
+[0.464s] Invoking command in '/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package': CONDA_PROMPT_MODIFIER=(base) PYTHONPATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/prefix_override:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/lib/python3.10/site-packages/colcon_core/task/python/colcon_distutils_commands:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(env) /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/bin/python3.10 -W ignore:setup.py install is deprecated setup.py develop --uninstall --editable --build-directory /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/build
+[0.614s] error: Multiple top-level packages discovered in a flat-layout: ['share', 'prefix_override'].
+[0.614s] 
+[0.614s] To avoid accidental inclusion of unwanted files or directories,
+[0.614s] setuptools will not proceed with this build.
+[0.614s] 
+[0.614s] If you are trying to create a single distribution with multiple packages
+[0.614s] on purpose, you should not rely on automatic discovery.
+[0.614s] Instead, consider the following options:
+[0.614s] 
+[0.615s] 1. set up custom discovery (`find` directive with `include` or `exclude`)
+[0.615s] 2. use a `src-layout`
+[0.615s] 3. explicitly set `py_modules` or `packages` with a list of names
+[0.615s] 
+[0.615s] To find more information, look for "package discovery" on setuptools docs.
+[0.631s] Invoked command in '/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package' returned '1': CONDA_PROMPT_MODIFIER=(base) PYTHONPATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/prefix_override:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/lib/python3.10/site-packages/colcon_core/task/python/colcon_distutils_commands:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(env) /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/bin/python3.10 -W ignore:setup.py install is deprecated setup.py develop --uninstall --editable --build-directory /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/build
