@@ -40,6 +40,7 @@ class TalkerNode(Node):
     def publish_selection_message(self, wall_number, picked_position):
         try:
             msg = SelectionWall()
+            print(picked_position)
             msg.wallselection = int(wall_number)
             msg.typeselection = f"Wall Number {wall_number}"
             msg.sectionselection = self.determine_quadrant(

@@ -47,7 +47,7 @@ class ListenerNode():
         try:
             rospy.loginfo(
                 "Selection message received: wallselections=%d, typeselection=%s, sectionselection=%d"
-                % (msg.wallselections, msg.typeselection, msg.sectionselection)
+                % (msg.wallselection, msg.typeselection, msg.sectionselection)
             )
             if self.selection_callback:
                 self.selection_callback(msg)

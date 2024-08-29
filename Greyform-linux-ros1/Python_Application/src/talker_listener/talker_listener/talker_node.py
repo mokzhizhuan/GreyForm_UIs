@@ -22,57 +22,14 @@ class TalkerNode:
         )
         self.rate = rospy.Rate(10)  # 10 Hz
 
-    def publish_file_message(
-        self, file_path, excel_filepath, picked_position, point_id, reader
-    ):
+    def publish_file_message(self, file_path, excel_filepath):
         try:
             with open(file_path, "rb") as f:
                 stl_data = f.read()
+
             msg = FileExtractionMessage()
             msg.stl_data = list(stl_data)  # Convert bytes to a list of uint8
             msg.excelfile = excel_filepath
-            self.threshold_distance = 50
-            all_exceldatas = exceldata.excel_extractor(excel_filepath, reader)
-            for sheet_name, data in all_exceldatas.items():
-                if isinstance(data, dict):
-                    df = pd.DataFrame(data)
-                    df["Position X (m)"] = pd.to_numeric(
-                        df["Position X (m)"], errors="coerce"
-                    )
-                    df["Position Y (m)"] = pd.to_numeric(
-                        df["Position Y (m)"], errors="coerce"
-                    )
-                    df["Position Z (m)"] = pd.to_numeric(
-                        df["Position Z (m)"], errors="coerce"
-                    )
-                    required_columns = {
-                        "Position X (m)",
-                        "Position Y (m)",
-                        "Position Z (m)",
-                        "wall_numbers",
-                    }
-                    if required_columns.issubset(df.columns):
-                        for index, row in df.iterrows():
-                            wall_position = np.array(
-                                [
-                                    row["Position X (m)"],
-                                    row["Position Y (m)"],
-                                    row["Position Z (m)"],
-                                ]
-                            )
-                            distance = self.calculate_distance(
-                                picked_position, wall_position
-                            )
-                        if distance <= self.threshold_distance:
-                            rospy.loginfo(
-                                f"Picked position is near Wall Number {row['wall_numbers']} at a distance of {distance:.2f} units on sheet {sheet_name}."
-                            )
-                    else:
-                        rospy.loginfo(
-                            f"Sheet {sheet_name} does not contain position data."
-                        )
-                else:
-                    rospy.loginfo(f"Item {sheet_name} is not a DataFrame.")
             self.file_publisher_.publish(msg)
             rospy.loginfo("STL file published: %s" % stl_data[:100])
             rospy.loginfo("Excel file path: %s" % excel_filepath)
@@ -84,19 +41,33 @@ class TalkerNode:
     def calculate_distance(self, point1, point2):
         return np.linalg.norm(point1 - point2)
 
-    def publish_selection_message(self):
+    def publish_selection_message(self, wall_number, picked_position):
         try:
             msg = SelectionWall()
-            wallselections = msg.wallselections
-            typeselection = msg.typeselection
-            sectionselection = msg.sectionselection
+            msg.wallselection = int(wall_number)
+            msg.typeselection = f"Wall Number {wall_number}"
+            msg.sectionselection = self.determine_quadrant(
+                picked_position[0], picked_position[1]
+            )
             self.selection_publisher_.publish(msg)
             rospy.loginfo(
                 "Selection message published: wallselections=%d, typeselection=%s, sectionselection=%d"
-                % (wallselections, typeselection, sectionselection)
+                % (msg.wallselection, msg.typeselection , msg.sectionselection)
             )
         except Exception as e:
             rospy.logerr(f"Failed to publish selection message: {e}")
+
+    def determine_quadrant(self, x, y):
+        if x > 0 and y > 0:
+            return 1  # Quadrant I
+        elif x < 0 and y > 0:
+            return 2  # Quadrant II
+        elif x < 0 and y < 0:
+            return 3  # Quadrant III
+        elif x > 0 and y < 0:
+            return 4  # Quadrant IV
+        else:
+            return None  # On the axes or at the origin
 
     def timer_callback(self, event):
         msg = String()
