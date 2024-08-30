@@ -41,12 +41,18 @@ class TalkerNode:
     def calculate_distance(self, point1, point2):
         return np.linalg.norm(point1 - point2)
 
-    def publish_selection_message(self, wall_number, sectionnumber):
+    def publish_selection_message(self, wall_number, sectionnumber, picked_position):
         try:
             msg = SelectionWall()
             msg.wallselection = int(wall_number)
             msg.typeselection = f"Wall Number {wall_number}"
             msg.sectionselection = sectionnumber
+            picked_position = [
+                int(picked_position[0]),
+                int(picked_position[1]),
+                int(picked_position[2]),
+            ]
+            msg.picked_position = picked_position
             self.selection_publisher_.publish(msg)
             rospy.loginfo(
                 "Selection message published: wallselections=%d, typeselection=%s, sectionselection=%d"

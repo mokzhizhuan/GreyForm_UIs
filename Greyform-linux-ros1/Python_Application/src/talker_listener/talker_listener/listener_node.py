@@ -5,10 +5,10 @@ from my_robot_wallinterfaces.msg import (
     FileExtractionMessage,
 )
 from my_robot_wallinterfaces.srv import SetLed
-import PythonApplication.exceldatavtk as excelextract
 from std_msgs.msg import String
 from stl import mesh
 import pandas as pd
+import numpy as np
 
 
 class ListenerNode():
@@ -63,9 +63,32 @@ class ListenerNode():
 
     def process_excel_data(self, excel_filepath):
         try:
-            df = pd.read_excel(excel_filepath)
-            rospy.loginfo("Excel data processed successfully.")
-            self.excelitems = excelextract.excel_extractor(excel_filepath)
+            self.excelitems = pd.read_excel(excel_filepath, sheet_name=None)
+            threshold_distance = 150
+            processed_data = {}
+            for sheet_name, data in self.excelitems.items():
+                df = pd.DataFrame(data)
+                for index, row in df.iterrows():
+                    wall_position = np.array(
+                        [
+                            row["Position X (m)"],
+                            row["Position Y (m)"],
+                            row["Position Z (m)"],
+                        ]
+                    )
+                    distance = self.calculate_distance(
+                        self.picked_position, wall_position
+                    )
+                    if distance <= threshold_distance:
+                        message +=(
+                            f"\n Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
+                        )
+                        row['Status'] = "done"
+                processed_data[sheet_name] = df
+            with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
+                for sheet_name, df in processed_data.items():
+                    df.to_excel(writer, sheet_name=sheet_name, index=False)
+                rospy.loginfo("Excel data processed successfully.")
         except FileNotFoundError as e:
             rospy.logerr(f"Excel file not found: {e}")
         except Exception as e:

@@ -16,7 +16,9 @@ setup(
     maintainer_email="ubuntu@todo.todo",
     description="TODO: Package description",
     license="TODO: License declaration",
-    tests_require=["pytest"],
+    extras_require={
+        "test": ["pytest"],
+    },
     entry_points={
         "console_scripts": [
             "talkerNode = talker_listener.talker_node:main",

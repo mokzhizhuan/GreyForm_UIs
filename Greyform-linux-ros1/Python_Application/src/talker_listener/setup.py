@@ -21,8 +21,6 @@ setup(
         "console_scripts": [
             "talkerNode = talker_listener.talker_node:main",
             "listenerNode = talker_listener.listener_node:main",
-            "Lidar_publisher = talker_listener.lidar_publisher:main",
-            "Lidar_subscriber = talker_listener.lidar_subscriber:main",
         ],
     },
 )

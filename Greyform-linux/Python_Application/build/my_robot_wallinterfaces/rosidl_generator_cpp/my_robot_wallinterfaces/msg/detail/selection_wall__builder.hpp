@@ -21,16 +21,32 @@ namespace msg
 namespace builder
 {
 
+class Init_SelectionWall_picked_position
+{
+public:
+  explicit Init_SelectionWall_picked_position(::my_robot_wallinterfaces::msg::SelectionWall & msg)
+  : msg_(msg)
+  {}
+  ::my_robot_wallinterfaces::msg::SelectionWall picked_position(::my_robot_wallinterfaces::msg::SelectionWall::_picked_position_type arg)
+  {
+    msg_.picked_position = std::move(arg);
+    return std::move(msg_);
+  }
+
+private:
+  ::my_robot_wallinterfaces::msg::SelectionWall msg_;
+};
+
 class Init_SelectionWall_sectionselection
 {
 public:
   explicit Init_SelectionWall_sectionselection(::my_robot_wallinterfaces::msg::SelectionWall & msg)
   : msg_(msg)
   {}
-  ::my_robot_wallinterfaces::msg::SelectionWall sectionselection(::my_robot_wallinterfaces::msg::SelectionWall::_sectionselection_type arg)
+  Init_SelectionWall_picked_position sectionselection(::my_robot_wallinterfaces::msg::SelectionWall::_sectionselection_type arg)
   {
     msg_.sectionselection = std::move(arg);
-    return std::move(msg_);
+    return Init_SelectionWall_picked_position(msg_);
   }
 
 private:

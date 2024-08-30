@@ -1,1 +1,8 @@
-/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/ament_cmake_index/share/ament_index/resource_index/rosidl_interfaces/my_robot_wallinterfaces
+msg/FileExtractionMessage.idl
+msg/FileExtractionMessage.msg
+msg/SelectionWall.idl
+msg/SelectionWall.msg
+srv/SetLed.idl
+srv/SetLed.srv
+srv/SetLed_Request.msg
+srv/SetLed_Response.msg

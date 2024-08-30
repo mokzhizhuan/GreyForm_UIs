@@ -134,7 +134,8 @@ CMakeFiles/my_robot_wallinterfaces__rosidl_typesupport_introspection_c.dir/rosid
   rosidl_generator_c/my_robot_wallinterfaces/msg/detail/selection_wall__struct.h \
   /opt/ros/humble/include/rosidl_runtime_c/rosidl_runtime_c/string.h \
   /opt/ros/humble/include/rosidl_runtime_c/rosidl_runtime_c/primitives_sequence.h \
-  /opt/ros/humble/include/rosidl_runtime_c/rosidl_runtime_c/string_functions.h
+  /opt/ros/humble/include/rosidl_runtime_c/rosidl_runtime_c/string_functions.h \
+  /opt/ros/humble/include/rosidl_runtime_c/rosidl_runtime_c/primitives_sequence_functions.h
 
 CMakeFiles/my_robot_wallinterfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/my_robot_wallinterfaces/srv/detail/set_led__type_support.c.o: rosidl_typesupport_introspection_c/my_robot_wallinterfaces/srv/detail/set_led__type_support.c \
   /usr/include/stdc-predef.h \

@@ -1,10 +1,10 @@
 #!/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/bin/python3.10
-# EASY-INSTALL-ENTRY-SCRIPT: 'talker-listener','console_scripts','listenerNode'
+# EASY-INSTALL-ENTRY-SCRIPT: 'talker-listener==0.0.0','console_scripts','listenerNode'
 import re
 import sys
 
 # for compatibility with easy_install; see #2198
-__requires__ = 'talker-listener'
+__requires__ = 'talker-listener==0.0.0'
 
 try:
     from importlib.metadata import distribution
@@ -30,4 +30,4 @@ globals().setdefault('load_entry_point', importlib_load_entry_point)
 
 if __name__ == '__main__':
     sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
-    sys.exit(load_entry_point('talker-listener', 'console_scripts', 'listenerNode')())
+    sys.exit(load_entry_point('talker-listener==0.0.0', 'console_scripts', 'listenerNode')())

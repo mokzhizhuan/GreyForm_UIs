@@ -1,1 +1,4 @@
-/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces/msg/SelectionWall.msg
+int32 wallselection
+string typeselection
+int32 sectionselection
+int32[] picked_position

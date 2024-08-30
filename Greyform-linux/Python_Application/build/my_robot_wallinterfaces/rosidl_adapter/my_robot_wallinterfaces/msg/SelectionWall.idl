@@ -11,6 +11,8 @@ module my_robot_wallinterfaces {
       string typeselection;
 
       int32 sectionselection;
+
+      sequence<int32> picked_position;
     };
   };
 };

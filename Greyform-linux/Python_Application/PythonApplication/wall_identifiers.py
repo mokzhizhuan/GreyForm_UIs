@@ -35,7 +35,11 @@ class wall_Interaction(object):
             picker.GetPickPosition()[1],
             picker.GetPickPosition()[2],
         ]
-        self.picked_position = self.picked_position_quad
+        self.picked_position = [
+            picker.GetPickPosition()[0],
+            picker.GetPickPosition()[1],
+            picker.GetPickPosition()[2],
+        ]
         print(self.picked_position)
         self.point_id = self.find_closest_point(self.reader, self.picked_position)
         self.localizebutton.show()
@@ -49,7 +53,7 @@ class wall_Interaction(object):
         return point_id
 
     def publish_message(self):
-        self.exceldata = "exporteddatas.xlsx"
+        self.exceldata = "/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/exporteddatas.xlsx"
         self.wall_filtered_identifiers = self.fliterbywallnum()
         wallnumber, sectionnumber = self.distance()
         if self.file_path:
@@ -71,7 +75,9 @@ class wall_Interaction(object):
 
     def publish_message_ros(self, file, wallnumber, sectionnumber):
         self.ros_node.publish_file_message(file, self.exceldata)
-        self.ros_node.publish_selection_message(wallnumber, sectionnumber)
+        self.ros_node.publish_selection_message(
+            wallnumber, sectionnumber, self.picked_position
+        )
 
     def distance(self):
         self.threshold_distance = 220
