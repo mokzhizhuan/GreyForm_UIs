@@ -30,13 +30,13 @@ class wall_Interaction(object):
         picker = vtk.vtkCellPicker()
         self.renderwindowinteractor.GetRenderWindow().GetInteractor().SetPicker(picker)
         picker.Pick(click_pos[0], click_pos[1], 0, self.render)
-        self.picked_position = [
+        self.picked_position_quad = [
             picker.GetPickPosition()[0],
             picker.GetPickPosition()[1],
             picker.GetPickPosition()[2],
         ]
-        self.picked_postion_copy = self.picked_position
-        print(self.picked_postion_copy)
+        self.picked_position = self.picked_position_quad
+        print(self.picked_position)
         self.point_id = self.find_closest_point(self.reader, self.picked_position)
         self.localizebutton.show()
         self.localizebutton.clicked.connect(self.publish_message)
@@ -51,16 +51,16 @@ class wall_Interaction(object):
     def publish_message(self):
         self.exceldata = "exporteddatas.xlsx"
         self.wall_filtered_identifiers = self.fliterbywallnum()
-        wallnumber = self.distance()
+        wallnumber, sectionnumber = self.distance()
         if self.file_path:
             if ".stl" in self.file_path:
-                self.publish_message_ros(self.file_path, wallnumber)
+                self.publish_message_ros(self.file_path, wallnumber, sectionnumber)
             elif ".ifc" in self.file_path:
                 file = "output.stl"
-                self.publish_message_ros(file, wallnumber)
+                self.publish_message_ros(file, wallnumber, sectionnumber)
             elif ".dxf" in self.file_path:
                 file = "output.stl"
-                self.publish_message_ros(file, wallnumber)
+                self.publish_message_ros(file, wallnumber, sectionnumber)
         else:
             print("No STL file selected.")
 
@@ -69,9 +69,9 @@ class wall_Interaction(object):
         grouped = df.groupby("Wall Number")
         return grouped
 
-    def publish_message_ros(self, file, wallnumber):
+    def publish_message_ros(self, file, wallnumber, sectionnumber):
         self.ros_node.publish_file_message(file, self.exceldata)
-        self.ros_node.publish_selection_message(wallnumber, self.picked_position)
+        self.ros_node.publish_selection_message(wallnumber, sectionnumber)
 
     def distance(self):
         self.threshold_distance = 220
@@ -94,33 +94,54 @@ class wall_Interaction(object):
                 distance = self.calculate_distance(self.picked_position[0], max_x)
                 if distance <= self.distances:
                     wall_number = wall_numbers
-                    self.picked_position[0] = self.picked_position[0] - (
-                        self.meshbound[1] / 2
-                    )
-                    self.picked_position[1] = self.picked_position[1] - (
+                    self.picked_position_quad[1] = self.picked_position[1] - (
                         self.meshbound[3] / 2
+                    )
+                    self.picked_position_quad[2] = self.picked_position[2] - (
+                        self.meshbound[5] / 2
+                    )
+                    sectionnumber = self.determine_quadrant(
+                        self.picked_position_quad[1], self.picked_position_quad[2]
                     )
             elif max_y - min_y <= self.distances:
                 distance = self.calculate_distance(self.picked_position[1], max_y)
                 if distance <= self.distances:
                     wall_number = wall_numbers
-                    self.picked_position[1] = self.picked_position[1] - (
-                        self.meshbound[3] / 2
+                    self.picked_position_quad[0] = self.picked_position[0] - (
+                        self.meshbound[1] / 2
                     )
-                    self.picked_position[2] = self.picked_position[2] - (
+                    self.picked_position_quad[2] = self.picked_position[2] - (
                         self.meshbound[5] / 2
+                    )
+                    sectionnumber = self.determine_quadrant(
+                        self.picked_position_quad[0], self.picked_position_quad[2]
                     )
             elif max_z - min_z <= self.threshold_distance:
                 distance = self.calculate_distance(self.picked_position[2], max_z)
                 if distance <= self.distances:
                     wall_number = wall_numbers
-                    self.picked_position[2] = self.picked_position[2] - (
-                        self.meshbound[3] / 2
-                    )
-                    self.picked_position[1] = self.picked_position[1] - (
+                    self.picked_position_quad[2] = self.picked_position[2] - (
                         self.meshbound[5] / 2
                     )
-        return wall_number
+                    self.picked_position_quad[0] = self.picked_position[0] - (
+                        self.meshbound[1] / 2
+                    )
+                    sectionnumber = self.determine_quadrant(
+                        self.picked_position_quad[0], self.picked_position_quad[2]
+                    )
+        return wall_number, sectionnumber
+
+    def determine_quadrant(self, x, y):
+        if x > 0 and y > 0:
+            return 1  # Quadrant I
+        elif x < 0 and y > 0:
+            return 2  # Quadrant II
+        elif x < 0 and y < 0:
+            return 3  # Quadrant III
+        elif x > 0 and y < 0:
+            return 4  # Quadrant IV
+        else:
+            return None  # On the axes or at the origin
 
     def calculate_distance(self, point1, point2):
         return point1 - point2

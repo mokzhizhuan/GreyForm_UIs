@@ -37,15 +37,12 @@ class TalkerNode(Node):
         except Exception as e:
             self.get_logger().error(f"Failed to read and publish STL file: {e}")
 
-    def publish_selection_message(self, wall_number, picked_position):
+    def publish_selection_message(self, wall_number, sectionnumber):
         try:
             msg = SelectionWall()
-            print(picked_position)
             msg.wallselection = int(wall_number)
             msg.typeselection = f"Wall Number {wall_number}"
-            msg.sectionselection = self.determine_quadrant(
-                picked_position[0], picked_position[1]
-            )
+            msg.sectionselection = sectionnumber
             self.selection_publisher_.publish(msg)
             self.get_logger().info(
                 "Selection message published: wallselections=%d, typeselection=%s, sectionselection=%d"
@@ -54,17 +51,7 @@ class TalkerNode(Node):
         except Exception as e:
             self.get_logger().error(f"Failed to publish selection message: {e}")
 
-    def determine_quadrant(self, x, y):
-        if x > 0 and y > 0:
-            return 1  # Quadrant I
-        elif x < 0 and y > 0:
-            return 2  # Quadrant II
-        elif x < 0 and y < 0:
-            return 3  # Quadrant III
-        elif x > 0 and y < 0:
-            return 4  # Quadrant IV
-        else:
-            return None  # On the axes or at the origin
+    
 
     def timer_callback(self):
         msg = String()

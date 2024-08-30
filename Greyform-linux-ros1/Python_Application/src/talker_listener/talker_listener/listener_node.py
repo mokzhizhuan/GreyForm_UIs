@@ -5,6 +5,7 @@ from my_robot_wallinterfaces.msg import (
     FileExtractionMessage,
 )
 from my_robot_wallinterfaces.srv import SetLed
+import PythonApplication.exceldatavtk as excelextract
 from std_msgs.msg import String
 from stl import mesh
 import pandas as pd
@@ -27,6 +28,9 @@ class ListenerNode():
         )
         self.file_callback = None
         self.selection_callback = None
+        self.wallselection = None
+        self.typeselection = None
+        self.sectionselection = None
 
     def file_listener_callback(self, msg):
         try:
@@ -49,6 +53,9 @@ class ListenerNode():
                 "Selection message received: wallselections=%d, typeselection=%s, sectionselection=%d"
                 % (msg.wallselection, msg.typeselection, msg.sectionselection)
             )
+            self.wallselection = msg.wallselection
+            self.typeselection = msg.typeselection
+            self.sectionselection = msg.sectionselection
             if self.selection_callback:
                 self.selection_callback(msg)
         except Exception as e:
@@ -58,7 +65,7 @@ class ListenerNode():
         try:
             df = pd.read_excel(excel_filepath)
             rospy.loginfo("Excel data processed successfully.")
-            # You can add further processing logic here
+            self.excelitems = excelextract.excel_extractor(excel_filepath)
         except FileNotFoundError as e:
             rospy.logerr(f"Excel file not found: {e}")
         except Exception as e:

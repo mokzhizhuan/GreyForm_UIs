@@ -60,7 +60,7 @@ def exceldataextractor():
     return wall_identifiers
 
 
-def excel_extractor(excel_file_path, reader):
+def excel_extractor(excel_file_path):
     all_sheets = pd.read_excel(excel_file_path, sheet_name=None)
     wall_numbers = []
     markingidentifiers = []
@@ -76,14 +76,12 @@ def excel_extractor(excel_file_path, reader):
         ):
             x, y, z = int(x), int(y), int(z)
             markingidentify_str = str(markingidentify)
-            point_id = find_closest_point(reader, (x, y, z))
             wall_numbers_by_sheet[sheet_name] = {
                 "Marking type": markingidentify_str.split(":")[0],
                 "wall_numbers": wall_numbers,
                 "Position X (m)": str(x),
                 "Position Y (m)": str(y),
                 "Position Z (m)": str(z),
-                "Point ID": point_id,
             }
     return wall_numbers_by_sheet
 

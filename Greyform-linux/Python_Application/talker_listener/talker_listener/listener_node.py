@@ -27,6 +27,9 @@ class ListenerNode(Node):
         )
         self.file_callback = None
         self.selection_callback = None
+        self.wallselection = None
+        self.typeselection = None
+        self.sectionselection = None
         self.get_logger().info("ListenerNode has been started.")
 
     def file_listener_callback(self, msg):

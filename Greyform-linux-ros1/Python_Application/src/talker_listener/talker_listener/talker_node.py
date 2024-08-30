@@ -41,14 +41,12 @@ class TalkerNode:
     def calculate_distance(self, point1, point2):
         return np.linalg.norm(point1 - point2)
 
-    def publish_selection_message(self, wall_number, picked_position):
+    def publish_selection_message(self, wall_number, sectionnumber):
         try:
             msg = SelectionWall()
             msg.wallselection = int(wall_number)
             msg.typeselection = f"Wall Number {wall_number}"
-            msg.sectionselection = self.determine_quadrant(
-                picked_position[0], picked_position[1]
-            )
+            msg.sectionselection = sectionnumber
             self.selection_publisher_.publish(msg)
             rospy.loginfo(
                 "Selection message published: wallselections=%d, typeselection=%s, sectionselection=%d"
@@ -57,17 +55,6 @@ class TalkerNode:
         except Exception as e:
             rospy.logerr(f"Failed to publish selection message: {e}")
 
-    def determine_quadrant(self, x, y):
-        if x > 0 and y > 0:
-            return 1  # Quadrant I
-        elif x < 0 and y > 0:
-            return 2  # Quadrant II
-        elif x < 0 and y < 0:
-            return 3  # Quadrant III
-        elif x > 0 and y < 0:
-            return 4  # Quadrant IV
-        else:
-            return None  # On the axes or at the origin
 
     def timer_callback(self, event):
         msg = String()
