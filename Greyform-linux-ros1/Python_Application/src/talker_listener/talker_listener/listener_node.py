@@ -9,9 +9,18 @@ from std_msgs.msg import String
 from stl import mesh
 import pandas as pd
 import numpy as np
+import sys
+from PyQt5 import uic
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+
+sys.path.append("/root/catkin_ws/src/Greyform-linux/Python_Application")
+import PythonApplication.dialoglogger as logs
 
 
-class ListenerNode():
+class ListenerNode(QMainWindow):
     def __init__(self):
         super().__init__()
         self.file_subscription_ = rospy.Subscriber(
@@ -31,35 +40,44 @@ class ListenerNode():
         self.wallselection = None
         self.typeselection = None
         self.sectionselection = None
+        self.picked_position = []
+        self.message = ""
+        self.spacing = "\n"
+        self.title = "Listener Node"
 
     def file_listener_callback(self, msg):
         try:
             stl_data = bytes(msg.stl_data)  # Convert list of uint8 back to bytes
-            rospy.loginfo("STL file received and processed: %s" % msg.stl_data[:100])
-            with open('/tmp/temp_stl_file.stl', 'wb') as f:
+            self.message += (
+                f"{self.spacing}STL file received and processed: {msg.stl_data[:10]}"
+            )
+            with open("/tmp/temp_stl_file.stl", "wb") as f:
                 f.write(stl_data)
-            stl_mesh = mesh.Mesh.from_file('/tmp/temp_stl_file.stl')
-            rospy.loginfo("Excel file path: %s" % msg.excelfile)
+            stl_mesh = mesh.Mesh.from_file("/tmp/temp_stl_file.stl")
+            self.message += f"{self.spacing}Excel file path: {msg.excelfile}"
             # Process the Excel file
             self.process_excel_data(msg.excelfile)
             if self.file_callback:
                 self.file_callback(stl_mesh)
         except Exception as e:
-            rospy.logerr(f"Failed to process received STL file: {e}")
+            message = f"Failed to process received STL file: {e}"
+            self.show_error_dialog(message)
 
     def selection_listener_callback(self, msg):
         try:
-            rospy.loginfo(
-                "Selection message received: wallselections=%d, typeselection=%s, sectionselection=%d"
-                % (msg.wallselection, msg.typeselection, msg.sectionselection)
+            self.message += (
+                f"{self.spacing}Selection message received:{self.spacing} wallselections={msg.wallselection}, "
+                f"{self.spacing}typeselection={msg.typeselection},{self.spacing} sectionselection={msg.sectionselection}"
             )
             self.wallselection = msg.wallselection
             self.typeselection = msg.typeselection
             self.sectionselection = msg.sectionselection
+            self.picked_position = msg.picked_position
             if self.selection_callback:
                 self.selection_callback(msg)
         except Exception as e:
-            rospy.logerr(f"Failed to process received selection message: {e}")
+            message = f"Failed to publish selection message: {e}"
+            self.show_error_dialog(message)
 
     def process_excel_data(self, excel_filepath):
         try:
@@ -80,19 +98,20 @@ class ListenerNode():
                         self.picked_position, wall_position
                     )
                     if distance <= threshold_distance:
-                        message +=(
-                            f"\n Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
-                        )
-                        row['Status'] = "done"
+                        self.message += f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
+                        row["Status"] = "done"
                 processed_data[sheet_name] = df
             with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
                 for sheet_name, df in processed_data.items():
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
-                rospy.loginfo("Excel data processed successfully.")
+                self.message += f"{self.spacing}Excel data processed successfully."
+            self.show_info_dialog(self.message)
         except FileNotFoundError as e:
-            rospy.logerr(f"Excel file not found: {e}")
+            message = f"Excel file not found: {e}"
+            self.show_error_dialog(message)
         except Exception as e:
-            rospy.logerr(f"Failed to process Excel file: {e}")
+            message = f"Failed to process Excel file: {e}"
+            self.show_error_dialog(message)
 
     def set_file_callback(self, callback):
         self.file_callback = callback
@@ -100,10 +119,29 @@ class ListenerNode():
     def set_selection_callback(self, callback):
         self.selection_callback = callback
 
+    def calculate_distance(self, point1, point2):
+        return np.linalg.norm(point1 - point2)
+
+    def show_info_dialog(self, message):
+        dialog = logs.LogDialog(message, self.title, log_type="info")
+        dialog.exec_()
+
+    def show_error_dialog(self, message):
+        dialog = logs.LogDialog(message, self.title, log_type="error")
+        dialog.exec_()
+
+
 def main(args=None):
-    rospy.init_node('listener_node', anonymous=True)
+    rospy.init_node("listener_node", anonymous=True)
+    app = QApplication(sys.argv)
     listenerNode = ListenerNode()
-    rospy.spin()
+    timer = rospy.Timer(rospy.Duration(0.1), lambda event: None)
+    try:
+        sys.exit(app.exec_())
+    except SystemExit:
+        pass
+    finally:
+        rospy.signal_shutdown("Shutting down ROS node")
 
 
 if __name__ == "__main__":

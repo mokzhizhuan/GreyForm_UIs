@@ -10,7 +10,6 @@ from std_msgs.msg import String
 import pandas as pd
 import numpy as np
 import sys
-
 sys.path.append("/home/winsys/ros2_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
 
@@ -25,7 +24,8 @@ class TalkerNode(Node):
             SelectionWall, "selection_wall_topic", 10
         )
         self.message = ""
-        self.get_logger().info("TalkerNode has been started.")
+        self.spacing = "\n"
+        self.title = "Publisher Node"
 
     def publish_file_message(self, file_path, excel_filepath):
         try:
@@ -35,9 +35,8 @@ class TalkerNode(Node):
             msg.stl_data = list(stl_data)  # Convert bytes to a list of uint8
             msg.excelfile = excel_filepath
             self.file_publisher_.publish(msg)
-            self.message += f"STL file published: {stl_data[:100]}"
-            self.message += f"Excel file path: {excel_filepath}"
-            self.show_info_dialog(self.message)
+            self.message += f"STL file published:{self.spacing} {stl_data[:100]}"
+            self.message += f"{self.spacing}Excel file path: {excel_filepath}"
         except FileNotFoundError as e:
             message = f"File not found: {e}"
             self.show_error_dialog(message)
@@ -58,8 +57,10 @@ class TalkerNode(Node):
             ]
             msg.picked_position = picked_position
             self.selection_publisher_.publish(msg)
-            self.message += f"Selection message published: wallselections={msg.wallselection}, typeselection={msg.typeselection}, sectionselection={msg.sectionselection}"
-            self.message += f"\n {str(msg.picked_position.tolist())}"
+            self.message += f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"
+            self.message += f"{self.spacing}typeselection={msg.typeselection},"
+            self.message += f"{self.spacing}sectionselection={msg.sectionselection}"
+            self.message += f"{self.spacing}{str(msg.picked_position.tolist())}"
             self.show_info_dialog(self.message)
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
@@ -76,11 +77,11 @@ class TalkerNode(Node):
         return np.linalg.norm(point1 - point2)
 
     def show_info_dialog(self, message):
-        dialog = logs.LogDialog(message, log_type="info")
+        dialog = logs.LogDialog(message, self.title ,log_type="info")
         dialog.exec_()
 
     def show_error_dialog(self, message):
-        dialog = logs.LogDialog(message, log_type="error")
+        dialog = logs.LogDialog(message, self.title, log_type="error")
         dialog.exec_()
 
 

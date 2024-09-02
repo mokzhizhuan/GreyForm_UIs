@@ -21,6 +21,7 @@ class SelectionWall {
       this.wallselection = null;
       this.typeselection = null;
       this.sectionselection = null;
+      this.picked_position = null;
     }
     else {
       if (initObj.hasOwnProperty('wallselection')) {
@@ -41,6 +42,12 @@ class SelectionWall {
       else {
         this.sectionselection = 0;
       }
+      if (initObj.hasOwnProperty('picked_position')) {
+        this.picked_position = initObj.picked_position
+      }
+      else {
+        this.picked_position = [];
+      }
     }
   }
 
@@ -52,6 +59,8 @@ class SelectionWall {
     bufferOffset = _serializer.string(obj.typeselection, buffer, bufferOffset);
     // Serialize message field [sectionselection]
     bufferOffset = _serializer.int32(obj.sectionselection, buffer, bufferOffset);
+    // Serialize message field [picked_position]
+    bufferOffset = _arraySerializer.int32(obj.picked_position, buffer, bufferOffset, null);
     return bufferOffset;
   }
 
@@ -65,13 +74,16 @@ class SelectionWall {
     data.typeselection = _deserializer.string(buffer, bufferOffset);
     // Deserialize message field [sectionselection]
     data.sectionselection = _deserializer.int32(buffer, bufferOffset);
+    // Deserialize message field [picked_position]
+    data.picked_position = _arrayDeserializer.int32(buffer, bufferOffset, null)
     return data;
   }
 
   static getMessageSize(object) {
     let length = 0;
     length += _getByteLength(object.typeselection);
-    return length + 12;
+    length += 4 * object.picked_position.length;
+    return length + 16;
   }
 
   static datatype() {
@@ -81,7 +93,7 @@ class SelectionWall {
 
   static md5sum() {
     //Returns md5sum for a message object
-    return '2878ec5f8dda738f8c5cf606a52c84a0';
+    return 'f6985e46a2e326f422d9f77fb3681bba';
   }
 
   static messageDefinition() {
@@ -90,6 +102,7 @@ class SelectionWall {
     int32 wallselection
     string typeselection
     int32 sectionselection
+    int32[] picked_position
     `;
   }
 
@@ -118,6 +131,13 @@ class SelectionWall {
     }
     else {
       resolved.sectionselection = 0
+    }
+
+    if (msg.picked_position !== undefined) {
+      resolved.picked_position = msg.picked_position;
+    }
+    else {
+      resolved.picked_position = []
     }
 
     return resolved;

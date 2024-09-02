@@ -1,0 +1,5 @@
+  File "/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener/listener_node.py", line 54
+    self.message += f"{self.spacing}Excel file path: {msg.excelfile)
+                    ^
+SyntaxError: unterminated string literal (detected at line 54)
+

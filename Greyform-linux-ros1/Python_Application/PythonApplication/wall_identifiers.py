@@ -53,7 +53,7 @@ class wall_Interaction(object):
         return point_id
 
     def publish_message(self):
-        self.exceldata = "/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/exporteddatas.xlsx"
+        self.exceldata = "exporteddatas.xlsx"
         self.wall_filtered_identifiers = self.fliterbywallnum()
         wallnumber, sectionnumber = self.distance()
         if self.file_path:

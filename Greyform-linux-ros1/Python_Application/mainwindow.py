@@ -269,6 +269,7 @@ class Ui_MainWindow(QMainWindow):
             self._translate("MainWindow", "Click Position", None)
         )
 
+
 def ros_spin():
     rospy.spin()
 
@@ -280,8 +281,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     main_window = Ui_MainWindow(talker_node)
     main_window.show()
-    talker_thread = Thread(target=ros_spin)
-    talker_thread.start()
+    timer = rospy.Timer(rospy.Duration(0.1), lambda event: None)
     try:
         sys.exit(app.exec_())
     except SystemExit:

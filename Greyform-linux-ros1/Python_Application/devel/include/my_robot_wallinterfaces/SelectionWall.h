@@ -26,12 +26,14 @@ struct SelectionWall_
   SelectionWall_()
     : wallselection(0)
     , typeselection()
-    , sectionselection(0)  {
+    , sectionselection(0)
+    , picked_position()  {
     }
   SelectionWall_(const ContainerAllocator& _alloc)
     : wallselection(0)
     , typeselection(_alloc)
-    , sectionselection(0)  {
+    , sectionselection(0)
+    , picked_position(_alloc)  {
   (void)_alloc;
     }
 
@@ -45,6 +47,9 @@ struct SelectionWall_
 
    typedef int32_t _sectionselection_type;
   _sectionselection_type sectionselection;
+
+   typedef std::vector<int32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int32_t>> _picked_position_type;
+  _picked_position_type picked_position;
 
 
 
@@ -77,7 +82,8 @@ bool operator==(const ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocat
 {
   return lhs.wallselection == rhs.wallselection &&
     lhs.typeselection == rhs.typeselection &&
-    lhs.sectionselection == rhs.sectionselection;
+    lhs.sectionselection == rhs.sectionselection &&
+    lhs.picked_position == rhs.picked_position;
 }
 
 template<typename ContainerAllocator1, typename ContainerAllocator2>
@@ -134,12 +140,12 @@ struct MD5Sum< ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "2878ec5f8dda738f8c5cf606a52c84a0";
+    return "f6985e46a2e326f422d9f77fb3681bba";
   }
 
   static const char* value(const ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0x2878ec5f8dda738fULL;
-  static const uint64_t static_value2 = 0x8c5cf606a52c84a0ULL;
+  static const uint64_t static_value1 = 0xf6985e46a2e326f4ULL;
+  static const uint64_t static_value2 = 0x22d9f77fb3681bbaULL;
 };
 
 template<class ContainerAllocator>
@@ -161,6 +167,7 @@ struct Definition< ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocator>
     return "int32 wallselection\n"
 "string typeselection\n"
 "int32 sectionselection\n"
+"int32[] picked_position\n"
 ;
   }
 
@@ -182,6 +189,7 @@ namespace serialization
       stream.next(m.wallselection);
       stream.next(m.typeselection);
       stream.next(m.sectionselection);
+      stream.next(m.picked_position);
     }
 
     ROS_DECLARE_ALLINONE_SERIALIZER
@@ -206,6 +214,12 @@ struct Printer< ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocator> >
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.typeselection);
     s << indent << "sectionselection: ";
     Printer<int32_t>::stream(s, indent + "  ", v.sectionselection);
+    s << indent << "picked_position[]" << std::endl;
+    for (size_t i = 0; i < v.picked_position.size(); ++i)
+    {
+      s << indent << "  picked_position[" << i << "]: ";
+      Printer<int32_t>::stream(s, indent + "  ", v.picked_position[i]);
+    }
   }
 };
 
