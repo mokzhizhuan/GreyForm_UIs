@@ -59,36 +59,3 @@ def exceldataextractor():
             )
     return wall_identifiers
 
-
-def excel_extractor(excel_file_path):
-    all_sheets = pd.read_excel(excel_file_path, sheet_name=None)
-    wall_numbers = []
-    markingidentifiers = []
-    wall_numbers_by_sheet = {}
-    for sheet_name, df in all_sheets.items():
-        wall_numbers = df["Wall Number"].tolist()
-        markingidentifiers = df["Marking type"].tolist()
-        positionx = df["Position X (m)"].tolist()
-        positiony = df["Position Y (m)"].tolist()
-        positionz = df["Position Z (m)"].tolist()
-        for x, y, z, markingidentify in zip(
-            positionx, positiony, positionz, markingidentifiers
-        ):
-            x, y, z = int(x), int(y), int(z)
-            markingidentify_str = str(markingidentify)
-            wall_numbers_by_sheet[sheet_name] = {
-                "Marking type": markingidentify_str.split(":")[0],
-                "wall_numbers": wall_numbers,
-                "Position X (m)": str(x),
-                "Position Y (m)": str(y),
-                "Position Z (m)": str(z),
-            }
-    return wall_numbers_by_sheet
-
-
-def find_closest_point(polydata, target_position):
-    point_locator = vtk.vtkKdTreePointLocator()
-    point_locator.SetDataSet(polydata)
-    point_locator.BuildLocator()
-    point_id = point_locator.FindClosestPoint(target_position)
-    return point_id
