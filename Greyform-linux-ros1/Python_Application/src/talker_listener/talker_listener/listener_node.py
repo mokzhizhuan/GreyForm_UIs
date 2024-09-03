@@ -15,9 +15,11 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-
+import tkinter as tk
+from tkinter import messagebox
 sys.path.append("/root/catkin_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
+
 
 
 class ListenerNode(QMainWindow):
@@ -44,6 +46,7 @@ class ListenerNode(QMainWindow):
         self.message = ""
         self.spacing = "\n"
         self.title = "Listener Node"
+
 
     def file_listener_callback(self, msg):
         try:
@@ -121,21 +124,18 @@ class ListenerNode(QMainWindow):
 
     def calculate_distance(self, point1, point2):
         return np.linalg.norm(point1 - point2)
-
+    
     def show_info_dialog(self, message):
-        dialog = logs.LogDialog(message, self.title, log_type="info")
-        dialog.exec_()
-
+       messagebox.showinfo(self.title ,self.message)
+                           
     def show_error_dialog(self, message):
-        dialog = logs.LogDialog(message, self.title, log_type="error")
-        dialog.exec_()
+        messagebox.showerror(self.title ,self.message)
 
 
 def main(args=None):
     rospy.init_node("listener_node", anonymous=True)
     app = QApplication(sys.argv)
     listenerNode = ListenerNode()
-    timer = rospy.Timer(rospy.Duration(0.1), lambda event: None)
     try:
         sys.exit(app.exec_())
     except SystemExit:

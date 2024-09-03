@@ -66,6 +66,7 @@ class TalkerNode:
             self.message += f"{self.spacing}sectionselection={msg.sectionselection}"
             self.message += f"{self.spacing}{list(msg.picked_position)}"
             self.show_info_dialog(self.message)
+            self.message=""
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
             self.show_error_dialog(message)
