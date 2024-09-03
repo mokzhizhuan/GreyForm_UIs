@@ -114,7 +114,9 @@ class ListenerNode(QMainWindow):
             for sheet_name, data in self.excelitems.items():
                 df = pd.DataFrame(data)
                 for index, row in df.iterrows():
-                    row["Position Z (m)"] = 0
+                    self.storedzpos = df.at[index, "Position Z (m)"]
+                    if df.at[index, "Position Z (m)"] < 0:
+                        df.at[index, "Position Z (m)"] = 0
                     wall_position = np.array(
                         [
                             row["Position X (m)"],
@@ -128,6 +130,7 @@ class ListenerNode(QMainWindow):
                     if distance <= threshold_distance:
                         self.message += f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
                         df.at[index, "Status"] = "done"
+                    df.at[index, "Position Z (m)"] = self.storedzpos
                 processed_data[sheet_name] = df
             with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
                 for sheet_name, df in processed_data.items():
