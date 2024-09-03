@@ -82,11 +82,13 @@ class ListenerNode(Node):
     def process_excel_data(self, excel_filepath):
         try:
             self.excelitems = pd.read_excel(excel_filepath, sheet_name=None)
-            threshold_distance = 150
+            threshold_distance = 600
             processed_data = {}
             for sheet_name, data in self.excelitems.items():
                 df = pd.DataFrame(data)
                 for index, row in df.iterrows():
+                    if row["Position Z (m)"] < 0:
+                        row["Position Z (m)"] = 0
                     wall_position = np.array(
                         [
                             row["Position X (m)"],
@@ -99,13 +101,14 @@ class ListenerNode(Node):
                     )
                     if distance <= threshold_distance:
                         self.message += f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
-                        row["Status"] = "done"
+                        df.at[index, "Status"] = "done"
                 processed_data[sheet_name] = df
             with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
                 for sheet_name, df in processed_data.items():
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
                 self.message += f"{self.spacing}Excel data processed successfully."
             self.show_info_dialog(self.message)
+            self.message = ""
         except FileNotFoundError as e:
             message = f"Excel file not found: {e}"
             self.show_error_dialog(message)

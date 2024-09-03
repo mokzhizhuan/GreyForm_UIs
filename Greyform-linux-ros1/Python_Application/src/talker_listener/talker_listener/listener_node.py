@@ -16,14 +16,33 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT, X
+
 sys.path.append("/root/catkin_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
 
 
+class ScrollableDialog(Toplevel):
+    def __init__(self, root, title, message):
+        super().__init__(root)
+        self.title(title)
+        self.geometry("400x300") 
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        text_widget = Text(self, wrap='word')
+        text_widget.grid(row=0, column=0, sticky="nsew")
+        scrollbar = Scrollbar(self, command=text_widget.yview)
+        scrollbar.grid(row=0, column=1, sticky="ns")
+        text_widget.config(yscrollcommand=scrollbar.set)
+        text_widget.insert(END, message)
+        text_widget.config(state=tk.DISABLED)  
+        ok_button = Button(self, text="OK", command=self.destroy)
+        ok_button.grid(row=1, column=0, columnspan=2, pady=5)
+
 
 class ListenerNode(QMainWindow):
-    def __init__(self):
+    def __init__(self, root):
+        self.root = root
         super().__init__()
         self.file_subscription_ = rospy.Subscriber(
             "file_extraction_topic",  # Correct topic
@@ -46,7 +65,12 @@ class ListenerNode(QMainWindow):
         self.message = ""
         self.spacing = "\n"
         self.title = "Listener Node"
-
+        self.label = tk.Label(root, text="ROS Node Initialized")
+        self.label.pack()
+        self.button = tk.Button(
+            root, text="Show Message", command=self.show_info_dialog
+        )
+        self.button.pack()
 
     def file_listener_callback(self, msg):
         try:
@@ -85,7 +109,7 @@ class ListenerNode(QMainWindow):
     def process_excel_data(self, excel_filepath):
         try:
             self.excelitems = pd.read_excel(excel_filepath, sheet_name=None)
-            threshold_distance = 150
+            threshold_distance = 600
             processed_data = {}
             for sheet_name, data in self.excelitems.items():
                 df = pd.DataFrame(data)
@@ -103,7 +127,7 @@ class ListenerNode(QMainWindow):
                     )
                     if distance <= threshold_distance:
                         self.message += f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
-                        row["Status"] = "done"
+                        df.at[index, "Status"] = "done"
                 processed_data[sheet_name] = df
             with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
                 for sheet_name, df in processed_data.items():
@@ -125,18 +149,21 @@ class ListenerNode(QMainWindow):
 
     def calculate_distance(self, point1, point2):
         return np.linalg.norm(point1 - point2)
-    
+
     def show_info_dialog(self, message):
-       messagebox.showinfo(self.title ,self.message)
-                           
+        ScrollableDialog(self.root, self.title, message)
+
     def show_error_dialog(self, message):
-        messagebox.showerror(self.title ,self.message)
+        ScrollableDialog(self.root, self.title, message)
 
 
 def main(args=None):
+    root = tk.Tk()
     rospy.init_node("listener_node", anonymous=True)
     app = QApplication(sys.argv)
-    listenerNode = ListenerNode()
+    listenerNode = ListenerNode(root)
+    root.withdraw()
+    root.mainloop()
     try:
         sys.exit(app.exec_())
     except SystemExit:

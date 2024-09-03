@@ -40,7 +40,6 @@ class wall_Interaction(object):
             picker.GetPickPosition()[1],
             picker.GetPickPosition()[2],
         ]
-        print(self.picked_position)
         self.point_id = self.find_closest_point(self.reader, self.picked_position)
         self.localizebutton.show()
         self.localizebutton.clicked.connect(self.publish_message)

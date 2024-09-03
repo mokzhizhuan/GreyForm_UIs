@@ -10,7 +10,6 @@ from std_msgs.msg import String
 import pandas as pd
 import numpy as np
 import sys
-
 sys.path.append("/home/winsys/ros2_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
 
@@ -63,6 +62,7 @@ class TalkerNode(Node):
             self.message += f"{self.spacing}sectionselection={msg.sectionselection}"
             self.message += f"{self.spacing}{str(msg.picked_position.tolist())}"
             self.show_info_dialog(self.message)
+            self.message= ""
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
             self.show_error_dialog(message)
