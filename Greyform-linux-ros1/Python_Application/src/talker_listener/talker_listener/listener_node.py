@@ -90,6 +90,7 @@ class ListenerNode(QMainWindow):
             for sheet_name, data in self.excelitems.items():
                 df = pd.DataFrame(data)
                 for index, row in df.iterrows():
+                    row["Position Z (m)"] = 0
                     wall_position = np.array(
                         [
                             row["Position X (m)"],
