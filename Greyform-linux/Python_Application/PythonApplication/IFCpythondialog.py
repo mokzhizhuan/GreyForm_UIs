@@ -198,5 +198,6 @@ class ProgressBarDialogIFC(QDialog):
             self.Seqlabel,
             self.localizebutton,
             self.rosnode,
+            self.stl_file,
         )
         self.close()

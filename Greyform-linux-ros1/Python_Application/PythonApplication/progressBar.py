@@ -124,6 +124,7 @@ class pythonProgressBar(QDialog):
             self.seq3Button,
             self.NextButton_Page_3,
             self.Seqlabel,
+            output_stl_path,
         )
         self.close()
 
