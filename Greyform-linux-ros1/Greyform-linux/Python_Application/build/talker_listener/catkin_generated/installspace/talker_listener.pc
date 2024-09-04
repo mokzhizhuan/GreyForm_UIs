@@ -1,0 +1,8 @@
+prefix=/root/catkin_ws/src/Greyform-linux/Python_Application/install
+
+Name: talker_listener
+Description: Description of talker_listener
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: rospy std_msgs message_runtime my_robot_wallinterfaces

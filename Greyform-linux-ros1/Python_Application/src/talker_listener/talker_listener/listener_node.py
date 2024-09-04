@@ -167,6 +167,7 @@ def main(args=None):
     listenerNode = ListenerNode(root)
     root.withdraw()
     root.mainloop()
+    root.destroy()
     try:
         sys.exit(app.exec_())
     except SystemExit:

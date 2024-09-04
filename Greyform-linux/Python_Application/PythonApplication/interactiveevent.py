@@ -235,6 +235,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     # Use Tkinter to show an error message
     def show_error_message(self, message):
         root = tk.Tk()
-        root.withdraw()  # Hide the root window
+        root.withdraw()  
         messagebox.showerror("Error", message)
         root.destroy()

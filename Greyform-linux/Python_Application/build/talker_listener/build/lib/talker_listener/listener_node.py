@@ -44,6 +44,7 @@ class ListenerNode(Node):
         self.message = ""
         self.spacing = "\n"
         self.title = "Listener Node"
+        self.active_dialog = None 
 
     def file_listener_callback(self, msg):
         try:
@@ -128,13 +129,22 @@ class ListenerNode(Node):
         return np.linalg.norm(point1 - point2)
 
     def show_info_dialog(self, message):
-        dialog = logs.LogDialog(message, self.title, log_type="info")
-        dialog.exec_()
+        if self.active_dialog:
+            self.active_dialog.close()
+            self.active_dialog = None  
+        self.active_dialog = logs.LogDialog(message, self.title, log_type="info")
+        self.active_dialog.exec_()
+        self.active_dialog.close()
+        self.active_dialog = None
 
     def show_error_dialog(self, message):
-
-        dialog = logs.LogDialog(message, self.title, log_type="error")
-        dialog.exec_()
+        if self.active_dialog:
+            self.active_dialog.close()
+            self.active_dialog = None  
+        self.active_dialog = logs.LogDialog(message, self.title, log_type="error")
+        self.active_dialog.exec_()
+        self.active_dialog.close()
+        self.active_dialog = None
 
 
 def main(args=None):

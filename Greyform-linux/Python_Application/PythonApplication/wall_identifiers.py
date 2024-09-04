@@ -23,6 +23,7 @@ class wall_Interaction(object):
         self.file_path = setcamerainteraction[17]
         self.reader = setcamerainteraction[10]
         self.ros_node = ros_node
+        self.button_connected = False
 
     def setwallinteractiondata(self, obj, event):
         self.interactor_style.SetMotionFactor(8)
@@ -42,7 +43,9 @@ class wall_Interaction(object):
         ]
         self.point_id = self.find_closest_point(self.reader, self.picked_position)
         self.localizebutton.show()
-        self.localizebutton.clicked.connect(self.publish_message)
+        if not self.button_connected:
+            self.localizebutton.clicked.connect(self.publish_message)
+            self.button_connected = True
 
     def find_closest_point(self, polydata, target_position):
         point_locator = vtk.vtkKdTreePointLocator()
