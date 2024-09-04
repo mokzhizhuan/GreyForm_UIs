@@ -7,9 +7,15 @@ import PythonApplication.storedisplay as displaystoring
 
 # interaction with room based on the cell picker
 class rightclickRoomInteract(object):
-    def __init__(self, interactor_style, setcamerainteraction , default_pos):
+    def __init__(
+        self,
+        interactor_style,
+        setcamerainteraction,
+        default_pos,
+        wall_identifiers,
+        localizebutton,
+    ):
         # starting initialize
-        self.default_pos = default_pos
         self.interactor_style = interactor_style
         self.xlabels = setcamerainteraction[0]
         self.ylabels = setcamerainteraction[1]
@@ -29,11 +35,14 @@ class rightclickRoomInteract(object):
         self.collisionFilter = setcamerainteraction[14]
         self.spaceseperation = setcamerainteraction[15]
         self.center = setcamerainteraction[16]
+        self.default_pos = default_pos
         camera = self.render.GetActiveCamera()
         self.defaultposition = [0, 0, 1]
         self.renderwindowinteractor.GetRenderWindow().Render()
-        self._translate = QCoreApplication.translate
-        self.displaystore = displaystoring.storage(setcamerainteraction)
+        self._translate = QtCore.QCoreApplication.translate
+        self.displaystore = displaystoring.storage(
+            setcamerainteraction, wall_identifiers, localizebutton
+        )
         self.displaytext(camera)
 
     def click_event(self, obj, event):

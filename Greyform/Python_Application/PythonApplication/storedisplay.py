@@ -5,11 +5,14 @@ import PythonApplication.interactiveevent as mainInteraction
 
 # storing variable for refreshing and storing variable that are saved
 class storage(object):
-    def __init__(self, setcamerainteraction):
+    def __init__(
+        self, setcamerainteraction, wall_identifiers, localizebutton
+    ):
         # starting initialize
         self.setcamerainteraction = setcamerainteraction
+        self.wall_identifiers = wall_identifiers
+        self.localizebutton = localizebutton
         self.cubeactor = setcamerainteraction[11]
-
 
     def storedisplay(self):
         self.oldcamerapos = [
@@ -18,5 +21,7 @@ class storage(object):
             self.cubeactor.GetPosition()[2],
         ]
         self.maininteractor = mainInteraction.myInteractorStyle(
-            self.setcamerainteraction
+            self.setcamerainteraction,
+            self.wall_identifiers,
+            self.localizebutton,
         )

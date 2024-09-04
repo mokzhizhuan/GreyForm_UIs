@@ -2,6 +2,7 @@ from PyQt5.QtCore import *
 from vtk import *
 import PythonApplication.leftbuttoninteractor as leftbuttoninteraction
 import PythonApplication.rightclickroominteraction as roominteraction
+import PythonApplication.wall_identifiers as wallinteraction
 import PythonApplication.storedisplay as displaystoring
 import tkinter as tk
 from tkinter import messagebox
@@ -12,7 +13,9 @@ import time
 # right click is to insert the actor in the room view , right click for room interact shower and toilet
 # l key is to remove the actor in the room view and set the mesh to the original position
 class myInteractorStyle(vtkInteractorStyleTrackballCamera):
-    def __init__(self, setcamerainteraction):
+    def __init__(
+        self, setcamerainteraction, wall_identifiers, localizebutton
+    ):
         # starting initalize
         self.addactor = self.AddObserver(
             "RightButtonPressEvent", self.RightButtonPressEvent
@@ -46,9 +49,18 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.refresh()
         self._translate = QCoreApplication.translate
         self.rightclickinteract = roominteraction.rightclickRoomInteract(
-            self, setcamerainteraction , self.default_pos
+            self,
+            setcamerainteraction,
+            self.default_pos,
+            wall_identifiers,
+            localizebutton,
         )
-        self.displaystore = displaystoring.storage(setcamerainteraction)
+        self.wallinteractor = wallinteraction.wall_Interaction(
+            self, setcamerainteraction, wall_identifiers, localizebutton
+        )
+        self.displaystore = displaystoring.storage(
+            setcamerainteraction, wall_identifiers, localizebutton
+        )
         self.setkeypreventcontrols()
         self.leftbuttoninteraction.displaytext(camera)
 

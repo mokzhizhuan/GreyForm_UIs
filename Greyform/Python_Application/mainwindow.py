@@ -107,6 +107,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.stackedWidget_main,
             self.mainwindow.usermanualpage,
         ) #insert user manual instruction page
+        self.mainwindow.LocalizationButton.hide()
         self.retranslateUi()
         self.setStretch()
         self.button_UI()
@@ -171,6 +172,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.seq3Button,
             self.mainwindow.NextButton_Page_3,
             self.mainwindow.Seqlabel,
+            self.mainwindow.LocalizationButton,
         ]
         fileselectionmesh.FileSelectionMesh(self.file_path, mainwindowforfileselection)
         if ".stl" in file:

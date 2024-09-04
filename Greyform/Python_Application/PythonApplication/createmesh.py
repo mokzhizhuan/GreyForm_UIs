@@ -8,6 +8,7 @@ from vtk import *
 from vtkmodules.vtkCommonColor import vtkNamedColors
 import PythonApplication.interactiveevent as events
 import PythonApplication.doormeshvtk as doormeshVTK
+import PythonApplication.exceldatavtk as vtk_data_excel
 
 
 # create the imported stl mesh in vtk frame
@@ -27,6 +28,8 @@ class createMesh(QMainWindow):
         seq3Button,
         NextButton_Page_3,
         Seqlabel,
+        localizebutton,
+        file_path,
     ):
         # variable for loading bar ui
         self.defaultposition = [0, 0, 1]
@@ -46,6 +49,8 @@ class createMesh(QMainWindow):
         self.seq3Button = seq3Button
         self.NextButton_Page_3 = NextButton_Page_3
         self.Seqlabel = Seqlabel
+        self.localizebutton = localizebutton
+        self.filepath = file_path
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
@@ -69,6 +74,7 @@ class createMesh(QMainWindow):
                 self.Seqlabel,
             )
         )
+        self.wall_identifiers = vtk_data_excel.exceldataextractor()
         self.loadStl()
 
     def loadStl(self):
@@ -84,6 +90,18 @@ class createMesh(QMainWindow):
             (self.meshbounds[2] + self.meshbounds[3]) / 2,
             (self.meshbounds[4] + self.meshbounds[5]) / 2,
         ]
+        x_coords = []
+        y_coords = []
+        z_coords = []
+        for wall_identify in self.wall_identifiers:
+            x_coords.append(wall_identify["Position X (m)"])
+            y_coords.append(wall_identify["Position Y (m)"])
+            z_coords.append(wall_identify["Position Z (m)"])
+        for wall_identify, x, y, z in zip(
+            self.wall_identifiers, x_coords, y_coords, z_coords
+        ):
+            point_id = self.find_closest_point(self.reader, (x, y, z))
+            wall_identify["Point ID"] = point_id
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
         self.cubeactor.SetPosition(160, center[1], center[2])
@@ -129,7 +147,9 @@ class createMesh(QMainWindow):
             spaceseperation,
             center,
         ]
-        camera = events.myInteractorStyle(setcamerainteraction)
+        camera = events.myInteractorStyle(
+            setcamerainteraction, self.wall_identifiers, self.localizebutton
+        )
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
         self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
