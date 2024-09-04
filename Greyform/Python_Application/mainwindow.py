@@ -179,8 +179,8 @@ class Ui_MainWindow(QMainWindow):
             self.file = file.replace(".stl", "")
         elif ".ifc" in file:
             self.file = file.replace(".ifc", "")
-        elif ".xml" in file:
-            self.file = file.replace(".xml", "")
+        elif ".dxf" in file:
+            self.file = file.replace(".dxf", "")
         self.mainwindow.NextButton_Page_2.show()
         self.mainwindow.Itemlabel.setText(
             self._translate("MainWindow", "Product : " + str(self.file))

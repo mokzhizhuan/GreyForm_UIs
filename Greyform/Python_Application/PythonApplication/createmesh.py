@@ -100,7 +100,7 @@ class createMesh(QMainWindow):
         for wall_identify, x, y, z in zip(
             self.wall_identifiers, x_coords, y_coords, z_coords
         ):
-            point_id = self.find_closest_point(self.reader, (x, y, z))
+            point_id = self.find_closest_point(polydata, (x, y, z))
             wall_identify["Point ID"] = point_id
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
@@ -146,6 +146,7 @@ class createMesh(QMainWindow):
             self.collisionFilter,
             spaceseperation,
             center,
+            self.filepath
         ]
         camera = events.myInteractorStyle(
             setcamerainteraction, self.wall_identifiers, self.localizebutton
@@ -218,6 +219,13 @@ class createMesh(QMainWindow):
         while actor:
             self.ren.RemoveActor(actor)
             actor = actors.GetNextActor()
+
+    def find_closest_point(self, polydata, target_position):
+        point_locator = vtk.vtkKdTreePointLocator()
+        point_locator.SetDataSet(polydata)
+        point_locator.BuildLocator()
+        point_id = point_locator.FindClosestPoint(target_position)
+        return point_id
 
     def create_cube_actor(self):
         self.cube_source = vtk.vtkCubeSource()
