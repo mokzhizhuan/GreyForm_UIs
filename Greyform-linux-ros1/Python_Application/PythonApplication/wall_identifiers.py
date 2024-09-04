@@ -108,7 +108,7 @@ class wall_Interaction(object):
                     sectionnumber = self.determine_quadrant(
                         self.picked_position_quad[1], self.picked_position_quad[2]
                     )
-            elif max_y - min_y <= self.distances:
+            elif max_y - min_y <= self.threshold_distance:
                 distance = self.calculate_distance(self.picked_position[1], max_y)
                 if distance <= self.distances:
                     wall_number = wall_numbers
@@ -125,14 +125,14 @@ class wall_Interaction(object):
                 distance = self.calculate_distance(self.picked_position[2], max_z)
                 if distance <= self.distances:
                     wall_number = wall_numbers
-                    self.picked_position_quad[2] = self.picked_position[2] - (
-                        self.meshbound[5] / 2
+                    self.picked_position_quad[1] = self.picked_position[1] - (
+                        self.meshbound[3] / 2
                     )
                     self.picked_position_quad[0] = self.picked_position[0] - (
                         self.meshbound[1] / 2
                     )
                     sectionnumber = self.determine_quadrant(
-                        self.picked_position_quad[0], self.picked_position_quad[2]
+                        self.picked_position_quad[0], self.picked_position_quad[1]
                     )
         return wall_number, sectionnumber
 
