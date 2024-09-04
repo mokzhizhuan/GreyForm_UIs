@@ -64,12 +64,7 @@ class LeftInteractorStyle(object):
             self.collisionFilter.Update()
             num_contacts = self.collisionFilter.GetNumberOfContacts()
             self.refresh()
-            if (
-                num_contacts > 0
-                or self.meshbound[0] >= camera_pos[0] <= self.meshbound[1]
-                or self.meshbound[2] >= camera_pos[1] <= self.meshbound[3]
-                or 0 >= camera_pos[2] <= self.meshbound[5]
-            ):
+            if num_contacts > 0:
                 camera.SetPosition(self.cubeactor.GetPosition())
                 self.cameraactor.SetPosition(
                     self.cubeactor.GetPosition()[0],
