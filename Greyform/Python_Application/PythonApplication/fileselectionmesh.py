@@ -130,55 +130,55 @@ class FileSelectionMesh(QMainWindow):
                     self.file_path,
                 )
 
-def process_line_string(self, geometry, offset):
-    points = np.array(geometry.coords)
-    lines = np.hstack([[len(points)], np.arange(len(points)) + offset])
-    return points, lines, offset + len(points)
+    def process_line_string(self, geometry, offset):
+        points = np.array(geometry.coords)
+        lines = np.hstack([[len(points)], np.arange(len(points)) + offset])
+        return points, lines, offset + len(points)
 
-def process_polygon(self, geometry, offset):
-    poly_points = np.array(geometry.exterior.coords)
-    face = np.hstack([[len(poly_points)], np.arange(len(poly_points)) + offset])
-    return poly_points, face, offset + len(poly_points)
+    def process_polygon(self, geometry, offset):
+        poly_points = np.array(geometry.exterior.coords)
+        face = np.hstack([[len(poly_points)], np.arange(len(poly_points)) + offset])
+        return poly_points, face, offset + len(poly_points)
 
-def process_geometry(self, geometry, offset):
-    if isinstance(geometry, LineString):
-        points, lines, offset = self.process_line_string(geometry, offset)
-        self.all_vertices.append(points)
-        self.all_faces.append(lines)
-    elif isinstance(geometry, Polygon):
-        poly_points, face, offset = self.process_polygon(geometry, offset)
-        self.all_vertices.append(poly_points)
-        self.all_faces.append(face)
-    elif isinstance(geometry, MultiPolygon) or isinstance(
-        geometry, MultiLineString
-    ):
-        for geom in geometry.geoms:
-            offset = self.process_geometry(geom, offset)
-    elif isinstance(geometry, GeometryCollection):
-        for geom in geometry.geoms:
-            offset = self.process_geometry(geom, offset)
-    elif isinstance(geometry, Point):
-        point_coords = np.array(geometry.coords)
-        self.all_vertices.append(point_coords)
-        offset += len(point_coords)
-    elif isinstance(geometry, MultiPoint):
-        for point in geometry.geoms:
-            point_coords = np.array(point.coords)
+    def process_geometry(self, geometry, offset):
+        if isinstance(geometry, LineString):
+            points, lines, offset = self.process_line_string(geometry, offset)
+            self.all_vertices.append(points)
+            self.all_faces.append(lines)
+        elif isinstance(geometry, Polygon):
+            poly_points, face, offset = self.process_polygon(geometry, offset)
+            self.all_vertices.append(poly_points)
+            self.all_faces.append(face)
+        elif isinstance(geometry, MultiPolygon) or isinstance(
+            geometry, MultiLineString
+        ):
+            for geom in geometry.geoms:
+                offset = self.process_geometry(geom, offset)
+        elif isinstance(geometry, GeometryCollection):
+            for geom in geometry.geoms:
+                offset = self.process_geometry(geom, offset)
+        elif isinstance(geometry, Point):
+            point_coords = np.array(geometry.coords)
             self.all_vertices.append(point_coords)
             offset += len(point_coords)
-    elif isinstance(geometry, LinearRing):
-        ring_points = np.array(geometry.coords)
-        self.all_vertices.append(ring_points)
-        offset += len(ring_points)
-    else:
-        print(f"Unknown geometry type: {type(geometry)}")
-    return offset
+        elif isinstance(geometry, MultiPoint):
+            for point in geometry.geoms:
+                point_coords = np.array(point.coords)
+                self.all_vertices.append(point_coords)
+                offset += len(point_coords)
+        elif isinstance(geometry, LinearRing):
+            ring_points = np.array(geometry.coords)
+            self.all_vertices.append(ring_points)
+            offset += len(ring_points)
+        else:
+            print(f"Unknown geometry type: {type(geometry)}")
+        return offset
 
-def resize_stl(self, file_path, scale_factor, output_path):
-    Mesh = mesh.Mesh.from_file(file_path)
-    Mesh.vectors *= scale_factor
-    Mesh.update_normals()
-    Mesh.save(output_path)
+    def resize_stl(self, file_path, scale_factor, output_path):
+        Mesh = mesh.Mesh.from_file(file_path)
+        Mesh.vectors *= scale_factor
+        Mesh.update_normals()
+        Mesh.save(output_path)
 
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
