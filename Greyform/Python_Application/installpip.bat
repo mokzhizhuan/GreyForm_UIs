@@ -13,3 +13,6 @@ pip install serial
 pip install tzlocal
 pip install psutil
 pip install netifaces
+pip install numpy 
+pip install fiona
+pip install geopandas
