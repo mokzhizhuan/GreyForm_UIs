@@ -48,7 +48,7 @@ class ListenerNode(Node):
 
     def file_listener_callback(self, msg):
         try:
-            stl_data = bytes(msg.stl_data)  # Convert list of uint8 back to bytes
+            stl_data = bytes(msg.stl_data) 
             self.message += (
                 f"{self.spacing}STL file received and processed: {msg.stl_data[:10]}"
             )
@@ -102,7 +102,9 @@ class ListenerNode(Node):
                         self.picked_position, wall_position
                     )
                     if distance <= threshold_distance:
-                        self.message += f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
+                        self.message += (
+                            f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
+                        )
                         df.at[index, "Status"] = "done"
                     df.at[index, "Position Z (m)"] = self.storedzpos
                 processed_data[sheet_name] = df

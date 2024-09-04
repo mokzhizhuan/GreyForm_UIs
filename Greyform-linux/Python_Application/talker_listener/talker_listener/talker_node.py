@@ -36,8 +36,10 @@ class TalkerNode(Node):
             msg.stl_data = list(stl_data)  # Convert bytes to a list of uint8
             msg.excelfile = excel_filepath
             self.file_publisher_.publish(msg)
-            self.message += f"STL file published:{self.spacing} {stl_data[:100]}"
-            self.message += f"{self.spacing}Excel file path: {excel_filepath}"
+            self.message += (
+                f"STL file published:{self.spacing} {stl_data[:100]}"
+                f"{self.spacing}Excel file path: {excel_filepath}"
+            )
         except FileNotFoundError as e:
             message = f"File not found: {e}"
             self.show_error_dialog(message)
@@ -58,10 +60,12 @@ class TalkerNode(Node):
             ]
             msg.picked_position = picked_position
             self.selection_publisher_.publish(msg)
-            self.message += f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"
-            self.message += f"{self.spacing}typeselection={msg.typeselection},"
-            self.message += f"{self.spacing}sectionselection={msg.sectionselection}"
-            self.message += f"{self.spacing}{str(msg.picked_position.tolist())}"
+            self.message += (
+                f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"
+                f"{self.spacing}typeselection={msg.typeselection},"
+                f"{self.spacing}sectionselection={msg.sectionselection}"
+                f"{self.spacing}{list(msg.picked_position)}"
+            )
             self.show_info_dialog(self.message)
             self.message= ""
         except Exception as e:
