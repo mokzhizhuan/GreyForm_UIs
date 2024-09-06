@@ -8,15 +8,16 @@ import struct
 
 
 class SelectionWall(genpy.Message):
-  _md5sum = "f6985e46a2e326f422d9f77fb3681bba"
+  _md5sum = "58c6387955db224451fe1a297bbab86a"
   _type = "my_robot_wallinterfaces/SelectionWall"
   _has_header = False  # flag to mark the presence of a Header object
   _full_text = """int32 wallselection
 string typeselection
 int32 sectionselection
-int32[] picked_position"""
-  __slots__ = ['wallselection','typeselection','sectionselection','picked_position']
-  _slot_types = ['int32','string','int32','int32[]']
+int32[] picked_position
+int32[] default_position"""
+  __slots__ = ['wallselection','typeselection','sectionselection','picked_position','default_position']
+  _slot_types = ['int32','string','int32','int32[]','int32[]']
 
   def __init__(self, *args, **kwds):
     """
@@ -26,7 +27,7 @@ int32[] picked_position"""
     changes.  You cannot mix in-order arguments and keyword arguments.
 
     The available fields are:
-       wallselection,typeselection,sectionselection,picked_position
+       wallselection,typeselection,sectionselection,picked_position,default_position
 
     :param args: complete set of field values, in .msg order
     :param kwds: use keyword arguments corresponding to message field names
@@ -43,11 +44,14 @@ int32[] picked_position"""
         self.sectionselection = 0
       if self.picked_position is None:
         self.picked_position = []
+      if self.default_position is None:
+        self.default_position = []
     else:
       self.wallselection = 0
       self.typeselection = ''
       self.sectionselection = 0
       self.picked_position = []
+      self.default_position = []
 
   def _get_types(self):
     """
@@ -75,6 +79,10 @@ int32[] picked_position"""
       buff.write(_struct_I.pack(length))
       pattern = '<%si'%length
       buff.write(struct.Struct(pattern).pack(*self.picked_position))
+      length = len(self.default_position)
+      buff.write(_struct_I.pack(length))
+      pattern = '<%si'%length
+      buff.write(struct.Struct(pattern).pack(*self.default_position))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
@@ -110,6 +118,14 @@ int32[] picked_position"""
       s = struct.Struct(pattern)
       end += s.size
       self.picked_position = s.unpack(str[start:end])
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      pattern = '<%si'%length
+      start = end
+      s = struct.Struct(pattern)
+      end += s.size
+      self.default_position = s.unpack(str[start:end])
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e)  # most likely buffer underfill
@@ -136,6 +152,10 @@ int32[] picked_position"""
       buff.write(_struct_I.pack(length))
       pattern = '<%si'%length
       buff.write(self.picked_position.tostring())
+      length = len(self.default_position)
+      buff.write(_struct_I.pack(length))
+      pattern = '<%si'%length
+      buff.write(self.default_position.tostring())
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
@@ -172,6 +192,14 @@ int32[] picked_position"""
       s = struct.Struct(pattern)
       end += s.size
       self.picked_position = numpy.frombuffer(str[start:end], dtype=numpy.int32, count=length)
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      pattern = '<%si'%length
+      start = end
+      s = struct.Struct(pattern)
+      end += s.size
+      self.default_position = numpy.frombuffer(str[start:end], dtype=numpy.int32, count=length)
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e)  # most likely buffer underfill

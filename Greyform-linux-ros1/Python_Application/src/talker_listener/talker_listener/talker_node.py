@@ -54,7 +54,7 @@ class TalkerNode:
         return np.linalg.norm(point1 - point2)
 
     def publish_selection_message(
-        self, wall_number, sectionnumber, picked_position, seqlabel
+        self, wall_number, sectionnumber, picked_position, seqlabel, cube_actor
     ):
         try:
             msg = SelectionWall()
@@ -67,12 +67,19 @@ class TalkerNode:
                 int(picked_position[2]),
             ]
             msg.picked_position = picked_position
+            default_position= [
+                int(cube_actor.GetPosition()[0]),
+                int(cube_actor.GetPosition()[1]),
+                int(cube_actor.GetPosition()[2]),
+            ]
+            msg.default_position = default_position
             self.selection_publisher_.publish(msg)
             self.message += (
                 f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"
                 f"{self.spacing}typeselection={msg.typeselection},"
                 f"{self.spacing}sectionselection={msg.sectionselection}"
                 f"{self.spacing}{list(msg.picked_position)}"
+                f"{self.spacing}{list(msg.default_position)}"
             )
             self.show_info_dialog(self.message)
             self.message = ""
@@ -94,7 +101,7 @@ class TalkerNode:
                 subprocess.Popen(
                     ["rosrun", "talker_listener", "listener_node.py"],
                 )
-                self.listener_started = True 
+                self.listener_started = True
             except Exception as e:
                 error_dialog = logs.LogDialog(
                     f"Failed to run ListenerNode: {str(e)}", "Error", log_type="error"

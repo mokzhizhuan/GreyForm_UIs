@@ -24,6 +24,7 @@ class wall_Interaction(object):
         self.reader = setcamerainteraction[10]
         self.seqlabel = setcamerainteraction[18]
         self.excelfiletext = setcamerainteraction[19]
+        self.cubeactor = setcamerainteraction[11]
         self.ros_node = ros_node
         self.button_connected = False
 
@@ -80,7 +81,11 @@ class wall_Interaction(object):
         self.exceldata = self.excelfiletext.toPlainText()
         self.ros_node.publish_file_message(file, self.exceldata)
         self.ros_node.publish_selection_message(
-            wallnumber, sectionnumber, self.picked_position, self.seqlabel
+            wallnumber,
+            sectionnumber,
+            self.picked_position,
+            self.seqlabel,
+            self.cubeactor,
         )
 
     def distance(self):
