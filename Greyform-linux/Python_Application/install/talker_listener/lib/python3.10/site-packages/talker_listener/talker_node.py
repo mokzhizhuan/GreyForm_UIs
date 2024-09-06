@@ -10,6 +10,8 @@ from std_msgs.msg import String
 import pandas as pd
 import numpy as np
 import sys
+import subprocess
+
 sys.path.append("/home/winsys/ros2_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
 
@@ -26,7 +28,7 @@ class TalkerNode(Node):
         self.message = ""
         self.spacing = "\n"
         self.title = "Publisher Node"
-        self.active_dialog = None 
+        self.active_dialog = None
 
     def publish_file_message(self, file_path, excel_filepath):
         try:
@@ -36,8 +38,10 @@ class TalkerNode(Node):
             msg.stl_data = list(stl_data)  # Convert bytes to a list of uint8
             msg.excelfile = excel_filepath
             self.file_publisher_.publish(msg)
-            self.message += f"STL file published:{self.spacing} {stl_data[:100]}"
-            self.message += f"{self.spacing}Excel file path: {excel_filepath}"
+            self.message += (
+                f"STL file published:{self.spacing} {stl_data[:100]}"
+                f"{self.spacing}Excel file path: {excel_filepath}"
+            )
         except FileNotFoundError as e:
             message = f"File not found: {e}"
             self.show_error_dialog(message)
@@ -45,11 +49,13 @@ class TalkerNode(Node):
             message = f"Failed to read and publish STL file: {e}"
             self.show_error_dialog(message)
 
-    def publish_selection_message(self, wall_number, sectionnumber, picked_position):
+    def publish_selection_message(
+        self, wall_number, sectionnumber, picked_position, seqlabel
+    ):
         try:
             msg = SelectionWall()
             msg.wallselection = int(wall_number)
-            msg.typeselection = f"Wall Number {wall_number}"
+            msg.typeselection = f"{seqlabel.text()}"
             msg.sectionselection = sectionnumber
             picked_position = [
                 int(picked_position[0]),
@@ -58,12 +64,15 @@ class TalkerNode(Node):
             ]
             msg.picked_position = picked_position
             self.selection_publisher_.publish(msg)
-            self.message += f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"
-            self.message += f"{self.spacing}typeselection={msg.typeselection},"
-            self.message += f"{self.spacing}sectionselection={msg.sectionselection}"
-            self.message += f"{self.spacing}{str(msg.picked_position.tolist())}"
+            self.message += (
+                f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"
+                f"{self.spacing}typeselection={msg.typeselection},"
+                f"{self.spacing}sectionselection={msg.sectionselection}"
+                f"{self.spacing}{list(msg.picked_position)}"
+            )
             self.show_info_dialog(self.message)
-            self.message= ""
+            self.message = ""
+            self.run_listener_node()
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
             self.show_error_dialog(message)
@@ -75,13 +84,22 @@ class TalkerNode(Node):
         self.count += 1
         self.get_logger().info(f"Publishing {msg.data}")
 
+    def run_listener_node(self):
+        try:
+            subprocess.Popen(["ros2", "run", "talker_listener", "listenerNode"])
+        except Exception as e:
+            error_dialog = logs.LogDialog(
+                f"Failed to run ListenerNode: {str(e)}", "Error", log_type="error"
+            )
+            error_dialog.exec_()
+
     def calculate_distance(self, point1, point2):
         return np.linalg.norm(point1 - point2)
 
     def show_info_dialog(self, message):
         if self.active_dialog:
             self.active_dialog.close()
-            self.active_dialog = None  
+            self.active_dialog = None
         self.active_dialog = logs.LogDialog(message, self.title, log_type="info")
         self.active_dialog.exec_()
         self.active_dialog.close()
@@ -90,7 +108,7 @@ class TalkerNode(Node):
     def show_error_dialog(self, message):
         if self.active_dialog:
             self.active_dialog.close()
-            self.active_dialog = None  
+            self.active_dialog = None
         self.active_dialog = logs.LogDialog(message, self.title, log_type="error")
         self.active_dialog.exec_()
         self.active_dialog.close()

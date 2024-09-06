@@ -22,6 +22,8 @@ class wall_Interaction(object):
         self.renderwindowinteractor = setcamerainteraction[3]
         self.file_path = setcamerainteraction[17]
         self.reader = setcamerainteraction[10]
+        self.seqlabel = setcamerainteraction[18]
+        self.excelfiletext = setcamerainteraction[19]
         self.ros_node = ros_node
         self.button_connected = False
 
@@ -55,7 +57,6 @@ class wall_Interaction(object):
         return point_id
 
     def publish_message(self):
-        self.exceldata = "/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/exporteddatas.xlsx"
         self.wall_filtered_identifiers = self.fliterbywallnum()
         wallnumber, sectionnumber = self.distance()
         if self.file_path:
@@ -76,9 +77,10 @@ class wall_Interaction(object):
         return grouped
 
     def publish_message_ros(self, file, wallnumber, sectionnumber):
+        self.exceldata = self.excelfiletext.toPlainText()
         self.ros_node.publish_file_message(file, self.exceldata)
         self.ros_node.publish_selection_message(
-            wallnumber, sectionnumber, self.picked_position
+            wallnumber, sectionnumber, self.picked_position, self.seqlabel
         )
 
     def distance(self):

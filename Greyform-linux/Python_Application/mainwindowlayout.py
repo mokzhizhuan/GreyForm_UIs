@@ -12,8 +12,8 @@ class Ui_MainWindow_layout(object):
         mainlayoutwidget,
         mainlayoutpagebutton,
         mainmenu,
+        excelfilelayout,
         page2layout,
-        framepage2layout,
         page2,
         itemlabel_page3,
         page3layout,
@@ -35,7 +35,6 @@ class Ui_MainWindow_layout(object):
         self.mainlayoutpagebutton = mainlayoutpagebutton
         self.mainmenu = mainmenu
         self.page2Layout = page2layout
-        self.framepage2layout = framepage2layout
         self.page2 = page2
         self.itemlabel_page3 = itemlabel_page3
         self.page3Layout = page3layout
@@ -50,6 +49,7 @@ class Ui_MainWindow_layout(object):
         self.stackedWidget_main = stackedWidget_main
         self.SettingButton = SettingButton
         self.usermanualButton = usermanualButton
+        self.excelfilelayout = excelfilelayout
         self.setStretch()
 
     def setStretch(self):
@@ -69,7 +69,6 @@ class Ui_MainWindow_layout(object):
         self.boxLayout.setStretch(0, 1)
         self.boxLayout.setStretch(1, 4)
         self.stackedWidget_main.setLayout(self.boxLayout)
-
         self.page1boxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
             20, 400, QSizePolicy.Minimum, QSizePolicy.Expanding
@@ -89,11 +88,11 @@ class Ui_MainWindow_layout(object):
         self.mainlayoutpagebutton.setStretch(0, 1)
         self.mainlayoutpagebutton.setStretch(1, 1)
         self.mainmenu.setLayout(self.page1boxlayout)
-        self.page2boxLayout = QHBoxLayout()
+        self.page2boxLayout = QVBoxLayout()
+        self.page2boxLayout.addWidget(self.excelfilelayout)
         self.page2boxLayout.addWidget(self.page2Layout)
-        self.page2boxLayout.addWidget(self.framepage2layout)
-        self.page2boxLayout.setStretch(0, 1)
         self.page2boxLayout.setStretch(1, 1)
+        self.page2boxLayout.setStretch(1, 3)
         self.page2.setLayout(self.page2boxLayout)
         self.page3boxLayout = QVBoxLayout()
         self.page3boxLayout.addWidget(self.itemlabel_page3)

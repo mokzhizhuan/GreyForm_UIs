@@ -1,4 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QPushButton, QMainWindow
+from PyQt5.QtCore import QTimer
+import subprocess
 
 class LogDialog(QDialog):
     def __init__(self, message, title, log_type="info"):
@@ -14,3 +16,4 @@ class LogDialog(QDialog):
         layout.addWidget(ok_button)
 
         self.setLayout(layout)
+

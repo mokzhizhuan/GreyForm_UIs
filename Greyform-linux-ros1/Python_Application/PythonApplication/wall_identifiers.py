@@ -22,7 +22,10 @@ class wall_Interaction(object):
         self.renderwindowinteractor = setcamerainteraction[3]
         self.file_path = setcamerainteraction[17]
         self.reader = setcamerainteraction[10]
+        self.seqlabel = setcamerainteraction[18]
+        self.excelfiletext = setcamerainteraction[19]
         self.ros_node = ros_node
+        self.button_connected = False
 
     def setwallinteractiondata(self, obj, event):
         self.interactor_style.SetMotionFactor(8)
@@ -42,7 +45,9 @@ class wall_Interaction(object):
         ]
         self.point_id = self.find_closest_point(self.reader, self.picked_position)
         self.localizebutton.show()
-        self.localizebutton.clicked.connect(self.publish_message)
+        if not self.button_connected:
+            self.localizebutton.clicked.connect(self.publish_message)
+            self.button_connected = True
 
     def find_closest_point(self, polydata, target_position):
         point_locator = vtk.vtkKdTreePointLocator()
@@ -52,7 +57,7 @@ class wall_Interaction(object):
         return point_id
 
     def publish_message(self):
-        self.exceldata = "exporteddatas.xlsx"
+        self.exceldata = self.excelfiletext.toPlainText()
         self.wall_filtered_identifiers = self.fliterbywallnum()
         wallnumber, sectionnumber = self.distance()
         if self.file_path:
@@ -75,7 +80,7 @@ class wall_Interaction(object):
     def publish_message_ros(self, file, wallnumber, sectionnumber):
         self.ros_node.publish_file_message(file, self.exceldata)
         self.ros_node.publish_selection_message(
-            wallnumber, sectionnumber, self.picked_position
+            wallnumber, sectionnumber, self.picked_position, self.seqlabel
         )
 
     def distance(self):

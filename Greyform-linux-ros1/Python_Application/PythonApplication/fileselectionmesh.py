@@ -46,6 +46,7 @@ class FileSelectionMesh():
         self.Seqlabel = mainwindowforfileselection[13]
         self.localizebutton = mainwindowforfileselection[14]
         self.rosnode = mainwindowforfileselection[15]
+        self.excelfiletext = mainwindowforfileselection[16]
         self.meshdata()
 
     # load meshdata from file
@@ -120,6 +121,7 @@ class FileSelectionMesh():
                     self.localizebutton,
                     self.rosnode,
                     self.file_path,
+                    self.excelfiletext,
                 )
 
     def process_line_string(self, geometry, offset):

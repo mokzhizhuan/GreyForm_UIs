@@ -9,9 +9,7 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 import numpy as np
 from stl import mesh
 import PythonApplication.interactiveevent as events
-import PythonApplication.doormeshvtk as doormeshVTK
 import PythonApplication.exceldatavtk as vtk_data_excel
-
 
 
 # create the imported stl mesh in vtk frame
@@ -33,9 +31,9 @@ class createMesh(QMainWindow):
         Seqlabel,
         localizebutton,
         ros_node,
-        file_path
+        file_path,
+        excelfiletext,
     ):
-        # variable for loading bar ui
         self.defaultposition = [0, 0, 1]
         self.reader = vtk.vtkPolyData()
         self.meshbounds = None
@@ -51,10 +49,10 @@ class createMesh(QMainWindow):
         self.localizebutton = localizebutton
         self.ros_node = ros_node
         self.filepath = file_path
+        self.excelfiletext = excelfiletext
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
-        self.door = doormeshVTK.doorMesh()
         seq1Button.clicked.connect(
             lambda: self.addseqtext(seq1Button, NextButton_Page_3, Seqlabel)
         )
@@ -64,11 +62,11 @@ class createMesh(QMainWindow):
         seq3Button.clicked.connect(
             lambda: self.addseqtext(seq3Button, NextButton_Page_3, Seqlabel)
         )
+        self.Seqlabel = Seqlabel
         self.wall_identifiers = vtk_data_excel.exceldataextractor()
         self.loadStl()
 
     def loadStl(self):
-        """Load the given STL file, and return a vtkPolyData object for it."""
         meshs = mesh.Mesh.from_file(self.polydata)
         points = meshs.points.reshape(-1, 3)
         faces = np.arange(points.shape[0]).reshape(-1, 3)
@@ -84,7 +82,6 @@ class createMesh(QMainWindow):
         self.reader.SetPoints(vtk_points)
         self.reader.SetPolys(vtk_faces)
         self.polyDataToActor()
-        self.doordimension = self.door.includedimension()
         self.fixedposition()
         center = [
             (self.meshbounds[0] + self.meshbounds[1]) / 2,
@@ -121,21 +118,12 @@ class createMesh(QMainWindow):
         self.ren.AddActor(self.actor)
         self.oldcamerapos = self.cubeactor.GetPosition()
         self.collisionFilter = vtk.vtkCollisionDetectionFilter()
-        # Set up the collision filter
         self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
         self.collisionFilter.SetInputData(1, self.actor.GetMapper().GetInput())
-        self.collisionFilter.SetTransform(
-            0, vtk.vtkTransform()
-        )  # Moving object transform
-        self.collisionFilter.SetTransform(
-            1, vtk.vtkTransform()
-        )  # Static object transform
-        self.collisionFilter.SetMatrix(
-            0, self.cubeactor.GetMatrix()
-        )  # Static object transform
-        self.collisionFilter.SetMatrix(
-            1, self.actor.GetMatrix()
-        )  # Static object transform
+        self.collisionFilter.SetTransform(0, vtk.vtkTransform())
+        self.collisionFilter.SetTransform(1, vtk.vtkTransform())
+        self.collisionFilter.SetMatrix(0, self.cubeactor.GetMatrix())
+        self.collisionFilter.SetMatrix(1, self.actor.GetMatrix())
         self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()
         setcamerainteraction = [
@@ -156,7 +144,9 @@ class createMesh(QMainWindow):
             self.collisionFilter,
             spaceseperation,
             center,
-            self.filepath
+            self.filepath,
+            self.Seqlabel,
+            self.excelfiletext,
         ]
         camera = events.myInteractorStyle(
             setcamerainteraction,
@@ -196,23 +186,8 @@ class createMesh(QMainWindow):
         normals.ComputeCellNormalsOff()
         normals.Update()
         mesh_with_normals = normals.GetOutput()
-        internal_points = vtk.vtkPoints()
-        thickness = self.doordimension[3]
-        for i in range(mesh_with_normals.GetNumberOfPoints()):
-            point = mesh_with_normals.GetPoint(i)
-            normal = mesh_with_normals.GetPointData().GetNormals().GetTuple(i)
-            new_point = [point[j] - thickness * normal[j] for j in range(3)]
-            internal_points.InsertNextPoint(new_point)
-        internal_mesh = vtkPolyData()
-        internal_mesh.SetPoints(internal_points)
-        internal_mesh.SetPolys(self.reader.GetPolys())
-        append_filter = vtkAppendPolyData()
-        append_filter.AddInputData(transformedPolyData)
-        append_filter.AddInputData(internal_mesh)
-        append_filter.Update()
-        combined_mesh = append_filter.GetOutput()
         mapper = vtkPolyDataMapper()
-        mapper.SetInputData(combined_mesh)
+        mapper.SetInputData(mesh_with_normals)
         self.actor = vtk.vtkActor()
         self.actor.SetMapper(mapper)
         self.actor.GetProperty().SetRepresentationToSurface()
@@ -245,8 +220,6 @@ class createMesh(QMainWindow):
         return self.cube_actor
 
     def polyDataToActor(self):
-        """Wrap the provided vtkPolyData object in a mapper and an actor, returning
-        the actor."""
         mapper = vtk.vtkPolyDataMapper()
         mapper.SetInputData(self.reader)
         actor = vtk.vtkActor()
@@ -261,4 +234,4 @@ class createMesh(QMainWindow):
         dataseqtext = dataseqtext.replace("Stage ", "")
         buttonnextpage.show()
         _translate = QtCore.QCoreApplication.translate
-        label.setText(_translate("MainWindow", "Stage: " + str(dataseqtext)))
+        label.setText(_translate("MainWindow", "Stage " + str(dataseqtext)))

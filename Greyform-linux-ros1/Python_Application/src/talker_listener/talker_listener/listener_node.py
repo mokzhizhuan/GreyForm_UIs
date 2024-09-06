@@ -21,6 +21,21 @@ from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT
 sys.path.append("/root/catkin_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
 
+class SingletonDialog:
+    _instance = None
+
+    @classmethod
+    def show_info_dialog(cls, message, root, title="Information"):
+        if cls._instance is None:
+            cls._instance = ScrollableDialog(root, title, message)
+            cls._instance.mainloop()
+
+
+    @classmethod
+    def clear(cls):
+        if cls._instance:
+            cls._instance.destroy()
+            cls._instance = None
 
 class ScrollableDialog(Toplevel):
     def __init__(self, root, title, message):
@@ -35,7 +50,7 @@ class ScrollableDialog(Toplevel):
         scrollbar.grid(row=0, column=1, sticky="ns")
         text_widget.config(yscrollcommand=scrollbar.set)
         text_widget.insert(END, message)
-        text_widget.config(state=tk.DISABLED)  
+        text_widget.config(state=tk.DISABLED) 
         ok_button = Button(self, text="OK", command=self.destroy)
         ok_button.grid(row=1, column=0, columnspan=2, pady=5)
 
@@ -69,12 +84,13 @@ class ListenerNode(QMainWindow):
         self.label.pack()
         self.button = tk.Button(
             root, text="Show Message", command=self.show_info_dialog
-        )
+        ) 
         self.button.pack()
+        self.active_dialog = None
 
     def file_listener_callback(self, msg):
         try:
-            stl_data = bytes(msg.stl_data)  # Convert list of uint8 back to bytes
+            stl_data = bytes(msg.stl_data) 
             self.message += (
                 f"{self.spacing}STL file received and processed: {msg.stl_data[:10]}"
             )
@@ -88,7 +104,7 @@ class ListenerNode(QMainWindow):
                 self.file_callback(stl_mesh)
         except Exception as e:
             message = f"Failed to process received STL file: {e}"
-            self.show_error_dialog(message)
+            print(message)
 
     def selection_listener_callback(self, msg):
         try:
@@ -104,7 +120,7 @@ class ListenerNode(QMainWindow):
                 self.selection_callback(msg)
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
-            self.show_error_dialog(message)
+            print(message)
 
     def process_excel_data(self, excel_filepath):
         try:
@@ -128,7 +144,9 @@ class ListenerNode(QMainWindow):
                         self.picked_position, wall_position
                     )
                     if distance <= threshold_distance:
-                        self.message += f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
+                        self.message += (
+                            f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
+                        )
                         df.at[index, "Status"] = "done"
                     df.at[index, "Position Z (m)"] = self.storedzpos
                 processed_data[sheet_name] = df
@@ -136,13 +154,14 @@ class ListenerNode(QMainWindow):
                 for sheet_name, df in processed_data.items():
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
                 self.message += f"{self.spacing}Excel data processed successfully."
-            self.show_info_dialog(self.message)
+            self.show_info_dialog(self.message) 
+            self.message = ""
         except FileNotFoundError as e:
             message = f"Excel file not found: {e}"
-            self.show_error_dialog(message)
+            print(message)
         except Exception as e:
             message = f"Failed to process Excel file: {e}"
-            self.show_error_dialog(message)
+            print(message)
 
     def set_file_callback(self, callback):
         self.file_callback = callback
@@ -154,11 +173,11 @@ class ListenerNode(QMainWindow):
         return np.linalg.norm(point1 - point2)
 
     def show_info_dialog(self, message):
-        ScrollableDialog(self.root, self.title, message)
-
-    def show_error_dialog(self, message):
-        ScrollableDialog(self.root, self.title, message)
-
+        if self.active_dialog:
+            self.active_dialog.destroy()  
+            self.active_dialog = None
+        self.active_dialog = ScrollableDialog(self.root, "Listener Node", message)
+        self.active_dialog.mainloop() 
 
 def main(args=None):
     root = tk.Tk()

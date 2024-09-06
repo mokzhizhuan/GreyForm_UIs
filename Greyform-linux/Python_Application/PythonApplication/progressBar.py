@@ -51,6 +51,7 @@ class pythonProgressBar(QDialog):
         self.Seqlabel = mainwindowforfileselection[13]
         self.localizebutton = mainwindowforfileselection[14]
         self.rosnode = mainwindowforfileselection[15]
+        self.excelfiletext = mainwindowforfileselection[16]
         self.start_progress()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
@@ -126,6 +127,7 @@ class pythonProgressBar(QDialog):
             self.localizebutton,
             self.rosnode,
             self.filepath,
+            self.excelfiletext,
         )
         self.close()
 

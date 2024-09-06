@@ -1,1 +1,0 @@
-/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/lib/python3.10/site-packages/pkg_resources/tests/data/my-test-package-source/setup.py

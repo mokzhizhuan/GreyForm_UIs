@@ -40,6 +40,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.center = setcamerainteraction[16]
         camera = self.render.GetActiveCamera()
         self.actor_speed = 20
+        self.threshold = 20
         self.defaultposition = [0, 0, 1]
         self.leftbuttoninteraction = leftbuttoninteraction.LeftInteractorStyle(
             self, setcamerainteraction
@@ -56,6 +57,9 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             localizebutton,
             ros_node,
         )
+        self.locator = vtkStaticPointLocator()
+        self.locator.SetDataSet(self.reader)
+        self.locator.BuildLocator()
         self.wallinteractor = wallinteraction.wall_Interaction(
             self, setcamerainteraction, wall_identifiers, localizebutton, ros_node
         )
@@ -148,28 +152,28 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.leftbuttoninteraction.reset(self.default_pos)
         if key == "Up" and self.disable_up is False:
             # actor will not go beyond the inside are of the mesh
-            if actor_position[0] < (self.meshbound[1] - self.actor_speed * 2):
+            if actor_position[0] < (self.meshbound[1]):
                 # prevent shape max number
                 actor_position[0] += self.actor_speed
                 self.setkeypreventcontrols()
                 self.setcollision(actor_position, key, camera)
             time.sleep(delay)
         elif key == "Down" and self.disable_down is False:
-            if actor_position[0] > (self.meshbound[0] + self.actor_speed * 2):
+            if actor_position[0] > (self.meshbound[0]):
                 # prevent shape min number
                 actor_position[0] -= self.actor_speed
                 self.setkeypreventcontrols()
                 self.setcollision(actor_position, key, camera)
             time.sleep(delay)
         elif key == "Left" and self.disable_left is False:
-            if actor_position[1] < (self.meshbound[3] - self.actor_speed * 2):
+            if actor_position[1] < (self.meshbound[3]):
                 # prevent shape max number
                 actor_position[1] += self.actor_speed
                 self.setkeypreventcontrols()
                 self.setcollision(actor_position, key, camera)
             time.sleep(delay)
         elif key == "Right" and self.disable_right is False:
-            if actor_position[1] > (self.meshbound[2] + self.actor_speed * 2):
+            if actor_position[1] > (self.meshbound[2]):
                 # prevent shape min number
                 actor_position[1] -= self.actor_speed
                 self.setkeypreventcontrols()
@@ -181,6 +185,16 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     # set camera orientation
     def camsetvieworientation(self, camera):
         camera.SetViewUp(0, 0, 1)
+
+    def calculate_distance_to_mesh(self, actor_position):
+        min_distance = float("inf")
+        for i in range(self.reader.GetNumberOfPoints()):
+            point = [self.meshbound[1], self.meshbound[3], self.meshbound[5]]
+            self.reader.GetPoint(i, point)
+            distance = vtkMath.Distance2BetweenPoints(actor_position, point) ** 0.5
+            if distance < min_distance:
+                min_distance = distance
+        return min_distance
 
     # refresher
     def refresh(self):
@@ -197,40 +211,41 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
 
     # set collision for the actor to prevent moving the mesh to the outside area
     def setcollision(self, actor_position, key, camera):
+        distance_to_mesh = self.calculate_distance_to_mesh(actor_position)
+        if distance_to_mesh < 100:
+            message = f"Warning: Cube actor is within {distance_to_mesh:.2f}mm of a wall. Movement restricted."
+            self.show_error_message(message)
+            actor_position = self.old_actor_position
+        else:
+            self.cubeactor.SetPosition(actor_position)
+            self.setcameraactor()
+            camera.SetPosition(actor_position)
+            self.camsetvieworientation(camera)
+            self.collisionFilter.Update()
+            num_contacts = self.collisionFilter.GetNumberOfContacts()
+            if num_contacts == 0:
+                self.refresh()
+                self.old_actor_position = actor_position
+            else:
+                message = f"Collision detected. Moving back to previous position. Contact detected: {num_contacts}"
+                self.show_error_message(message)
+                if key == "Up":
+                    self.old_actor_position[0] -= self.actor_speed
+                    self.disable_up = True
+                elif key == "Down":
+                    self.old_actor_position[0] += self.actor_speed
+                    self.disable_down = True
+                elif key == "Left":
+                    self.old_actor_position[1] -= self.actor_speed
+                    self.disable_left = True
+                elif key == "Right":
+                    self.old_actor_position[1] += self.actor_speed
+                    self.disable_right = True
+                actor_position = self.old_actor_position
         self.cubeactor.SetPosition(actor_position)
         self.setcameraactor()
         camera.SetPosition(actor_position)
-        self.camsetvieworientation(camera)
-        self.collisionFilter.Update()
-        num_contacts = self.collisionFilter.GetNumberOfContacts()
-        if num_contacts == 0:
-            self.refresh()
-            self.old_actor_position = actor_position
-        else:
-            messege = f"collision detected. Moving back to previous position.\n Collision: Contact detected {num_contacts}"
-            self.show_error_message(messege)
-            self.old_actor_position = [
-                self.cubeactor.GetPosition()[0],
-                self.cubeactor.GetPosition()[1],
-                self.cubeactor.GetPosition()[2],
-            ]
-            if key == "Up":
-                self.old_actor_position[0] -= self.actor_speed * 2
-                self.disable_up = True
-            elif key == "Down":
-                self.old_actor_position[0] += self.actor_speed * 2
-                self.disable_down = True
-            elif key == "Left":
-                self.old_actor_position[1] -= self.actor_speed * 2
-                self.disable_left = True
-            elif key == "Right":
-                self.old_actor_position[1] += self.actor_speed * 2
-                self.disable_right = True
-            self.cubeactor.SetPosition(self.old_actor_position)
-            self.setcameraactor()
-            camera.SetPosition(self.old_actor_position)
-            actor_position = self.old_actor_position
-            self.refresh()
+        self.refresh()
 
     # Use Tkinter to show an error message
     def show_error_message(self, message):

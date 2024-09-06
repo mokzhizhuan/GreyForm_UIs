@@ -11,8 +11,8 @@ from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
 import PythonApplication.usermanual as userHelper
 import PythonApplication.setting as setting
+import jsonimport as jsonfileopener
 import vtk
-import json
 import os
 import talker_listener.talker_node as RosPublisher
 import rclpy
@@ -26,23 +26,15 @@ class Ui_MainWindow(QMainWindow):
     def __init__(self, ros_node):
         super(Ui_MainWindow, self).__init__()
         self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
-        try:
-            with open("settings.json", "r") as f:
-                data = json.load(f)
-                resolution = data["resolution"]
-                font = data["font_size"]
-                self.theme = data["theme"]
-                self.password = data["password"]
-                self.selected_time_zone = data["timezone"]
-                self.width, self.height = map(int, resolution.split(" x "))
-        except FileNotFoundError:
-            font = 30
-            self.theme = "Gray"
-            self.password = "pass"
-            self.selected_time_zone = "Asia/Singapore"
-            self.width = 800
-            self.height = 600
-            pass
+        jsonfile = "settings.json"
+        (
+            font,
+            self.theme,
+            self.password,
+            self.selected_time_zone,
+            self.width,
+            self.height,
+        ) = jsonfileopener.jsopen(jsonfile)
         self.font_size = int(font)
         self.font = QFont()
         self.font.setPointSize(self.font_size)
@@ -127,6 +119,7 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.FilePathButton.clicked.connect(self.browsefilesdirectory)
         self.mainwindow.SettingButton.clicked.connect(self.directtosettingpage)
         self.mainwindow.usermanualButton.clicked.connect(self.directtousermanualpage)
+        self.mainwindow.excelFilePathButton.clicked.connect(self.excelfilesdirectory)
         self.buttonui = mainwindowbuttonUIinteraction.mainwindowbuttonUI(
             self.mainwindow,
             self.mainwindow.stackedWidget,
@@ -161,6 +154,13 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
         self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)
 
+    def excelfilesdirectory(self):
+        self.excelfilepath, _ = QFileDialog.getOpenFileName(
+            self, "Choose Excel File", "", "Excel Files (*.xlsx *.xls)"
+        )
+        if self.excelfilepath:
+            self.mainwindow.excelfilpathtext.setText(self.excelfilepath)
+
     # file selection when clicked
     def on_selection_changed(self, index):
         model = self.mainwindow.Selectivefilelistview.model()
@@ -183,6 +183,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.Seqlabel,
             self.mainwindow.LocalizationButton,
             self.ros_node,
+            self.mainwindow.excelfilpathtext,
         ]
         fileselectionmesh.FileSelectionMesh(self.file_path, mainwindowforfileselection)
         if ".stl" in file:
@@ -220,8 +221,8 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.layoutWidget,
             self.mainwindow.horizontalLayout,
             self.mainwindow.mainmenu,
-            self.mainwindow.layoutWidgetpage2,
-            self.mainwindow.layoutWidgetframe,
+            self.mainwindow.horizontalLayoutWidget,
+            self.mainwindow.horizontalLayoutWidgetPage2,
             self.mainwindow.page,
             self.mainwindow.Itemlabel,
             self.mainwindow.layoutWidgetpage3,

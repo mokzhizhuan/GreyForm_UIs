@@ -49,6 +49,7 @@ class pythonProgressBar(QDialog):
         self.seq3Button = mainwindowforfileselection[11]
         self.NextButton_Page_3 = mainwindowforfileselection[12]
         self.Seqlabel = mainwindowforfileselection[13]
+        self.excelfiletext = mainwindowforfileselection[16]
         self.start_progress()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
@@ -125,6 +126,7 @@ class pythonProgressBar(QDialog):
             self.NextButton_Page_3,
             self.Seqlabel,
             output_stl_path,
+            self.excelfiletext,
         )
         self.close()
 

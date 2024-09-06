@@ -19,6 +19,20 @@ import sys
 sys.path.append("/home/winsys/ros2_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
 
+class SingletonDialog:
+    _instance = None
+
+    @classmethod
+    def show_info_dialog(cls, message, title):
+        if cls._instance is None:
+            cls._instance = logs.LogDialog(message, title, log_type="info")
+            cls._instance.exec_()
+
+    @classmethod
+    def clear(cls):
+        if cls._instance:
+            cls._instance.destroy()
+            cls._instance = None
 
 class ListenerNode(Node):
     def __init__(self):
@@ -62,7 +76,7 @@ class ListenerNode(Node):
                 self.file_callback(stl_mesh)
         except Exception as e:
             message = f"Failed to process received STL file: {e}"
-            self.show_error_dialog(message)
+            print(message)
 
     def selection_listener_callback(self, msg):
         try:
@@ -78,7 +92,7 @@ class ListenerNode(Node):
                 self.selection_callback(msg)
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
-            self.show_error_dialog(message)
+            print(message)
 
     def process_excel_data(self, excel_filepath):
         try:
@@ -116,10 +130,10 @@ class ListenerNode(Node):
             self.message = ""
         except FileNotFoundError as e:
             message = f"Excel file not found: {e}"
-            self.show_error_dialog(message)
+            print(message)
         except Exception as e:
             message = f"Failed to process Excel file: {e}"
-            self.show_error_dialog(message)
+            print(message)
 
     def set_file_callback(self, callback):
         self.file_callback = callback
@@ -132,21 +146,13 @@ class ListenerNode(Node):
 
     def show_info_dialog(self, message):
         if self.active_dialog:
-            self.active_dialog.close()
-            self.active_dialog = None  
+            self.active_dialog.close() 
+            self.active_dialog = None 
         self.active_dialog = logs.LogDialog(message, self.title, log_type="info")
         self.active_dialog.exec_()
-        self.active_dialog.close()
-        self.active_dialog = None
 
-    def show_error_dialog(self, message):
-        if self.active_dialog:
-            self.active_dialog.close()
-            self.active_dialog = None  
-        self.active_dialog = logs.LogDialog(message, self.title, log_type="error")
-        self.active_dialog.exec_()
-        self.active_dialog.close()
-        self.active_dialog = None
+        
+
 
 
 def main(args=None):

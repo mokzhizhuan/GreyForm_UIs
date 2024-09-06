@@ -46,6 +46,7 @@ class ProgressBarDialogIFC(QDialog):
         self.Seqlabel = mainwindowforfileselection[13]
         self.localizebutton = mainwindowforfileselection[14]
         self.rosnode = mainwindowforfileselection[15]
+        self.excelfiletext = mainwindowforfileselection[16]
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFont(QFont("Arial", 30))
         self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)
@@ -199,5 +200,6 @@ class ProgressBarDialogIFC(QDialog):
             self.localizebutton,
             self.rosnode,
             self.stl_file,
+            self.excelfiletext,
         )
         self.close()
