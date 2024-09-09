@@ -69,6 +69,9 @@ struct SelectionWall_
   using _picked_position_type =
     std::vector<int32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int32_t>>;
   _picked_position_type picked_position;
+  using _default_position_type =
+    std::vector<int32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int32_t>>;
+  _default_position_type default_position;
 
   // setters for named parameter idiom
   Type & set__wallselection(
@@ -93,6 +96,12 @@ struct SelectionWall_
     const std::vector<int32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int32_t>> & _arg)
   {
     this->picked_position = _arg;
+    return *this;
+  }
+  Type & set__default_position(
+    const std::vector<int32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int32_t>> & _arg)
+  {
+    this->default_position = _arg;
     return *this;
   }
 
@@ -148,6 +157,9 @@ struct SelectionWall_
       return false;
     }
     if (this->picked_position != other.picked_position) {
+      return false;
+    }
+    if (this->default_position != other.default_position) {
       return false;
     }
     return true;

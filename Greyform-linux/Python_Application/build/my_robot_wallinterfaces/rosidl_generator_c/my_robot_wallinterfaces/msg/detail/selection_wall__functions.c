@@ -15,6 +15,7 @@
 // Member `typeselection`
 #include "rosidl_runtime_c/string_functions.h"
 // Member `picked_position`
+// Member `default_position`
 #include "rosidl_runtime_c/primitives_sequence_functions.h"
 
 bool
@@ -35,6 +36,11 @@ my_robot_wallinterfaces__msg__SelectionWall__init(my_robot_wallinterfaces__msg__
     my_robot_wallinterfaces__msg__SelectionWall__fini(msg);
     return false;
   }
+  // default_position
+  if (!rosidl_runtime_c__int32__Sequence__init(&msg->default_position, 0)) {
+    my_robot_wallinterfaces__msg__SelectionWall__fini(msg);
+    return false;
+  }
   return true;
 }
 
@@ -50,6 +56,8 @@ my_robot_wallinterfaces__msg__SelectionWall__fini(my_robot_wallinterfaces__msg__
   // sectionselection
   // picked_position
   rosidl_runtime_c__int32__Sequence__fini(&msg->picked_position);
+  // default_position
+  rosidl_runtime_c__int32__Sequence__fini(&msg->default_position);
 }
 
 bool
@@ -78,6 +86,12 @@ my_robot_wallinterfaces__msg__SelectionWall__are_equal(const my_robot_wallinterf
   {
     return false;
   }
+  // default_position
+  if (!rosidl_runtime_c__int32__Sequence__are_equal(
+      &(lhs->default_position), &(rhs->default_position)))
+  {
+    return false;
+  }
   return true;
 }
 
@@ -102,6 +116,12 @@ my_robot_wallinterfaces__msg__SelectionWall__copy(
   // picked_position
   if (!rosidl_runtime_c__int32__Sequence__copy(
       &(input->picked_position), &(output->picked_position)))
+  {
+    return false;
+  }
+  // default_position
+  if (!rosidl_runtime_c__int32__Sequence__copy(
+      &(input->default_position), &(output->default_position)))
   {
     return false;
   }

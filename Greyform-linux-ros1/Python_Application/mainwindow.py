@@ -137,6 +137,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.CloseButton,
             self.mainwindow.ConfirmAckButton,
             self.mainwindow.MarkingButton,
+            self.ros_node
         )
 
     def directtosettingpage(self):

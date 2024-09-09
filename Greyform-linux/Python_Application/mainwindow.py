@@ -135,6 +135,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.CloseButton,
             self.mainwindow.ConfirmAckButton,
             self.mainwindow.MarkingButton,
+            self.ros_node,
         )
 
     def directtosettingpage(self):
@@ -180,7 +181,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.seq2Button,
             self.mainwindow.seq3Button,
             self.mainwindow.NextButton_Page_3,
-            self.mainwindow.Seqlabel,
+            self.mainwindow.Stagelabel,
             self.mainwindow.LocalizationButton,
             self.ros_node,
             self.mainwindow.excelfilpathtext,

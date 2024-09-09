@@ -48,7 +48,7 @@ class pythonProgressBar(QDialog):
         self.seq2Button = mainwindowforfileselection[10]
         self.seq3Button = mainwindowforfileselection[11]
         self.NextButton_Page_3 = mainwindowforfileselection[12]
-        self.Seqlabel = mainwindowforfileselection[13]
+        self.Stagelabel = mainwindowforfileselection[13]
         self.localizebutton = mainwindowforfileselection[14]
         self.rosnode = mainwindowforfileselection[15]
         self.excelfiletext = mainwindowforfileselection[16]
@@ -123,7 +123,7 @@ class pythonProgressBar(QDialog):
             self.seq2Button,
             self.seq3Button,
             self.NextButton_Page_3,
-            self.Seqlabel,
+            self.Stagelabel,
             self.localizebutton,
             self.rosnode,
             self.filepath,

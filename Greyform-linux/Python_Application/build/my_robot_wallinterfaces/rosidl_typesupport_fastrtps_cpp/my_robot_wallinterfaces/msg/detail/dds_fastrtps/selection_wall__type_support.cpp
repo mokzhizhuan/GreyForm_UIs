@@ -42,6 +42,10 @@ cdr_serialize(
   {
     cdr << ros_message.picked_position;
   }
+  // Member: default_position
+  {
+    cdr << ros_message.default_position;
+  }
   return true;
 }
 
@@ -63,6 +67,11 @@ cdr_deserialize(
   // Member: picked_position
   {
     cdr >> ros_message.picked_position;
+  }
+
+  // Member: default_position
+  {
+    cdr >> ros_message.default_position;
   }
 
   return true;
@@ -104,6 +113,16 @@ get_serialized_size(
     current_alignment += padding +
       eprosima::fastcdr::Cdr::alignment(current_alignment, padding);
     size_t item_size = sizeof(ros_message.picked_position[0]);
+    current_alignment += array_size * item_size +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, item_size);
+  }
+  // Member: default_position
+  {
+    size_t array_size = ros_message.default_position.size();
+
+    current_alignment += padding +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, padding);
+    size_t item_size = sizeof(ros_message.default_position[0]);
     current_alignment += array_size * item_size +
       eprosima::fastcdr::Cdr::alignment(current_alignment, item_size);
   }
@@ -175,6 +194,19 @@ max_serialized_size_SelectionWall(
       eprosima::fastcdr::Cdr::alignment(current_alignment, sizeof(uint32_t));
   }
 
+  // Member: default_position
+  {
+    size_t array_size = 0;
+    full_bounded = false;
+    is_plain = false;
+    current_alignment += padding +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, padding);
+
+    last_member_size = array_size * sizeof(uint32_t);
+    current_alignment += array_size * sizeof(uint32_t) +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, sizeof(uint32_t));
+  }
+
   size_t ret_val = current_alignment - initial_alignment;
   if (is_plain) {
     // All members are plain, and type is not empty.
@@ -183,7 +215,7 @@ max_serialized_size_SelectionWall(
     using DataType = my_robot_wallinterfaces::msg::SelectionWall;
     is_plain =
       (
-      offsetof(DataType, picked_position) +
+      offsetof(DataType, default_position) +
       last_member_size
       ) == ret_val;
   }

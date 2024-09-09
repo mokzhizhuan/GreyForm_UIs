@@ -1,4 +1,4 @@
-import PythonApplication.menu_close as closewindow
+import menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
 import PythonApplication.menu_confirmack as confirmack
 
@@ -20,6 +20,7 @@ class mainwindowbuttonUI(object):
         CloseButton,
         ConfirmAckButton,
         MarkingButton,
+        ros_node,
     ):
         self.mainwindow = mainwindow
         self.stackedWidget = stackedWidget
@@ -35,6 +36,7 @@ class mainwindowbuttonUI(object):
         self.CloseButton = CloseButton
         self.ConfirmAckButton = ConfirmAckButton
         self.MarkingButton = MarkingButton
+        self.ros_node = ros_node
         self.button_UI()
 
     def startconfigure(self):
@@ -55,7 +57,9 @@ class mainwindowbuttonUI(object):
     def button_UI(self):
         self.menuStartButton.clicked.connect(self.startconfigure)
         self.menuCloseButton.clicked.connect(
-            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(self.mainwindow)
+            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(
+                self.mainwindow, self.ros_node
+            )
         )
         self.NextButton_Page_2.clicked.connect(self.configurestage)
         self.BacktoMenuButton.clicked.connect(
@@ -71,7 +75,9 @@ class mainwindowbuttonUI(object):
         self.MarkingButton.clicked.connect(self.guiconfigure)
         self.HomeButton.clicked.connect(self.homeui)
         self.CloseButton.clicked.connect(
-            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(self.mainwindow)
+            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(
+                self.mainwindow, self.ros_node
+            )
         )
         self.ConfirmAckButton.clicked.connect(
             lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(

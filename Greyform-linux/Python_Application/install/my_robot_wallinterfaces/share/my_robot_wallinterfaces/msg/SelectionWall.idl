@@ -13,6 +13,8 @@ module my_robot_wallinterfaces {
       int32 sectionselection;
 
       sequence<int32> picked_position;
+
+      sequence<int32> default_position;
     };
   };
 };

@@ -34,8 +34,8 @@ extern "C"
 {
 #endif
 
-#include "rosidl_runtime_c/primitives_sequence.h"  // picked_position
-#include "rosidl_runtime_c/primitives_sequence_functions.h"  // picked_position
+#include "rosidl_runtime_c/primitives_sequence.h"  // default_position, picked_position
+#include "rosidl_runtime_c/primitives_sequence_functions.h"  // default_position, picked_position
 #include "rosidl_runtime_c/string.h"  // typeselection
 #include "rosidl_runtime_c/string_functions.h"  // typeselection
 
@@ -81,6 +81,14 @@ static bool _SelectionWall__cdr_serialize(
   {
     size_t size = ros_message->picked_position.size;
     auto array_ptr = ros_message->picked_position.data;
+    cdr << static_cast<uint32_t>(size);
+    cdr.serializeArray(array_ptr, size);
+  }
+
+  // Field name: default_position
+  {
+    size_t size = ros_message->default_position.size;
+    auto array_ptr = ros_message->default_position.data;
     cdr << static_cast<uint32_t>(size);
     cdr.serializeArray(array_ptr, size);
   }
@@ -139,6 +147,22 @@ static bool _SelectionWall__cdr_deserialize(
     cdr.deserializeArray(array_ptr, size);
   }
 
+  // Field name: default_position
+  {
+    uint32_t cdrSize;
+    cdr >> cdrSize;
+    size_t size = static_cast<size_t>(cdrSize);
+    if (ros_message->default_position.data) {
+      rosidl_runtime_c__int32__Sequence__fini(&ros_message->default_position);
+    }
+    if (!rosidl_runtime_c__int32__Sequence__init(&ros_message->default_position, size)) {
+      fprintf(stderr, "failed to create array for field 'default_position'");
+      return false;
+    }
+    auto array_ptr = ros_message->default_position.data;
+    cdr.deserializeArray(array_ptr, size);
+  }
+
   return true;
 }  // NOLINT(readability/fn_size)
 
@@ -176,6 +200,17 @@ size_t get_serialized_size_my_robot_wallinterfaces__msg__SelectionWall(
   {
     size_t array_size = ros_message->picked_position.size;
     auto array_ptr = ros_message->picked_position.data;
+    current_alignment += padding +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, padding);
+    (void)array_ptr;
+    size_t item_size = sizeof(array_ptr[0]);
+    current_alignment += array_size * item_size +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, item_size);
+  }
+  // field.name default_position
+  {
+    size_t array_size = ros_message->default_position.size;
+    auto array_ptr = ros_message->default_position.data;
     current_alignment += padding +
       eprosima::fastcdr::Cdr::alignment(current_alignment, padding);
     (void)array_ptr;
@@ -252,6 +287,18 @@ size_t max_serialized_size_my_robot_wallinterfaces__msg__SelectionWall(
     current_alignment += array_size * sizeof(uint32_t) +
       eprosima::fastcdr::Cdr::alignment(current_alignment, sizeof(uint32_t));
   }
+  // member: default_position
+  {
+    size_t array_size = 0;
+    full_bounded = false;
+    is_plain = false;
+    current_alignment += padding +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, padding);
+
+    last_member_size = array_size * sizeof(uint32_t);
+    current_alignment += array_size * sizeof(uint32_t) +
+      eprosima::fastcdr::Cdr::alignment(current_alignment, sizeof(uint32_t));
+  }
 
   size_t ret_val = current_alignment - initial_alignment;
   if (is_plain) {
@@ -261,7 +308,7 @@ size_t max_serialized_size_my_robot_wallinterfaces__msg__SelectionWall(
     using DataType = my_robot_wallinterfaces__msg__SelectionWall;
     is_plain =
       (
-      offsetof(DataType, picked_position) +
+      offsetof(DataType, default_position) +
       last_member_size
       ) == ret_val;
   }

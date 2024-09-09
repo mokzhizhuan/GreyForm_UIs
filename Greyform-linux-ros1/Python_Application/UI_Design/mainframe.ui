@@ -337,7 +337,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Stage 1</string>
+                <string>Sequence 1</string>
                </property>
               </widget>
              </item>
@@ -355,7 +355,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Stage 2</string>
+                <string>Sequence 2</string>
                </property>
               </widget>
              </item>
@@ -373,7 +373,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Stage 3</string>
+                <string>Sequence 3</string>
                </property>
               </widget>
              </item>
@@ -458,9 +458,9 @@
                 <enum>QLayout::SetNoConstraint</enum>
                </property>
                <item>
-                <widget class="QLabel" name="Seqlabel">
+                <widget class="QLabel" name="Stagelabel">
                  <property name="text">
-                  <string>Sequence:</string>
+                  <string>Stage:</string>
                  </property>
                 </widget>
                </item>

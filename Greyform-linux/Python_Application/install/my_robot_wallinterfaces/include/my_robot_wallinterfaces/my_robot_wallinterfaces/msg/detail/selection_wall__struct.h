@@ -21,6 +21,7 @@ extern "C"
 // Member 'typeselection'
 #include "rosidl_runtime_c/string.h"
 // Member 'picked_position'
+// Member 'default_position'
 #include "rosidl_runtime_c/primitives_sequence.h"
 
 /// Struct defined in msg/SelectionWall in the package my_robot_wallinterfaces.
@@ -30,6 +31,7 @@ typedef struct my_robot_wallinterfaces__msg__SelectionWall
   rosidl_runtime_c__String typeselection;
   int32_t sectionselection;
   rosidl_runtime_c__int32__Sequence picked_position;
+  rosidl_runtime_c__int32__Sequence default_position;
 } my_robot_wallinterfaces__msg__SelectionWall;
 
 // Struct for a sequence of my_robot_wallinterfaces__msg__SelectionWall.

@@ -82,7 +82,52 @@ void resize_function__SelectionWall__picked_position(void * untyped_member, size
   member->resize(size);
 }
 
-static const ::rosidl_typesupport_introspection_cpp::MessageMember SelectionWall_message_member_array[4] = {
+size_t size_function__SelectionWall__default_position(const void * untyped_member)
+{
+  const auto * member = reinterpret_cast<const std::vector<int32_t> *>(untyped_member);
+  return member->size();
+}
+
+const void * get_const_function__SelectionWall__default_position(const void * untyped_member, size_t index)
+{
+  const auto & member =
+    *reinterpret_cast<const std::vector<int32_t> *>(untyped_member);
+  return &member[index];
+}
+
+void * get_function__SelectionWall__default_position(void * untyped_member, size_t index)
+{
+  auto & member =
+    *reinterpret_cast<std::vector<int32_t> *>(untyped_member);
+  return &member[index];
+}
+
+void fetch_function__SelectionWall__default_position(
+  const void * untyped_member, size_t index, void * untyped_value)
+{
+  const auto & item = *reinterpret_cast<const int32_t *>(
+    get_const_function__SelectionWall__default_position(untyped_member, index));
+  auto & value = *reinterpret_cast<int32_t *>(untyped_value);
+  value = item;
+}
+
+void assign_function__SelectionWall__default_position(
+  void * untyped_member, size_t index, const void * untyped_value)
+{
+  auto & item = *reinterpret_cast<int32_t *>(
+    get_function__SelectionWall__default_position(untyped_member, index));
+  const auto & value = *reinterpret_cast<const int32_t *>(untyped_value);
+  item = value;
+}
+
+void resize_function__SelectionWall__default_position(void * untyped_member, size_t size)
+{
+  auto * member =
+    reinterpret_cast<std::vector<int32_t> *>(untyped_member);
+  member->resize(size);
+}
+
+static const ::rosidl_typesupport_introspection_cpp::MessageMember SelectionWall_message_member_array[5] = {
   {
     "wallselection",  // name
     ::rosidl_typesupport_introspection_cpp::ROS_TYPE_INT32,  // type
@@ -150,13 +195,30 @@ static const ::rosidl_typesupport_introspection_cpp::MessageMember SelectionWall
     fetch_function__SelectionWall__picked_position,  // fetch(index, &value) function pointer
     assign_function__SelectionWall__picked_position,  // assign(index, value) function pointer
     resize_function__SelectionWall__picked_position  // resize(index) function pointer
+  },
+  {
+    "default_position",  // name
+    ::rosidl_typesupport_introspection_cpp::ROS_TYPE_INT32,  // type
+    0,  // upper bound of string
+    nullptr,  // members of sub message
+    true,  // is array
+    0,  // array size
+    false,  // is upper bound
+    offsetof(my_robot_wallinterfaces::msg::SelectionWall, default_position),  // bytes offset in struct
+    nullptr,  // default value
+    size_function__SelectionWall__default_position,  // size() function pointer
+    get_const_function__SelectionWall__default_position,  // get_const(index) function pointer
+    get_function__SelectionWall__default_position,  // get(index) function pointer
+    fetch_function__SelectionWall__default_position,  // fetch(index, &value) function pointer
+    assign_function__SelectionWall__default_position,  // assign(index, value) function pointer
+    resize_function__SelectionWall__default_position  // resize(index) function pointer
   }
 };
 
 static const ::rosidl_typesupport_introspection_cpp::MessageMembers SelectionWall_message_members = {
   "my_robot_wallinterfaces::msg",  // message namespace
   "SelectionWall",  // message name
-  4,  // number of fields
+  5,  // number of fields
   sizeof(my_robot_wallinterfaces::msg::SelectionWall),
   SelectionWall_message_member_array,  // message members
   SelectionWall_init_function,  // function to initialize message memory (memory has to be allocated)
