@@ -5,99 +5,13 @@ from my_robot_wallinterfaces.msg import (
     FileExtractionMessage,
     SelectionWall,
 )
-from PyQt5.QtCore import pyqtSignal, QObject
 from my_robot_wallinterfaces.srv import SetLed
 from std_msgs.msg import String
-import pandas as pd
 import numpy as np
 import sys
 import subprocess
-import threading
-from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QLabel,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
-
 sys.path.append("/home/winsys/ros2_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
-
-
-class StatusSignals(QObject):
-    status_signal = pyqtSignal(str)
-
-
-class ListenerNodeRunner(QMainWindow):
-    def __init__(
-        self, wall_number, sectionnumber, picked_position, Stagelabel, cube_actor
-    ):
-        super().__init__()
-        self.initUI()
-        self.wall_number = wall_number
-        self.sectionnumber = sectionnumber
-        self.picked_position = picked_position
-        self.Stagelabel = Stagelabel
-        self.cube_actor = cube_actor
-        self.signals = StatusSignals()
-        self.signals.status_signal.connect(self.update_status)
-
-    def initUI(self):
-        self.status_label = QLabel("Status: Not Running", self)
-        self.run_button = QPushButton("Run Listener Node", self)
-        self.run_button.clicked.connect(self.run_listener_node)
-        layout = QVBoxLayout()
-        layout.addWidget(self.status_label)
-        layout.addWidget(self.run_button)
-        container = QWidget()
-        container.setLayout(layout)
-        self.setCentralWidget(container)
-        self.setWindowTitle("Listener Node Status")
-        self.setGeometry(300, 300, 300, 200)
-
-    def run_listener_node(self):
-        try:
-            threading.Thread(target=self._run_subprocess, daemon=True).start()
-            self.signals.status_signal.emit("Status: Running")
-        except Exception as e:
-            self.signals.status_signal.emit(f"Status: Error - {str(e)}")
-
-    def _run_subprocess(self):
-        try:
-            process = subprocess.Popen(
-                ["ros2", "run", "talker_listener", "listenerNode"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            while True:
-                output = process.stdout.readline()
-                if process.poll() is not None:
-                    break
-                if output:
-                    self.signals.status_signal.emit(
-                        f"Output: {output.decode('utf-8').strip()}"
-                    )
-            stderr = process.stderr.read()
-            if stderr:
-                self.signals.status_signal.emit(
-                    f"Status: Error - {stderr.decode('utf-8')}"
-                )
-            else:
-                self.signals.status_signal.emit("Status: Completed")
-            TalkerNode.publish_selection_message(
-                self.wall_number,
-                self.sectionnumber,
-                self.picked_position,
-                self.Stagelabel,
-                self.cube_actor,
-            )
-        except Exception as e:
-            self.signals.status_signal.emit(f"Status: Error - {str(e)}")
-
-    def update_status(self, status):
-        self.status_label.setText(status)
 
 
 class TalkerNode(Node):
@@ -133,14 +47,6 @@ class TalkerNode(Node):
             message = f"Failed to read and publish STL file: {e}"
             self.show_error_dialog(message)
 
-    def run_ros(
-        self, wall_number, sectionnumber, picked_position, Stagelabel, cube_actor
-    ):
-        self.listenerdialog = ListenerNodeRunner(
-            wall_number, sectionnumber, picked_position, Stagelabel, cube_actor
-        )
-        self.listenerdialog.show()
-
     def publish_selection_message(
         self, wall_number, sectionnumber, picked_position, Stagelabel, cube_actor
     ):
@@ -173,6 +79,37 @@ class TalkerNode(Node):
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
             self.show_error_dialog(message)
+
+    def run_listernernode(
+        self,
+        file,
+        exceldata,
+        wall_number,
+        sectionnumber,
+        picked_position,
+        Stagelabel,
+        cube_actor,
+    ):
+        if not self.listener_started:
+            try:
+                subprocess.Popen(
+                    ["ros2", "run", "talker_listener", "listenerNode"],
+                )
+                self.listener_started = True
+            except Exception as e:
+                error_dialog = logs.LogDialog(
+                    f"Failed to run ListenerNode: {str(e)}", "Error", log_type="error"
+                )
+                error_dialog.exec_()
+        else:
+            self.publish_file_message(file, exceldata)
+            self.publish_selection_message(
+                wall_number,
+                sectionnumber,
+                picked_position,
+                Stagelabel,
+                cube_actor,
+            )
 
     def timer_callback(self):
         msg = String()

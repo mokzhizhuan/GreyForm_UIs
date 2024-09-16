@@ -18,6 +18,7 @@ import sys
 
 sys.path.append("/home/winsys/ros2_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
+import PythonApplication.menu_close as closewindow
 
 class SingletonDialog:
     _instance = None

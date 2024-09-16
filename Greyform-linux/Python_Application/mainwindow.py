@@ -57,6 +57,9 @@ class Ui_MainWindow(QMainWindow):
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
         self.apply_font_to_widgets(self.mainwindow, self.font)
+        self.excelfilepath = None
+        self.excel_file_selected = False
+        self.file_list_selected = False
         self.setupUi()
 
     # apply font
@@ -70,6 +73,7 @@ class Ui_MainWindow(QMainWindow):
     # setup UI
     def setupUi(self):
         self.mainwindow.NextButton_Page_2.hide()
+        self.mainwindow.NextButton_Page_3.hide()
         self.plotterloader = QtInteractor(
             self.mainwindow.pyvistaframe,
             line_smoothing=True,
@@ -161,6 +165,8 @@ class Ui_MainWindow(QMainWindow):
         )
         if self.excelfilepath:
             self.mainwindow.excelfilpathtext.setText(self.excelfilepath)
+        self.excel_file_selected = True  
+        self.check_if_both_selected()    
 
     # file selection when clicked
     def on_selection_changed(self, index):
@@ -200,6 +206,14 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.Itemlabel_2.setText(
             self._translate("MainWindow", "Product: " + str(self.file))
         )
+        self.file_list_selected = True
+        self.check_if_both_selected()
+
+    def check_if_both_selected(self):
+        if self.excel_file_selected == True and self.file_list_selected == True:
+            self.mainwindow.NextButton_Page_2.show()
+        else:
+            self.mainwindow.NextButton_Page_2.hide()
 
     def publish_message(self):
         self.exceldata = "exporteddatas.xlsx"

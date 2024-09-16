@@ -502,4 +502,3 @@ class Ui_MainWindow(object):
         self.EnableRobotButton.setText(_translate("MainWindow", "Enable Robot"))
         self.CloseButton.setText(_translate("MainWindow", "Abort/Close"))
         self.ConfirmAckButton.setText(_translate("MainWindow", "Acknowledge"))
-import square_rc

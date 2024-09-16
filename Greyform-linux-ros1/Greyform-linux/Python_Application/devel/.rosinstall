@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /root/catkin_ws/src/Greyform-linux/Python_Application/devel/setup.sh

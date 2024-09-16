@@ -86,6 +86,20 @@ class ConfirminitDialog(QMainWindow):
     
     def show_completion_message():
         msg_box = QMessageBox()
+        msg_box.setStyleSheet(
+            """
+        QMessageBox {
+            font-family: Helvetica;
+            font-size: 20px;
+            color: blue;
+        }
+        QPushButton {
+            font-family: Helvetica;
+            font-size: 20px;
+            padding: 5px;
+        }
+        """
+        )
         msg_box.setIcon(QMessageBox.Information)
         msg_box.setWindowTitle("Initialization Complete")
         msg_box.setText("Initialization of LOC and MAR app is completed.")

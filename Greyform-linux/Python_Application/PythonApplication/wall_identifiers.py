@@ -3,7 +3,7 @@ from vtk import *
 import vtk
 import pandas as pd
 import numpy as np
-
+import PythonApplication.processlistenerrunner as ProcessListener
 
 class wall_Interaction(object):
     def __init__(
@@ -80,7 +80,16 @@ class wall_Interaction(object):
 
     def publish_message_ros(self, file, wallnumber, sectionnumber):
         self.exceldata = self.excelfiletext.toPlainText()
-        self.ros_node.run_ros(
+        """self.talker_node.run_listernernode(
+            file,
+            exceldata,
+            wall_number,
+            sectionnumber,
+            picked_position,
+            Stagelabel,
+            cube_actor,
+        )"""
+        self.listenerdialog = ProcessListener.ListenerNodeRunner(
             self.ros_node,
             file, 
             self.exceldata,
@@ -90,6 +99,7 @@ class wall_Interaction(object):
             self.Stagelabel,
             self.cubeactor,
         )
+        self.listenerdialog.show()
 
     def distance(self):
         self.threshold_distance = 220
