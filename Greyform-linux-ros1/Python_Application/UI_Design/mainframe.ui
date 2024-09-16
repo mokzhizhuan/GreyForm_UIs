@@ -460,7 +460,7 @@
                <item>
                 <widget class="QLabel" name="Stagelabel">
                  <property name="text">
-                  <string>Stage:</string>
+                  <string>Stage</string>
                  </property>
                 </widget>
                </item>

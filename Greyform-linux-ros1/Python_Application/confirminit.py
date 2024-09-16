@@ -59,25 +59,10 @@ class ConfirminitDialog(QMainWindow):
             for line in output.splitlines():
                 key, _, value = line.partition("=")
                 os.environ[key] = value
-            ros_thread = threading.Thread(target=ConfirminitDialog.run_ros_node, args=(ros_node,))
-            ros_thread.start()
             print("Running the ROS node and starting the Qt application...")
-            if not QApplication.instance(): 
-                app = QApplication(sys.argv)
-            else:
-                app = QApplication.instance()
             main_window = locMarapplication.Ui_MainWindow(ros_node)
             main_window.show()
             ConfirminitDialog.show_completion_message()
-            if not rospy.core.is_initialized():
-                rospy.init_node('talker_listener', anonymous=True)
-            timer = rospy.Timer(rospy.Duration(0.1), lambda event: None)
-            try:
-                sys.exit(app.exec_())
-            except SystemExit:
-                pass
-            finally:
-                rospy.signal_shutdown("Shutting down ROS node")
             dialog.close()
             self.close()
         except subprocess.CalledProcessError as e:

@@ -2,6 +2,8 @@ from PyQt5.QtCore import *
 from vtk import *
 import vtk
 import pandas as pd
+import numpy as np
+import PythonApplication.processlistenerrunner as ProcessListener
 
 
 class wall_Interaction(object):
@@ -22,7 +24,7 @@ class wall_Interaction(object):
         self.renderwindowinteractor = setcamerainteraction[3]
         self.file_path = setcamerainteraction[17]
         self.reader = setcamerainteraction[10]
-        self.seqlabel = setcamerainteraction[18]
+        self.Stagelabel = setcamerainteraction[18]
         self.excelfiletext = setcamerainteraction[19]
         self.cubeactor = setcamerainteraction[11]
         self.ros_node = ros_node
@@ -58,7 +60,6 @@ class wall_Interaction(object):
         return point_id
 
     def publish_message(self):
-        self.exceldata = self.excelfiletext.toPlainText()
         self.wall_filtered_identifiers = self.fliterbywallnum()
         wallnumber, sectionnumber = self.distance()
         if self.file_path:
@@ -79,18 +80,32 @@ class wall_Interaction(object):
         return grouped
 
     def publish_message_ros(self, file, wallnumber, sectionnumber):
-        self.ros_node.publish_file_message(file, self.exceldata)
-        self.ros_node.publish_selection_message(
+        self.exceldata = self.excelfiletext.toPlainText()
+        """self.talker_node.run_listernernode(
+            file,
+            exceldata,
+            wall_number,
+            sectionnumber,
+            picked_position,
+            Stagelabel,
+            cube_actor,
+        )"""
+        self.listenerdialog = ProcessListener.ListenerNodeRunner(
+            self.ros_node,
+            file, 
+            self.exceldata,
             wallnumber,
             sectionnumber,
             self.picked_position,
-            self.seqlabel,
+            self.Stagelabel,
             self.cubeactor,
         )
+        self.listenerdialog.show()
 
     def distance(self):
         self.threshold_distance = 220
         self.distances = 50
+        self.distancerange = 600
         wall_number = None
         for wall_numbers, group in self.wall_filtered_identifiers:
             min_x, max_x = (
@@ -109,6 +124,19 @@ class wall_Interaction(object):
                 distance = self.calculate_distance(self.picked_position[0], max_x)
                 if distance <= self.distances:
                     wall_number = wall_numbers
+                    wall_position = np.array(
+                        [
+                            group["Position X (m)"],
+                            group["Position Y (m)"],
+                            group["Position Z (m)"],
+                        ]
+                    )
+                    distances = self.calculate_distances(
+                        self.picked_position, wall_position
+                    )
+                    if (distances <= self.distancerange).all():
+                        name = group["Point number/name"]
+                        self.Stagename(self ,name)
                     self.picked_position_quad[1] = self.picked_position[1] - (
                         self.meshbound[3] / 2
                     )
@@ -122,6 +150,19 @@ class wall_Interaction(object):
                 distance = self.calculate_distance(self.picked_position[1], max_y)
                 if distance <= self.distances:
                     wall_number = wall_numbers
+                    wall_position = np.array(
+                        [
+                            group["Position X (m)"],
+                            group["Position Y (m)"],
+                            group["Position Z (m)"],
+                        ]
+                    )
+                    distances = self.calculate_distances(
+                        self.picked_position, wall_position
+                    )
+                    if (distances <= self.distancerange).all():
+                        name = group["Point number/name"]
+                        self.Stagename(self ,name)
                     self.picked_position_quad[0] = self.picked_position[0] - (
                         self.meshbound[1] / 2
                     )
@@ -135,6 +176,19 @@ class wall_Interaction(object):
                 distance = self.calculate_distance(self.picked_position[2], max_z)
                 if distance <= self.distances:
                     wall_number = wall_numbers
+                    wall_position = np.array(
+                        [
+                            group["Position X (m)"],
+                            group["Position Y (m)"],
+                            group["Position Z (m)"],
+                        ]
+                    )
+                    distances = self.calculate_distances(
+                        self.picked_position, wall_position
+                    )
+                    if (distances <= self.distancerange).all():
+                        name = group["Point number/name"]
+                        self.Stagename(self ,name)
                     self.picked_position_quad[1] = self.picked_position[1] - (
                         self.meshbound[3] / 2
                     )
@@ -145,6 +199,11 @@ class wall_Interaction(object):
                         self.picked_position_quad[0], self.picked_position_quad[1]
                     )
         return wall_number, sectionnumber
+    
+    def calculate_distances(self, point1, point2):
+        point1 = np.expand_dims(point1, axis=1)  # Shape (3,) becomes (3, 1)
+        distances = np.linalg.norm(point1 - point2, axis=0)
+        return distances
 
     def determine_quadrant(self, x, y):
         if x > 0 and y > 0:
@@ -160,3 +219,30 @@ class wall_Interaction(object):
 
     def calculate_distance(self, point1, point2):
         return point1 - point2
+    
+    def Stagename(self, name):
+        if "CP" in name:
+            index = name.index("CP") + 4
+            if index < len(name) and name[index].isdigit():
+                self.Stagelabel.setText(f"Stage {int(name[index])}")
+                self.Stagelabel.repaint()
+                return int(name[index])
+        if "LP" in name:
+            index = name.index("LP") + 4
+            if index < len(name) and name[index].isdigit():
+                self.Stagelabel.setText(f"Stage {int(name[index])}")
+                self.Stagelabel.repaint()
+                return int(name[index])
+        if "SP" in name:
+            index = name.index("SP") + 4
+            if index < len(name) and name[index].isdigit():
+                self.Stagelabel.setText(f"Stage {int(name[index])}")
+                self.Stagelabel.repaint()
+                return int(name[index])
+        if "TMP" in name:
+            index = name.index("TMP") + 5
+            if index < len(name) and name[index].isdigit():
+                self.Stagelabel.setText(f"Stage {int(name[index])}")
+                self.Stagelabel.repaint()
+                return int(name[index])
+

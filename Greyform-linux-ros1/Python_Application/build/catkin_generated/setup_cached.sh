@@ -7,7 +7,10 @@
 # new environment variables
 
 # modified environment variables
-export LD_LIBRARY_PATH='/opt/ros/noetic/lib'
-export PKG_CONFIG_PATH='/opt/ros/noetic/lib/pkgconfig'
+export CMAKE_PREFIX_PATH="/root/catkin_ws/src/Greyform-linux/Python_Application/devel:$CMAKE_PREFIX_PATH"
+export LD_LIBRARY_PATH="/root/catkin_ws/src/Greyform-linux/Python_Application/devel/lib:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="/root/catkin_ws/src/Greyform-linux/Python_Application/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
 export PWD='/root/catkin_ws/src/Greyform-linux/Python_Application/build'
-export PYTHONPATH='/opt/ros/noetic/lib/python3/dist-packages'
+export PYTHONPATH="/root/catkin_ws/src/Greyform-linux/Python_Application/devel/lib/python3/dist-packages:$PYTHONPATH"
+export ROSLISP_PACKAGE_DIRECTORIES='/root/catkin_ws/src/Greyform-linux/Python_Application/devel/share/common-lisp'
+export ROS_PACKAGE_PATH="/root/catkin_ws/src/Greyform-linux/Python_Application/src:$ROS_PACKAGE_PATH"

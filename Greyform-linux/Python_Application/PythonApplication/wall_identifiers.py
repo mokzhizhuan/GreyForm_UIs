@@ -80,8 +80,10 @@ class wall_Interaction(object):
 
     def publish_message_ros(self, file, wallnumber, sectionnumber):
         self.exceldata = self.excelfiletext.toPlainText()
-        self.ros_node.publish_file_message(file, self.exceldata)
         self.ros_node.run_ros(
+            self.ros_node,
+            file, 
+            self.exceldata,
             wallnumber,
             sectionnumber,
             self.picked_position,

@@ -8,9 +8,9 @@ pip install PyQt5
 pip install multiprocess
 pip install pyqtgraph
 pip install PyOpenGL PyOpenGL-accelerate
-pip install numpy-stl
+pip install numpy
 pip install meshio
-pip install openpxyl
+pip install openpyxl
 pip install pandas 
 pip install serial
 pip install tzlocal

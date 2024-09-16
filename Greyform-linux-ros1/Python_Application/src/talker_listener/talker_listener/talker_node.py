@@ -1,28 +1,26 @@
+#!/usr/bin/env python3
 import rospy
 import sys
-from my_robot_wallinterfaces.msg import (
-    FileExtractionMessage,
-    SelectionWall,
-)
+from my_robot_wallinterfaces.msg import FileExtractionMessage, SelectionWall
 from my_robot_wallinterfaces.srv import SetLed
-import PythonApplication.exceldatavtk as exceldata
 from std_msgs.msg import String
 import subprocess
-import pandas as pd
-import numpy as np
 import sys
 
 sys.path.append("/root/catkin_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
 
-
 class TalkerNode:
     def __init__(self):
         self.file_publisher_ = rospy.Publisher(
-            "file_extraction_topic", FileExtractionMessage, queue_size=10
+            "file_extraction_topic",
+            FileExtractionMessage,
+            queue_size=10,
         )
         self.selection_publisher_ = rospy.Publisher(
-            "selection_wall_topic", SelectionWall, queue_size=10
+            "selection_wall_topic",
+            SelectionWall,
+            queue_size=10,
         )
         self.message = ""
         self.spacing = "\n"
@@ -50,8 +48,36 @@ class TalkerNode:
             message = f"Failed to read and publish STL file: {e}"
             self.show_error_dialog(message)
 
-    def calculate_distance(self, point1, point2):
-        return np.linalg.norm(point1 - point2)
+    def run_listernernode(
+        self,
+        file,
+        exceldata,
+        wall_number,
+        sectionnumber,
+        picked_position,
+        Stagelabel,
+        cube_actor,
+    ):
+        if not self.listener_started:
+            try:
+                subprocess.Popen(
+                    ["rosrun", "talker_listener", "listener_node.py"],
+                )
+                self.listener_started = True
+            except Exception as e:
+                error_dialog = logs.LogDialog(
+                    f"Failed to run ListenerNode: {str(e)}", "Error", log_type="error"
+                )
+                error_dialog.exec_()
+        else:
+            self.publish_file_message(file, exceldata)
+            self.publish_selection_message(
+                wall_number,
+                sectionnumber,
+                picked_position,
+                Stagelabel,
+                cube_actor,
+            )
 
     def publish_selection_message(
         self, wall_number, sectionnumber, picked_position, seqlabel, cube_actor
@@ -67,7 +93,7 @@ class TalkerNode:
                 int(picked_position[2]),
             ]
             msg.picked_position = picked_position
-            default_position= [
+            default_position = [
                 int(cube_actor.GetPosition()[0]),
                 int(cube_actor.GetPosition()[1]),
                 int(cube_actor.GetPosition()[2]),
@@ -83,7 +109,6 @@ class TalkerNode:
             )
             self.show_info_dialog(self.message)
             self.message = ""
-            self.run_listernernode()
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
             self.show_error_dialog(message)
@@ -94,19 +119,6 @@ class TalkerNode:
         self.publisher_.publish(msg)
         self.count += 1
         rospy.loginfo(f"Publishing {msg.data}")
-
-    def run_listernernode(self):
-        if not self.listener_started:
-            try:
-                subprocess.Popen(
-                    ["rosrun", "talker_listener", "listener_node.py"],
-                )
-                self.listener_started = True
-            except Exception as e:
-                error_dialog = logs.LogDialog(
-                    f"Failed to run ListenerNode: {str(e)}", "Error", log_type="error"
-                )
-                error_dialog.exec_()
 
     def show_info_dialog(self, message):
         if self.active_dialog:

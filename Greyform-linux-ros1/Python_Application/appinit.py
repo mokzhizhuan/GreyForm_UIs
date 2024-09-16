@@ -7,9 +7,6 @@ import sys
 import confirminit as initconfirm
 from src.talker_listener.talker_listener import talker_node as RosPublisher
 import rospy
-from std_msgs.msg import String
-from threading import Thread
-
 
 class Ui_InitilizeWindow(QMainWindow):
     def __init__(self, ros_node):
@@ -20,6 +17,8 @@ class Ui_InitilizeWindow(QMainWindow):
             lambda: initconfirm.ConfirminitDialog.show_dialog_confirm(self, ros_node)
             )
             
+def ros_spin():
+    rospy.spin()
 
 if __name__ == "__main__":
     # Initialize the ROS node

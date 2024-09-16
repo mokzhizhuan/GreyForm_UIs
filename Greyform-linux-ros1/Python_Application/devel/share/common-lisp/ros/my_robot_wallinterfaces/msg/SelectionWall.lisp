@@ -177,10 +177,10 @@
   "58c6387955db224451fe1a297bbab86a")
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql '<SelectionWall>)))
   "Returns full string definition for message of type '<SelectionWall>"
-  (cl:format cl:nil "int32 wallselection~%string typeselection~%int32 sectionselection~%int32[] picked_position~%int32[] default_position~%~%"))
+  (cl:format cl:nil "int32 wallselection~%string typeselection~%int32 sectionselection~%int32[] picked_position~%int32[] default_position~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql 'SelectionWall)))
   "Returns full string definition for message of type 'SelectionWall"
-  (cl:format cl:nil "int32 wallselection~%string typeselection~%int32 sectionselection~%int32[] picked_position~%int32[] default_position~%~%"))
+  (cl:format cl:nil "int32 wallselection~%string typeselection~%int32 sectionselection~%int32[] picked_position~%int32[] default_position~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:serialization-length ((msg <SelectionWall>))
   (cl:+ 0
      4

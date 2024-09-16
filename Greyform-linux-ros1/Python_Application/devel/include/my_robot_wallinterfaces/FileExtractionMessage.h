@@ -24,27 +24,22 @@ struct FileExtractionMessage_
   typedef FileExtractionMessage_<ContainerAllocator> Type;
 
   FileExtractionMessage_()
-    : excelfile()
-    , stl_data()
-    , status()  {
+    : stl_data()
+    , excelfile()  {
     }
   FileExtractionMessage_(const ContainerAllocator& _alloc)
-    : excelfile(_alloc)
-    , stl_data(_alloc)
-    , status(_alloc)  {
+    : stl_data(_alloc)
+    , excelfile(_alloc)  {
   (void)_alloc;
     }
 
 
 
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> _excelfile_type;
-  _excelfile_type excelfile;
-
    typedef std::vector<uint8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint8_t>> _stl_data_type;
   _stl_data_type stl_data;
 
-   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> _status_type;
-  _status_type status;
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> _excelfile_type;
+  _excelfile_type excelfile;
 
 
 
@@ -75,9 +70,8 @@ return s;
 template<typename ContainerAllocator1, typename ContainerAllocator2>
 bool operator==(const ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAllocator1> & lhs, const ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAllocator2> & rhs)
 {
-  return lhs.excelfile == rhs.excelfile &&
-    lhs.stl_data == rhs.stl_data &&
-    lhs.status == rhs.status;
+  return lhs.stl_data == rhs.stl_data &&
+    lhs.excelfile == rhs.excelfile;
 }
 
 template<typename ContainerAllocator1, typename ContainerAllocator2>
@@ -134,12 +128,12 @@ struct MD5Sum< ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAlloca
 {
   static const char* value()
   {
-    return "be99b8b69cd2a117a0a8d177509a0dff";
+    return "81c918b74dbfb64e2d1abc77031a354e";
   }
 
   static const char* value(const ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0xbe99b8b69cd2a117ULL;
-  static const uint64_t static_value2 = 0xa0a8d177509a0dffULL;
+  static const uint64_t static_value1 = 0x81c918b74dbfb64eULL;
+  static const uint64_t static_value2 = 0x2d1abc77031a354eULL;
 };
 
 template<class ContainerAllocator>
@@ -158,9 +152,8 @@ struct Definition< ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAl
 {
   static const char* value()
   {
-    return "string excelfile\n"
-"uint8[] stl_data\n"
-"string status\n"
+    return "uint8[] stl_data\n"
+"string excelfile\n"
 ;
   }
 
@@ -179,9 +172,8 @@ namespace serialization
   {
     template<typename Stream, typename T> inline static void allInOne(Stream& stream, T m)
     {
-      stream.next(m.excelfile);
       stream.next(m.stl_data);
-      stream.next(m.status);
+      stream.next(m.excelfile);
     }
 
     ROS_DECLARE_ALLINONE_SERIALIZER
@@ -200,16 +192,14 @@ struct Printer< ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAlloc
 {
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAllocator>& v)
   {
-    s << indent << "excelfile: ";
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.excelfile);
     s << indent << "stl_data[]" << std::endl;
     for (size_t i = 0; i < v.stl_data.size(); ++i)
     {
       s << indent << "  stl_data[" << i << "]: ";
       Printer<uint8_t>::stream(s, indent + "  ", v.stl_data[i]);
     }
-    s << indent << "status: ";
-    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.status);
+    s << indent << "excelfile: ";
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.excelfile);
   }
 };
 

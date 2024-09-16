@@ -8,14 +8,14 @@ import struct
 
 
 class FileExtractionMessage(genpy.Message):
-  _md5sum = "be99b8b69cd2a117a0a8d177509a0dff"
+  _md5sum = "81c918b74dbfb64e2d1abc77031a354e"
   _type = "my_robot_wallinterfaces/FileExtractionMessage"
   _has_header = False  # flag to mark the presence of a Header object
-  _full_text = """string excelfile
-uint8[] stl_data
-string status"""
-  __slots__ = ['excelfile','stl_data','status']
-  _slot_types = ['string','uint8[]','string']
+  _full_text = """uint8[] stl_data
+string excelfile
+"""
+  __slots__ = ['stl_data','excelfile']
+  _slot_types = ['uint8[]','string']
 
   def __init__(self, *args, **kwds):
     """
@@ -25,7 +25,7 @@ string status"""
     changes.  You cannot mix in-order arguments and keyword arguments.
 
     The available fields are:
-       excelfile,stl_data,status
+       stl_data,excelfile
 
     :param args: complete set of field values, in .msg order
     :param kwds: use keyword arguments corresponding to message field names
@@ -34,16 +34,13 @@ string status"""
     if args or kwds:
       super(FileExtractionMessage, self).__init__(*args, **kwds)
       # message fields cannot be None, assign default values for those that are
-      if self.excelfile is None:
-        self.excelfile = ''
       if self.stl_data is None:
         self.stl_data = b''
-      if self.status is None:
-        self.status = ''
+      if self.excelfile is None:
+        self.excelfile = ''
     else:
-      self.excelfile = ''
       self.stl_data = b''
-      self.status = ''
+      self.excelfile = ''
 
   def _get_types(self):
     """
@@ -57,12 +54,6 @@ string status"""
     :param buff: buffer, ``StringIO``
     """
     try:
-      _x = self.excelfile
-      length = len(_x)
-      if python3 or type(_x) == unicode:
-        _x = _x.encode('utf-8')
-        length = len(_x)
-      buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
       _x = self.stl_data
       length = len(_x)
       # - if encoded as a list instead, serialize as bytes instead of string
@@ -70,7 +61,7 @@ string status"""
         buff.write(struct.Struct('<I%sB'%length).pack(length, *_x))
       else:
         buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
-      _x = self.status
+      _x = self.excelfile
       length = len(_x)
       if python3 or type(_x) == unicode:
         _x = _x.encode('utf-8')
@@ -93,15 +84,6 @@ string status"""
       (length,) = _struct_I.unpack(str[start:end])
       start = end
       end += length
-      if python3:
-        self.excelfile = str[start:end].decode('utf-8', 'rosmsg')
-      else:
-        self.excelfile = str[start:end]
-      start = end
-      end += 4
-      (length,) = _struct_I.unpack(str[start:end])
-      start = end
-      end += length
       self.stl_data = str[start:end]
       start = end
       end += 4
@@ -109,9 +91,9 @@ string status"""
       start = end
       end += length
       if python3:
-        self.status = str[start:end].decode('utf-8', 'rosmsg')
+        self.excelfile = str[start:end].decode('utf-8', 'rosmsg')
       else:
-        self.status = str[start:end]
+        self.excelfile = str[start:end]
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e)  # most likely buffer underfill
@@ -124,12 +106,6 @@ string status"""
     :param numpy: numpy python module
     """
     try:
-      _x = self.excelfile
-      length = len(_x)
-      if python3 or type(_x) == unicode:
-        _x = _x.encode('utf-8')
-        length = len(_x)
-      buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
       _x = self.stl_data
       length = len(_x)
       # - if encoded as a list instead, serialize as bytes instead of string
@@ -137,7 +113,7 @@ string status"""
         buff.write(struct.Struct('<I%sB'%length).pack(length, *_x))
       else:
         buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
-      _x = self.status
+      _x = self.excelfile
       length = len(_x)
       if python3 or type(_x) == unicode:
         _x = _x.encode('utf-8')
@@ -161,15 +137,6 @@ string status"""
       (length,) = _struct_I.unpack(str[start:end])
       start = end
       end += length
-      if python3:
-        self.excelfile = str[start:end].decode('utf-8', 'rosmsg')
-      else:
-        self.excelfile = str[start:end]
-      start = end
-      end += 4
-      (length,) = _struct_I.unpack(str[start:end])
-      start = end
-      end += length
       self.stl_data = str[start:end]
       start = end
       end += 4
@@ -177,9 +144,9 @@ string status"""
       start = end
       end += length
       if python3:
-        self.status = str[start:end].decode('utf-8', 'rosmsg')
+        self.excelfile = str[start:end].decode('utf-8', 'rosmsg')
       else:
-        self.status = str[start:end]
+        self.excelfile = str[start:end]
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e)  # most likely buffer underfill

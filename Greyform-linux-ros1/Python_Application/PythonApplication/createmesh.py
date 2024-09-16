@@ -10,6 +10,7 @@ import numpy as np
 from stl import mesh
 import PythonApplication.interactiveevent as events
 import PythonApplication.exceldatavtk as vtk_data_excel
+import PythonApplication.markingprogressbar as stageofmarking
 
 
 # create the imported stl mesh in vtk frame
@@ -28,7 +29,7 @@ class createMesh(QMainWindow):
         seq2Button,
         seq3Button,
         NextButton_Page_3,
-        Seqlabel,
+        Stagelabel,
         localizebutton,
         ros_node,
         file_path,
@@ -54,19 +55,28 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
         seq1Button.clicked.connect(
-            lambda: self.addseqtext(seq1Button, NextButton_Page_3, Seqlabel)
+            lambda: self.addseqtext(seq1Button, NextButton_Page_3)
         )
         seq2Button.clicked.connect(
-            lambda: self.addseqtext(seq2Button, NextButton_Page_3, Seqlabel)
+            lambda: self.addseqtext(seq2Button, NextButton_Page_3)
         )
         seq3Button.clicked.connect(
-            lambda: self.addseqtext(seq3Button, NextButton_Page_3, Seqlabel)
+            lambda: self.addseqtext(seq3Button, NextButton_Page_3)
         )
-        self.Seqlabel = Seqlabel
+        self.Stagelabel = Stagelabel
         self.wall_identifiers = vtk_data_excel.exceldataextractor()
-        self.loadStl()
+        self.dataseqtext = None
 
-    def loadStl(self):
+    def addseqtext(self, buttonseq, buttonnextpage):
+        self.dataseqtext = buttonseq.text()
+        self.dataseqtext = self.dataseqtext.replace("Sequence ", "")
+        self.dataseqtext = int(self.dataseqtext)
+        markingprogessbar = stageofmarking.MarkingProgressBar()
+        markingprogessbar.exec_()
+        buttonnextpage.show()
+        self.loadStl(self.dataseqtext)
+
+    def loadStl(self , dataseqtext):
         meshs = mesh.Mesh.from_file(self.polydata)
         points = meshs.points.reshape(-1, 3)
         faces = np.arange(points.shape[0]).reshape(-1, 3)
@@ -145,7 +155,7 @@ class createMesh(QMainWindow):
             spaceseperation,
             center,
             self.filepath,
-            self.Seqlabel,
+            self.Stagelabel,
             self.excelfiletext,
         ]
         camera = events.myInteractorStyle(
@@ -173,7 +183,7 @@ class createMesh(QMainWindow):
 
     def fixedposition(self):
         minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]
-        transform = vtkTransform()
+        transform = vtk.vtkTransform()
         transform.Translate(-minBounds[0], -minBounds[1], -minBounds[2])
         transformFilter = vtkTransformPolyDataFilter()
         transformFilter.SetInputData(self.reader)
@@ -202,16 +212,17 @@ class createMesh(QMainWindow):
         self.actor.GetProperty().FrontfaceCullingOn()
         for i in range(6):
             self.meshbounds[i] = int(self.actor.GetBounds()[i])
+        print(self.actor.GetBounds())
 
     def create_cube_actor(self):
-        self.cube_source = vtkCubeSource()
+        self.cube_source = vtk.vtkCubeSource()
         self.cube_source.SetXLength(10)
         self.cube_source.SetYLength(10)
         self.cube_source.SetZLength(10)
-        self.cube_mapper = vtkPolyDataMapper()
+        self.cube_mapper = vtk.vtkPolyDataMapper()
         self.cube_mapper.SetInputConnection(self.cube_source.GetOutputPort())
         self.cube_mapper.ScalarVisibilityOff()
-        self.cube_actor = vtkActor()
+        self.cube_actor = vtk.vtkActor()
         self.cube_actor.SetMapper(self.cube_mapper)
         self.cube_actor.GetProperty().BackfaceCullingOn()
         self.cube_actor.GetProperty().FrontfaceCullingOn()
@@ -219,18 +230,12 @@ class createMesh(QMainWindow):
         return self.cube_actor
 
     def polyDataToActor(self):
-        mapper = vtkPolyDataMapper()
+        mapper = vtk.vtkPolyDataMapper()
         mapper.SetInputData(self.reader)
-        actor = vtkActor()
+        actor = vtk.vtkActor()
         actor.SetMapper(mapper)
         actor.GetProperty().SetRepresentationToSurface()
         self.meshbounds = []
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
 
-    def addseqtext(self, buttonseq, buttonnextpage, label):
-        dataseqtext = buttonseq.text()
-        dataseqtext = dataseqtext.replace("Stage ", "")
-        buttonnextpage.show()
-        _translate = QtCore.QCoreApplication.translate
-        label.setText(_translate("MainWindow", "Stage " + str(dataseqtext)))

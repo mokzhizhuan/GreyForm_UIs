@@ -175,18 +175,21 @@ def get_bbox_centroid(geometry: ShapeType) -> tuple[float, float, float]:
     :return: A tuple representing the XYZ centroid
     :rtype: tuple[float, float, float]
     """
-    verts_flat = get_vertices(geometry).ravel()
-    x_values = verts_flat[0::3]
-    y_values = verts_flat[1::3]
-    z_values = verts_flat[2::3]
-    minx = min(x_values)
-    maxx = max(x_values)
-    miny = min(y_values)
-    maxy = max(y_values)
-    minz = min(z_values)
-    maxz = max(z_values)
-    res = np.array((minx + ((maxx - minx) / 2), miny + ((maxy - miny) / 2), minz + ((maxz - minz) / 2)))
-    return res.tolist()
+    vertices_array = get_vertices(geometry)
+    return (np.min(vertices_array, axis=0) + np.max(vertices_array, axis=0)) / 2
+
+
+def get_vert_centroid(geometry: ShapeType) -> tuple[float, float, float]:
+    """Calculates the average vertex centroid of the geometry
+
+    The centroid is in local coordinates relative to the object's placement.
+
+    :param geometry: Geometry output calculated by IfcOpenShell
+    :type geometry: geometry
+    :return: A tuple representing the XYZ centroid
+    :rtype: tuple[float, float, float]
+    """
+    return np.mean(get_vertices(geometry), axis=0)
 
 
 def get_element_bbox_centroid(element: ifcopenshell.entity_instance, geometry) -> npt.NDArray[np.float64]:
@@ -730,3 +733,16 @@ def get_extrusions(element: ifcopenshell.entity_instance) -> list[ifcopenshell.e
             else:
                 break
     return extrusions
+
+
+def get_total_edge_length(geometry: ShapeType) -> float:
+    """Calculates the total length of edges in a given geometry.
+
+    :param geometry: Geometry output calculated by IfcOpenShell
+    :type geometry: geometry
+    :return: The total length of all edges in the geometry.
+    :rtype: float
+    """
+    vertices = get_vertices(geometry)
+    vertices = vertices[get_edges(geometry)]
+    return np.linalg.norm(vertices[:, 1] - vertices[:, 0], axis=1).sum()

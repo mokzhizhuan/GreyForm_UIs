@@ -15,7 +15,8 @@ class SelectionWall(genpy.Message):
 string typeselection
 int32 sectionselection
 int32[] picked_position
-int32[] default_position"""
+int32[] default_position
+"""
   __slots__ = ['wallselection','typeselection','sectionselection','picked_position','default_position']
   _slot_types = ['int32','string','int32','int32[]','int32[]']
 

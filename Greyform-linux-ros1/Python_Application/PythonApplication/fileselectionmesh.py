@@ -43,7 +43,7 @@ class FileSelectionMesh():
         self.seq2Button = mainwindowforfileselection[10]
         self.seq3Button = mainwindowforfileselection[11]
         self.NextButton_Page_3 = mainwindowforfileselection[12]
-        self.Seqlabel = mainwindowforfileselection[13]
+        self.Stagelabel = mainwindowforfileselection[13]
         self.localizebutton = mainwindowforfileselection[14]
         self.rosnode = mainwindowforfileselection[15]
         self.excelfiletext = mainwindowforfileselection[16]
@@ -70,7 +70,6 @@ class FileSelectionMesh():
                 self.meshsplot = pv.PolyData(all_vertices, all_faces)
                 output_stl_path = "output.stl"
                 if not self.meshsplot.is_all_triangles:
-                    # Triangulate the mesh
                     self.meshsplot = self.meshsplot.triangulate()
                 self.meshsplot.save(output_stl_path)
                 scale_factor = 1.5
@@ -117,7 +116,7 @@ class FileSelectionMesh():
                     self.seq2Button,
                     self.seq3Button,
                     self.NextButton_Page_3,
-                    self.Seqlabel,
+                    self.Stagelabel,
                     self.localizebutton,
                     self.rosnode,
                     self.file_path,

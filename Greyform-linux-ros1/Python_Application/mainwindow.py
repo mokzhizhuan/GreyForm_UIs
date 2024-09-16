@@ -14,12 +14,8 @@ import PythonApplication.setting as setting
 import vtk
 import jsonimport as jsonfileopener
 import os
-from stl import mesh
-import numpy as np
 from src.talker_listener.talker_listener import talker_node as RosPublisher
 import rospy
-from std_msgs.msg import String
-from threading import Thread
 
 
 # load the mainwindow application
@@ -183,7 +179,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.seq2Button,
             self.mainwindow.seq3Button,
             self.mainwindow.NextButton_Page_3,
-            self.mainwindow.Seqlabel,
+            self.mainwindow.Stagelabel,
             self.mainwindow.LocalizationButton,
             self.ros_node,
             self.mainwindow.excelfilpathtext,

@@ -30,7 +30,7 @@ generate_messages(
 
 # catkin specific configuration
 catkin_package(
-  CATKIN_DEPENDS message_runtime std_msgs
+  CATKIN_DEPENDS message_runtime std_msgs 
 )
 
 # specify include directories

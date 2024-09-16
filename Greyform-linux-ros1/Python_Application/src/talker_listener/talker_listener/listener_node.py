@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 import rospy
-from my_robot_wallinterfaces.msg import (
-    SelectionWall,
-    FileExtractionMessage,
-)
+from my_robot_wallinterfaces.msg import FileExtractionMessage, SelectionWall
 from my_robot_wallinterfaces.srv import SetLed
 from std_msgs.msg import String
 from stl import mesh
@@ -16,10 +13,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import tkinter as tk
+import threading
 from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT, X
 
-sys.path.append("/root/catkin_ws/src/Greyform-linux/Python_Application")
-import PythonApplication.dialoglogger as logs
 
 class SingletonDialog:
     _instance = None
@@ -30,44 +26,45 @@ class SingletonDialog:
             cls._instance = ScrollableDialog(root, title, message)
             cls._instance.mainloop()
 
-
     @classmethod
     def clear(cls):
         if cls._instance:
             cls._instance.destroy()
             cls._instance = None
 
+
 class ScrollableDialog(Toplevel):
     def __init__(self, root, title, message):
         super().__init__(root)
         self.title(title)
-        self.geometry("400x300") 
+        self.geometry("400x300")
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        text_widget = Text(self, wrap='word')
+        text_widget = Text(self, wrap="word")
         text_widget.grid(row=0, column=0, sticky="nsew")
         scrollbar = Scrollbar(self, command=text_widget.yview)
         scrollbar.grid(row=0, column=1, sticky="ns")
         text_widget.config(yscrollcommand=scrollbar.set)
         text_widget.insert(END, message)
-        text_widget.config(state=tk.DISABLED) 
+        text_widget.config(state=tk.DISABLED)
         ok_button = Button(self, text="OK", command=self.destroy)
         ok_button.grid(row=1, column=0, columnspan=2, pady=5)
 
 
-class ListenerNode(QMainWindow):
+class ListenerNode:
     def __init__(self, root):
         self.root = root
         super().__init__()
         self.file_subscription_ = rospy.Subscriber(
-            "file_extraction_topic",  # Correct topic
-            FileExtractionMessage,  # Correct message type
+            "file_extraction_topic",  
+            FileExtractionMessage,  
             self.file_listener_callback,
             queue_size=10,
         )
+
         self.selection_subscription_ = rospy.Subscriber(
-            "selection_wall_topic",  # Correct topic
-            SelectionWall,  # Correct message type
+            "selection_wall_topic", 
+            SelectionWall, 
             self.selection_listener_callback,
             queue_size=10,
         )
@@ -83,14 +80,20 @@ class ListenerNode(QMainWindow):
         self.label = tk.Label(root, text="ROS Node Initialized")
         self.label.pack()
         self.button = tk.Button(
-            root, text="Show Message", command=self.show_info_dialog
-        ) 
+            root,
+            text="Show Message",
+            command=lambda: self.show_info_dialog(self.message),
+        )
         self.button.pack()
+        print("listener node has started")
         self.active_dialog = None
 
     def file_listener_callback(self, msg):
+        print(
+            f"Received FileExtractionMessage: {msg.stl_data[:10]}, Excel file: {msg.excelfile}"
+        )
         try:
-            stl_data = bytes(msg.stl_data) 
+            stl_data = bytes(msg.stl_data)
             self.message += (
                 f"{self.spacing}STL file received and processed: {msg.stl_data[:10]}"
             )
@@ -98,7 +101,6 @@ class ListenerNode(QMainWindow):
                 f.write(stl_data)
             stl_mesh = mesh.Mesh.from_file("/tmp/temp_stl_file.stl")
             self.message += f"{self.spacing}Excel file path: {msg.excelfile}"
-            # Process the Excel file
             self.process_excel_data(msg.excelfile)
             if self.file_callback:
                 self.file_callback(stl_mesh)
@@ -107,6 +109,9 @@ class ListenerNode(QMainWindow):
             print(message)
 
     def selection_listener_callback(self, msg):
+        print(
+            f"Received SelectionWall: wallselection={msg.wallselection}, typeselection={msg.typeselection}, sectionselection={msg.sectionselection}"
+        )
         try:
             self.message += (
                 f"{self.spacing}Selection message received:{self.spacing} wallselections={msg.wallselection}, "
@@ -144,9 +149,7 @@ class ListenerNode(QMainWindow):
                         self.picked_position, wall_position
                     )
                     if distance <= threshold_distance:
-                        self.message += (
-                            f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
-                        )
+                        self.message += f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
                         df.at[index, "Status"] = "done"
                     df.at[index, "Position Z (m)"] = self.storedzpos
                 processed_data[sheet_name] = df
@@ -154,7 +157,7 @@ class ListenerNode(QMainWindow):
                 for sheet_name, df in processed_data.items():
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
                 self.message += f"{self.spacing}Excel data processed successfully."
-            self.show_info_dialog(self.message) 
+            self.show_info_dialog(self.message)
             self.message = ""
         except FileNotFoundError as e:
             message = f"Excel file not found: {e}"
@@ -174,25 +177,22 @@ class ListenerNode(QMainWindow):
 
     def show_info_dialog(self, message):
         if self.active_dialog:
-            self.active_dialog.destroy()  
+            self.active_dialog.destroy()
             self.active_dialog = None
         self.active_dialog = ScrollableDialog(self.root, "Listener Node", message)
-        self.active_dialog.mainloop() 
+        self.active_dialog.mainloop()
+
 
 def main(args=None):
+    print("Listener Node starting...")
     root = tk.Tk()
     rospy.init_node("listener_node", anonymous=True)
-    app = QApplication(sys.argv)
     listenerNode = ListenerNode(root)
     root.withdraw()
     root.mainloop()
     root.destroy()
-    try:
-        sys.exit(app.exec_())
-    except SystemExit:
-        pass
-    finally:
-        rospy.signal_shutdown("Shutting down ROS node")
+    rospy.signal_shutdown("Shutting down ROS node")
+
 
 
 if __name__ == "__main__":

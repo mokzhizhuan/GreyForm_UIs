@@ -1,0 +1,28 @@
+[0.423s] Invoking command in '/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package': PYTHONPATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/prefix_override:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/lib/python3.10/site-packages/colcon_core/task/python/colcon_distutils_commands:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(env) /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/bin/python3.10 -W ignore:setup.py install is deprecated setup.py develop --editable --build-directory /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/build --no-deps
+[0.577s] running develop
+[0.577s] /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/lib/python3.10/site-packages/setuptools/command/develop.py:41: EasyInstallDeprecationWarning: easy_install command is deprecated.
+[0.577s] !!
+[0.577s] 
+[0.577s]         ********************************************************************************
+[0.577s]         Please avoid running ``setup.py`` and ``easy_install``.
+[0.577s]         Instead, use pypa/build, pypa/installer or other
+[0.577s]         standards-based tools.
+[0.577s] 
+[0.577s]         See https://github.com/pypa/setuptools/issues/917 for details.
+[0.577s]         ********************************************************************************
+[0.577s] 
+[0.577s] !!
+[0.577s]   easy_install.initialize_options(self)
+[0.652s] running egg_info
+[0.652s] creating my_test_package.egg-info
+[0.658s] writing my_test_package.egg-info/PKG-INFO
+[0.658s] writing dependency_links to my_test_package.egg-info/dependency_links.txt
+[0.658s] writing top-level names to my_test_package.egg-info/top_level.txt
+[0.659s] writing manifest file 'my_test_package.egg-info/SOURCES.txt'
+[0.672s] reading manifest file 'my_test_package.egg-info/SOURCES.txt'
+[0.672s] writing manifest file 'my_test_package.egg-info/SOURCES.txt'
+[0.712s] running build_ext
+[0.712s] Creating /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages/my-test-package.egg-link (link to .)
+[0.713s] 
+[0.713s] Installed /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package
+[0.739s] Invoked command in '/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package' returned '0': PYTHONPATH=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/prefix_override:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/lib/python3.10/site-packages/colcon_core/task/python/colcon_distutils_commands:/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(env) /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/bin/python3.10 -W ignore:setup.py install is deprecated setup.py develop --editable --build-directory /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/build --no-deps

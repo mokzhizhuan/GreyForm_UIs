@@ -18,40 +18,31 @@ class FileExtractionMessage {
   constructor(initObj={}) {
     if (initObj === null) {
       // initObj === null is a special case for deserialization where we don't initialize fields
-      this.excelfile = null;
       this.stl_data = null;
-      this.status = null;
+      this.excelfile = null;
     }
     else {
-      if (initObj.hasOwnProperty('excelfile')) {
-        this.excelfile = initObj.excelfile
-      }
-      else {
-        this.excelfile = '';
-      }
       if (initObj.hasOwnProperty('stl_data')) {
         this.stl_data = initObj.stl_data
       }
       else {
         this.stl_data = [];
       }
-      if (initObj.hasOwnProperty('status')) {
-        this.status = initObj.status
+      if (initObj.hasOwnProperty('excelfile')) {
+        this.excelfile = initObj.excelfile
       }
       else {
-        this.status = '';
+        this.excelfile = '';
       }
     }
   }
 
   static serialize(obj, buffer, bufferOffset) {
     // Serializes a message object of type FileExtractionMessage
-    // Serialize message field [excelfile]
-    bufferOffset = _serializer.string(obj.excelfile, buffer, bufferOffset);
     // Serialize message field [stl_data]
     bufferOffset = _arraySerializer.uint8(obj.stl_data, buffer, bufferOffset, null);
-    // Serialize message field [status]
-    bufferOffset = _serializer.string(obj.status, buffer, bufferOffset);
+    // Serialize message field [excelfile]
+    bufferOffset = _serializer.string(obj.excelfile, buffer, bufferOffset);
     return bufferOffset;
   }
 
@@ -59,21 +50,18 @@ class FileExtractionMessage {
     //deserializes a message object of type FileExtractionMessage
     let len;
     let data = new FileExtractionMessage(null);
-    // Deserialize message field [excelfile]
-    data.excelfile = _deserializer.string(buffer, bufferOffset);
     // Deserialize message field [stl_data]
     data.stl_data = _arrayDeserializer.uint8(buffer, bufferOffset, null)
-    // Deserialize message field [status]
-    data.status = _deserializer.string(buffer, bufferOffset);
+    // Deserialize message field [excelfile]
+    data.excelfile = _deserializer.string(buffer, bufferOffset);
     return data;
   }
 
   static getMessageSize(object) {
     let length = 0;
-    length += _getByteLength(object.excelfile);
     length += object.stl_data.length;
-    length += _getByteLength(object.status);
-    return length + 12;
+    length += _getByteLength(object.excelfile);
+    return length + 8;
   }
 
   static datatype() {
@@ -83,15 +71,15 @@ class FileExtractionMessage {
 
   static md5sum() {
     //Returns md5sum for a message object
-    return 'be99b8b69cd2a117a0a8d177509a0dff';
+    return '81c918b74dbfb64e2d1abc77031a354e';
   }
 
   static messageDefinition() {
     // Returns full string definition for message
     return `
-    string excelfile
     uint8[] stl_data
-    string status
+    string excelfile
+    
     `;
   }
 
@@ -101,13 +89,6 @@ class FileExtractionMessage {
       msg = {};
     }
     const resolved = new FileExtractionMessage(null);
-    if (msg.excelfile !== undefined) {
-      resolved.excelfile = msg.excelfile;
-    }
-    else {
-      resolved.excelfile = ''
-    }
-
     if (msg.stl_data !== undefined) {
       resolved.stl_data = msg.stl_data;
     }
@@ -115,11 +96,11 @@ class FileExtractionMessage {
       resolved.stl_data = []
     }
 
-    if (msg.status !== undefined) {
-      resolved.status = msg.status;
+    if (msg.excelfile !== undefined) {
+      resolved.excelfile = msg.excelfile;
     }
     else {
-      resolved.status = ''
+      resolved.excelfile = ''
     }
 
     return resolved;
