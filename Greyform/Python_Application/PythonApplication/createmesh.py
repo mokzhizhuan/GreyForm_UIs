@@ -9,6 +9,7 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 import PythonApplication.interactiveevent as events
 import PythonApplication.doormeshvtk as doormeshVTK
 import PythonApplication.exceldatavtk as vtk_data_excel
+import PythonApplication.markingprogressbar as stageofmarking
 
 
 # create the imported stl mesh in vtk frame
@@ -52,32 +53,22 @@ class createMesh(QMainWindow):
         self.localizebutton = localizebutton
         self.filepath = file_path
         self.ren.SetBackground(1, 1, 1)
+        self.dataseqtext = None
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
         self.door = doormeshVTK.doorMesh()
-        self.seq1Button.clicked.connect(
-            lambda: self.addseqtext(
-                self.seq1Button, self.NextButton_Page_3, self.Seqlabel
-            )
+        seq1Button.clicked.connect(
+            lambda: self.addseqtext(seq1Button, NextButton_Page_3)
         )
-        self.seq2Button.clicked.connect(
-            lambda: self.addseqtext(
-                self.seq2Button,
-                self.NextButton_Page_3,
-                self.Seqlabel,
-            )
+        seq2Button.clicked.connect(
+            lambda: self.addseqtext(seq2Button, NextButton_Page_3)
         )
-        self.seq3Button.clicked.connect(
-            lambda: self.addseqtext(
-                self.seq3Button,
-                self.NextButton_Page_3,
-                self.Seqlabel,
-            )
+        seq3Button.clicked.connect(
+            lambda: self.addseqtext(seq3Button, NextButton_Page_3)
         )
         self.wall_identifiers = vtk_data_excel.exceldataextractor()
-        self.loadStl()
 
-    def loadStl(self):
+    def loadStl(self, dataseqtext):
         self.clearactor()
         self.reader.SetFileName(self.polydata)
         self.reader.Update()
@@ -254,9 +245,11 @@ class createMesh(QMainWindow):
         for i in range(6):
             self.meshbounds.append(self.actor.GetBounds()[i])
 
-    def addseqtext(self, buttonseq, buttonnextpage, label):
-        dataseqtext = buttonseq.text()
-        dataseqtext = dataseqtext.replace("Stage ", "")
+    def addseqtext(self, buttonseq, buttonnextpage):
+        self.dataseqtext = buttonseq.text()
+        self.dataseqtext = self.dataseqtext.replace("Sequence ", "")
+        self.dataseqtext = int(self.dataseqtext)
+        markingprogessbar = stageofmarking.MarkingProgressBar()
+        markingprogessbar.exec_()
         buttonnextpage.show()
-        _translate = QtCore.QCoreApplication.translate
-        label.setText(_translate("MainWindow", "Stage: " + str(dataseqtext)))
+        self.loadStl(self.dataseqtext)

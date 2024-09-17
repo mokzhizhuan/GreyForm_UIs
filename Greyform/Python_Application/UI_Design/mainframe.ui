@@ -337,7 +337,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Stage 1</string>
+                <string>Sequence 1</string>
                </property>
               </widget>
              </item>
@@ -355,7 +355,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Stage 2</string>
+                <string>Sequence 2</string>
                </property>
               </widget>
              </item>
@@ -373,7 +373,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Stage 3</string>
+                <string>Sequence 3</string>
                </property>
               </widget>
              </item>
@@ -458,9 +458,9 @@
                 <enum>QLayout::SetNoConstraint</enum>
                </property>
                <item>
-                <widget class="QLabel" name="Seqlabel">
+                <widget class="QLabel" name="Stagelabel">
                  <property name="text">
-                  <string>Sequence:</string>
+                  <string>Stage</string>
                  </property>
                 </widget>
                </item>
@@ -654,7 +654,7 @@
           <height>251</height>
          </rect>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="2,1">
+        <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="2">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout">
            <item>
@@ -674,19 +674,6 @@
             </widget>
            </item>
           </layout>
-         </item>
-         <item>
-          <widget class="QPushButton" name="LocalizationButton">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="text">
-            <string>Localization</string>
-           </property>
-          </widget>
          </item>
         </layout>
        </widget>
@@ -729,11 +716,11 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_24" stretch="1,1">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="1">
+            <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="1,1">
              <item>
               <widget class="QPushButton" name="HomeButton">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
@@ -745,6 +732,24 @@
                </property>
                <property name="text">
                 <string>Home</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="LocalizationButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>40</pointsize>
+                </font>
+               </property>
+               <property name="text">
+                <string>Localization</string>
                </property>
               </widget>
              </item>
