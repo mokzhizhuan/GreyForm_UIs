@@ -26,8 +26,6 @@ ros humble software link:<br>
 https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debians.html <br>
 set up your ros script in ~/.bashrc <br>
 source /opt/ros/humble/setup.bash <br>
-export ROS_DOMAIN_ID=0 <br>
-export ROS_LOCALHOST_ONLY=1 <br>
 source /usr/share/colcon_cd/function/colcon_cd.sh <br>
 export _colcon_cd_root=/opt/ros/humble/ <br>
 setting up ros workspaces: <br>
@@ -44,7 +42,7 @@ https://neowolf.notion.site/running-ros-script-35cb047e223b40598055d0b44e621e61<
 ##
 Extendsion Used:<br>
 QtPython <br>
-Python 3.11 <br> 
+Python 3.08(ros1-linux) <br> 
 Python 3.10(linux) <br><br>
 
 UI_Drawinng is included and including layout for uidesign and box layout <br>
