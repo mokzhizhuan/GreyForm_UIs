@@ -110,9 +110,9 @@ setting UI > Wifi <br>
 User Manual Page <br>
 
 ##
-Loading the STL link , using the STL file extension. <br>
-This program is only load STL file for the frames. <br>
-Ifc will be loaded and will convert to STL file format to load pyvista. <br>
+Loading the STL link , using the STL/IFC/DXF file extension. <br>
+This program is only load STL/IFC/DXF file for the frames. <br>
+Ifc/DXF will be loaded and will convert to STL file format to load pyvista. <br>
 
 ##
 Progress: <br>
