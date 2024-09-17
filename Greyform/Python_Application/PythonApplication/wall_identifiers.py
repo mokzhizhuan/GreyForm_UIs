@@ -38,6 +38,7 @@ class wall_Interaction(object):
             picker.GetPickPosition()[1],
             picker.GetPickPosition()[2],
         ]
+        self.localizebutton.show()
         self.point_id = self.find_closest_point(self.reader, self.picked_position)
 
     def find_closest_point(self, polydata, target_position):
