@@ -232,9 +232,12 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             actor_position = self.old_actor_position
             self.refresh()
 
-    # Use Tkinter to show an error message
     def show_error_message(self, message):
         root = tk.Tk()
         root.withdraw()  
         messagebox.showerror("Error", message)
         root.destroy()
+
+    def reset_interaction(self):
+        self.interaction_enabled = True
+        self.localizebutton.setEnabled(True)

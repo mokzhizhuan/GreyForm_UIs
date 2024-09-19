@@ -19,18 +19,28 @@ class StatusSignals(QObject):
 
 class ListenerNodeRunner(QMainWindow):
     def __init__(
-        self, talker_node , file , excel_data ,wall_number, sectionnumber, picked_position, Stagelabel, cube_actor
+        self,
+        talker_node,
+        file,
+        excel_data,
+        wall_number,
+        sectionnumber,
+        picked_position,
+        Stagelabel,
+        cube_actor,
+        dataseqtext,
     ):
         super().__init__()
         self.initUI()
         self.talker_node = talker_node
-        self.file  = file
+        self.file = file
         self.excel_data = excel_data
         self.wall_number = wall_number
         self.sectionnumber = sectionnumber
         self.picked_position = picked_position
         self.Stagelabel = Stagelabel
         self.cube_actor = cube_actor
+        self.dataseqtext = dataseqtext
         self.signals = StatusSignals()
         self.listener_started = False
         self.signals.status_signal.connect(self.update_status)
@@ -38,7 +48,7 @@ class ListenerNodeRunner(QMainWindow):
     def initUI(self):
         self.status_label = QLabel("Status: Not Running", self)
         self.status_label.setStyleSheet(
-           """
+            """
             QLabel {
                 font-size: 20px;                
             }
@@ -73,14 +83,16 @@ class ListenerNodeRunner(QMainWindow):
             except Exception as e:
                 self.signals.status_signal.emit(f"Status: Error - {str(e)}")
         else:
-            self.talker_node.publish_file_message(self.file, self.excel_data)
-            self.talker_node.publish_selection_message(
-                self.wall_number,
-                self.sectionnumber,
-                self.picked_position,
-                self.Stagelabel,
-                self.cube_actor,
-            )
+            for i in range(self.dataseqtext):
+                self.talker_node.publish_file_message(self.file, self.excel_data)
+                self.talker_node.publish_selection_message(
+                    self.wall_number[i],
+                    self.sectionnumber[i],
+                    self.picked_position[i],
+                    self.Stagelabel,
+                    self.cube_actor,
+                )
+            self.talker_node.showdialog()
 
     def _run_subprocess(self):
         try:

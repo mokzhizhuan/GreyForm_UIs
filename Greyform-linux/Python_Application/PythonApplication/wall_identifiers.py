@@ -4,6 +4,9 @@ import vtk
 import pandas as pd
 import numpy as np
 import PythonApplication.processlistenerrunner as ProcessListener
+import tkinter as tk
+from tkinter import messagebox
+
 
 class wall_Interaction(object):
     def __init__(
@@ -26,10 +29,19 @@ class wall_Interaction(object):
         self.Stagelabel = setcamerainteraction[18]
         self.excelfiletext = setcamerainteraction[19]
         self.cubeactor = setcamerainteraction[11]
+        self.dataseqtext = setcamerainteraction[20]
+        self.interaction_enabled = True
         self.ros_node = ros_node
-        self.button_connected = False
+        self.counter = 0
+        self.picked_positions = []
+        self.picked_position_quads = []
 
     def setwallinteractiondata(self, obj, event):
+        if self.interaction_enabled != True:
+            self.show_error_message(
+                f"The sequence is already at the max limit of {self.counter}/{self.dataseqtext}. Interaction is disabled. "
+            )
+            return
         self.interactor_style.SetMotionFactor(8)
         click_pos = self.renderwindowinteractor.GetEventPosition()
         picker = vtk.vtkCellPicker()
@@ -45,11 +57,15 @@ class wall_Interaction(object):
             picker.GetPickPosition()[1],
             picker.GetPickPosition()[2],
         ]
+        self.picked_positions.append(self.picked_position)
+        self.picked_position_quads.append(self.picked_position_quad)
         self.point_id = self.find_closest_point(self.reader, self.picked_position)
-        self.localizebutton.show()
-        if not self.button_connected:
-            self.localizebutton.clicked.connect(self.publish_message)
-            self.button_connected = True
+        if self.counter < self.dataseqtext:
+            self.counter += 1
+            if self.counter == self.dataseqtext:
+                self.localizebutton.show()
+                self.localizebutton.clicked.connect(self.publish_message)
+                self.interaction_enabled = False
 
     def find_closest_point(self, polydata, target_position):
         point_locator = vtk.vtkKdTreePointLocator()
@@ -60,18 +76,37 @@ class wall_Interaction(object):
 
     def publish_message(self):
         self.wall_filtered_identifiers = self.fliterbywallnum()
-        wallnumber, sectionnumber = self.distance()
-        if self.file_path:
-            if ".stl" in self.file_path:
-                self.publish_message_ros(self.file_path, wallnumber, sectionnumber)
-            elif ".ifc" in self.file_path:
-                file = "output.stl"
-                self.publish_message_ros(file, wallnumber, sectionnumber)
-            elif ".dxf" in self.file_path:
-                file = "output.stl"
-                self.publish_message_ros(file, wallnumber, sectionnumber)
-        else:
-            print("No STL file selected.")
+        message_error = True
+        wallnumbers =[]
+        sectionnumbers =[]
+        for sequence_pos, sequence_pos_quad in zip(
+            self.picked_positions,
+            self.picked_position_quads,
+        ):
+            wallnumber, sectionnumber = self.distance(sequence_pos, sequence_pos_quad)
+            wallnumbers.append(wallnumber)
+            sectionnumbers.append(sectionnumber)
+            if self.file_path:
+                if ".stl" in self.file_path:
+                    self.publish_message_ros(self.file_path, wallnumbers, sectionnumbers)
+                elif ".ifc" in self.file_path:
+                    file = "output.stl"
+                    self.publish_message_ros(file, wallnumbers, sectionnumbers)
+                elif ".dxf" in self.file_path:
+                    file = "output.stl"
+                    self.publish_message_ros(file, wallnumbers, sectionnumbers)
+                else:
+                    if message_error == True:
+                        self.show_error_message("File is invalid, please try again")
+                        message_error = False
+                    else:
+                        return
+
+    def show_error_message(self, message):
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showerror("Error", message)
+        root.destroy()
 
     def fliterbywallnum(self):
         df = pd.DataFrame(self.wall_identifiers)
@@ -91,17 +126,18 @@ class wall_Interaction(object):
         )"""
         self.listenerdialog = ProcessListener.ListenerNodeRunner(
             self.ros_node,
-            file, 
+            file,
             self.exceldata,
             wallnumber,
             sectionnumber,
-            self.picked_position,
+            self.picked_positions,
             self.Stagelabel,
             self.cubeactor,
+            self.dataseqtext,
         )
         self.listenerdialog.show()
 
-    def distance(self):
+    def distance(self, sequence_pos, sequence_pos_quad):
         self.threshold_distance = 220
         self.distances = 50
         self.distancerange = 600
@@ -120,7 +156,7 @@ class wall_Interaction(object):
                 group["Position Z (m)"].max(),
             )
             if max_x - min_x <= self.threshold_distance:
-                distance = self.calculate_distance(self.picked_position[0], max_x)
+                distance = self.calculate_distance(sequence_pos[0], max_x)
                 if distance <= self.distances:
                     wall_number = wall_numbers
                     wall_position = np.array(
@@ -130,23 +166,17 @@ class wall_Interaction(object):
                             group["Position Z (m)"],
                         ]
                     )
-                    distances = self.calculate_distances(
-                        self.picked_position, wall_position
-                    )
+                    distances = self.calculate_distances(sequence_pos, wall_position)
                     if (distances <= self.distancerange).all():
                         name = group["Point number/name"]
-                        self.Stagename(self ,name)
-                    self.picked_position_quad[1] = self.picked_position[1] - (
-                        self.meshbound[3] / 2
-                    )
-                    self.picked_position_quad[2] = self.picked_position[2] - (
-                        self.meshbound[5] / 2
-                    )
+                        self.Stagename(self, name)
+                    sequence_pos_quad[1] = sequence_pos[1] - (self.meshbound[3] / 2)
+                    sequence_pos_quad[2] = sequence_pos[2] - (self.meshbound[5] / 2)
                     sectionnumber = self.determine_quadrant(
-                        self.picked_position_quad[1], self.picked_position_quad[2]
+                        sequence_pos_quad[1], sequence_pos_quad[2]
                     )
             elif max_y - min_y <= self.threshold_distance:
-                distance = self.calculate_distance(self.picked_position[1], max_y)
+                distance = self.calculate_distance(sequence_pos[1], max_y)
                 if distance <= self.distances:
                     wall_number = wall_numbers
                     wall_position = np.array(
@@ -156,23 +186,17 @@ class wall_Interaction(object):
                             group["Position Z (m)"],
                         ]
                     )
-                    distances = self.calculate_distances(
-                        self.picked_position, wall_position
-                    )
+                    distances = self.calculate_distances(sequence_pos, wall_position)
                     if (distances <= self.distancerange).all():
                         name = group["Point number/name"]
-                        self.Stagename(self ,name)
-                    self.picked_position_quad[0] = self.picked_position[0] - (
-                        self.meshbound[1] / 2
-                    )
-                    self.picked_position_quad[2] = self.picked_position[2] - (
-                        self.meshbound[5] / 2
-                    )
+                        self.Stagename(self, name)
+                    sequence_pos_quad[0] = sequence_pos[0] - (self.meshbound[1] / 2)
+                    sequence_pos_quad[2] = sequence_pos[2] - (self.meshbound[5] / 2)
                     sectionnumber = self.determine_quadrant(
-                        self.picked_position_quad[0], self.picked_position_quad[2]
+                        sequence_pos_quad[0], sequence_pos_quad[2]
                     )
             elif max_z - min_z <= self.threshold_distance:
-                distance = self.calculate_distance(self.picked_position[2], max_z)
+                distance = self.calculate_distance(sequence_pos[2], max_z)
                 if distance <= self.distances:
                     wall_number = wall_numbers
                     wall_position = np.array(
@@ -182,23 +206,17 @@ class wall_Interaction(object):
                             group["Position Z (m)"],
                         ]
                     )
-                    distances = self.calculate_distances(
-                        self.picked_position, wall_position
-                    )
+                    distances = self.calculate_distances(sequence_pos, wall_position)
                     if (distances <= self.distancerange).all():
                         name = group["Point number/name"]
-                        self.Stagename(self ,name)
-                    self.picked_position_quad[1] = self.picked_position[1] - (
-                        self.meshbound[3] / 2
-                    )
-                    self.picked_position_quad[0] = self.picked_position[0] - (
-                        self.meshbound[1] / 2
-                    )
+                        self.Stagename(self, name)
+                    sequence_pos_quad[1] = sequence_pos[1] - (self.meshbound[3] / 2)
+                    sequence_pos_quad[0] = sequence_pos[0] - (self.meshbound[1] / 2)
                     sectionnumber = self.determine_quadrant(
-                        self.picked_position_quad[0], self.picked_position_quad[1]
+                        sequence_pos_quad[0], sequence_pos_quad[1]
                     )
         return wall_number, sectionnumber
-    
+
     def calculate_distances(self, point1, point2):
         point1 = np.expand_dims(point1, axis=1)  # Shape (3,) becomes (3, 1)
         distances = np.linalg.norm(point1 - point2, axis=0)
@@ -218,7 +236,7 @@ class wall_Interaction(object):
 
     def calculate_distance(self, point1, point2):
         return point1 - point2
-    
+
     def Stagename(self, name):
         if "CP" in name:
             index = name.index("CP") + 4
@@ -244,4 +262,3 @@ class wall_Interaction(object):
                 self.Stagelabel.setText(f"Stage {int(name[index])}")
                 self.Stagelabel.repaint()
                 return int(name[index])
-

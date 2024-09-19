@@ -29,25 +29,6 @@ class TalkerNode:
         self.active_dialog = None
         self.listener_started = False
 
-    def publish_file_message(self, file_path, excel_filepath):
-        try:
-            with open(file_path, "rb") as f:
-                stl_data = f.read()
-            msg = FileExtractionMessage()
-            msg.stl_data = list(stl_data)
-            msg.excelfile = excel_filepath
-            self.file_publisher_.publish(msg)
-            self.message += (
-                f"STL file published:{self.spacing} {stl_data[:100]}"
-                f"{self.spacing}Excel file path: {excel_filepath}"
-            )
-        except FileNotFoundError as e:
-            message = f"File not found: {e}"
-            self.show_error_dialog(message)
-        except Exception as e:
-            message = f"Failed to read and publish STL file: {e}"
-            self.show_error_dialog(message)
-
     def run_listernernode(
         self,
         file,
@@ -79,13 +60,30 @@ class TalkerNode:
                 cube_actor,
             )
 
+    def publish_file_message(self, file_path, excel_filepath):
+        try:
+            with open(file_path, "rb") as f:
+                stl_data = f.read()
+            msg = FileExtractionMessage()
+            msg.stl_data = list(stl_data)  # Convert bytes to a list of uint8
+            msg.excelfile = excel_filepath
+            self.file_publisher_.publish(msg)
+            self.message += (
+                f"STL file published:{self.spacing} {stl_data[:100]}"
+                f"{self.spacing}Excel file path: {excel_filepath}"
+            )
+        except FileNotFoundError as e:
+            self.errormessage += f"File is not found: {e}"
+        except Exception as e:
+            self.errormessage += f"Failed to read and publish STL file: {e}"
+
     def publish_selection_message(
-        self, wall_number, sectionnumber, picked_position, seqlabel, cube_actor
+        self, wall_number, sectionnumber, picked_position, Stagelabel, cube_actor
     ):
         try:
             msg = SelectionWall()
             msg.wallselection = int(wall_number)
-            msg.typeselection = f"{seqlabel.text()}"
+            msg.typeselection = f"{Stagelabel.text()}"
             msg.sectionselection = sectionnumber
             picked_position = [
                 int(picked_position[0]),
@@ -105,13 +103,18 @@ class TalkerNode:
                 f"{self.spacing}typeselection={msg.typeselection},"
                 f"{self.spacing}sectionselection={msg.sectionselection}"
                 f"{self.spacing}{list(msg.picked_position)}"
-                f"{self.spacing}{list(msg.default_position)}"
             )
+        except Exception as e:
+            self.errormessage += f"{self.spacing}Failed to publish selection message: {e}"
+            
+
+    def showdialog(self):
+        if self.message != "":
             self.show_info_dialog(self.message)
             self.message = ""
-        except Exception as e:
-            message = f"Failed to publish selection message: {e}"
-            self.show_error_dialog(message)
+        else:
+            self.show_error_dialog(self.errormessage)
+            self.errormessage= ""
 
     def timer_callback(self, event):
         msg = String()

@@ -28,6 +28,7 @@ class ListenerNodeRunner(QMainWindow):
         picked_position,
         Stagelabel,
         cube_actor,
+        dataseqtext,
     ):
         super().__init__()
         self.initUI()
@@ -39,6 +40,7 @@ class ListenerNodeRunner(QMainWindow):
         self.picked_position = picked_position
         self.Stagelabel = Stagelabel
         self.cube_actor = cube_actor
+        self.dataseqtext = dataseqtext
         self.signals = StatusSignals()
         self.listener_started = False
         self.signals.status_signal.connect(self.update_status)
@@ -46,9 +48,9 @@ class ListenerNodeRunner(QMainWindow):
     def initUI(self):
         self.status_label = QLabel("Status: Not Running", self)
         self.status_label.setStyleSheet(
-           """
+            """
             QLabel {
-                font-size: 20px;              
+                font-size: 20px;                
             }
             """
         )
@@ -73,23 +75,25 @@ class ListenerNodeRunner(QMainWindow):
         self.setGeometry(400, 400, 500, 500)
 
     def run_listener_node(self):
-        if not self.listener_started:
+        if self.listener_started is not True:
             try:
                 threading.Thread(target=self._run_process, daemon=True).start()
                 self.signals.status_signal.emit("Status: Running")
                 self.listener_started = True
-                time.sleep(2)
             except Exception as e:
                 self.signals.status_signal.emit(f"Status: Error - {str(e)}")
         else:
-            self.talker_node.publish_file_message(self.file, self.excel_data)
-            self.talker_node.publish_selection_message(
-                self.wall_number,
-                self.sectionnumber,
-                self.picked_position,
-                self.Stagelabel,
-                self.cube_actor,
-            )
+            for i in range(self.dataseqtext):
+                self.talker_node.publish_file_message(self.file, self.excel_data)
+                self.talker_node.publish_selection_message(
+                    self.wall_number[i],
+                    self.sectionnumber[i],
+                    self.picked_position[i],
+                    self.Stagelabel,
+                    self.cube_actor,
+                )
+            self.talker_node.showdialog()
+
 
     def _run_process(self):
         env = os.environ.copy()

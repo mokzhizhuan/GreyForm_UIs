@@ -24,6 +24,7 @@ class TalkerNode(Node):
             SelectionWall, "selection_wall_topic", 10
         )
         self.message = ""
+        self.errormessage = ""
         self.spacing = "\n"
         self.title = "Publisher Node"
         self.active_dialog = None
@@ -41,11 +42,9 @@ class TalkerNode(Node):
                 f"{self.spacing}Excel file path: {excel_filepath}"
             )
         except FileNotFoundError as e:
-            message = f"File not found: {e}"
-            self.show_error_dialog(message)
+            self.errormessage += f"File is not found: {e}"
         except Exception as e:
-            message = f"Failed to read and publish STL file: {e}"
-            self.show_error_dialog(message)
+            self.errormessage += f"Failed to read and publish STL file: {e}"
 
     def publish_selection_message(
         self, wall_number, sectionnumber, picked_position, Stagelabel, cube_actor
@@ -74,11 +73,17 @@ class TalkerNode(Node):
                 f"{self.spacing}sectionselection={msg.sectionselection}"
                 f"{self.spacing}{list(msg.picked_position)}"
             )
+        except Exception as e:
+            self.errormessage += f"{self.spacing}Failed to publish selection message: {e}"
+            
+
+    def showdialog(self):
+        if self.message != "":
             self.show_info_dialog(self.message)
             self.message = ""
-        except Exception as e:
-            message = f"Failed to publish selection message: {e}"
-            self.show_error_dialog(message)
+        else:
+            self.show_error_dialog(self.errormessage)
+            self.errormessage= ""
 
     def run_listernernode(
         self,

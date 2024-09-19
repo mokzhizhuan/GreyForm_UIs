@@ -98,7 +98,7 @@ class ConfirminitDialog(QMainWindow):
             font-size: 20px;
             padding: 5px;
         }
-        """
+            """
         )
         msg_box.setIcon(QMessageBox.Information)
         msg_box.setWindowTitle("Initialization Complete")
