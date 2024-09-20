@@ -1,5 +1,12 @@
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QMainWindow, QDialog, QVBoxLayout, QLabel, QApplication , QMessageBox
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QDialog,
+    QVBoxLayout,
+    QLabel,
+    QApplication,
+    QMessageBox,
+)
 from PyQt5.QtGui import QFont
 import subprocess
 import mainwindow as locMarapplication
@@ -7,6 +14,7 @@ import rospy
 import os
 import sys
 import threading
+
 
 class ConfirminitDialog(QMainWindow):
     def show_dialog_confirm(self, ros_node):
@@ -70,12 +78,25 @@ class ConfirminitDialog(QMainWindow):
 
     def run_ros_node(ros_node):
         if not rospy.core.is_initialized():
-            rospy.init_node('talker_listener', anonymous=True)
+            rospy.init_node("talker_listener", anonymous=True)
         rospy.spin()  # Keep the ROS node running
 
-    
     def show_completion_message():
         msg_box = QMessageBox()
+        msg_box.setStyleSheet(
+            """
+            QMessageBox {
+                font-family: Helvetica;
+                font-size: 20px;
+                color: blue;
+            }
+            QPushButton {
+                font-family: Helvetica;
+                font-size: 20px;
+                padding: 5px;
+            }
+            """
+        )
         msg_box.setIcon(QMessageBox.Information)
         msg_box.setWindowTitle("Initialization Complete")
         msg_box.setText("Initialization of LOC and MAR app is completed.")

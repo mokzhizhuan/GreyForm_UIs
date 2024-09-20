@@ -6,15 +6,8 @@ from std_msgs.msg import String
 from stl import mesh
 import pandas as pd
 import numpy as np
-import sys
-from PyQt5 import uic
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
 import tkinter as tk
-import threading
-from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT, X
+from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT, X, ttk
 
 
 class SingletonDialog:
@@ -38,22 +31,23 @@ class ScrollableDialog(Toplevel):
         super().__init__(root)
         self.title(title)
         self.geometry("400x300")
+        style = ttk.Style()
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        text_widget = Text(self, wrap="word")
+        text_widget = tk.Text(self, wrap="word", font=("Helvetica", 20))
         text_widget.grid(row=0, column=0, sticky="nsew")
         scrollbar = Scrollbar(self, command=text_widget.yview)
         scrollbar.grid(row=0, column=1, sticky="ns")
         text_widget.config(yscrollcommand=scrollbar.set)
         text_widget.insert(END, message)
         text_widget.config(state=tk.DISABLED)
-        ok_button = Button(self, text="OK", command=self.destroy)
+        style.configure('TButton', font=('Helvetica', 20))
+        ok_button = ttk.Button(self, text="OK", command=self.destroy)
         ok_button.grid(row=1, column=0, columnspan=2, pady=5)
 
 
 class ListenerNode:
     def __init__(self, root):
-        self.root = root
         super().__init__()
         self.file_subscription_ = rospy.Subscriber(
             "file_extraction_topic",  
@@ -61,13 +55,13 @@ class ListenerNode:
             self.file_listener_callback,
             queue_size=10,
         )
-
         self.selection_subscription_ = rospy.Subscriber(
             "selection_wall_topic", 
             SelectionWall, 
             self.selection_listener_callback,
             queue_size=10,
         )
+        self.root = root
         self.file_callback = None
         self.selection_callback = None
         self.wallselection = None
@@ -77,21 +71,20 @@ class ListenerNode:
         self.message = ""
         self.spacing = "\n"
         self.title = "Listener Node"
-        self.label = tk.Label(root, text="ROS Node Initialized")
+        self.setup_tk_ui()
+        self.active_dialog = None
+
+    def setup_tk_ui(self):
+        self.label = tk.Label(self.root, text="ROS Node Initialized")
         self.label.pack()
         self.button = tk.Button(
-            root,
+            self.root,
             text="Show Message",
             command=lambda: self.show_info_dialog(self.message),
         )
         self.button.pack()
-        print("listener node has started")
-        self.active_dialog = None
 
     def file_listener_callback(self, msg):
-        print(
-            f"Received FileExtractionMessage: {msg.stl_data[:10]}, Excel file: {msg.excelfile}"
-        )
         try:
             stl_data = bytes(msg.stl_data)
             self.message += (
@@ -109,9 +102,6 @@ class ListenerNode:
             print(message)
 
     def selection_listener_callback(self, msg):
-        print(
-            f"Received SelectionWall: wallselection={msg.wallselection}, typeselection={msg.typeselection}, sectionselection={msg.sectionselection}"
-        )
         try:
             self.message += (
                 f"{self.spacing}Selection message received:{self.spacing} wallselections={msg.wallselection}, "
@@ -125,7 +115,6 @@ class ListenerNode:
                 self.selection_callback(msg)
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
-            print(message)
 
     def process_excel_data(self, excel_filepath):
         try:
@@ -157,14 +146,10 @@ class ListenerNode:
                 for sheet_name, df in processed_data.items():
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
                 self.message += f"{self.spacing}Excel data processed successfully."
-            self.show_info_dialog(self.message)
-            self.message = ""
         except FileNotFoundError as e:
             message = f"Excel file not found: {e}"
-            print(message)
         except Exception as e:
             message = f"Failed to process Excel file: {e}"
-            print(message)
 
     def set_file_callback(self, callback):
         self.file_callback = callback
@@ -184,13 +169,10 @@ class ListenerNode:
 
 
 def main(args=None):
-    print("Listener Node starting...")
     root = tk.Tk()
     rospy.init_node("listener_node", anonymous=True)
     listenerNode = ListenerNode(root)
-    root.withdraw()
     root.mainloop()
-    root.destroy()
     rospy.signal_shutdown("Shutting down ROS node")
 
 

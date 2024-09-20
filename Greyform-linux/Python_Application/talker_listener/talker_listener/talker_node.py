@@ -83,7 +83,7 @@ class TalkerNode(Node):
             self.message = ""
         else:
             self.show_error_dialog(self.errormessage)
-            self.errormessage= ""
+            self.errormessage = ""
 
     def run_listernernode(
         self,

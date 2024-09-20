@@ -157,6 +157,7 @@ class createMesh(QMainWindow):
             self.filepath,
             self.Stagelabel,
             self.excelfiletext,
+            dataseqtext,
         ]
         camera = events.myInteractorStyle(
             setcamerainteraction,
