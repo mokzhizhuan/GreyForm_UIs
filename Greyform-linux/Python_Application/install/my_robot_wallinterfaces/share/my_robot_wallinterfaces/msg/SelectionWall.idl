@@ -1,1 +1,20 @@
-/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/rosidl_adapter/my_robot_wallinterfaces/msg/SelectionWall.idl
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from my_robot_wallinterfaces/msg/SelectionWall.msg
+// generated code does not contain a copyright notice
+
+
+module my_robot_wallinterfaces {
+  module msg {
+    struct SelectionWall {
+      int32 wallselection;
+
+      string typeselection;
+
+      int32 sectionselection;
+
+      sequence<int32> picked_position;
+
+      sequence<int32> default_position;
+    };
+  };
+};

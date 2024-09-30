@@ -1,4 +1,4 @@
-#!/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/bin/python3.10
+#!/usr/bin/python3
 # EASY-INSTALL-ENTRY-SCRIPT: 'talker-listener==0.0.0','console_scripts','listenerNode'
 import re
 import sys

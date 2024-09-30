@@ -1,4 +1,4 @@
 import sys
-if sys.prefix == '/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env':
+if sys.prefix == '/usr':
     sys.real_prefix = sys.prefix
-    sys.prefix = sys.exec_prefix = '/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package'
+    sys.prefix = sys.exec_prefix = '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package'

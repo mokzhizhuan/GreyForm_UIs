@@ -1,8 +1,8 @@
-# Install script for directory: /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py
+# Install script for directory: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces")
+  set(CMAKE_INSTALL_PREFIX "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces
+CMAKE_SOURCE_DIR = /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces
+CMAKE_BINARY_DIR = /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces
 
 # Utility rule file for my_robot_wallinterfaces_uninstall.
 
@@ -67,7 +67,7 @@ include CMakeFiles/my_robot_wallinterfaces_uninstall.dir/compiler_depend.make
 include CMakeFiles/my_robot_wallinterfaces_uninstall.dir/progress.make
 
 CMakeFiles/my_robot_wallinterfaces_uninstall:
-	/usr/bin/cmake -P /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
+	/usr/bin/cmake -P /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/ament_cmake_uninstall_target/ament_cmake_uninstall_target.cmake
 
 my_robot_wallinterfaces_uninstall: CMakeFiles/my_robot_wallinterfaces_uninstall
 my_robot_wallinterfaces_uninstall: CMakeFiles/my_robot_wallinterfaces_uninstall.dir/build.make
@@ -82,6 +82,6 @@ CMakeFiles/my_robot_wallinterfaces_uninstall.dir/clean:
 .PHONY : CMakeFiles/my_robot_wallinterfaces_uninstall.dir/clean
 
 CMakeFiles/my_robot_wallinterfaces_uninstall.dir/depend:
-	cd /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/CMakeFiles/my_robot_wallinterfaces_uninstall.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/CMakeFiles/my_robot_wallinterfaces_uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/my_robot_wallinterfaces_uninstall.dir/depend
 

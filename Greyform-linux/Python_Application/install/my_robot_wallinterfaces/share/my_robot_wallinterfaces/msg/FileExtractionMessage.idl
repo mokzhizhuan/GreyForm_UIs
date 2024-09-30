@@ -1,1 +1,16 @@
-/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/rosidl_adapter/my_robot_wallinterfaces/msg/FileExtractionMessage.idl
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from my_robot_wallinterfaces/msg/FileExtractionMessage.msg
+// generated code does not contain a copyright notice
+
+
+module my_robot_wallinterfaces {
+  module msg {
+    struct FileExtractionMessage {
+      string excelfile;
+
+      sequence<uint8> stl_data;
+
+      string status;
+    };
+  };
+};

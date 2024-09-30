@@ -14,7 +14,7 @@ class ConfirminitDialog(QMainWindow):
         dialog = QDialog(self)
         dialog.setWindowTitle("Dialog Box")
         dialog.resize(400, 300)
-        label = QLabel("Are you sure you want to initlize the LOC and MAR modules??")
+        label = QLabel("Are you sure you want to initialize the LOC and MAR modules??")
         label.setGeometry(QtCore.QRect(100, 40, 171, 31))
         label.setFont(QFont("Arial", 20))
         label.setWordWrap(True)
@@ -54,7 +54,7 @@ class ConfirminitDialog(QMainWindow):
             print("Running colcon build...")
             subprocess.run(["colcon", "build"], check=True) 
             print("Sourcing setup.bash...")
-            command = "bash -c 'source /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/install/setup.bash && env'"
+            command = "bash -c 'source /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/setup.bash && env'"
             proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
             output = proc.communicate()[0].decode("utf-8")
             for line in output.splitlines():
@@ -70,10 +70,6 @@ class ConfirminitDialog(QMainWindow):
             main_window = locMarapplication.Ui_MainWindow(ros_node)
             main_window.show()
             ConfirminitDialog.show_completion_message()
-            try:
-                sys.exit(app.exec_())
-            except SystemExit:
-                pass
             dialog.close()
             self.close()
         except subprocess.CalledProcessError as e:
@@ -92,12 +88,12 @@ class ConfirminitDialog(QMainWindow):
             font-family: Helvetica;
             font-size: 20px;
             color: blue;
-        }
+            }
         QPushButton {
             font-family: Helvetica;
             font-size: 20px;
             padding: 5px;
-        }
+            }
             """
         )
         msg_box.setIcon(QMessageBox.Information)

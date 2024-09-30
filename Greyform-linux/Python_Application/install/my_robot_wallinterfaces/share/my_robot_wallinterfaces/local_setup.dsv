@@ -1,1 +1,4 @@
-/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/ament_cmake_environment_hooks/local_setup.dsv
+source;share/my_robot_wallinterfaces/environment/ament_prefix_path.sh
+source;share/my_robot_wallinterfaces/environment/library_path.sh
+source;share/my_robot_wallinterfaces/environment/path.sh
+source;share/my_robot_wallinterfaces/environment/pythonpath.sh

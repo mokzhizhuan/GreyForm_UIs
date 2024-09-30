@@ -10,7 +10,7 @@ from std_msgs.msg import String
 import numpy as np
 import sys
 import subprocess
-sys.path.append("/home/winsys/ros2_ws/src/Greyform-linux/Python_Application")
+sys.path.append("/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
 
 
@@ -83,7 +83,7 @@ class TalkerNode(Node):
             self.message = ""
         else:
             self.show_error_dialog(self.errormessage)
-            self.errormessage= ""
+            self.errormessage = ""
 
     def run_listernernode(
         self,

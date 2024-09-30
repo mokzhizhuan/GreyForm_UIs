@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces
+CMAKE_SOURCE_DIR = /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces
+CMAKE_BINARY_DIR = /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces
 
 # Utility rule file for ament_cmake_python_build_my_robot_wallinterfaces_egg.
 
@@ -67,7 +67,7 @@ include CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/comp
 include CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/progress.make
 
 CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg:
-	cd /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/ament_cmake_python/my_robot_wallinterfaces && /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/bin/python3 setup.py egg_info
+	cd /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/ament_cmake_python/my_robot_wallinterfaces && /usr/bin/python3 setup.py egg_info
 
 ament_cmake_python_build_my_robot_wallinterfaces_egg: CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg
 ament_cmake_python_build_my_robot_wallinterfaces_egg: CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/build.make
@@ -82,6 +82,6 @@ CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/clean:
 .PHONY : CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/clean
 
 CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/depend:
-	cd /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/ament_cmake_python_build_my_robot_wallinterfaces_egg.dir/depend
 

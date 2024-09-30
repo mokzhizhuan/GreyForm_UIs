@@ -77,8 +77,8 @@ class wall_Interaction(object):
     def publish_message(self):
         self.wall_filtered_identifiers = self.fliterbywallnum()
         message_error = True
-        wallnumbers =[]
-        sectionnumbers =[]
+        wallnumbers = []
+        sectionnumbers = []
         for sequence_pos, sequence_pos_quad in zip(
             self.picked_positions,
             self.picked_position_quads,
@@ -88,7 +88,9 @@ class wall_Interaction(object):
             sectionnumbers.append(sectionnumber)
             if self.file_path:
                 if ".stl" in self.file_path:
-                    self.publish_message_ros(self.file_path, wallnumbers, sectionnumbers)
+                    self.publish_message_ros(
+                        self.file_path, wallnumbers, sectionnumbers
+                    )
                 elif ".ifc" in self.file_path:
                     file = "output.stl"
                     self.publish_message_ros(file, wallnumbers, sectionnumbers)
@@ -104,8 +106,9 @@ class wall_Interaction(object):
 
     def show_error_message(self, message):
         root = tk.Tk()
-        root.withdraw()
+        root.mainloop()
         messagebox.showerror("Error", message)
+        root.withdraw()
         root.destroy()
 
     def fliterbywallnum(self):

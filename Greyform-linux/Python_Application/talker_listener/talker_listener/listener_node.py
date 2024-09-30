@@ -17,9 +17,8 @@ import numpy as np
 import sys
 import tkinter as tk
 
-sys.path.append("/home/winsys/ros2_ws/src/Greyform-linux/Python_Application")
+sys.path.append("/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
-import PythonApplication.menu_close as closewindow
 
 
 class SingletonDialog:
@@ -39,7 +38,7 @@ class SingletonDialog:
 
 
 class ListenerNode(Node):
-    def __init__(self, root):
+    def __init__(self):
         super().__init__("listener_node")
         self.file_subscription_ = self.create_subscription(
             FileExtractionMessage,  # Correct message type
@@ -53,7 +52,6 @@ class ListenerNode(Node):
             self.selection_listener_callback,
             10,
         )
-        self.root = root
         self.file_callback = None
         self.selection_callback = None
         self.wallselection = None
@@ -63,18 +61,8 @@ class ListenerNode(Node):
         self.message = ""
         self.spacing = "\n"
         self.title = "Listener Node"
-        self.setup_tk_ui()
         self.active_dialog = None
 
-    def setup_tk_ui(self):
-        self.label = tk.Label(self.root, text="ROS Node Initialized")
-        self.label.pack()
-        self.button = tk.Button(
-            self.root,
-            text="Show Message",
-            command=lambda: self.show_info_dialog(self.message),
-        )
-        self.button.pack()
 
     def file_listener_callback(self, msg):
         try:
@@ -140,6 +128,7 @@ class ListenerNode(Node):
                 for sheet_name, df in processed_data.items():
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
                 self.message += f"{self.spacing}Excel data processed successfully."
+            self.show_info_dialog(self.message)
         except FileNotFoundError as e:
             message = f"Excel file not found: {e}"
             print(message)
@@ -167,9 +156,7 @@ class ListenerNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     app = QApplication(sys.argv)
-    root = tk.Tk()
-    listenerNode = ListenerNode(root)
-    root.mainloop()
+    listenerNode = ListenerNode()
     rclpy.spin(listenerNode)
     listenerNode.destroy_node()
     sys.exit(app.exec_())

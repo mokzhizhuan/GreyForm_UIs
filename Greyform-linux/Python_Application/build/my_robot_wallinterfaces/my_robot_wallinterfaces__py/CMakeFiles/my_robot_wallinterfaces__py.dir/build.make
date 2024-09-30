@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces
+CMAKE_SOURCE_DIR = /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces
+CMAKE_BINARY_DIR = /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces
 
 # Utility rule file for my_robot_wallinterfaces__py.
 
@@ -96,8 +96,8 @@ rosidl_generator_py/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl
 rosidl_generator_py/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_fastrtps_c.c: rosidl_adapter/my_robot_wallinterfaces/srv/SetLed.idl
 rosidl_generator_py/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_fastrtps_c.c: /opt/ros/humble/share/builtin_interfaces/msg/Duration.idl
 rosidl_generator_py/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_fastrtps_c.c: /opt/ros/humble/share/builtin_interfaces/msg/Time.idl
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating Python code for ROS interfaces"
-	cd /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py && /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/env/bin/python3 /opt/ros/humble/share/rosidl_generator_py/cmake/../../../lib/rosidl_generator_py/rosidl_generator_py --generator-arguments-file /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/rosidl_generator_py__arguments.json --typesupport-impls "rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c;rosidl_typesupport_c"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating Python code for ROS interfaces"
+	cd /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py && /usr/bin/python3 /opt/ros/humble/share/rosidl_generator_py/cmake/../../../lib/rosidl_generator_py/rosidl_generator_py --generator-arguments-file /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/rosidl_generator_py__arguments.json --typesupport-impls "rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c;rosidl_typesupport_c"
 
 rosidl_generator_py/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_introspection_c.c: rosidl_generator_py/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_fastrtps_c.c
 	@$(CMAKE_COMMAND) -E touch_nocreate rosidl_generator_py/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_introspection_c.c
@@ -149,10 +149,10 @@ my_robot_wallinterfaces__py/CMakeFiles/my_robot_wallinterfaces__py.dir/build: my
 .PHONY : my_robot_wallinterfaces__py/CMakeFiles/my_robot_wallinterfaces__py.dir/build
 
 my_robot_wallinterfaces__py/CMakeFiles/my_robot_wallinterfaces__py.dir/clean:
-	cd /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py && $(CMAKE_COMMAND) -P CMakeFiles/my_robot_wallinterfaces__py.dir/cmake_clean.cmake
+	cd /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py && $(CMAKE_COMMAND) -P CMakeFiles/my_robot_wallinterfaces__py.dir/cmake_clean.cmake
 .PHONY : my_robot_wallinterfaces__py/CMakeFiles/my_robot_wallinterfaces__py.dir/clean
 
 my_robot_wallinterfaces__py/CMakeFiles/my_robot_wallinterfaces__py.dir/depend:
-	cd /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py /home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py/CMakeFiles/my_robot_wallinterfaces__py.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py/CMakeFiles/my_robot_wallinterfaces__py.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : my_robot_wallinterfaces__py/CMakeFiles/my_robot_wallinterfaces__py.dir/depend
 

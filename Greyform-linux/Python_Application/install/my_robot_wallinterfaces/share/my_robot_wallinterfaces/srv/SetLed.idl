@@ -1,1 +1,15 @@
-/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/rosidl_adapter/my_robot_wallinterfaces/srv/SetLed.idl
+// generated from rosidl_adapter/resource/srv.idl.em
+// with input from my_robot_wallinterfaces/srv/SetLed.srv
+// generated code does not contain a copyright notice
+
+
+module my_robot_wallinterfaces {
+  module srv {
+    struct SetLed_Request {
+      string color;
+    };
+    struct SetLed_Response {
+      boolean success;
+    };
+  };
+};

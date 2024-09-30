@@ -1,1 +1,3 @@
-/home/winsys/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces/msg/FileExtractionMessage.msg
+string excelfile
+uint8[] stl_data
+string status
