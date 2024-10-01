@@ -1,17 +1,22 @@
 Install python libraries using system commands cmd(windows & linux):<br>
-pip/pip3 install pyvistaqt <br>
-pip/pip3 install ifcopenshell <br>
-pip/pip3 install vtk <br>
-pip/pip3 install PyQt5 <br>
-pip/pip3 install multiprocess <br>
-pip/pip3 install pyqtgraph <br>
-pip/pip3 install OpenGL <br>
-pip/pip3 install numpy-stl <br>
-pip/pip3 install meshio <br>
-pip/pip3 install openpxyl <br>
-pip/pip3 install pandas <br>
-pip/pip3 install tzlocal <br>
-pip/pip3 install psutil <br>
+sudo apt install python3-colcon-common-extensions <br>
+sudo apt install python3-pip <br>
+pip install pyvistaqt <br>
+pip install ifcopenshell <br>
+pip install vtk <br>
+pip install PyQt5 <br>
+pip install multiprocess <br>
+pip install pyqtgraph <br>
+pip install PyOpenGL PyOpenGL-accelerate <br>
+pip install numpy <br>
+pip install meshio <br>
+pip install openpyxl <br>
+pip install pandas <br>
+pip install serial <br>
+pip install tzlocal <br>
+pip install psutil <br>
+pip install geopandas <br>
+pip install fiona / pip install fiona=1.9 <br>
 or use the script sh file(linux): <br>
 sudo chmod +x installpip.sh/installpip3.sh <br>
 execute the script using sudo sh/bash installpip3.sh <br>
@@ -66,9 +71,11 @@ python/python3 mainapplication.py<br>
 <br>
 
 ##
-insert interactive event for the stl mesh , left click is for moving the stl  <br>
+Press right click to go inside the PBU(Pre-Fabricated Bathroom Unit) view  <br>
+Up , down, left, right for the camera <br>
+Left click is to move the inside view <br>
 Right click is to insert the actor in the room view , right click for room interact shower and toilet <br>
-middle click is to insert an object tht was marked <br>
+Middle click is to add the position in a sequence .(will include a storing position variable ui) <br>
 l key is to remove the actor in the room view and set the mesh to the original position <br>
 m Key is to restore moving position <br>
 Lastly , disable one movement. if the mesh struck collision . it will disable one movement key, this will prevent crashing the cameraactor program <br>
