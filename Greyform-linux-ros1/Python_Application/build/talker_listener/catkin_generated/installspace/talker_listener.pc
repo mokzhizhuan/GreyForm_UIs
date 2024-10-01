@@ -1,4 +1,4 @@
-prefix=/root/catkin_ws/src/Greyform-linux/Python_Application/install
+prefix=/root/catkin_ws/src/Python_Application/install
 
 Name: talker_listener
 Description: Description of talker_listener

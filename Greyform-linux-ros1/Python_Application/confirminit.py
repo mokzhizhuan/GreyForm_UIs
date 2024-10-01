@@ -61,13 +61,12 @@ class ConfirminitDialog(QMainWindow):
             print("Running colcon build...")
             subprocess.run(["catkin_make"], check=True)
             print("Sourcing setup.bash...")
-            command = "bash -c 'source /root/catkin_ws/src/Greyform-linux/Python_Application/devel/setup.bash && env'"
+            command = "bash -c 'source /root/catkin_ws/src/Python_Application/devel/setup.bash && env'"
             proc = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
             output = proc.communicate()[0].decode("utf-8")
             for line in output.splitlines():
                 key, _, value = line.partition("=")
                 os.environ[key] = value
-            print("Running the ROS node and starting the Qt application...")
             main_window = locMarapplication.Ui_MainWindow(ros_node)
             main_window.show()
             ConfirminitDialog.show_completion_message()

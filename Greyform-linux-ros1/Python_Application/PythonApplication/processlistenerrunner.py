@@ -100,7 +100,7 @@ class ListenerNodeRunner(QMainWindow):
         env["ROS_MASTER_URI"] = "http://localhost:11311"
         env["ROS_IP"] = "172.17.0.3"
         env["ROS_HOSTNAME"] = "localhost"
-        command = "source /opt/ros/noetic/setup.bash && source /root/catkin_ws/src/Greyform-linux/Python_Application/devel/setup.bash && rosrun talker_listener listener_node.py"
+        command = "source /opt/ros/noetic/setup.bash && source /root/catkin_ws/src/Python_Application/devel/setup.bash && rosrun talker_listener listener_node.py"
         process = subprocess.Popen(
             ["bash", "-c", command],
             env=env,

@@ -15,7 +15,7 @@ pip install pandas
 pip install serial
 pip install tzlocal
 pip install psutil
-pip install fiona
-pip install geopandas
+pip install geopandas 
+pip install fiona==1.9
 
 

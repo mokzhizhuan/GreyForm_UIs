@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
-  "/root/catkin_ws/src/Greyform-linux/Python_Application/devel/include/my_robot_wallinterfaces/FileExtractionMessage.h"
-  "/root/catkin_ws/src/Greyform-linux/Python_Application/devel/include/my_robot_wallinterfaces/SelectionWall.h"
-  "/root/catkin_ws/src/Greyform-linux/Python_Application/devel/include/my_robot_wallinterfaces/SetLed.h"
+  "/root/catkin_ws/src/Python_Application/devel/include/my_robot_wallinterfaces/FileExtractionMessage.h"
+  "/root/catkin_ws/src/Python_Application/devel/include/my_robot_wallinterfaces/SelectionWall.h"
+  "/root/catkin_ws/src/Python_Application/devel/include/my_robot_wallinterfaces/SetLed.h"
   "CMakeFiles/my_robot_wallinterfaces_generate_messages_cpp"
 )
 
