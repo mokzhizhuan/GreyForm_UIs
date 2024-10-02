@@ -1,6 +1,7 @@
 Install python libraries using system commands cmd(windows & linux):<br>
 sudo apt install python3-colcon-common-extensions <br>
 sudo apt install python3-pip <br>
+sudo apt-get install qtwayland5 <br>
 pip install pyvistaqt <br>
 pip install ifcopenshell <br>
 pip install vtk <br>
