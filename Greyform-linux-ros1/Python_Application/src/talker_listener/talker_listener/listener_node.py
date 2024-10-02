@@ -27,23 +27,35 @@ class SingletonDialog:
 
 
 class ScrollableDialog(Toplevel):
-    def __init__(self, root, title, message):
+    def __init__(self, root, title, message, listener):
         super().__init__(root)
+        self.root = root
         self.title(title)
         self.geometry("400x300")
         style = ttk.Style()
+        self.listener = listener
+        self.message = message
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        text_widget = tk.Text(self, wrap="word", font=("Helvetica", 20))
-        text_widget.grid(row=0, column=0, sticky="nsew")
-        scrollbar = Scrollbar(self, command=text_widget.yview)
+        self.grid_rowconfigure(1, weight=0)
+        self.text_widget = tk.Text(self, wrap="word", font=("Helvetica", 20))
+        self.text_widget.grid(row=0, column=0, sticky="nsew")
+        scrollbar = Scrollbar(self, command=self.text_widget.yview)
         scrollbar.grid(row=0, column=1, sticky="ns")
-        text_widget.config(yscrollcommand=scrollbar.set)
-        text_widget.insert(END, message)
-        text_widget.config(state=tk.DISABLED)
+        self.text_widget.config(yscrollcommand=scrollbar.set)
+        self.text_widget.insert(END, self.message)
+        self.text_widget.config(state=tk.DISABLED)
         style.configure('TButton', font=('Helvetica', 20))
         ok_button = ttk.Button(self, text="OK", command=self.destroy)
-        ok_button.grid(row=1, column=0, columnspan=2, pady=5)
+        ok_button.grid(row=1, column=0, pady=5 , sticky="ew")
+        clear_button = ttk.Button(self, text="Clear", command=self.clear_text)
+        clear_button.grid(row=2, column=0, pady=5 , sticky="ew")
+    
+    def clear_text(self):
+        self.listener.message = ""
+        self.text_widget.config(state=tk.NORMAL)  # Enable editing first
+        self.text_widget.delete(1.0, tk.END)
+        self.text_widget.config(state=tk.DISABLED)
 
 
 class ListenerNode:
@@ -71,8 +83,8 @@ class ListenerNode:
         self.message = ""
         self.spacing = "\n"
         self.title = "Listener Node"
-        self.setup_tk_ui()
         self.active_dialog = None
+        self.setup_tk_ui()
 
     def setup_tk_ui(self):
         self.label = tk.Label(self.root, text="ROS Node Initialized")
@@ -80,7 +92,7 @@ class ListenerNode:
         self.button = tk.Button(
             self.root,
             text="Show Message",
-            command=lambda: self.show_info_dialog(self.message),
+            command=self.show_info_dialog,
         )
         self.button.pack()
 
@@ -160,12 +172,13 @@ class ListenerNode:
     def calculate_distance(self, point1, point2):
         return np.linalg.norm(point1 - point2)
 
-    def show_info_dialog(self, message):
+    def show_info_dialog(self):
         if self.active_dialog:
             self.active_dialog.destroy()
             self.active_dialog = None
-        self.active_dialog = ScrollableDialog(self.root, "Listener Node", message)
-        self.active_dialog.mainloop()
+        if self.message != "":
+            self.active_dialog = ScrollableDialog(self.root, "Listener Node", self.message, self)
+            self.active_dialog.mainloop()
 
 
 def main(args=None):

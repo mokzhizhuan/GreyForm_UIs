@@ -1,4 +1,5 @@
 import rclpy
+import threading
 from rclpy.node import Node
 from my_robot_wallinterfaces.msg import (
     SelectionWall,
@@ -16,6 +17,7 @@ import pandas as pd
 import numpy as np
 import sys
 import tkinter as tk
+from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT, X, ttk
 
 sys.path.append("/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
@@ -25,10 +27,10 @@ class SingletonDialog:
     _instance = None
 
     @classmethod
-    def show_info_dialog(cls, message, title):
+    def show_info_dialog(cls, message, root, title="Information"):
         if cls._instance is None:
-            cls._instance = logs.LogDialog(message, title, log_type="info")
-            cls._instance.exec_()
+            cls._instance = ScrollableDialog(root, title, message)
+            cls._instance.mainloop()
 
     @classmethod
     def clear(cls):
@@ -37,8 +39,39 @@ class SingletonDialog:
             cls._instance = None
 
 
+class ScrollableDialog(Toplevel):
+    def __init__(self, root, title, message, listener):
+        super().__init__(root)
+        self.root = root
+        self.title(title)
+        self.geometry("400x300")
+        style = ttk.Style()
+        self.listener = listener
+        self.message = message
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=0)
+        self.text_widget = tk.Text(self, wrap="word", font=("Helvetica", 20))
+        self.text_widget.grid(row=0, column=0, sticky="nsew")
+        scrollbar = Scrollbar(self, command=self.text_widget.yview)
+        scrollbar.grid(row=0, column=1, sticky="ns")
+        self.text_widget.config(yscrollcommand=scrollbar.set)
+        self.text_widget.insert(END, self.message)
+        self.text_widget.config(state=tk.DISABLED)
+        style.configure('TButton', font=('Helvetica', 20))
+        ok_button = ttk.Button(self, text="OK", command=self.destroy)
+        ok_button.grid(row=1, column=0, pady=5 , sticky="ew")
+        clear_button = ttk.Button(self, text="Clear", command=self.clear_text)
+        clear_button.grid(row=2, column=0, pady=5 , sticky="ew")
+    
+    def clear_text(self):
+        self.listener.message = ""
+        self.text_widget.config(state=tk.NORMAL)  # Enable editing first
+        self.text_widget.delete(1.0, tk.END)
+        self.text_widget.config(state=tk.DISABLED)
+
 class ListenerNode(Node):
-    def __init__(self):
+    def __init__(self, root):
         super().__init__("listener_node")
         self.file_subscription_ = self.create_subscription(
             FileExtractionMessage,  # Correct message type
@@ -52,6 +85,7 @@ class ListenerNode(Node):
             self.selection_listener_callback,
             10,
         )
+        self.root = root
         self.file_callback = None
         self.selection_callback = None
         self.wallselection = None
@@ -62,6 +96,17 @@ class ListenerNode(Node):
         self.spacing = "\n"
         self.title = "Listener Node"
         self.active_dialog = None
+        self.setup_tk_ui()
+
+    def setup_tk_ui(self):
+        self.label = tk.Label(self.root, text="ROS Node Initialized")
+        self.label.pack()
+        self.button = tk.Button(
+            self.root,
+            text="Show Message",
+            command=self.show_info_dialog,
+        )
+        self.button.pack()
 
 
     def file_listener_callback(self, msg):
@@ -128,7 +173,6 @@ class ListenerNode(Node):
                 for sheet_name, df in processed_data.items():
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
                 self.message += f"{self.spacing}Excel data processed successfully."
-            self.show_info_dialog(self.message)
         except FileNotFoundError as e:
             message = f"Excel file not found: {e}"
             print(message)
@@ -145,21 +189,26 @@ class ListenerNode(Node):
     def calculate_distance(self, point1, point2):
         return np.linalg.norm(point1 - point2)
 
-    def show_info_dialog(self, message):
+    def show_info_dialog(self):
         if self.active_dialog:
-            self.active_dialog.close()
+            self.active_dialog.destroy()
             self.active_dialog = None
-        self.active_dialog = logs.LogDialog(message, self.title, log_type="info")
-        self.active_dialog.exec_()
+        if self.message != "":
+            self.active_dialog = ScrollableDialog(self.root, "Listener Node", self.message, self)
+            self.active_dialog.mainloop()
 
+
+def run_ros_spin(listenerNode):
+    rclpy.spin(listenerNode)
 
 def main(args=None):
+    root = tk.Tk()
     rclpy.init(args=args)
-    app = QApplication(sys.argv)
-    listenerNode = ListenerNode()
-    rclpy.spin(listenerNode)
+    listenerNode = ListenerNode(root)
+    ros_thread = threading.Thread(target=run_ros_spin, args=(listenerNode,))
+    ros_thread.start()
+    root.mainloop()
     listenerNode.destroy_node()
-    sys.exit(app.exec_())
     rclpy.shutdown()
 
 
