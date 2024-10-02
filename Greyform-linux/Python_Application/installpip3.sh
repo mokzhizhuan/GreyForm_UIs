@@ -1,6 +1,7 @@
 #install python libraries
 sudo apt install python3-colcon-common-extensions
 sudo apt install python3-pip
+sudo apt-get install qtwayland5
 pip install pyvistaqt
 pip install ifcopenshell
 pip install vtk
