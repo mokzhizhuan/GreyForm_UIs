@@ -133,5 +133,11 @@ This program is only load STL/IFC/DXF file for the frames. <br>
 Ifc/DXF will be loaded and will convert to STL file format to load pyvista. <br>
 
 ##
+Setup python path <br>
+export PYTHONPATH="$PYTHONPATH:/root/catkin_ws/src/Greyform-linux/Python_Application" <br>
+export PYTHONPATH="$PYTHONPATH:/home/username/ros2_ws/src/Greyform-linux/Python_Application" <br>
+
+
+##
 Progress: <br>
 Robot scan
