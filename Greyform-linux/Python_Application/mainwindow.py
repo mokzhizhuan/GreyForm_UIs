@@ -215,17 +215,6 @@ class Ui_MainWindow(QMainWindow):
         else:
             self.mainwindow.NextButton_Page_2.hide()
 
-    def publish_message(self):
-        self.exceldata = "exporteddatas.xlsx"
-        if self.file_path:
-            if ".stl" in self.file_path:
-                self.ros_node.publish_file_message(self.file_path, self.exceldata)
-            elif ".ifc" in self.file_path:
-                file = "output.stl"
-                self.ros_node.publish_file_message(file, self.exceldata)
-        else:
-            print("No STL file selected.")
-
     def setStretch(self):
         self.boxLayout = QVBoxLayout()
         self.boxLayout.addWidget(self.mainwindow.stackedWidget_main)
