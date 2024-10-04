@@ -6,8 +6,6 @@ from my_robot_wallinterfaces.srv import SetLed
 from std_msgs.msg import String
 import subprocess
 import sys
-
-sys.path.append("/root/catkin_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
 
 class TalkerNode:
