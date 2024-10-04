@@ -19,9 +19,6 @@ import sys
 import tkinter as tk
 from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT, X, ttk
 
-sys.path.append("/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application")
-import PythonApplication.dialoglogger as logs
-
 
 class SingletonDialog:
     _instance = None

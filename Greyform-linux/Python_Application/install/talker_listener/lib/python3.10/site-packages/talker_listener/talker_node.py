@@ -14,6 +14,7 @@ sys.path.append("/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application")
 import PythonApplication.dialoglogger as logs
 
 
+
 class TalkerNode(Node):
     def __init__(self):
         super().__init__("talker_node")

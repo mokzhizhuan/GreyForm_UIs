@@ -19,9 +19,6 @@ import sys
 import tkinter as tk
 from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT, X, ttk
 
-sys.path.append("/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application")
-import PythonApplication.dialoglogger as logs
-
 
 class SingletonDialog:
     _instance = None
@@ -59,14 +56,21 @@ class ScrollableDialog(Toplevel):
         self.text_widget.insert(END, self.message)
         self.text_widget.config(state=tk.DISABLED)
         style.configure('TButton', font=('Helvetica', 20))
-        ok_button = ttk.Button(self, text="OK", command=self.destroy)
+        ok_button = ttk.Button(self, text="OK", command=self.closemessage)
         ok_button.grid(row=1, column=0, pady=5 , sticky="ew")
         clear_button = ttk.Button(self, text="Clear", command=self.clear_text)
         clear_button.grid(row=2, column=0, pady=5 , sticky="ew")
+
+    def closemessage(self):
+        self.listener.message = ""
+        self.text_widget.config(state=tk.NORMAL)  
+        self.text_widget.delete(1.0, tk.END)
+        self.text_widget.config(state=tk.DISABLED)
+        self.destroy()
     
     def clear_text(self):
         self.listener.message = ""
-        self.text_widget.config(state=tk.NORMAL)  # Enable editing first
+        self.text_widget.config(state=tk.NORMAL)
         self.text_widget.delete(1.0, tk.END)
         self.text_widget.config(state=tk.DISABLED)
 
