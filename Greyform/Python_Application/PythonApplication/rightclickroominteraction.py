@@ -45,6 +45,7 @@ class rightclickRoomInteract(object):
         )
         self.displaytext(camera)
 
+    #teleporter for toilet and bathroom
     def click_event(self, obj, event):
         self.interactor_style.SetMotionFactor(8)
         click_pos = self.renderwindowinteractor.GetEventPosition()
@@ -78,6 +79,7 @@ class rightclickRoomInteract(object):
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.displaytext(camera)
 
+    #text display
     def displaytext(self, camera):
         self.xlabelbefore.setText(
             self._translate(

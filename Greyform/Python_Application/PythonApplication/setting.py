@@ -184,6 +184,7 @@ class Setting(QWidget):
             self.accountinfo,
         )
 
+    #memeory implementation
     def update_memory(self):
         # Update the system memory text
         process = psutil.Process(os.getpid())
@@ -204,6 +205,7 @@ class Setting(QWidget):
             self.selected_time_zone, self.settingform.Systemtime
         )
 
+    #font implementation
     def update_font(self, index):
         self.font_size = int(self.settingform.Text_size.currentText())
         self.font.setPointSize(self.font_size)
@@ -219,6 +221,7 @@ class Setting(QWidget):
             for child in parent.children():
                 self.apply_font_to_widgets(child, font)
 
+    #resolution set
     def change_resolution(self, index):
         resolution = self.settingform.resolutioncomboBox.currentText()
         width, height = map(int, resolution.split("x"))
@@ -228,6 +231,7 @@ class Setting(QWidget):
             self.MainWindow.showNormal()
             self.MainWindow.resize(width, height)
 
+    #color background change implementation
     def colorchange(self, index):
         self.color = self.settingform.themebox.currentText()
         if self.color == "Light":
@@ -242,6 +246,7 @@ class Setting(QWidget):
             color = QColorDialog.getColor()
             self.MainWindow.setStyleSheet(f"background-color : {color.name()}")
 
+    #setting layout
     def setStretch(self):
         settinglayoutUi.SettingLayout(
             self.settingform,

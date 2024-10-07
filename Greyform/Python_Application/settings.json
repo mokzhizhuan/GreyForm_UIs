@@ -1,1 +1,7 @@
-{"theme": "Gray", "font_size": "32", "resolution": "1920 x 1080", "timezone": "Asia/Singapore", "password": "pass"}
+{
+    "theme": "Gray", 
+    "font_size": "32", 
+    "resolution": "1920 x 1080", 
+    "timezone": "Asia/Singapore", 
+    "password": "pass"
+}

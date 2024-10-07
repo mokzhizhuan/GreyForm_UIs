@@ -130,6 +130,7 @@ class FileSelectionMesh(QMainWindow):
                     self.file_path,
                 )
 
+    #process geomtry for dxf meshdata
     def process_line_string(self, geometry, offset):
         points = np.array(geometry.coords)
         lines = np.hstack([[len(points)], np.arange(len(points)) + offset])
@@ -174,12 +175,14 @@ class FileSelectionMesh(QMainWindow):
             print(f"Unknown geometry type: {type(geometry)}")
         return offset
 
+    #resize stl
     def resize_stl(self, file_path, scale_factor, output_path):
         Mesh = mesh.Mesh.from_file(file_path)
         Mesh.vectors *= scale_factor
         Mesh.update_normals()
         Mesh.save(output_path)
 
+    #error message implement for converting to text file
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
             log_file.write(message + "\n")

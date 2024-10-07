@@ -68,6 +68,7 @@ class createMesh(QMainWindow):
         )
         self.wall_identifiers = vtk_data_excel.exceldataextractor()
 
+    #load stl loader to pyvista
     def loadStl(self, dataseqtext):
         self.clearactor()
         self.reader.SetFileName(self.polydata)
@@ -155,6 +156,7 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
 
+    #fixed position stl data
     def fixedposition(self, polydata):
         minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]
         transform = vtk.vtkTransform()
@@ -203,6 +205,7 @@ class createMesh(QMainWindow):
             self.meshbounds[i] = int(self.actor.GetBounds()[i])
         print(self.actor.GetBounds())
 
+    #clear actor
     def clearactor(self):
         actors = self.ren.GetActors()
         actors.InitTraversal()
@@ -211,13 +214,7 @@ class createMesh(QMainWindow):
             self.ren.RemoveActor(actor)
             actor = actors.GetNextActor()
 
-    def find_closest_point(self, polydata, target_position):
-        point_locator = vtk.vtkKdTreePointLocator()
-        point_locator.SetDataSet(polydata)
-        point_locator.BuildLocator()
-        point_id = point_locator.FindClosestPoint(target_position)
-        return point_id
-
+    #create visual actor for camera range
     def create_cube_actor(self):
         self.cube_source = vtk.vtkCubeSource()
         self.cube_source.SetXLength(10)
@@ -245,6 +242,7 @@ class createMesh(QMainWindow):
         for i in range(6):
             self.meshbounds.append(self.actor.GetBounds()[i])
 
+    #set sequence as a variable
     def addseqtext(self, buttonseq, buttonnextpage):
         self.dataseqtext = buttonseq.text()
         self.dataseqtext = self.dataseqtext.replace("Sequence ", "")

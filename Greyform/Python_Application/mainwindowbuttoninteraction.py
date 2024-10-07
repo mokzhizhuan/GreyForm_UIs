@@ -2,7 +2,7 @@ import PythonApplication.menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
 import PythonApplication.menu_confirmack as confirmack
 
-
+#button interaction ui
 class mainwindowbuttonUI(object):
     def __init__(
         self,
@@ -52,6 +52,7 @@ class mainwindowbuttonUI(object):
     def homeui(self):
         self.stackedWidget.setCurrentIndex(0)
 
+    #button ui for the main interaction window
     def button_UI(self):
         self.menuStartButton.clicked.connect(self.startconfigure)
         self.menuCloseButton.clicked.connect(

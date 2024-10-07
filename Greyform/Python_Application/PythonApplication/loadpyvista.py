@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QLabel,
 )
 
-
+#load 2 pyvista frame in the ui
 class StLloaderpyvista(object):
     def __init__(self, meshsplot, loader, loader_2):
         self.meshsplot = meshsplot

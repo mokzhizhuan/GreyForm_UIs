@@ -178,6 +178,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     def camsetvieworientation(self, camera):
         camera.SetViewUp(0, 0, 1)
 
+    #refresher
     def refresh(self):
         self.render.ResetCameraClippingRange()
         self.renderwindowinteractor.GetRenderWindow().Render()

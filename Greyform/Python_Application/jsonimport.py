@@ -1,6 +1,6 @@
 import json
 
-
+#import json file to ui window
 def jsopen(jsonfile):
     try:
         with open(jsonfile, "r") as f:

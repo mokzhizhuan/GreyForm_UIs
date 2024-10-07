@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from pywifi import PyWiFi
 
-
+#setup wifi interface for setting implementation
 class setup_wifi(object):
     def __init__(self, treeWidget, interface_label):
         self.wifi = PyWiFi()

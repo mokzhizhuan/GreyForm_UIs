@@ -1,7 +1,7 @@
 import pandas as pd
 import vtk
 
-
+#excel extract to vtk frame data
 def exceldataextractor():
     excel_file_path = "exporteddatas.xlsx"
     all_sheets = pd.read_excel(excel_file_path, sheet_name=None)

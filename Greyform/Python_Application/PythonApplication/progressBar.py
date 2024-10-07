@@ -99,6 +99,7 @@ class pythonProgressBar(QDialog):
         )
         self.close()
 
+    #resize stl implementation
     def resize_stl(self, file_path, scale_factor, output_path):
         Mesh = mesh.Mesh.from_file(file_path)
         Mesh.vectors *= scale_factor

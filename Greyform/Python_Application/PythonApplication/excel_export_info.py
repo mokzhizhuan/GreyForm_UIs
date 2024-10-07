@@ -2,7 +2,7 @@ import pandas as pd
 import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
 
-
+#export excel sheet
 class Exportexcelinfo(object):
     def __init__(self, file, class_type):
         try:
@@ -73,6 +73,7 @@ class Exportexcelinfo(object):
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
 
+    #get object data based on class using ifc
     def get_objects_data_by_class(self, file, class_type):
         objects_data = []
         objects = file.by_type(class_type)
@@ -104,10 +105,12 @@ class Exportexcelinfo(object):
             )
         return objects_data
 
+    #error will send into the error log text
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
             log_file.write(message + "\n")
 
+    #add marker and store it in the excel data
     def add_markers(self, row):
         if pd.isnull(row["Point number/name"]):
             return "6"
@@ -121,6 +124,7 @@ class Exportexcelinfo(object):
                 return "+"
         return "6"
 
+    #convert to other wall number for rotation
     def apply_rotation_to_markers(self, worksheet, df_class):
         marker_col_index = df_class.columns.get_loc("Shape type")
         for row_idx, (name, marker) in enumerate(
@@ -149,6 +153,7 @@ class Exportexcelinfo(object):
                     marker = 6
                     worksheet.write(row_idx, marker_col_index + 1, marker)
 
+    #get attribute value for excel data
     def get_attribute_value(self, object_data, attribute):
         if "." not in attribute:
             return object_data[attribute]
@@ -168,6 +173,7 @@ class Exportexcelinfo(object):
         else:
             return None
 
+    #determine wall number based on the exceldata name
     def determine_wall_number(self, row):
         wallnum = None
         name = row["Point number/name"]

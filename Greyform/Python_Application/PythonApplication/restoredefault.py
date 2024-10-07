@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.setting as setting
 
-
+#restore default setting implementation
 class restoredefaultsetting(object):
     def __init__(
         self,

@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QDialog, QProgressBar, QLabel, QPushBut
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QFont
 
-
+#loading mar & loc Progress bar(visual)
 class MarkingProgressBar(QDialog):
     def __init__(self):
         super().__init__()

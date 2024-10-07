@@ -6,7 +6,7 @@ import json
 import datetime
 import pytz
 
-
+#interactive buttons for setting and save
 class settingbuttonUI(object):
     def __init__(
         self,
@@ -54,6 +54,7 @@ class settingbuttonUI(object):
         self.stackedWidget_main = stackedWidget_main
         self.button_UI()
 
+    #button interaction for setting
     def button_UI(self):
         self.MarkingbackButton.clicked.connect(self.confirm_save_settings)
         self.HomeButton.clicked.connect(self.homepages)
@@ -107,11 +108,13 @@ class settingbuttonUI(object):
     def Powerpages(self):
         self.maintitlelabel.setText("<h3>Power Setting</h3>")
 
+    #confirm setting
     def confirm_save_settings(self):
         dialog = SaveSettingsDialog.SettingsDialog()
         if dialog.exec_() == QDialog.Accepted:
             self.save_settings()
 
+    #save setting variables to json file
     def save_settings(self):
         self.savesettings = {
             "theme": self.themebox.currentText(),
@@ -124,6 +127,7 @@ class settingbuttonUI(object):
             json.dump(self.savesettings, f)
         self.show_save_dialog()
 
+    #show save dialog implementation
     def show_save_dialog(self):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)

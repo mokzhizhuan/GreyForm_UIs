@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import *
 
-
+#reset and close widget
 class RestartCloseWidget(QWidget):
     def __init__(
         self,
@@ -50,6 +50,7 @@ class RestartCloseWidget(QWidget):
         button_layout.addWidget(close_btn)
         self.setLayout(button_layout)
 
+    #show restart
     def show_restart_dialog(self):
         reply = QMessageBox(self)
         reply.setIcon(QMessageBox.Question)
@@ -63,6 +64,7 @@ class RestartCloseWidget(QWidget):
             self.save_settings()
             self.restart()
 
+    #set stylesheet for ui
     def setstylesheet(self, reply):
         reply.setStyleSheet(
             """
@@ -85,6 +87,7 @@ class RestartCloseWidget(QWidget):
             """
         )
 
+    #save setting
     def save_settings(self):
         self.savesettings = {
             "theme": self.themebox.currentText(),
@@ -96,6 +99,7 @@ class RestartCloseWidget(QWidget):
         with open("settings.json", "w") as f:
             json.dump(self.savesettings, f)
 
+    #show close dialog
     def show_close_dialog(self):
         reply = QMessageBox(self)
         reply.setIcon(QMessageBox.Question)
@@ -109,6 +113,7 @@ class RestartCloseWidget(QWidget):
             self.save_settings()
             self.MainWindow.close()
 
+    #restart implementation
     def restart(self):
         python = sys.executable
         os.execl(python, python, *sys.argv)

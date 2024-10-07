@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QWidget
 
-
+#user manual for instruction.
 class Usermanual(QWidget):
     def __init__(self, font, stackedWidget_main, usermanualpage):
         super(Usermanual, self).__init__()
@@ -36,6 +36,7 @@ class Usermanual(QWidget):
         self.usermanualpage.setLayout(self.usermanualboxlayout)
         self.button_UI()
 
+    #button interaction for usermanual
     def button_UI(self):
         self.usermanual.backtoUIButton.clicked.connect(
             lambda: self.stackedWidget_main.setCurrentIndex(0)

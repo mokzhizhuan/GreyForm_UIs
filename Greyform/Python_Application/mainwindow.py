@@ -136,6 +136,7 @@ class Ui_MainWindow(QMainWindow):
     def directtousermanualpage(self):
         self.mainwindow.stackedWidget_main.setCurrentIndex(2)
 
+    #file directory for 3d object loader
     def browsefilesdirectory(self):
         self.filepaths = QFileDialog.getExistingDirectory(
             None, "Choose Directory", self.filepaths
@@ -147,6 +148,7 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
         self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)
 
+    #excel file directory 
     def excelfilesdirectory(self):
         self.excelfilepath, _ = QFileDialog.getOpenFileName(
             self, "Choose Excel File", "", "Excel Files (*.xlsx *.xls)"
@@ -195,12 +197,14 @@ class Ui_MainWindow(QMainWindow):
         self.file_list_selected = True
         self.check_if_both_selected()
     
+    #check condition for next page button if both 3d objects and excel file are stored in the ui
     def check_if_both_selected(self):
         if self.excel_file_selected == True and self.file_list_selected == True:
             self.mainwindow.NextButton_Page_2.show()
         else:
             self.mainwindow.NextButton_Page_2.hide()
 
+    #set layout format
     def setStretch(self):
         self.boxLayout = QVBoxLayout()
         self.boxLayout.addWidget(self.mainwindow.stackedWidget_main)
@@ -250,6 +254,7 @@ class Ui_MainWindow(QMainWindow):
         self.renderWindowInteractor.GetRenderWindow().GetInteractor().TerminateApp()
         event.accept()
 
+    #text display
     def retranslateUi(self):
         self.mainwindow.displaybeforelabel.setText(
             self._translate("MainWindow", "Mesh Camera Dimensions")

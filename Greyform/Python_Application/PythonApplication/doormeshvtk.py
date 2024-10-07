@@ -7,7 +7,7 @@ import vtk
 from vtk import *
 from vtkmodules.vtkCommonColor import vtkNamedColors
 
-
+#door thickness
 class doorMesh(object):
     def __init__(self):
         self.reader = vtk.vtkSTLReader()

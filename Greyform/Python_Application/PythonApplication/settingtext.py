@@ -10,7 +10,7 @@ import subprocess
 import re
 from pywifi import PyWiFi
 
-
+#text display for setting
 class SettingText(object):
     def __init__(
         self,
@@ -41,6 +41,7 @@ class SettingText(object):
         self.accountinfo = accountinfo
         self.retranslateUi()
 
+    #get wifi interface for setting
     def get_active_wifi_interface(self):
         result = subprocess.run(["ipconfig"], capture_output=True, text=True)
         interface_pattern = re.compile(r"Wireless LAN adapter (.+):")
@@ -57,6 +58,7 @@ class SettingText(object):
                 return ip_address
         return ip_address
 
+    #get port for wifi
     def get_open_port_and_host(self, ip_address):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind((ip_address, 0))
@@ -85,6 +87,7 @@ class SettingText(object):
         self.PasslineEdit.setText(f"{self.accountinfo[0]['Pass']}")
         self.PasslineEdit.returnPressed.connect(self.changepassfunction)
 
+    #change pass function implementation
     def changepassfunction(self):
         password = self.PasslineEdit.text()
         self.accountinfo[0]["Pass"] = password
