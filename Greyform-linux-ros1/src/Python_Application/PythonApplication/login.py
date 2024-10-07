@@ -149,7 +149,7 @@ class ChangePass(QDialog):
         self.widget.addWidget(login)
         self.widget.setCurrentIndex(self.widget.currentIndex() + 1)
 
-
+#profile ui
 class Profile(QDialog):
     def __init__(self, accountinfo, widget, userlabel, stackedWidgetusersetting):
         super(Profile, self).__init__()
@@ -162,6 +162,7 @@ class Profile(QDialog):
         self.setupUI()
         self.form.loginbutton.clicked.connect(self.backtologin)
 
+    # back to login ui
     def setupUI(self):
         self.form.userlabel.setAlignment(Qt.AlignCenter)
         self.profilelayout = QVBoxLayout()

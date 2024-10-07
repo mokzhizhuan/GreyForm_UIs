@@ -78,6 +78,7 @@ class pythonProgressBar(QDialog):
             self.progress_bar.setValue(0)  # Reset progress to 0
             self.timer.start(100)
 
+    #add mesh to pyvista
     def add_mesh_later(self):
         self.update_progress()
         input_stl_path = self.filepath
@@ -131,6 +132,7 @@ class pythonProgressBar(QDialog):
         )
         self.close()
 
+    #resizer
     def resize_stl(self, file_path, scale_factor, output_path):
         Mesh = mesh.Mesh.from_file(file_path)
         Mesh.vectors *= scale_factor

@@ -146,7 +146,7 @@ class TalkerNode:
         self.active_dialog.close()
         self.active_dialog = None
 
-
+#implement talker init
 def main(args=None):
     rospy.init(args=args)
     rospy.init_node("node_name", anonymous=True)

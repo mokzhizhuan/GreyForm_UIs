@@ -54,6 +54,7 @@ class mainwindowbuttonUI(object):
     def homeui(self):
         self.stackedWidget.setCurrentIndex(0)
 
+    #button interaction
     def button_UI(self):
         self.menuStartButton.clicked.connect(self.startconfigure)
         self.menuCloseButton.clicked.connect(

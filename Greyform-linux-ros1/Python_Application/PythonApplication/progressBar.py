@@ -76,6 +76,7 @@ class pythonProgressBar(QDialog):
             self.progress_bar.setValue(0)  # Reset progress to 0
             self.timer.start(100)
 
+    #add mesh to pyvista
     def add_mesh_later(self):
         self.update_progress()
         input_stl_path = self.filepath

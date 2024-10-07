@@ -46,6 +46,7 @@ class Ui_Dialog_Close(QMainWindow):
         dialog_layout.addWidget(buttonBox)
         dialog.exec_()
 
+    #back to init window
     def runbacktomenuUI(self, ros_node):
         if not QApplication.instance():
             app = QApplication(sys.argv)

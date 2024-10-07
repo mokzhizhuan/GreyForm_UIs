@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QPushButton, QMainWind
 from PyQt5.QtCore import QTimer
 import subprocess
 
-
+#include dialog
 class LogDialog(QDialog):
     def __init__(self, message, title, log_type="info"):
         super(LogDialog, self).__init__()

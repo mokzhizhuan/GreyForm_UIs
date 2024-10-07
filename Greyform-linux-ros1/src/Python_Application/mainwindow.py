@@ -140,6 +140,7 @@ class Ui_MainWindow(QMainWindow):
             self.ros_node
         )
 
+    #main ui page interaction
     def directtosettingpage(self):
         self.mainwindow.stackedWidget_main.setCurrentIndex(1)
 

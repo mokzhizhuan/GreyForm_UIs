@@ -263,6 +263,7 @@ class Setting(QWidget):
             color = QColorDialog.getColor()
             self.MainWindow.setStyleSheet(f"background-color : {color.name()}")
 
+    #set layout for setting
     def setStretch(self):
         settinglayoutUi.SettingLayout(
             self.settingform,

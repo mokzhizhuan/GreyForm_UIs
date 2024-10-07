@@ -25,6 +25,7 @@ class Usermanual(QWidget):
             for child in parent.children():
                 self.apply_font_to_widgets(child, font)
 
+    #setup user manual ui
     def setupUi(self):
         self.usermanualboxlayout = QVBoxLayout()
         self.usermanualboxlayout.addWidget(self.usermanual.usermanuallabel)
@@ -36,6 +37,7 @@ class Usermanual(QWidget):
         self.usermanualpage.setLayout(self.usermanualboxlayout)
         self.button_UI()
 
+    #USER MANUAL BUTTON INTERACTION
     def button_UI(self):
         self.usermanual.backtoUIButton.clicked.connect(
             lambda: self.stackedWidget_main.setCurrentIndex(0)

@@ -35,6 +35,7 @@ class RestartCloseWidget(QWidget):
         self.password = password
         self.initUI()
 
+    #ui loader in the setting
     def initUI(self):
         button_layout = QHBoxLayout()
         restart_btn = QPushButton("Restart App", self)
@@ -52,9 +53,9 @@ class RestartCloseWidget(QWidget):
         close_btn.setFixedHeight(200)
         close_btn.clicked.connect(self.show_close_dialog)
         button_layout.addWidget(close_btn)
-    
         self.setLayout(button_layout)
 
+    #show restart dialog
     def show_restart_dialog(self):
         reply = QMessageBox(self)
         reply.setIcon(QMessageBox.Question)
@@ -68,6 +69,7 @@ class RestartCloseWidget(QWidget):
             self.save_settings()
             self.restart()
 
+    #set style for the dialog
     def setstylesheet(self, reply):
         reply.setStyleSheet(
             """
@@ -90,6 +92,7 @@ class RestartCloseWidget(QWidget):
             """
         )
 
+    #save setting
     def save_settings(self):
         self.savesettings = {
             "theme": self.themebox.currentText(),
@@ -101,6 +104,7 @@ class RestartCloseWidget(QWidget):
         with open("settings.json", "w") as f:
             json.dump(self.savesettings, f)
 
+    #show close dialog
     def show_close_dialog(self):
         reply = QMessageBox(self)
         reply.setIcon(QMessageBox.Question)
@@ -114,10 +118,12 @@ class RestartCloseWidget(QWidget):
             self.save_settings()
             self.MainWindow.close()
 
+    #restart
     def restart(self):
         python = sys.executable
         os.execl(python, python, *sys.argv)
 
+    #run back to app init
     def runbacktomenuUI(self, ros_node):
         reply = QMessageBox(self)
         reply.setIcon(QMessageBox.Question)

@@ -28,6 +28,7 @@ class TalkerNode:
         self.active_dialog = None
         self.listener_started = False
 
+    #run normally with no dialog
     def run_listernernode(
         self,
         file,
@@ -59,6 +60,7 @@ class TalkerNode:
                 cube_actor,
             )
 
+    #talker file message implementation
     def publish_file_message(self, file_path, excel_filepath):
         try:
             with open(file_path, "rb") as f:
@@ -76,6 +78,7 @@ class TalkerNode:
         except Exception as e:
             self.errormessage += f"Failed to read and publish STL file: {e}"
 
+    #talker selection message implementation
     def publish_selection_message(
         self, wall_number, sectionnumber, picked_position, Stagelabel, cube_actor
     ):
@@ -115,6 +118,7 @@ class TalkerNode:
             self.show_error_dialog(self.errormessage)
             self.errormessage= ""
 
+    #test callback
     def timer_callback(self, event):
         msg = String()
         msg.data = f"Hello everyone {self.count}"
@@ -122,6 +126,7 @@ class TalkerNode:
         self.count += 1
         rospy.loginfo(f"Publishing {msg.data}")
 
+    #info dialog implementation
     def show_info_dialog(self, message):
         if self.active_dialog:
             self.active_dialog.close()
@@ -131,6 +136,7 @@ class TalkerNode:
         self.active_dialog.close()
         self.active_dialog = None
 
+    #error dialog implementation
     def show_error_dialog(self, message):
         if self.active_dialog:
             self.active_dialog.close()

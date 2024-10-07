@@ -15,7 +15,7 @@ import os
 import sys
 import threading
 
-#confirm loader
+#confirm dialog runner
 class ConfirminitDialog(QMainWindow):
     def show_dialog_confirm(self, ros_node):
         dialog = QDialog(self)

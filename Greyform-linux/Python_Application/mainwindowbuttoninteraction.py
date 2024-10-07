@@ -39,6 +39,7 @@ class mainwindowbuttonUI(object):
         self.ros_node = ros_node
         self.button_UI()
 
+    #stacked widget page ui
     def startconfigure(self):
         self.stackedWidget.setCurrentIndex(1)
 

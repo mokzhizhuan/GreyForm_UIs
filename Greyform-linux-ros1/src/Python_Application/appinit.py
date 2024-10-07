@@ -57,7 +57,7 @@ class Ui_InitilizeWindow(QMainWindow):
         self.centralWidget.setLayout(self.boxLayout)
         self.initstart.setCentralWidget(self.centralWidget)
 
-            
+#ros_talker start           
 def ros_spin():
     rospy.spin()
 

@@ -196,7 +196,7 @@ class ListenerNode:
             self.active_dialog = ScrollableDialog(self.root, "Listener Node", self.message, self)
             self.active_dialog.mainloop()
 
-
+#implement listener init
 def main(args=None):
     root = tk.Tk()
     rospy.init_node("listener_node", anonymous=True)

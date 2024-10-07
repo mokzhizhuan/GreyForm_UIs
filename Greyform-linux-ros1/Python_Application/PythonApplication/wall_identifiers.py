@@ -96,6 +96,7 @@ class wall_Interaction(object):
                     else:
                         return
 
+    #include error message
     def show_error_message(self, message):
         root = tk.Tk()
         root.withdraw()
@@ -205,6 +206,7 @@ class wall_Interaction(object):
                     )
         return wall_number, sectionnumber
 
+    #distance calculation
     def calculate_distances(self, point1, point2):
         point1 = np.expand_dims(point1, axis=1)  # Shape (3,) becomes (3, 1)
         distances = np.linalg.norm(point1 - point2, axis=0)
@@ -223,6 +225,7 @@ class wall_Interaction(object):
         else:
             return None  
 
+    #different between two distances
     def calculate_distance(self, point1, point2):
         return point1 - point2
 

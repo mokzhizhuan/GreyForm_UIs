@@ -51,6 +51,7 @@ class ScrollableDialog(Toplevel):
         clear_button = ttk.Button(self, text="Clear", command=self.clear_text)
         clear_button.grid(row=2, column=0, pady=5, sticky="ew")
     
+    #close message and clear
     def closemessage(self):
         self.listener.message = ""
         self.text_widget.config(state=tk.NORMAL)  
@@ -58,7 +59,7 @@ class ScrollableDialog(Toplevel):
         self.text_widget.config(state=tk.DISABLED)
         self.destroy()
 
-
+    #clear text in dialog
     def clear_text(self):
         self.listener.message = ""
         self.text_widget.config(state=tk.NORMAL)  
@@ -94,6 +95,7 @@ class ListenerNode:
         self.active_dialog = None
         self.setup_tk_ui()
 
+    #setup listener node dialog ui
     def setup_tk_ui(self):
         self.label = tk.Label(self.root, text="ROS Node Initialized")
         self.label.pack()
@@ -104,6 +106,7 @@ class ListenerNode:
         )
         self.button.pack()
 
+    #file listener callback implementation
     def file_listener_callback(self, msg):
         try:
             stl_data = bytes(msg.stl_data)
@@ -121,6 +124,7 @@ class ListenerNode:
             message = f"Failed to process received STL file: {e}"
             print(message)
 
+    #selection listener callback implementation
     def selection_listener_callback(self, msg):
         try:
             self.message += (
@@ -136,6 +140,7 @@ class ListenerNode:
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
 
+    #process excel data for finalization
     def process_excel_data(self, excel_filepath):
         try:
             self.excelitems = pd.read_excel(excel_filepath, sheet_name=None)
@@ -171,13 +176,18 @@ class ListenerNode:
         except Exception as e:
             message = f"Failed to process Excel file: {e}"
 
+    #set callback for listener and talker
     def set_file_callback(self, callback):
         self.file_callback = callback
 
     def set_selection_callback(self, callback):
         self.selection_callback = callback
+
+    #distance calculation between two points
+    def calculate_distance(self, point1, point2):
         return np.linalg.norm(point1 - point2)
 
+    #show dialog
     def show_info_dialog(self):
         if self.active_dialog:
             self.active_dialog.destroy()

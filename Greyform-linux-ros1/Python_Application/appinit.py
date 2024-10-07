@@ -8,7 +8,6 @@ import confirminit as initconfirm
 from src.talker_listener.talker_listener import talker_node as RosPublisher
 import rospy
 import jsonimport as jsonfileopener
-import os
 
 #app init window
 class Ui_InitilizeWindow(QMainWindow):
@@ -32,7 +31,6 @@ class Ui_InitilizeWindow(QMainWindow):
         else:
             self.initstart.showNormal()
             self.initstart.resize(self.width, self.height)
-        self.filepaths = os.getcwd()
         self.ros_node = ros_node
         self.default_settings = {
             "theme": str(self.theme),

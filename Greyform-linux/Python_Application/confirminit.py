@@ -77,11 +77,12 @@ class ConfirminitDialog(QMainWindow):
         except subprocess.CalledProcessError as e:
             print(f"Error while executing subprocess: {e}")
 
+    #run ros
     def run_ros_node(ros_node):
         if not rclpy.ok():  
-            rclpy.init()
+            rclpy.init()# Keep the ROS node running
 
-    
+    #show completion of the window
     def show_completion_message():
         msg_box = QMessageBox()
         msg_box.setStyleSheet(
