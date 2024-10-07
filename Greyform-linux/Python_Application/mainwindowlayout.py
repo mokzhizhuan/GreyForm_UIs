@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
 
+#main window layout
 class Ui_MainWindow_layout(object):
     def __init__(
         self,
@@ -52,6 +53,7 @@ class Ui_MainWindow_layout(object):
         self.excelfilelayout = excelfilelayout
         self.setStretch()
 
+    #stretch layout
     def setStretch(self):
         self.boxLayout = QVBoxLayout()
         self.settingusermanuallayout = QHBoxLayout()

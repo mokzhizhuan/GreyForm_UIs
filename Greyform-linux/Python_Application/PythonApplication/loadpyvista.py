@@ -1,3 +1,4 @@
+#loader for pyvista frame
 class StLloaderpyvista(object):
     def __init__(self, meshsplot, loader, loader_2):
         self.meshsplot = meshsplot

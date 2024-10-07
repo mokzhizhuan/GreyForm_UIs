@@ -4,7 +4,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-
+#layout for setting
 class SettingLayout(object):
     def __init__(
         self,
@@ -73,6 +73,7 @@ class SettingLayout(object):
         self.RestartPowerOffPage = RestartPowerOffPage
         self.setStretch()
 
+    #organized strechtable window for setting
     def setStretch(self):
         self.settingboxlayout = QVBoxLayout()
         self.settingboxlayout.addWidget(self.labeltitlsetting)

@@ -13,7 +13,7 @@ import subprocess
 import PythonApplication.dialoglogger as logs
 
 
-
+#talker node
 class TalkerNode(Node):
     def __init__(self):
         super().__init__("talker_node")
@@ -29,6 +29,7 @@ class TalkerNode(Node):
         self.title = "Publisher Node"
         self.active_dialog = None
 
+    #talker file message implementation
     def publish_file_message(self, file_path, excel_filepath):
         try:
             with open(file_path, "rb") as f:
@@ -46,6 +47,7 @@ class TalkerNode(Node):
         except Exception as e:
             self.errormessage += f"Failed to read and publish STL file: {e}"
 
+    #talker selection message implementation
     def publish_selection_message(
         self, wall_number, sectionnumber, picked_position, Stagelabel, cube_actor
     ):
@@ -76,7 +78,7 @@ class TalkerNode(Node):
         except Exception as e:
             self.errormessage += f"{self.spacing}Failed to publish selection message: {e}"
             
-
+    #show dialog
     def showdialog(self):
         if self.message != "":
             self.show_info_dialog(self.message)
@@ -85,6 +87,7 @@ class TalkerNode(Node):
             self.show_error_dialog(self.errormessage)
             self.errormessage = ""
 
+    #run normally with no dialog
     def run_listernernode(
         self,
         file,
@@ -116,6 +119,7 @@ class TalkerNode(Node):
                 cube_actor,
             )
 
+    #test callback
     def timer_callback(self):
         msg = String()
         msg.data = f"Hello everyone {self.count}"
@@ -123,9 +127,7 @@ class TalkerNode(Node):
         self.count += 1
         self.get_logger().info(f"Publishing {msg.data}")
 
-    def calculate_distance(self, point1, point2):
-        return np.linalg.norm(point1 - point2)
-
+    #info dialog implementation
     def show_info_dialog(self, message):
         if self.active_dialog:
             self.active_dialog.close()
@@ -135,6 +137,7 @@ class TalkerNode(Node):
         self.active_dialog.close()
         self.active_dialog = None
 
+    #error dialog implementation
     def show_error_dialog(self, message):
         if self.active_dialog:
             self.active_dialog.close()

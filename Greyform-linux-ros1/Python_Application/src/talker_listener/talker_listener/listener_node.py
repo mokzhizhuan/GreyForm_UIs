@@ -9,7 +9,7 @@ import numpy as np
 import tkinter as tk
 from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT, X, ttk
 
-
+#extra 
 class SingletonDialog:
     _instance = None
 
@@ -25,7 +25,7 @@ class SingletonDialog:
             cls._instance.destroy()
             cls._instance = None
 
-
+#listener node dialogwhen showing message
 class ScrollableDialog(Toplevel):
     def __init__(self, root, title, message, listener):
         super().__init__(root)
@@ -65,7 +65,7 @@ class ScrollableDialog(Toplevel):
         self.text_widget.delete(1.0, tk.END)
         self.text_widget.config(state=tk.DISABLED)
 
-
+#listenerNode
 class ListenerNode:
     def __init__(self, root):
         super().__init__()

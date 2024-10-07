@@ -7,7 +7,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-
+# get all wireless interfaces
 def get_wireless_interfaces():
     interfaces = psutil.net_if_addrs()
     stats = psutil.net_if_stats()
@@ -33,6 +33,7 @@ def get_wireless_interfaces():
                 ].speed
     return ethernet_interfaces
 
+#set active wifi interface as text
 def get_active_wifi_interface():
     result = subprocess.run(['ip', 'addr', 'show'], capture_output=True, text=True)
     interface_pattern = re.compile(r"\d+: (\w+):.*state UP")
@@ -50,6 +51,7 @@ def get_active_wifi_interface():
             return active_interface, ip_address ,host, port
     return None, None , None , None
 
+#get open ports
 def get_open_ports(interface_ip):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((interface_ip, 0))
@@ -57,7 +59,7 @@ def get_open_ports(interface_ip):
     s.close()
     return host, port
 
-
+#get default gateway
 def get_default_gateway():
     try:
         route_result = subprocess.run(["ip", "route"], capture_output=True, text=True)
@@ -68,7 +70,7 @@ def get_default_gateway():
         print(f"Error fetching default gateway: {e}")
     return None
 
-
+#get dns server and set in the text
 def get_dns_servers():
     dns_servers = []
     try:
@@ -80,7 +82,7 @@ def get_dns_servers():
         print(f"Error reading DNS servers: {e}")
     return dns_servers
 
-
+#set interface as text
 def get_interface(interfaces, interfaces_name):
     interface_details = interfaces.get(interfaces_name, {})
     ip_address = interface_details.get("ipv4", "N/A")
@@ -93,7 +95,7 @@ def get_interface(interfaces, interfaces_name):
     interface_info = f"Interface: {interfaces_name}"
     return interface_info, ip_address, host, ports_text
 
-
+#show interface in treeWidget
 def show_interface(interfaces, treeWidget):
     if interfaces:
         group_item = QTreeWidgetItem(treeWidget)

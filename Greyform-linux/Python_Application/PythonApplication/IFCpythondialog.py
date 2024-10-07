@@ -17,10 +17,10 @@ import PythonApplication.loadpyvista as loadingstl
 import PythonApplication.excel_export_info as biminfo
 import numpy as np
 import warnings
-
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
+#ifc progress dialog
 class ProgressBarDialogIFC(QDialog):
     def __init__(self, total_steps, ifc_file, mainwindowforfileselection):
         super().__init__()
@@ -77,6 +77,7 @@ class ProgressBarDialogIFC(QDialog):
             self.progress_bar.setValue(0)  # Reset progress to 0
             self.timer.start(100)
 
+    #program execution when loading
     def ifcprogramexecute(self):
         self.update_progress()
         try:
@@ -137,6 +138,7 @@ class ProgressBarDialogIFC(QDialog):
             )
         self.close()
 
+    #log error write the errlog text file
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
             log_file.write(message + "\n")

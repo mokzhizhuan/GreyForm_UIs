@@ -6,7 +6,7 @@ import psutil
 import os
 import datetime
 
-
+#text implementation for setting
 class SettingText(object):
     def __init__(
         self,
@@ -51,6 +51,7 @@ class SettingText(object):
         self.PasslineEdit.setText(f"{self.accountinfo[0]['Pass']}")
         self.PasslineEdit.returnPressed.connect(self.changepassfunction)
 
+    #change pass ui loader
     def changepassfunction(self):
         password = self.PasslineEdit.text()
         self.accountinfo[0]["Pass"] = password

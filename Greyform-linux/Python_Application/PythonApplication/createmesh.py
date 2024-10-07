@@ -67,6 +67,7 @@ class createMesh(QMainWindow):
         self.wall_identifiers = vtk_data_excel.exceldataextractor()
         self.dataseqtext = None
 
+    #store sequence as a variable
     def addseqtext(self, buttonseq, buttonnextpage):
         self.dataseqtext = buttonseq.text()
         self.dataseqtext = self.dataseqtext.replace("Sequence ", "")
@@ -76,6 +77,7 @@ class createMesh(QMainWindow):
         buttonnextpage.show()
         self.loadStl(self.dataseqtext)
 
+    #load stl in vtk frame
     def loadStl(self , dataseqtext):
         meshs = mesh.Mesh.from_file(self.polydata)
         points = meshs.points.reshape(-1, 3)
@@ -105,11 +107,6 @@ class createMesh(QMainWindow):
             x_coords.append(wall_identify["Position X (m)"])
             y_coords.append(wall_identify["Position Y (m)"])
             z_coords.append(wall_identify["Position Z (m)"])
-        for wall_identify, x, y, z in zip(
-            self.wall_identifiers, x_coords, y_coords, z_coords
-        ):
-            point_id = self.find_closest_point(self.reader, (x, y, z))
-            wall_identify["Point ID"] = point_id
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
         self.cubeactor.SetPosition(160, center[1], center[2])
@@ -175,13 +172,7 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
 
-    def find_closest_point(self, polydata, target_position):
-        point_locator = vtk.vtkKdTreePointLocator()
-        point_locator.SetDataSet(polydata)
-        point_locator.BuildLocator()
-        point_id = point_locator.FindClosestPoint(target_position)
-        return point_id
-
+    #fixed x y and z pos
     def fixedposition(self):
         minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]
         transform = vtk.vtkTransform()
@@ -215,6 +206,7 @@ class createMesh(QMainWindow):
             self.meshbounds[i] = int(self.actor.GetBounds()[i])
         print(self.actor.GetBounds())
 
+    #create visual actor for frame controls
     def create_cube_actor(self):
         self.cube_source = vtk.vtkCubeSource()
         self.cube_source.SetXLength(10)
@@ -230,6 +222,7 @@ class createMesh(QMainWindow):
         self.cube_actor.GetProperty().SetOpacity(0.0)
         return self.cube_actor
 
+    #set actor in the vtk mapper
     def polyDataToActor(self):
         mapper = vtk.vtkPolyDataMapper()
         mapper.SetInputData(self.reader)

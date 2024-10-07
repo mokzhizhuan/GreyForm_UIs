@@ -15,7 +15,7 @@ import os
 import sys
 import threading
 
-
+#confirm loader
 class ConfirminitDialog(QMainWindow):
     def show_dialog_confirm(self, ros_node):
         dialog = QDialog(self)
@@ -56,6 +56,7 @@ class ConfirminitDialog(QMainWindow):
         dialog_layout.addWidget(buttonBox)
         dialog.exec_()
 
+    #run process
     def run_subprocess_commands(self, ros_node, dialog):
         try:
             print("Running colcon build...")
@@ -74,12 +75,14 @@ class ConfirminitDialog(QMainWindow):
             self.close()
         except subprocess.CalledProcessError as e:
             print(f"Error while executing subprocess: {e}")
-
+    
+    #run ros
     def run_ros_node(ros_node):
         if not rospy.core.is_initialized():
             rospy.init_node("talker_listener", anonymous=True)
         rospy.spin()  # Keep the ROS node running
 
+    #show completion of the window
     def show_completion_message():
         msg_box = QMessageBox()
         msg_box.setStyleSheet(

@@ -2,7 +2,7 @@ import menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
 import PythonApplication.menu_confirmack as confirmack
 
-
+#main window buttoninteraction
 class mainwindowbuttonUI(object):
     def __init__(
         self,

@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout
 from PyQt5.QtGui import QFont
 
-
+#save setting to json
 class SettingsDialog(QDialog):
     def __init__(self):
         super().__init__()

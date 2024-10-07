@@ -137,7 +137,8 @@ class FileSelectionMesh():
                     self.file_path,
                     self.excelfiletext,
                 )
-
+    
+    #processor for geometry
     def process_line_string(self, geometry, offset):
         points = np.array(geometry.coords)
         lines = np.hstack([[len(points)], np.arange(len(points)) + offset])
@@ -182,6 +183,7 @@ class FileSelectionMesh():
             print(f"Unknown geometry type: {type(geometry)}")
         return offset
 
+    #resizer
     def resize_stl(self, file_path, scale_factor, output_path):
         Mesh = mesh.Mesh.from_file(file_path)
         Mesh.vectors *= scale_factor

@@ -19,7 +19,7 @@ import sys
 import tkinter as tk
 from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT, X, ttk
 
-
+#extra 
 class SingletonDialog:
     _instance = None
 
@@ -35,7 +35,7 @@ class SingletonDialog:
             cls._instance.destroy()
             cls._instance = None
 
-
+#listener node dialogwhen showing message
 class ScrollableDialog(Toplevel):
     def __init__(self, root, title, message, listener):
         super().__init__(root)
@@ -61,6 +61,7 @@ class ScrollableDialog(Toplevel):
         clear_button = ttk.Button(self, text="Clear", command=self.clear_text)
         clear_button.grid(row=2, column=0, pady=5 , sticky="ew")
 
+    #close message and clear
     def closemessage(self):
         self.listener.message = ""
         self.text_widget.config(state=tk.NORMAL)  
@@ -68,12 +69,14 @@ class ScrollableDialog(Toplevel):
         self.text_widget.config(state=tk.DISABLED)
         self.destroy()
     
+    #clear text in dialog
     def clear_text(self):
         self.listener.message = ""
         self.text_widget.config(state=tk.NORMAL)
         self.text_widget.delete(1.0, tk.END)
         self.text_widget.config(state=tk.DISABLED)
 
+#listenerNode
 class ListenerNode(Node):
     def __init__(self, root):
         super().__init__("listener_node")
@@ -102,6 +105,7 @@ class ListenerNode(Node):
         self.active_dialog = None
         self.setup_tk_ui()
 
+    #setup listener node dialog ui
     def setup_tk_ui(self):
         self.label = tk.Label(self.root, text="ROS Node Initialized")
         self.label.pack()
@@ -112,7 +116,7 @@ class ListenerNode(Node):
         )
         self.button.pack()
 
-
+    #file listener callback implementation
     def file_listener_callback(self, msg):
         try:
             stl_data = bytes(msg.stl_data)
@@ -131,6 +135,7 @@ class ListenerNode(Node):
             message = f"Failed to process received STL file: {e}"
             print(message)
 
+    #selection listener callback implementation
     def selection_listener_callback(self, msg):
         try:
             self.message += (
@@ -147,6 +152,7 @@ class ListenerNode(Node):
             message = f"Failed to publish selection message: {e}"
             print(message)
 
+    #process excel data for finalization
     def process_excel_data(self, excel_filepath):
         try:
             self.excelitems = pd.read_excel(excel_filepath, sheet_name=None)
@@ -184,15 +190,18 @@ class ListenerNode(Node):
             message = f"Failed to process Excel file: {e}"
             print(message)
 
+    #set callback for listener and talker
     def set_file_callback(self, callback):
         self.file_callback = callback
 
     def set_selection_callback(self, callback):
         self.selection_callback = callback
 
+    #distance calculation between two points
     def calculate_distance(self, point1, point2):
         return np.linalg.norm(point1 - point2)
 
+    #show dialog
     def show_info_dialog(self):
         if self.active_dialog:
             self.active_dialog.destroy()

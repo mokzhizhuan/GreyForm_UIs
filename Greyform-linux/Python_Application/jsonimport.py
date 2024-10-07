@@ -1,6 +1,6 @@
 import json
 
-
+#load json file for window setting
 def jsopen(jsonfile):
     try:
         with open(jsonfile, "r") as f:

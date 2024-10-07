@@ -7,7 +7,7 @@ import PythonApplication.processlistenerrunner as ProcessListener
 import tkinter as tk
 from tkinter import messagebox
 
-
+#wall interaction to interact with ros listener and ros talker
 class wall_Interaction(object):
     def __init__(
         self,
@@ -36,6 +36,7 @@ class wall_Interaction(object):
         self.picked_positions = []
         self.picked_position_quads = []
 
+    #middle click interaction for storing
     def setwallinteractiondata(self, obj, event):
         if self.interaction_enabled != True:
             self.show_error_message(
@@ -59,7 +60,6 @@ class wall_Interaction(object):
         ]
         self.picked_positions.append(self.picked_position)
         self.picked_position_quads.append(self.picked_position_quad)
-        self.point_id = self.find_closest_point(self.reader, self.picked_position)
         if self.counter < self.dataseqtext:
             self.counter += 1
             if self.counter == self.dataseqtext:
@@ -67,13 +67,7 @@ class wall_Interaction(object):
                 self.localizebutton.clicked.connect(self.publish_message)
                 self.interaction_enabled = False
 
-    def find_closest_point(self, polydata, target_position):
-        point_locator = vtk.vtkKdTreePointLocator()
-        point_locator.SetDataSet(polydata)
-        point_locator.BuildLocator()
-        point_id = point_locator.FindClosestPoint(target_position)
-        return point_id
-
+    #publisher to listener and talker node runner
     def publish_message(self):
         self.wall_filtered_identifiers = self.fliterbywallnum()
         message_error = True
@@ -104,6 +98,7 @@ class wall_Interaction(object):
                     else:
                         return
 
+    #include error message
     def show_error_message(self, message):
         root = tk.Tk()
         root.mainloop()
@@ -111,11 +106,13 @@ class wall_Interaction(object):
         root.withdraw()
         root.destroy()
 
+    #filtered by wall number for specify which item was at the wall number
     def fliterbywallnum(self):
         df = pd.DataFrame(self.wall_identifiers)
         grouped = df.groupby("Wall Number")
         return grouped
 
+    #message variable will be sent to process runner for running the talker node and listener node
     def publish_message_ros(self, file, wallnumber, sectionnumber):
         self.exceldata = self.excelfiletext.toPlainText()
         """self.talker_node.run_listernernode(
@@ -140,6 +137,7 @@ class wall_Interaction(object):
         )
         self.listenerdialog.show()
 
+    #distance checker
     def distance(self, sequence_pos, sequence_pos_quad):
         self.threshold_distance = 220
         self.distances = 50
@@ -220,11 +218,13 @@ class wall_Interaction(object):
                     )
         return wall_number, sectionnumber
 
+    #distance calculation
     def calculate_distances(self, point1, point2):
         point1 = np.expand_dims(point1, axis=1)  # Shape (3,) becomes (3, 1)
         distances = np.linalg.norm(point1 - point2, axis=0)
         return distances
 
+    #quadrant vision for wall
     def determine_quadrant(self, x, y):
         if x > 0 and y > 0:
             return 1  # Quadrant I
@@ -237,9 +237,11 @@ class wall_Interaction(object):
         else:
             return None  # On the axes or at the origin
 
+    #different between two distances
     def calculate_distance(self, point1, point2):
         return point1 - point2
 
+    #check stage name
     def Stagename(self, name):
         if "CP" in name:
             index = name.index("CP") + 4

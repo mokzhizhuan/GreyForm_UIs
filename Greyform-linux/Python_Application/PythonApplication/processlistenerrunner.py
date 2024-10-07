@@ -16,7 +16,7 @@ import time
 class StatusSignals(QObject):
     status_signal = pyqtSignal(str)
 
-
+#Run Listener Node dialog
 class ListenerNodeRunner(QMainWindow):
     def __init__(
         self,
@@ -74,6 +74,7 @@ class ListenerNodeRunner(QMainWindow):
         self.setWindowTitle("Listener Node Status")
         self.setGeometry(400, 400, 500, 500)
 
+    #interacting running process
     def run_listener_node(self):
         if self.listener_started is not True:
             try:
@@ -94,6 +95,7 @@ class ListenerNodeRunner(QMainWindow):
                 )
             self.talker_node.showdialog()
 
+    #ros running process
     def _run_subprocess(self):
         try:
             process = subprocess.Popen(

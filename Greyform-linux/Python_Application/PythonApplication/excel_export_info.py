@@ -3,7 +3,7 @@ import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
 from openpyxl.utils import get_column_letter
 
-
+#excel extractor
 class Exportexcelinfo(object):
     def __init__(self, file, class_type):
         try:
@@ -74,6 +74,7 @@ class Exportexcelinfo(object):
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
 
+    #get object data as class
     def get_objects_data_by_class(self, file, class_type):
         objects_data = []
         objects = file.by_type(class_type)
@@ -104,11 +105,12 @@ class Exportexcelinfo(object):
                 }
             )
         return objects_data
-
+    #write log error
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
             log_file.write(message + "\n")
 
+    #include markers
     def add_markers(self, row):
         if pd.isnull(row["Point number/name"]):
             return "6"
@@ -122,6 +124,7 @@ class Exportexcelinfo(object):
                 return "+"
         return "6"
 
+    #apply number for markers
     def apply_rotation_to_markers(self, worksheet, df_class):
         marker_col_index = df_class.columns.get_loc("Shape type")
         marker_col_letter = get_column_letter(marker_col_index + 2)  # +2 to account for 1-based indexing in Excel
@@ -152,6 +155,7 @@ class Exportexcelinfo(object):
                     marker = 6
                     worksheet[f'{marker_col_letter}{row_idx}'].value = marker
 
+    # get attribute
     def get_attribute_value(self, object_data, attribute):
         if "." not in attribute:
             return object_data[attribute]
@@ -171,6 +175,7 @@ class Exportexcelinfo(object):
         else:
             return None
 
+    #get wal number
     def determine_wall_number(self, row):
         wallnum = None
         name = row["Point number/name"]
@@ -198,6 +203,7 @@ class Exportexcelinfo(object):
         self.index += 1
         return wallnum
 
+    #determine wall number
     def wallnumber(self, name):
         if "CP" in name:
             index = name.index("CP") + 2

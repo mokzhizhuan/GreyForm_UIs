@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import QWidget
 
-
+#user manual for instruction.
 class Usermanual(QWidget):
     def __init__(self, font, stackedWidget_main, usermanualpage):
         super(Usermanual, self).__init__()

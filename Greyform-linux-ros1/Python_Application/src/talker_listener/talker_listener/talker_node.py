@@ -8,6 +8,7 @@ import subprocess
 import sys
 import PythonApplication.dialoglogger as logs
 
+#talker node
 class TalkerNode:
     def __init__(self):
         self.file_publisher_ = rospy.Publisher(
@@ -105,7 +106,7 @@ class TalkerNode:
         except Exception as e:
             self.errormessage += f"{self.spacing}Failed to publish selection message: {e}"
             
-
+    #show as info or error
     def showdialog(self):
         if self.message != "":
             self.show_info_dialog(self.message)

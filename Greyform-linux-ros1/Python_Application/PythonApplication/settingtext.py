@@ -6,7 +6,7 @@ import psutil
 import os
 import datetime
 
-
+#text implementation for setting
 class SettingText(object):
     def __init__(
         self,

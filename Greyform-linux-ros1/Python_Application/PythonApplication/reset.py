@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import *
 import json
 
-
+#restart and shutdown or close
 class RestartCloseWidget(QWidget):
     def __init__(
         self,
@@ -42,11 +42,17 @@ class RestartCloseWidget(QWidget):
         restart_btn.setFixedHeight(200)
         restart_btn.clicked.connect(self.show_restart_dialog)
         button_layout.addWidget(restart_btn)
+        shutdown_btn = QPushButton("Shut Down", self)
+        shutdown_btn.setFont(QFont("Arial", self.font_size))
+        shutdown_btn.setFixedHeight(200)
+        shutdown_btn.clicked.connect(self.runbacktomenuUI)
+        button_layout.addWidget(shutdown_btn)
         close_btn = QPushButton("Close App", self)
         close_btn.setFont(QFont("Arial", self.font_size))
         close_btn.setFixedHeight(200)
         close_btn.clicked.connect(self.show_close_dialog)
         button_layout.addWidget(close_btn)
+    
         self.setLayout(button_layout)
 
     def show_restart_dialog(self):
@@ -111,3 +117,19 @@ class RestartCloseWidget(QWidget):
     def restart(self):
         python = sys.executable
         os.execl(python, python, *sys.argv)
+
+    def runbacktomenuUI(self, ros_node):
+        reply = QMessageBox(self)
+        reply.setIcon(QMessageBox.Question)
+        reply.setWindowTitle("Shutdown")
+        reply.setText("Are you sure you want to close the app?")
+        reply.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        reply.setDefaultButton(QMessageBox.No)
+        self.setstylesheet(reply)
+        if not QApplication.instance():
+            app = QApplication(sys.argv)
+        else:
+            app = QApplication.instance()
+        main_window_menu = initlizemenu.Ui_InitilizeWindow(ros_node)
+        main_window_menu.show()
+        self.close()

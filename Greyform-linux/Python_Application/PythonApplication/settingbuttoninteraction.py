@@ -109,11 +109,13 @@ class settingbuttonUI(object):
     def Powerpages(self):
         self.maintitlelabel.setText("<h3>Power Setting</h3>")
 
+    #confirm save setting
     def confirm_save_settings(self):
         dialog = SaveSettingsDialog.SettingsDialog()
         if dialog.exec_() == QDialog.Accepted:
             self.save_settings()
 
+    #save setting to json file
     def save_settings(self):
         self.savesettings = {
             "theme": self.themebox.currentText(),
@@ -126,6 +128,7 @@ class settingbuttonUI(object):
             json.dump(self.savesettings, f)
         self.show_save_dialog()
 
+    #save dialog setting
     def show_save_dialog(self):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
@@ -157,6 +160,7 @@ class settingbuttonUI(object):
         self.stackedWidget_main.setCurrentIndex(0)
         msg.exec_()
 
+    #color background change
     def colorchange(self):
         if self.themebox.currentIndex() == 1:
             self.color = "#D3D3D3"
