@@ -23,6 +23,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 #ifc progress dialog
 class ProgressBarDialogIFC(QDialog):
     def __init__(self, total_steps, ifc_file, mainwindowforfileselection):
+        # starting initialize
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setLayout(progress_layout)

@@ -9,6 +9,7 @@ from PyQt5.QtGui import *
 # user login function will include profile also later
 class Login(QDialog):
     def __init__(self, accountinfo, widget, userlabel, stackedWidgetusersetting):
+        # starting initialize
         super(Login, self).__init__()
         self.form = uic.loadUi("UI_Design/login.ui", self)
         self.accountinfo = accountinfo
@@ -22,6 +23,7 @@ class Login(QDialog):
         self.form.password.returnPressed.connect(self.loginfunction)
         self.form.changepassbutton.clicked.connect(self.changepassword)
 
+    #setup login ui
     def setupUI(self):
         self.loginboxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
@@ -90,6 +92,7 @@ class Login(QDialog):
 # change password.
 class ChangePass(QDialog):
     def __init__(self, accountinfo, widget, userlabel, stackedWidgetusersetting):
+        # starting initialize
         super(ChangePass, self).__init__()
         self.form = uic.loadUi("UI_Design/changepass.ui", self)
         self.form.changepassbutton.clicked.connect(self.changepassfunction)
@@ -102,6 +105,7 @@ class ChangePass(QDialog):
         self.stackedWidgetusersetting = stackedWidgetusersetting
         self.setupUI()
 
+    #setup change password ui
     def setupUI(self):
         self.changepassboxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
@@ -152,6 +156,7 @@ class ChangePass(QDialog):
 #profile ui
 class Profile(QDialog):
     def __init__(self, accountinfo, widget, userlabel, stackedWidgetusersetting):
+        # starting initialize
         super(Profile, self).__init__()
         self.form = uic.loadUi("UI_Design/Profile.ui", self)
         self.accountinfo = accountinfo
@@ -162,7 +167,7 @@ class Profile(QDialog):
         self.setupUI()
         self.form.loginbutton.clicked.connect(self.backtologin)
 
-    # back to login ui
+    #setup profile ui
     def setupUI(self):
         self.form.userlabel.setAlignment(Qt.AlignCenter)
         self.profilelayout = QVBoxLayout()
@@ -185,6 +190,7 @@ class Profile(QDialog):
         self.profilelayout.addWidget(self.form.loginbutton)
         self.setLayout(self.profilelayout)
 
+    # back to login ui
     def backtologin(self):
         login = Login(
             self.accountinfo,

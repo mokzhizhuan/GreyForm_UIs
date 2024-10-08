@@ -18,6 +18,7 @@ import PythonApplication.loadpyvista as loadingstl
 # progress bar to load the imported stl to pyvista or gl view widget
 class pythonProgressBar(QDialog):
     def __init__(self, value, file_path, mainwindowforfileselection):
+        # starting initialize
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setWindowTitle("Progress Window")
@@ -70,17 +71,17 @@ class pythonProgressBar(QDialog):
             self.progress_bar.setValue(value + 1)
             QTimer.singleShot(
                 100, self.update_progress
-            )  # Update progress again after 100 milliseconds
+            )  
         else:
-            self.timer.stop()  # Stop the timer when progress reaches 100%
-            self.progress_bar.setValue(0)  # Reset progress to 0
+            self.timer.stop()  
+            self.progress_bar.setValue(0)  
             self.timer.start(100)
 
     #add mesh to pyvista
     def add_mesh_later(self):
         self.update_progress()
         input_stl_path = self.filepath
-        scale_factor = 1.5  # Increase size by 150%
+        scale_factor = 1.5 
         output_stl_path = "output.stl"
         self.resize_stl(input_stl_path, scale_factor, output_stl_path)
         meshs = meshio.read(output_stl_path)

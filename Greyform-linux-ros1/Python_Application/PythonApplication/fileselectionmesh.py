@@ -28,6 +28,8 @@ import meshio
 # load pyvista in the frame
 class FileSelectionMesh():
     def __init__(self, file_path, mainwindowforfileselection):
+        # starting initialize
+        super().__init__()
         self.file_path = file_path
         self.mainwindowforfileselection = mainwindowforfileselection
         self.loader = mainwindowforfileselection[0]
@@ -123,6 +125,7 @@ class FileSelectionMesh():
                     self.excelfiletext,
                 )
 
+    #process geometry in geodata pandas
     def process_line_string(self, geometry, offset):
         points = np.array(geometry.coords)
         lines = np.hstack([[len(points)], np.arange(len(points)) + offset])

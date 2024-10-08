@@ -5,6 +5,7 @@ import subprocess
 #include dialog
 class LogDialog(QDialog):
     def __init__(self, message, title, log_type="info"):
+        # starting initialize
         super(LogDialog, self).__init__()
         self.setWindowTitle(f"{title} {log_type.capitalize()} Message")
         layout = QVBoxLayout()
@@ -29,7 +30,6 @@ class LogDialog(QDialog):
         )
         ok_button.clicked.connect(self.accept)
         layout.addWidget(ok_button)
-
         self.setLayout(layout)
 
     def show_dialog(self):

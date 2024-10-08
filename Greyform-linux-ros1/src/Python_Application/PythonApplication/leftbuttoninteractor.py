@@ -7,6 +7,8 @@ import math
 #dragging view , and control zoom in and out
 class LeftInteractorStyle(object):
     def __init__(self, interactor_style, setcamerainteraction):
+        # starting initialize
+        super().__init__()
         self.interactor_style = interactor_style
         self.xlabels = setcamerainteraction[0]
         self.ylabels = setcamerainteraction[1]

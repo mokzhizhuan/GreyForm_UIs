@@ -15,6 +15,7 @@ import jsonimport as jsonfileopener
 #app init window
 class Ui_InitilizeWindow(QMainWindow):
     def __init__(self, ros_node):
+        # starting initialize
         super(Ui_InitilizeWindow, self).__init__()
         self.initstart = uic.loadUi("UI_Design/initalize.ui", self)
         jsonfile = "settings.json"

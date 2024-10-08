@@ -22,6 +22,8 @@ class mainwindowbuttonUI(object):
         MarkingButton,
         ros_node,
     ):
+        # starting initialize
+        super().__init__()
         self.mainwindow = mainwindow
         self.stackedWidget = stackedWidget
         self.menuStartButton = menuStartButton

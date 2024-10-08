@@ -6,6 +6,7 @@ from PyQt5.QtGui import QFont
 #loading mar & loc Progress bar(visual)
 class MarkingProgressBar(QDialog):
     def __init__(self):
+        # starting initialize
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setWindowTitle("Progress Window")

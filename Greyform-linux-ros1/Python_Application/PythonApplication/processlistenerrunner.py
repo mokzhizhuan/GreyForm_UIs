@@ -30,6 +30,7 @@ class ListenerNodeRunner(QMainWindow):
         cube_actor,
         dataseqtext,
     ):
+        # starting initialize
         super().__init__()
         self.initUI()
         self.talker_node = talker_node

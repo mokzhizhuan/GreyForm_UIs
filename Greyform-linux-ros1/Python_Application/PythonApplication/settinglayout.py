@@ -40,6 +40,7 @@ class SettingLayout(object):
         restartwidget,
         RestartPowerOffPage,
     ):
+        # starting initialize
         self.settingform = settingform
         self.labeltitlsetting = labeltitlsetting
         self.settinglayoutWidget = settinglayoutWidget

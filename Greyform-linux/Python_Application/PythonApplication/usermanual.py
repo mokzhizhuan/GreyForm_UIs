@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QWidget
 #user manual for instruction.
 class Usermanual(QWidget):
     def __init__(self, font, stackedWidget_main, usermanualpage):
+        # starting initialize
         super(Usermanual, self).__init__()
         self.usermanual = uic.loadUi("UI_Design/usermanual.ui", self)
         self.font = font

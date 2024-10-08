@@ -17,6 +17,7 @@ class wall_Interaction(object):
         localizebutton,
         ros_node,
     ):
+        # starting initialize
         self.interactor_style = interactor_style
         self.setcamerainteraction = setcamerainteraction
         self.wall_identifiers = wall_identifiers

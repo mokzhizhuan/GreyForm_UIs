@@ -1,6 +1,8 @@
 #loader for pyvista frame
 class StLloaderpyvista(object):
     def __init__(self, meshsplot, loader, loader_2):
+        # starting initialize
+        super().__init__()
         self.meshsplot = meshsplot
         self.loader = loader
         self.loader_2 = loader_2

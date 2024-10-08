@@ -7,6 +7,8 @@ import math
 #dragging view , and control zoom in and out
 class LeftInteractorStyle(object):
     def __init__(self, interactor_style, setcamerainteraction):
+        # starting initialize
+        super().__init__()
         self.interactor_style = interactor_style
         self.xlabels = setcamerainteraction[0]
         self.ylabels = setcamerainteraction[1]
@@ -54,6 +56,7 @@ class LeftInteractorStyle(object):
         self.last_update_time = 0
         self.update_interval = 0.1  # Update every 0.1 seconds
 
+    #dragging camera angle
     def leftButtonPressEvent(self, obj, event):
         self.leftbuttoninteraction = True
         clickPos = self.renderwindowinteractor.GetEventPosition()  # <<<-----<
@@ -61,6 +64,7 @@ class LeftInteractorStyle(object):
         self.current_zoom_factor = 1.0
         self.interactor_style.OnLeftButtonDown()
 
+    #dragging camera angle
     def mouse_move(self, obj, event):
         clickPos = self.renderwindowinteractor.GetEventPosition()
         if self.leftbuttoninteraction is True:
@@ -84,9 +88,11 @@ class LeftInteractorStyle(object):
             self.displaytext(camera)
             self.interactor_style.OnMouseMove()
 
+    #releaser
     def left_button_release(self, obj, event):
         self.leftbuttoninteraction = False
 
+    #release camera implementation
     def release(self):
         self.interactor_style.SetMotionFactor(8)
         self.leftbuttoninteraction = False
@@ -97,6 +103,7 @@ class LeftInteractorStyle(object):
         self.camsetvieworientation(camera)
         self.refresh()
 
+    #zoom in
     def mouse_wheel_forward(self, obj, event):
         self.interactor_style.SetMotionFactor(1)
         zoom_factor = 1.1
@@ -130,6 +137,7 @@ class LeftInteractorStyle(object):
             self.refresh()
         self.interactor_style.OnMouseWheelForward()
 
+    #zoom out
     def mouse_wheel_backward(self, obj, event):
         self.interactor_style.SetMotionFactor(1)
         zoom_factor = 0.99
@@ -162,6 +170,7 @@ class LeftInteractorStyle(object):
             self.refresh()
         self.interactor_style.OnMouseWheelBackward()
 
+    #display text
     def displayclickpostext(self, clickPos):
         self.xlabels.setText(
             self._translate("MainWindow", str("{0:.2f}".format(clickPos[0])))
@@ -187,6 +196,7 @@ class LeftInteractorStyle(object):
             )
         )
 
+    #fixed camera orientation implementation
     def camsetvieworientation(self, camera):
         camera.SetViewUp(
             self.defaultposition[0],
@@ -194,10 +204,12 @@ class LeftInteractorStyle(object):
             self.defaultposition[2],
         )
 
+    #refresher
     def refresh(self):
         self.render.ResetCameraClippingRange()
         self.interactor_style.GetInteractor().GetRenderWindow().Render()
 
+    #set camera position
     def setcamposition(self, camera):
         self.cameraactor.SetPosition(
             camera.GetPosition()[0],
@@ -205,6 +217,7 @@ class LeftInteractorStyle(object):
             camera.GetPosition()[2] - self.spaceseperation,
         )
 
+    #set collision detection when dragging
     def setcollisiondetection(self, num_contacts, distance_moved, camera):
         camera_pos = [
             camera.GetPosition()[0],

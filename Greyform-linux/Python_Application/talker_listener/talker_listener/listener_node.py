@@ -38,6 +38,7 @@ class SingletonDialog:
 #listener node dialogwhen showing message
 class ScrollableDialog(Toplevel):
     def __init__(self, root, title, message, listener):
+        # starting initialize
         super().__init__(root)
         self.root = root
         self.title(title)
@@ -79,6 +80,7 @@ class ScrollableDialog(Toplevel):
 #listenerNode
 class ListenerNode(Node):
     def __init__(self, root):
+        # starting initialize
         super().__init__("listener_node")
         self.file_subscription_ = self.create_subscription(
             FileExtractionMessage,  # Correct message type
@@ -210,10 +212,11 @@ class ListenerNode(Node):
             self.active_dialog = ScrollableDialog(self.root, "Listener Node", self.message, self)
             self.active_dialog.mainloop()
 
-
+#run ros
 def run_ros_spin(listenerNode):
     rclpy.spin(listenerNode)
 
+#main runner for ros process runner
 def main(args=None):
     root = tk.Tk()
     rclpy.init(args=args)

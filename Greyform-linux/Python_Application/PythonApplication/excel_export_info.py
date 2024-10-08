@@ -6,6 +6,8 @@ from openpyxl.utils import get_column_letter
 #excel extractor
 class Exportexcelinfo(object):
     def __init__(self, file, class_type):
+        # starting initialize
+        super().__init__()
         try:
             data = self.get_objects_data_by_class(file, class_type)
             attributes = [

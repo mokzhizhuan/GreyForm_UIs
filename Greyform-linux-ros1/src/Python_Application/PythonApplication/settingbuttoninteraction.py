@@ -31,6 +31,7 @@ class settingbuttonUI(object):
         saved_setting,
         stackedWidget_main,
     ):
+        # starting initialize
         self.MarkingbackButton = MarkingbackButton
         self.stackedWidgetsetting = stackedWidgetsetting
         self.stackedWidget = stackedWidget

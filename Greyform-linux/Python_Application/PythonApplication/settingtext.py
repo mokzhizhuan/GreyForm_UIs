@@ -21,6 +21,8 @@ class SettingText(object):
         userlabel,
         accountinfo,
     ):
+        # starting initialize
+        super().__init__()
         self.labeltitlsetting = labeltitlsetting
         self.titlelabel = titlelabel
         self.info_label = info_label

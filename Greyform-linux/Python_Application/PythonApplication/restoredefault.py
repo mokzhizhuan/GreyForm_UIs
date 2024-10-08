@@ -22,6 +22,8 @@ class restoredefaultsetting(object):
         windowheight,
         stackedWidget_main,
     ):
+        # starting initialize
+        super().__init__()
         self.stackedWidget = stackedwidgetpage
         self.MainWindow = MainWindow
         self.accountinfo = accountinfo

@@ -35,6 +35,8 @@ class createMesh(QMainWindow):
         file_path,
         excelfiletext,
     ):
+        # starting initialize
+        super().__init__()
         self.defaultposition = [0, 0, 1]
         self.reader = vtk.vtkPolyData()
         self.meshbounds = None

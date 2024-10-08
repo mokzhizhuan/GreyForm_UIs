@@ -22,6 +22,7 @@ import rospy
 class Ui_MainWindow(QMainWindow):
     # starting ui
     def __init__(self, ros_node):
+        # starting initialize
         super(Ui_MainWindow, self).__init__()
         self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
         jsonfile = "settings.json"

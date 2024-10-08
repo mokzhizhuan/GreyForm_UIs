@@ -102,6 +102,7 @@ class ChangePass(QDialog):
         self.stackedWidgetusersetting = stackedWidgetusersetting
         self.setupUI()
 
+    #setup change password ui
     def setupUI(self):
         self.changepassboxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
@@ -152,6 +153,7 @@ class ChangePass(QDialog):
 #setup profile ui
 class Profile(QDialog):
     def __init__(self, accountinfo, widget, userlabel, stackedWidgetusersetting):
+        # starting initialize
         super(Profile, self).__init__()
         self.form = uic.loadUi("UI_Design/Profile.ui", self)
         self.accountinfo = accountinfo
@@ -162,6 +164,7 @@ class Profile(QDialog):
         self.setupUI()
         self.form.loginbutton.clicked.connect(self.backtologin)
 
+    #setup login ui
     def setupUI(self):
         self.form.userlabel.setAlignment(Qt.AlignCenter)
         self.profilelayout = QVBoxLayout()

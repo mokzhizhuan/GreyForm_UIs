@@ -22,6 +22,7 @@ class SettingText(object):
         userlabel,
         accountinfo,
     ):
+        # starting initialize
         self.labeltitlsetting = labeltitlsetting
         self.ip_label = ip_label
         self.titlelabel = titlelabel
