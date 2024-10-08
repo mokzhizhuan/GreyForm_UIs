@@ -16,6 +16,7 @@ class setup_wifi(object):
         self.interface_label = interface_label
         self.refreshWiFiList()
 
+    #refresh wifi
     def refreshWiFiList(self):
         networks = self.interface.scan_results()
         self.treeWidget.clear()

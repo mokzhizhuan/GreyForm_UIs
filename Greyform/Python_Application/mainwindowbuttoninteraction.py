@@ -39,6 +39,7 @@ class mainwindowbuttonUI(object):
         self.MarkingButton = MarkingButton
         self.button_UI()
 
+    #stacked widget page
     def startconfigure(self):
         self.stackedWidget.setCurrentIndex(1)
 

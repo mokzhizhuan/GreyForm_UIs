@@ -38,6 +38,7 @@ class restoredefaultsetting(object):
         self.stackedWidget_main = stackedWidget_main
         self.restore_defaults()
 
+    #restore default setting implementation
     def restore_defaults(self):
         self.accountinfo[0]["Pass"] = "pass"
         # Restore default theme
@@ -46,23 +47,28 @@ class restoredefaultsetting(object):
         )
         if theme_index >= 0:
             self.themebox.setCurrentIndex(theme_index)
+        # Restore fonr
         font_index = self.Text_size.findText(
             str(self.default_settings["font_size"]), Qt.MatchFixedString
         )
         if font_index >= 0:
             self.Text_size.setCurrentIndex(font_index)
+        # Restore resolution
         resolution_index = self.resolutioncomboBox.findText(
             self.default_settings["resolution"], Qt.MatchFixedString
         )
         if resolution_index >= 0:
             self.resolutioncomboBox.setCurrentIndex(resolution_index)
+        # Restore timezone theme
         timezone_index = self.country.findText(
             self.default_settings["timezone"], Qt.MatchFixedString
         )
         if timezone_index >= 0:
             self.country.setCurrentIndex(timezone_index)
+        # Restore password
         self.accountinfo[0]["Pass"] = self.default_settings["password"]
         self.PasslineEdit.setText(self.default_settings["password"])
+        #execute in setting
         self.settingchange = setting.Setting(
             self.stackedWidget,
             self.MainWindow,

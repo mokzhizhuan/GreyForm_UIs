@@ -19,7 +19,8 @@ class StLloaderpyvista(object):
         self.loader = loader
         self.loader_2 = loader_2
         self.loadstlframe()
-
+    
+    #load 2 pyvista frame 
     def loadstlframe(self):
         self.loader.remove_actor("roombuilding")
         self.loader_2.remove_actor("roombuilding")
@@ -48,6 +49,7 @@ class StLloaderpyvista(object):
         self.loader.show()
         self.loader_2.show()
 
+    #add points
     def log_points(self, message):
         with open("dimension.txt", "a") as log_file:
             log_file.write(message + "\n")

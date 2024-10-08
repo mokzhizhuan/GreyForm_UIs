@@ -37,6 +37,7 @@ class RestartCloseWidget(QWidget):
 
         self.initUI()
 
+    #restart and close ui
     def initUI(self):
         button_layout = QHBoxLayout()
         restart_btn = QPushButton("Restart App", self)

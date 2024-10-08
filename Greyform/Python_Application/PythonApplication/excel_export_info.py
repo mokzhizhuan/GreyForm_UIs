@@ -203,6 +203,7 @@ class Exportexcelinfo(object):
         self.index += 1
         return wallnum
 
+    #get wall number form excel data
     def wallnumber(self, name):
         if "CP" in name:
             index = name.index("CP") + 2

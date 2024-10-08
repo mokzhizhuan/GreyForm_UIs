@@ -18,6 +18,7 @@ class doorMesh(object):
         self.polydata = self.reader.GetOutput()
         self.includedimension()
 
+    #include dimension implementation
     def includedimension(self):
         mapper = vtkPolyDataMapper()
         mapper.SetInputConnection(self.reader.GetOutputPort())
