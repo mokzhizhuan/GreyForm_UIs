@@ -159,7 +159,7 @@ class LeftInteractorStyle(object):
             self.refresh()
         self.interactor_style.OnMouseWheelBackward()
 
-    #text diaplay
+    #text display
     def displayclickpostext(self, clickPos):
         self.xlabels.setText(
             self._translate("MainWindow", str("{0:.2f}".format(clickPos[0])))

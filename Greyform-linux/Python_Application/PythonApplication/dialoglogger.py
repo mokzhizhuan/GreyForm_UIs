@@ -30,5 +30,4 @@ class LogDialog(QDialog):
         )
         ok_button.clicked.connect(self.accept)
         layout.addWidget(ok_button)
-
         self.setLayout(layout)

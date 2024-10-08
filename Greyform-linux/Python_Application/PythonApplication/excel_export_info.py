@@ -107,6 +107,7 @@ class Exportexcelinfo(object):
                 }
             )
         return objects_data
+        
     #write log error
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:

@@ -215,6 +215,8 @@ class Setting(QWidget):
         self.settingbutton.updatingtime(
             self.selected_time_zone, self.settingform.Systemtime
         )
+
+    #memory update
     def update_memory(self):
         # Update the system memory text
         process = psutil.Process(os.getpid())

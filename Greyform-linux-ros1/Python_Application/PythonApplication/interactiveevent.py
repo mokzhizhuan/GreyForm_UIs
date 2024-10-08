@@ -187,6 +187,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     def camsetvieworientation(self, camera):
         camera.SetViewUp(0, 0, 1)
 
+    #set avoidance(not confirmed)
     def calculate_distance_to_mesh(self, actor_position):
         min_distance = float("inf")
         for i in range(self.reader.GetNumberOfPoints()):
