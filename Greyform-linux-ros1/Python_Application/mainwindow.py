@@ -276,7 +276,7 @@ class Ui_MainWindow(QMainWindow):
             self._translate("MainWindow", "Click Position", None)
         )
 
-
+#start ros
 def ros_spin():
     rospy.spin()
 

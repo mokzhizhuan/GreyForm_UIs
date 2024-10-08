@@ -32,6 +32,7 @@ class settingbuttonUI(object):
         stackedWidget_main,
     ):
         # starting initialize
+        super().__init__()
         self.MarkingbackButton = MarkingbackButton
         self.stackedWidgetsetting = stackedWidgetsetting
         self.stackedWidget = stackedWidget

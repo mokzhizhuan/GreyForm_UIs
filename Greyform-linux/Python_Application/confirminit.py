@@ -51,6 +51,7 @@ class ConfirminitDialog(QMainWindow):
         dialog_layout.addWidget(buttonBox)
         dialog.exec_()
 
+    #run process
     def run_subprocess_commands(self, ros_node, dialog):
         try:
             print("Running colcon build...")

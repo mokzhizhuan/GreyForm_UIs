@@ -23,6 +23,7 @@ class Login(QDialog):
         self.form.password.returnPressed.connect(self.loginfunction)
         self.form.changepassbutton.clicked.connect(self.changepassword)
 
+    #setup login ui
     def setupUI(self):
         self.loginboxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
@@ -104,6 +105,7 @@ class ChangePass(QDialog):
         self.stackedWidgetusersetting = stackedWidgetusersetting
         self.setupUI()
 
+    #setup change password ui
     def setupUI(self):
         self.changepassboxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
@@ -165,6 +167,7 @@ class Profile(QDialog):
         self.setupUI()
         self.form.loginbutton.clicked.connect(self.backtologin)
 
+    #setup profile ui
     def setupUI(self):
         self.form.userlabel.setAlignment(Qt.AlignCenter)
         self.profilelayout = QVBoxLayout()

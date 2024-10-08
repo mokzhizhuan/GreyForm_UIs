@@ -11,6 +11,8 @@ import PythonApplication.dialoglogger as logs
 #talker node
 class TalkerNode:
     def __init__(self):
+        # starting initialize
+        super().__init__()
         self.file_publisher_ = rospy.Publisher(
             "file_extraction_topic",
             FileExtractionMessage,

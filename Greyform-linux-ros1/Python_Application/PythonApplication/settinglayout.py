@@ -41,6 +41,7 @@ class SettingLayout(object):
         RestartPowerOffPage,
     ):
         # starting initialize
+        super().__init__()
         self.settingform = settingform
         self.labeltitlsetting = labeltitlsetting
         self.settinglayoutWidget = settinglayoutWidget

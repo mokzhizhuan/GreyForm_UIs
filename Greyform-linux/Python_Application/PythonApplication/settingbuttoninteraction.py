@@ -57,7 +57,7 @@ class settingbuttonUI(object):
         self.stackedWidget_main = stackedWidget_main
         self.button_UI()
 
-
+    #setting button ui implementation
     def button_UI(self):
         self.MarkingbackButton.clicked.connect(self.confirm_save_settings)
         self.HomeButton.clicked.connect(self.homepages)

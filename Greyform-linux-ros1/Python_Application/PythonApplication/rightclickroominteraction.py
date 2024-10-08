@@ -17,6 +17,7 @@ class rightclickRoomInteract(object):
         ros_node,
     ):
         # starting initialize
+        super().__init__()
         self.interactor_style = interactor_style
         self.xlabels = setcamerainteraction[0]
         self.ylabels = setcamerainteraction[1]

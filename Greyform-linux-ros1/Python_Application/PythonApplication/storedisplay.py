@@ -9,6 +9,7 @@ class storage(object):
         self, setcamerainteraction, wall_identifiers, localizebutton, ros_node
     ):
         # starting initialize
+        super().__init__()
         self.setcamerainteraction = setcamerainteraction
         self.wall_identifiers = wall_identifiers
         self.localizebutton = localizebutton
