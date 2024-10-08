@@ -10,6 +10,8 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 #door thickness
 class doorMesh(object):
     def __init__(self):
+        # starting initialize
+        super().__init__()
         self.reader = vtk.vtkSTLReader()
         self.reader.SetFileName("door.stl")
         self.reader.Update()

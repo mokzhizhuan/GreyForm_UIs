@@ -32,7 +32,8 @@ class createMesh(QMainWindow):
         localizebutton,
         file_path,
     ):
-        # variable for loading bar ui
+        # starting initialize
+        super().__init__()
         self.defaultposition = [0, 0, 1]
         self.reader = vtk.vtkSTLReader()
         self.meshbounds = None

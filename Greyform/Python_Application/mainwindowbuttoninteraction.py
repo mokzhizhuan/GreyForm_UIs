@@ -21,6 +21,8 @@ class mainwindowbuttonUI(object):
         ConfirmAckButton,
         MarkingButton,
     ):
+        # starting initialize
+        super().__init__()
         self.mainwindow = mainwindow
         self.stackedWidget = stackedWidget
         self.menuStartButton = menuStartButton

@@ -13,6 +13,8 @@ from PyQt5.QtWidgets import (
 #load 2 pyvista frame in the ui
 class StLloaderpyvista(object):
     def __init__(self, meshsplot, loader, loader_2):
+        # starting initialize
+        super().__init__()
         self.meshsplot = meshsplot
         self.loader = loader
         self.loader_2 = loader_2

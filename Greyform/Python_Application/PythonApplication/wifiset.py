@@ -8,6 +8,8 @@ from pywifi import PyWiFi
 #setup wifi interface for setting implementation
 class setup_wifi(object):
     def __init__(self, treeWidget, interface_label):
+        # starting initialize
+        super().__init__()
         self.wifi = PyWiFi()
         self.interface = self.wifi.interfaces()[0]
         self.treeWidget = treeWidget

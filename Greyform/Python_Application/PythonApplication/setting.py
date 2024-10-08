@@ -29,6 +29,7 @@ class Setting(QWidget):
         default_settings,
         stackedWidget_main,
     ):
+        # starting initialize
         super(Setting, self).__init__()
         self.stackedWidget = stackedwidgetpage
         self.windowwidth = windowwidth
