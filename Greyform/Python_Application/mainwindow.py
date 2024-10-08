@@ -20,6 +20,7 @@ import os
 class Ui_MainWindow(QMainWindow):
     # starting ui interface
     def __init__(self):
+        # starting initialize
         super(Ui_MainWindow, self).__init__()
         jsonfile = "settings.json"
         (

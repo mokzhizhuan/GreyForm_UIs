@@ -24,6 +24,7 @@ class RestartCloseWidget(QWidget):
         font_size,
         password,
     ):
+        # starting initialize
         super().__init__()
         self.MainWindow = MainWindow
         self.savesetting = saved_setting

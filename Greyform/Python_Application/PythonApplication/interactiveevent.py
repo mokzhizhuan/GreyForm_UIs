@@ -16,7 +16,8 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     def __init__(
         self, setcamerainteraction, wall_identifiers, localizebutton
     ):
-        # starting initalize
+        # starting initialize
+        super().__init__()
         self.addactor = self.AddObserver(
             "RightButtonPressEvent", self.RightButtonPressEvent
         )

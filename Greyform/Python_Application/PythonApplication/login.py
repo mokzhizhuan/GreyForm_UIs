@@ -9,6 +9,7 @@ from PyQt5.QtGui import *
 # user login function will include profile also later
 class Login(QDialog):
     def __init__(self, accountinfo, widget, userlabel, file, stackedWidgetusersetting):
+        # starting initialize
         super(Login, self).__init__()
         self.form = uic.loadUi("UI_Design/login.ui", self)
         self.accountinfo = accountinfo
@@ -23,6 +24,7 @@ class Login(QDialog):
         self.form.password.returnPressed.connect(self.loginfunction)
         self.form.changepassbutton.clicked.connect(self.changepassword)
 
+    #setup login ui
     def setupUI(self):
         self.loginboxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
@@ -106,6 +108,7 @@ class ChangePass(QDialog):
         self.stackedWidgetusersetting = stackedWidgetusersetting
         self.setupUI()
 
+    # change password ui
     def setupUI(self):
         self.changepassboxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
@@ -121,7 +124,7 @@ class ChangePass(QDialog):
         self.changepassboxlayout.addWidget(self.form.horizontalLayoutWidget_2)
         self.setLayout(self.changepassboxlayout)
 
-    # change pass ui
+    #setup change pass ui
     def changepassfunction(self):
         password = self.form.password.text()
         if password != self.accountinfo[0]["Pass"]:
@@ -168,6 +171,7 @@ class Profile(QDialog):
         self.setupUI()
         self.form.loginbutton.clicked.connect(self.backtologin)
 
+    #setup profile ui
     def setupUI(self):
         self.form.userlabel.setAlignment(Qt.AlignCenter)
         self.profilelayout = QVBoxLayout()

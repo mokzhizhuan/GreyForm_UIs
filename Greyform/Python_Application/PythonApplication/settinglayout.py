@@ -4,7 +4,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-#format layout
+#format setting layout
 class SettingLayout(object):
     def __init__(
         self,
@@ -40,6 +40,8 @@ class SettingLayout(object):
         restartwidget,
         RestartPowerOffPage,
     ):
+        # starting initialize
+        super().__init__()
         self.settingform = settingform
         self.labeltitlsetting = labeltitlsetting
         self.settinglayoutWidget = settinglayoutWidget

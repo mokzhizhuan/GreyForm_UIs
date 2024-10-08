@@ -29,6 +29,8 @@ class Ui_MainWindow_layout(object):
         SettingButton,
         settingpage,
     ):
+        # starting initialize
+        super().__init__()
         self.stackedWidget = stackedWidget
         self.maintitle = maintitle
         self.mainlayoutwidget = mainlayoutwidget

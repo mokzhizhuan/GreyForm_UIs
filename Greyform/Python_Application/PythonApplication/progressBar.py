@@ -16,6 +16,7 @@ from stl import mesh
 # progress bar to load the imported stl to pyvista or gl view widget
 class pythonProgressBar(QDialog):
     def __init__(self, value, file_path, mainwindowforfileselection):
+        # starting initialize
         super().__init__()
         progress_layout = QVBoxLayout()
         self.setWindowTitle("Progress Window")
