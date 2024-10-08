@@ -170,6 +170,7 @@ class FileSelectionMesh():
             print(f"Unknown geometry type: {type(geometry)}")
         return offset
 
+    #resize
     def resize_stl(self, file_path, scale_factor, output_path):
         Mesh = mesh.Mesh.from_file(file_path)
         Mesh.vectors *= scale_factor

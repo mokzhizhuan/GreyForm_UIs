@@ -16,6 +16,7 @@ class storage(object):
         self.ros_node = ros_node
         self.cubeactor = setcamerainteraction[11]
 
+    #passing method to store
     def storedisplay(self):
         self.oldcamerapos = [
             self.cubeactor.GetPosition()[0],

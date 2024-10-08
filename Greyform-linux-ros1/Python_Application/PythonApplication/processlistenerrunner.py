@@ -46,6 +46,7 @@ class ListenerNodeRunner(QMainWindow):
         self.listener_started = False
         self.signals.status_signal.connect(self.update_status)
 
+    #listener runner process ui
     def initUI(self):
         self.status_label = QLabel("Status: Not Running", self)
         self.status_label.setStyleSheet(
@@ -118,6 +119,7 @@ class ListenerNodeRunner(QMainWindow):
             print(stderr.decode("utf-8"))
         self.process_finished()
 
+    #process completed
     def process_finished(self):
         self.signals.status_signal.emit("Status: Completed")
         self.listener_started = True
