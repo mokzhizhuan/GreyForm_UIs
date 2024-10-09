@@ -119,6 +119,7 @@ class createMesh(QMainWindow):
         self.set_Collision()
         self.setupvtkframe(dataseqtext)
 
+    #include collision
     def set_Collision(self):
         self.collisionFilter = vtk.vtkCollisionDetectionFilter()
         self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
