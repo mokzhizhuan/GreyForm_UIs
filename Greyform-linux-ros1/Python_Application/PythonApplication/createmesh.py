@@ -202,6 +202,10 @@ class createMesh(QMainWindow):
         transformFilter.SetTransform(transform)
         transformFilter.Update()
         transformedPolyData = transformFilter.GetOutput()
+        self.setnormals(transformedPolyData)
+
+    #set the mesh to the 0,0,0 starting pos
+    def setnormals(self, transformedPolyData):
         normals = vtkPolyDataNormals()
         normals.SetInputData(transformedPolyData)
         normals.ComputePointNormalsOn()
@@ -228,15 +232,6 @@ class createMesh(QMainWindow):
         self.actor.GetProperty().FrontfaceCullingOn()
         for i in range(6):
             self.meshbounds[i] = int(self.actor.GetBounds()[i])
-
-    #clear actor
-    def clearactor(self):
-        actors = self.ren.GetActors()
-        actors.InitTraversal()
-        actor = actors.GetNextActor()
-        while actor:
-            self.ren.RemoveActor(actor)
-            actor = actors.GetNextActor()
 
     # create visual actor for frame controls
     def create_cube_actor(self):

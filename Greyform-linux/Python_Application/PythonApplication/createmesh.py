@@ -202,6 +202,10 @@ class createMesh(QMainWindow):
         transformFilter.SetTransform(transform)
         transformFilter.Update()
         transformedPolyData = transformFilter.GetOutput()
+        self.setnormals(transformedPolyData)
+
+    #set the mesh to the 0,0,0 starting pos
+    def setnormals(self, transformedPolyData):
         normals = vtkPolyDataNormals()
         normals.SetInputData(transformedPolyData)
         normals.ComputePointNormalsOn()
