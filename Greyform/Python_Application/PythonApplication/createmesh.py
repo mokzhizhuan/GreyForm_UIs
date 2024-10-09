@@ -236,8 +236,6 @@ class createMesh(QMainWindow):
 
     # set mesh as actor in vtk frame
     def polyDataToActor(self, polydata):
-        """Wrap the provided vtkPolyData object in a mapper and an actor, returning
-        the actor."""
         mapper = vtk.vtkPolyDataMapper()
         mapper.SetInputConnection(self.reader.GetOutputPort())
         self.actor = vtk.vtkActor()
