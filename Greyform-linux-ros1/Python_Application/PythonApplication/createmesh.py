@@ -229,6 +229,15 @@ class createMesh(QMainWindow):
         for i in range(6):
             self.meshbounds[i] = int(self.actor.GetBounds()[i])
 
+    #clear actor
+    def clearactor(self):
+        actors = self.ren.GetActors()
+        actors.InitTraversal()
+        actor = actors.GetNextActor()
+        while actor:
+            self.ren.RemoveActor(actor)
+            actor = actors.GetNextActor()
+
     # create visual actor for frame controls
     def create_cube_actor(self):
         self.cube_source = vtk.vtkCubeSource()
