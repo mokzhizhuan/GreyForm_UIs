@@ -5,9 +5,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.progressBar as Progress
 import PythonApplication.dxfframeloader as dxfload
-import ifcopenshell
-import ifcopenshell.geom
-import PythonApplication.IFCpythondialog as ProgressIFCFile
 import geopandas as gpd
 
 # load pyvista in the frame

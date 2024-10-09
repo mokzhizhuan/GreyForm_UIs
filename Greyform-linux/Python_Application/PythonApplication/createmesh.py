@@ -139,6 +139,7 @@ class createMesh(QMainWindow):
         self.set_Collision()
         self.setupvtkframe(dataseqtext)
 
+    #insert collision
     def set_Collision(self):
         self.collisionFilter = vtk.vtkCollisionDetectionFilter()
         self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
@@ -228,6 +229,15 @@ class createMesh(QMainWindow):
         for i in range(6):
             self.meshbounds[i] = int(self.actor.GetBounds()[i])
 
+    #clear actor
+    def clearactor(self):
+        actors = self.ren.GetActors()
+        actors.InitTraversal()
+        actor = actors.GetNextActor()
+        while actor:
+            self.ren.RemoveActor(actor)
+            actor = actors.GetNextActor()
+
     #create visual actor for frame controls
     def create_cube_actor(self):
         self.cube_source = vtk.vtkCubeSource()
@@ -243,15 +253,6 @@ class createMesh(QMainWindow):
         self.cube_actor.GetProperty().FrontfaceCullingOn()
         self.cube_actor.GetProperty().SetOpacity(0.0)
         return self.cube_actor
-
-    #clear actor
-    def clearactor(self):
-        actors = self.ren.GetActors()
-        actors.InitTraversal()
-        actor = actors.GetNextActor()
-        while actor:
-            self.ren.RemoveActor(actor)
-            actor = actors.GetNextActor()
 
     #set actor in the vtk mapper
     def polyDataToActor(self):
