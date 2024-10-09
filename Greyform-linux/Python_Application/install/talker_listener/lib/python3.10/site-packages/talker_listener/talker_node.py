@@ -16,6 +16,7 @@ import PythonApplication.dialoglogger as logs
 #talker node
 class TalkerNode(Node):
     def __init__(self):
+        # starting initialize
         super().__init__("talker_node")
         self.file_publisher_ = self.create_publisher(
             FileExtractionMessage, "file_extraction_topic", 10
@@ -147,7 +148,7 @@ class TalkerNode(Node):
         self.active_dialog.close()
         self.active_dialog = None
 
-
+#main runner for listener node
 def main(args=None):
     rclpy.init(args=args)
     talkerNode = TalkerNode()

@@ -56,20 +56,28 @@ class createMesh(QMainWindow):
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
-        seq1Button.clicked.connect(
-            lambda: self.addseqtext(seq1Button, NextButton_Page_3)
-        )
-        seq2Button.clicked.connect(
-            lambda: self.addseqtext(seq2Button, NextButton_Page_3)
-        )
-        seq3Button.clicked.connect(
-            lambda: self.addseqtext(seq3Button, NextButton_Page_3)
-        )
+        self.seq1Button = seq1Button
+        self.seq2Button = seq2Button
+        self.seq3Button = seq3Button
+        self.NextButton_Page_3 = NextButton_Page_3
+        self.button_UI()
         self.Stagelabel = Stagelabel
         self.wall_identifiers = vtk_data_excel.exceldataextractor()
         self.dataseqtext = None
 
-    #store sequence as a variable
+    #setup button interaction and store in the ui
+    def button_UI(self):
+        self.seq1Button.clicked.connect(
+            lambda: self.addseqtext(self.seq1Button, self.NextButton_Page_3)
+        )
+        self.seq2Button.clicked.connect(
+            lambda: self.addseqtext(self.seq2Button, self.NextButton_Page_3)
+        )
+        self.seq3Button.clicked.connect(
+            lambda: self.addseqtext(self.seq3Button, self.NextButton_Page_3)
+        )
+
+    # store sequence as a variable
     def addseqtext(self, buttonseq, buttonnextpage):
         self.dataseqtext = buttonseq.text()
         self.dataseqtext = self.dataseqtext.replace("Sequence ", "")
@@ -79,8 +87,8 @@ class createMesh(QMainWindow):
         buttonnextpage.show()
         self.loadStl(self.dataseqtext)
 
-    #load stl in vtk frame
-    def loadStl(self , dataseqtext):
+    # load stl in vtk frame
+    def loadStl(self, dataseqtext):
         meshs = mesh.Mesh.from_file(self.polydata)
         points = meshs.points.reshape(-1, 3)
         faces = np.arange(points.shape[0]).reshape(-1, 3)
@@ -97,7 +105,7 @@ class createMesh(QMainWindow):
         self.reader.SetPolys(vtk_faces)
         self.polyDataToActor()
         self.fixedposition()
-        center = [
+        self.center = [
             (self.meshbounds[0] + self.meshbounds[1]) / 2,
             (self.meshbounds[2] + self.meshbounds[3]) / 2,
             (self.meshbounds[4] + self.meshbounds[5]) / 2,
@@ -111,13 +119,15 @@ class createMesh(QMainWindow):
             z_coords.append(wall_identify["Position Z (m)"])
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
-        self.cubeactor.SetPosition(160, center[1], center[2])
+        self.cubeactor.SetPosition(160, self.center[1], self.center[2])
         self.cubeactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
         )
-        spaceseperation = 50
+        self.spaceseperation = 50
         self.cameraactor.SetPosition(
-            160, center[1] - spaceseperation, center[2] - spaceseperation
+            160,
+            self.center[1] - self.spaceseperation,
+            self.center[2] - self.spaceseperation,
         )
         self.cameraactor.SetOrientation(
             self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
@@ -126,6 +136,10 @@ class createMesh(QMainWindow):
         self.ren.AddActor(self.cubeactor)
         self.ren.AddActor(self.actor)
         self.oldcamerapos = self.cubeactor.GetPosition()
+        self.set_Collision()
+        self.setupvtkframe(dataseqtext)
+
+    def set_Collision(self):
         self.collisionFilter = vtk.vtkCollisionDetectionFilter()
         self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
         self.collisionFilter.SetInputData(1, self.actor.GetMapper().GetInput())
@@ -135,6 +149,9 @@ class createMesh(QMainWindow):
         self.collisionFilter.SetMatrix(1, self.actor.GetMatrix())
         self.collisionFilter.SetCollisionModeToAllContacts()
         self.collisionFilter.GenerateScalarsOn()
+
+    #setup vtk frame ui
+    def setupvtkframe(self, dataseqtext):
         setcamerainteraction = [
             self.xlabels,
             self.ylabels,
@@ -151,8 +168,8 @@ class createMesh(QMainWindow):
             self.cameraactor,
             self.oldcamerapos,
             self.collisionFilter,
-            spaceseperation,
-            center,
+            self.spaceseperation,
+            self.center,
             self.filepath,
             self.Stagelabel,
             self.excelfiletext,
@@ -174,7 +191,7 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
 
-    #fixed x y and z pos
+    # fixed x y and z pos
     def fixedposition(self):
         minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]
         transform = vtk.vtkTransform()
@@ -192,6 +209,10 @@ class createMesh(QMainWindow):
         mesh_with_normals = normals.GetOutput()
         mapper = vtkPolyDataMapper()
         mapper.SetInputData(mesh_with_normals)
+        self.setactor(mapper)
+
+    #setup main actor
+    def setactor(self, mapper):
         self.actor = vtk.vtkActor()
         self.actor.SetMapper(mapper)
         self.actor.GetProperty().SetRepresentationToSurface()
@@ -206,9 +227,8 @@ class createMesh(QMainWindow):
         self.actor.GetProperty().FrontfaceCullingOn()
         for i in range(6):
             self.meshbounds[i] = int(self.actor.GetBounds()[i])
-        print(self.actor.GetBounds())
 
-    #create visual actor for frame controls
+    # create visual actor for frame controls
     def create_cube_actor(self):
         self.cube_source = vtk.vtkCubeSource()
         self.cube_source.SetXLength(10)
@@ -224,7 +244,7 @@ class createMesh(QMainWindow):
         self.cube_actor.GetProperty().SetOpacity(0.0)
         return self.cube_actor
 
-    #set actor in the vtk mapper
+    # set actor in the vtk mapper
     def polyDataToActor(self):
         mapper = vtk.vtkPolyDataMapper()
         mapper.SetInputData(self.reader)
@@ -234,4 +254,3 @@ class createMesh(QMainWindow):
         self.meshbounds = []
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
-

@@ -7,7 +7,9 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QMessageBox,
+    QApplication,
 )
+import appinit as initlizemenu
 from PyQt5.QtGui import *
 import json
 

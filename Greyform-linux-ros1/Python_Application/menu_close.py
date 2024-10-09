@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import QMainWindow, QDialog, QVBoxLayout, QLabel, QApplicat
 from PyQt5.QtGui import QFont
 import appinit as initlizemenu
 import sys
-import os
 
 
 # menu dialog to close the app
