@@ -14,7 +14,6 @@ class wall_Interaction(object):
         setcamerainteraction,
         wall_identifiers,
         localizebutton,
-        ros_node,
     ):
         # starting initialize
         super().__init__()
@@ -28,11 +27,8 @@ class wall_Interaction(object):
         self.file_path = setcamerainteraction[17]
         self.reader = setcamerainteraction[10]
         self.Stagelabel = setcamerainteraction[18]
-        self.excelfiletext = setcamerainteraction[19]
         self.cubeactor = setcamerainteraction[11]
-        self.dataseqtext = setcamerainteraction[20]
         self.interaction_enabled = True
-        self.ros_node = ros_node
         self.counter = 0
         self.picked_positions = []
         self.picked_position_quads = []

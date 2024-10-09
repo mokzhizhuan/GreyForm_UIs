@@ -244,6 +244,15 @@ class createMesh(QMainWindow):
         self.cube_actor.GetProperty().SetOpacity(0.0)
         return self.cube_actor
 
+    #clear actor
+    def clearactor(self):
+        actors = self.ren.GetActors()
+        actors.InitTraversal()
+        actor = actors.GetNextActor()
+        while actor:
+            self.ren.RemoveActor(actor)
+            actor = actors.GetNextActor()
+
     #set actor in the vtk mapper
     def polyDataToActor(self):
         mapper = vtk.vtkPolyDataMapper()
