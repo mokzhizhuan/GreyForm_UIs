@@ -179,22 +179,10 @@ class createMesh(QMainWindow):
         transformFilter.SetTransform(transform)
         transformFilter.Update()
         transformedPolyData = transformFilter.GetOutput()
-        """normals = vtkPolyDataNormals()
-        normals.SetInputData(transformedPolyData)
-        normals.ComputePointNormalsOn()
-        normals.ComputeCellNormalsOff()
-        normals.Update()
-        mesh_with_normals = normals.GetOutput()
-        internal_points = vtk.vtkPoints()
-        thickness = self.doordimension[3]
-        for i in range(mesh_with_normals.GetNumberOfPoints()):
-            point = mesh_with_normals.GetPoint(i)
-            normal = mesh_with_normals.GetPointData().GetNormals().GetTuple(i)
-            new_point = [point[j] - thickness * normal[j] for j in range(3)]
-            internal_points.InsertNextPoint(new_point)
-        internal_mesh = vtkPolyData()
-        internal_mesh.SetPoints(internal_points)
-        internal_mesh.SetPolys(polydata.GetPolys())"""
+        self.setappendfilter(transformedPolyData)
+
+    #set append filter
+    def setappendfilter(self, transformedPolyData):
         append_filter = vtkAppendPolyData()
         append_filter.AddInputData(transformedPolyData)
         # append_filter.AddInputData(internal_mesh)
