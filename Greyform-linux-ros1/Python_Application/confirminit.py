@@ -12,8 +12,6 @@ import subprocess
 import mainwindow as locMarapplication
 import rospy
 import os
-import sys
-import threading
 
 #confirm dialog runner
 class ConfirminitDialog(QMainWindow):
