@@ -20,37 +20,7 @@ class Exportexcelinfo(object):
                 "Shape type",
                 "Status",
             ]
-            dataframe_Legend = pd.read_excel(
-                "Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2
-            )
-            self.pen_column = dataframe_Legend.columns[3]
-            self.pin_id_column = dataframe_Legend.columns[9]
-            dataframe_Legend = dataframe_Legend[[self.pen_column, self.pin_id_column]]
-            if (
-                self.pen_column in dataframe_Legend.columns
-                and self.pin_id_column in dataframe_Legend.columns
-            ):
-                dataframe_Legend[self.pen_column].fillna("", inplace=True)
-                dataframe_Legend[self.pin_id_column].fillna("", inplace=True)
-                filtered_dataframe = dataframe_Legend[
-                    (dataframe_Legend[self.pen_column] != "")
-                    & (dataframe_Legend[self.pin_id_column] != "")
-                ]
-                self.wall_legend = filtered_dataframe.to_dict(orient="records")
-                self.wall_name = "BSS.20mm Wall Finishes (600x600mm)"
-                self.wall_600x600mm = []
-                self.indexwall = 0
-                self.index = 0
-                for data_legend in self.wall_legend:
-                    data_pen_name = data_legend.get(self.pen_column)
-                    data_pin_id = data_legend.get(self.pin_id_column)
-                    if self.wall_name in data_pen_name:
-                        self.wall_600x600mm.append(
-                            {
-                                "Penetration/Fitting/Reference Point Name": data_pen_name,
-                                "Pin ID": data_pin_id,
-                            }
-                        )
+            self.add_legends()
             pandas_data = []
             for object_data in data:
                 row = []
@@ -74,6 +44,39 @@ class Exportexcelinfo(object):
                     self.apply_rotation_to_markers(worksheet, df_class)
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
+    
+    def add_legends(self):
+        dataframe_Legend = pd.read_excel(
+                "Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2
+            )
+        self.pen_column = dataframe_Legend.columns[3]
+        self.pin_id_column = dataframe_Legend.columns[9]
+        dataframe_Legend = dataframe_Legend[[self.pen_column, self.pin_id_column]]
+        if (
+            self.pen_column in dataframe_Legend.columns
+            and self.pin_id_column in dataframe_Legend.columns
+        ):
+            dataframe_Legend[self.pen_column].fillna("", inplace=True)
+            dataframe_Legend[self.pin_id_column].fillna("", inplace=True)
+            filtered_dataframe = dataframe_Legend[
+                (dataframe_Legend[self.pen_column] != "")
+                & (dataframe_Legend[self.pin_id_column] != "")
+            ]
+            self.wall_legend = filtered_dataframe.to_dict(orient="records")
+            self.wall_name = "BSS.20mm Wall Finishes (600x600mm)"
+            self.wall_600x600mm = []
+            self.indexwall = 0
+            self.index = 0
+            for data_legend in self.wall_legend:
+                data_pen_name = data_legend.get(self.pen_column)
+                data_pin_id = data_legend.get(self.pin_id_column)
+                if self.wall_name in data_pen_name:
+                    self.wall_600x600mm.append(
+                        {
+                            "Penetration/Fitting/Reference Point Name": data_pen_name,
+                            "Pin ID": data_pin_id,
+                        }
+                    )
 
     #get object data based on class using ifc
     def get_objects_data_by_class(self, file, class_type):
