@@ -10,6 +10,7 @@ from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
 import PythonApplication.usermanual as userHelper
+import PythonApplication.ui_helper as UserInterfaces
 import PythonApplication.setting as setting
 import jsonimport as jsonfileopener
 import vtk
@@ -27,6 +28,7 @@ class Ui_MainWindow(QMainWindow):
         # starting initialize
         super(Ui_MainWindow, self).__init__()
         self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
+        self.mainwindow.setMouseTracking(False)
         jsonfile = "settings.json"
         (
             font,
@@ -35,26 +37,33 @@ class Ui_MainWindow(QMainWindow):
             self.selected_time_zone,
             self.width,
             self.height,
+            self.interfacehelper,
         ) = jsonfileopener.jsopen(jsonfile)
         self.font_size = int(font)
         self.font = QFont()
         self.font.setPointSize(self.font_size)
-        if self.width == 1920 and self.height == 1080:
-            self.mainwindow.showMaximized()
-        else:
-            self.mainwindow.showNormal()
-            self.mainwindow.resize(self.width, self.height)
         self.filepaths = os.getcwd()
         self.file = None
         self.file_path = None
         self.ros_node = ros_node
+        """self.userinterfacehelp = UserInterfaces.Ui_Dialog_Helper(
+            self.interfacehelper, self.mainwindow
+        )"""
+        #self.interfacehelper = self.userinterfacehelp.ask_first_time_user()
         self.default_settings = {
             "theme": str(self.theme),
             "font_size": self.font_size,
             "resolution": f"{self.width} x {self.height}",
             "timezone": self.selected_time_zone,
             "password": str(self.password),
+            "userinterface": str(self.interfacehelper),
         }
+        #self.Helperinterfacebuttons()
+        if self.width == 1920 and self.height == 1080:
+            self.mainwindow.showMaximized()
+        else:
+            self.mainwindow.showNormal()
+            self.mainwindow.resize(self.width, self.height)
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
         self.apply_font_to_widgets(self.mainwindow, self.font)
@@ -62,6 +71,17 @@ class Ui_MainWindow(QMainWindow):
         self.excel_file_selected = False
         self.file_list_selected = False
         self.setupUi()
+
+    # display warning and helper interface
+    def Helperinterfacebuttons(self):
+        if self.interfacehelper == "on":
+            self.mainwindow.helperButton.setText(
+                "Helper Display : " + self.interfacehelper
+            )
+        else:
+            self.mainwindow.helperButton.setText(
+                "Helper Display : " + self.interfacehelper
+            )
 
     # apply font
     def apply_font_to_widgets(self, parent, font):
@@ -116,6 +136,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.usermanualpage,
         )  # users manual instruction page
         self.mainwindow.LocalizationButton.hide()
+        self.mainwindow.helperButton.hide()
         self.setStretch()
 
     # button interaction
@@ -125,6 +146,7 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.SettingButton.clicked.connect(self.directtosettingpage)
         self.mainwindow.usermanualButton.clicked.connect(self.directtousermanualpage)
         self.mainwindow.excelFilePathButton.clicked.connect(self.excelfilesdirectory)
+        self.mainwindow.helperButton.clicked.connect(self.helpinterface)
         self.buttonui = mainwindowbuttonUIinteraction.mainwindowbuttonUI(
             self.mainwindow,
             self.mainwindow.stackedWidget,
@@ -143,14 +165,27 @@ class Ui_MainWindow(QMainWindow):
             self.ros_node,
         )
 
-    #main ui page interaction
+    # interface for user friendly gui
+    def helpinterface(self):
+        if self.interfacehelper == "on":
+            self.interfacehelper = "off"
+            self.mainwindow.helperButton.setText(
+                "Helper Display : " + self.interfacehelper
+            )
+        else:
+            self.interfacehelper = "on"
+            self.mainwindow.helperButton.setText(
+                "Helper Display : " + self.interfacehelper
+            )
+
+    # main ui page interaction
     def directtosettingpage(self):
         self.mainwindow.stackedWidget_main.setCurrentIndex(1)
 
     def directtousermanualpage(self):
         self.mainwindow.stackedWidget_main.setCurrentIndex(2)
 
-    #file directory for 3d obj loader
+    # file directory for 3d obj loader
     def browsefilesdirectory(self):
         self.filepaths = QFileDialog.getExistingDirectory(
             None, "Choose Directory", self.filepaths
@@ -158,19 +193,21 @@ class Ui_MainWindow(QMainWindow):
         model = QFileSystemModel()
         model.setRootPath(self.filepaths)
         model.setFilter(QDir.NoDotAndDotDot | QDir.Files)
+        model.setNameFilters(["*.dxf", "*.stl", "*.ifc"])
+        model.setNameFilterDisables(False)
         self.mainwindow.Selectivefilelistview.setModel(model)
         self.mainwindow.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
         self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)
 
-    #excel file directory for excel sheet only
+    # excel file directory for excel sheet only
     def excelfilesdirectory(self):
         self.excelfilepath, _ = QFileDialog.getOpenFileName(
             self, "Choose Excel File", "", "Excel Files (*.xlsx *.xls)"
         )
         if self.excelfilepath:
             self.mainwindow.excelfilpathtext.setText(self.excelfilepath)
-        self.excel_file_selected = True  
-        self.check_if_both_selected()    
+        self.excel_file_selected = True
+        self.check_if_both_selected()
 
     # file selection when clicked
     def on_selection_changed(self, index):
@@ -195,8 +232,10 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.LocalizationButton,
             self.ros_node,
             self.mainwindow.excelfilpathtext,
+            self.mainwindow.seqlabel_2,
+            self.mainwindow.markingitembutton
         ]
-        fileselectionmesh.FileSelectionMesh(self.file_path, mainwindowforfileselection)
+        fileselectionmesh.FileSelectionMesh(self.file_path, mainwindowforfileselection, self.mainwindow)
         if ".stl" in file:
             self.file = file.replace(".stl", "")
         elif ".ifc" in file:
@@ -211,16 +250,17 @@ class Ui_MainWindow(QMainWindow):
             self._translate("MainWindow", "Product: " + str(self.file))
         )
         self.file_list_selected = True
+        self.show_completion_message()
         self.check_if_both_selected()
 
-    #button show when 2 files are insertef in the loader
+    # button show when 2 files are insertef in the loader
     def check_if_both_selected(self):
         if self.excel_file_selected == True and self.file_list_selected == True:
             self.mainwindow.NextButton_Page_2.show()
         else:
             self.mainwindow.NextButton_Page_2.hide()
 
-    #layout for main window
+    # layout for main window
     def setStretch(self):
         self.boxLayout = QVBoxLayout()
         self.boxLayout.addWidget(self.mainwindow.stackedWidget_main)
@@ -245,6 +285,7 @@ class Ui_MainWindow(QMainWindow):
             self.settingpageuipage,
             self.mainwindow.mainconfiguration,
             self.mainwindow.usermanualButton,
+            self.mainwindow.helperButton,
             self.mainwindow.SettingButton,
             self.mainwindow.settingpage,
         )
@@ -270,7 +311,29 @@ class Ui_MainWindow(QMainWindow):
         self.renderWindowInteractor.GetRenderWindow().GetInteractor().TerminateApp()
         event.accept()
 
-    #text loader
+    def show_completion_message(self):
+        msg_box = QMessageBox()
+        msg_box.setStyleSheet(
+            """
+        QMessageBox {
+            font-family: Helvetica;
+            font-size: 20px;
+            color: blue;
+            }
+        QPushButton {
+            font-family: Helvetica;
+            font-size: 20px;
+            padding: 5px;
+            }
+            """
+        )
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.setWindowTitle("3d Objects file initialize")
+        msg_box.setText("3d Objects file initialize is completed.")
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.exec_()
+
+    # text loader
     def retranslateUi(self):
         self.mainwindow.displaybeforelabel.setText(
             self._translate("MainWindow", "Mesh Camera Dimensions")
@@ -278,8 +341,14 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.label_2.setText(
             self._translate("MainWindow", "Click Position", None)
         )
+        self.mainwindow.FilePathButton.setToolTip(
+            "Please insert File path, for stl , ifc , dxf , etc."
+        )
+        self.mainwindow.excelFilePathButton.setToolTip("Please insert excel file")
+        self.mainwindow.LocalizationButton.setToolTip("Run the listener and talker node")
 
-#ros executor
+
+# ros executor
 def ros_spin(node):
     executor = MultiThreadedExecutor()
     executor.add_node(node)
@@ -290,7 +359,7 @@ def ros_spin(node):
         node.destroy_node()
 
 
-#initalize ros node for talker
+# initalize ros node for talker
 if __name__ == "__main__":
     rclpy.init()
     talker_node = RosPublisher.TalkerNode()

@@ -37,6 +37,7 @@ class Setting(QWidget):
         font = default_settings["font_size"]
         self.theme = default_settings["theme"]
         self.password = default_settings["password"]
+        self.interfacehelper = default_settings["userinterface"]
         self.font_size = int(font)
         self.selected_time_zone = default_settings["timezone"]
         self.default_settings = default_settings
@@ -76,6 +77,11 @@ class Setting(QWidget):
         self.settingform.resolutioncomboBox.currentIndexChanged.connect(
             self.change_resolution
         )
+        userinterface_index = self.settingform.userinterfacebox.findText(
+            self.default_settings["userinterface"], Qt.MatchFixedString
+        )
+        if userinterface_index >= 0:
+            self.settingform.userinterfacebox.setCurrentIndex(userinterface_index)
         resolution_index = self.settingform.resolutioncomboBox.findText(
             self.default_settings["resolution"], Qt.MatchFixedString
         )
@@ -123,6 +129,7 @@ class Setting(QWidget):
             lambda: default.restoredefaultsetting(
                 self.accountinfo,
                 self.settingform.themebox,
+                self.settingform.userinterfacebox,
                 self.settingform.Text_size,
                 self.settingform.resolutioncomboBox,
                 self.settingform.country,
@@ -166,6 +173,7 @@ class Setting(QWidget):
             self.settingform.PowerButton,
             self.settingform.maintitlelabel,
             self.settingform.themebox,
+            self.settingform.userinterfacebox,
             self.settingform.Text_size,
             self.settingform.resolutioncomboBox,
             self.settingform.country,
@@ -173,6 +181,7 @@ class Setting(QWidget):
             self.MainWindow,
             self.saved_setting,
             self.stackedWidget_main,
+            self.interfacehelper,
         )
 
     # add text
@@ -282,6 +291,7 @@ class Setting(QWidget):
             self.settingform.serviceipaddresspage,
             self.settingform.layoutWidgetservicestextsize,
             self.settingform.host,
+            self.settingform.LayoutWidgetuserinterface,
             self.settingform.layoutWidgetservicesresolution,
             self.settingform.layoutWidgetservicescountryGMT,
             self.settingform.layoutWidgetservicessetpass,

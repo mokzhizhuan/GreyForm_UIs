@@ -1,8 +1,15 @@
 import menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
 import PythonApplication.menu_confirmack as confirmack
+import PythonApplication.usercontroldialog as usercontrols
+from PyQt5 import QtCore, QtWidgets, QtGui, uic
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
-#main window button interaction
+
+# main window button interaction
 class mainwindowbuttonUI(object):
     def __init__(
         self,
@@ -41,7 +48,7 @@ class mainwindowbuttonUI(object):
         self.ros_node = ros_node
         self.button_UI()
 
-    #stacked widget page ui
+    # stacked widget page ui
     def startconfigure(self):
         self.stackedWidget.setCurrentIndex(1)
 
@@ -49,7 +56,11 @@ class mainwindowbuttonUI(object):
         self.stackedWidget.setCurrentIndex(2)
 
     def guiconfigure(self):
-        self.stackedWidget.setCurrentIndex(3)
+        dialog = usercontrols.TControlsDialog()
+        if dialog.exec_() == QDialog.Accepted:
+            self.stackedWidget.setCurrentIndex(3)
+        else:
+            dialog.close()
 
     def guibuttonconfig(self):
         self.stackedWidget.setCurrentIndex(4)
@@ -57,7 +68,7 @@ class mainwindowbuttonUI(object):
     def homeui(self):
         self.stackedWidget.setCurrentIndex(0)
 
-    #button interaction ui
+    # button interaction ui
     def button_UI(self):
         self.menuStartButton.clicked.connect(self.startconfigure)
         self.menuCloseButton.clicked.connect(

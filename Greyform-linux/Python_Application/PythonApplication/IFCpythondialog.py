@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 #ifc progress dialog
 class ProgressBarDialogIFC(QDialog):
-    def __init__(self, total_steps, ifc_file, mainwindowforfileselection):
+    def __init__(self, total_steps, ifc_file, mainwindowforfileselection , mainwindow):
         # starting initialize
         super().__init__()
         progress_layout = QVBoxLayout()
@@ -48,6 +48,9 @@ class ProgressBarDialogIFC(QDialog):
         self.localizebutton = mainwindowforfileselection[14]
         self.rosnode = mainwindowforfileselection[15]
         self.excelfiletext = mainwindowforfileselection[16]
+        self.seqlabel = mainwindowforfileselection[17]
+        self.markingitembutton = mainwindowforfileselection[18]
+        self.mainwindow = mainwindow
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFont(QFont("Arial", 30))
         self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)
@@ -204,5 +207,8 @@ class ProgressBarDialogIFC(QDialog):
             self.rosnode,
             self.stl_file,
             self.excelfiletext,
+            self.seqlabel,
+            self.mainwindow,
+            self.markingitembutton
         )
         self.close()

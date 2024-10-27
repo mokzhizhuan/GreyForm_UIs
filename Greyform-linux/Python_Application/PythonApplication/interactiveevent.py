@@ -4,6 +4,7 @@ import PythonApplication.leftbuttoninteractor as leftbuttoninteraction
 import PythonApplication.rightclickroominteraction as roominteraction
 import PythonApplication.storedisplay as displaystoring
 import PythonApplication.wall_identifiers as wallinteraction
+import PythonApplication.markingitem as markingdialogitem
 import tkinter as tk
 from tkinter import messagebox
 import time

@@ -68,7 +68,14 @@
        </sizepolicy>
       </property>
       <property name="styleSheet">
-       <string notr="true">font-size:14pt; color:rgb(243, 243, 243)</string>
+       <string notr="true">QLineEdit (
+   font-size:14pt; 
+   color:rgb(243, 243, 243)
+	background :rgb(153, 193, 241)
+)
+QLineEdit:focus(
+	border:2px solid  rgb(255, 190, 111)
+)</string>
       </property>
       <property name="text">
        <string/>

@@ -19,7 +19,7 @@ import numpy as np
 
 
 class dxfloader(object):
-    def __init__(self, file_path, mainwindowforfileselection, gdf):
+    def __init__(self, file_path, mainwindowforfileselection, gdf , mainwindow):
         # starting initialize
         super().__init__()
         self.file_path = file_path
@@ -41,7 +41,10 @@ class dxfloader(object):
         self.localizebutton = mainwindowforfileselection[14]
         self.rosnode = mainwindowforfileselection[15]
         self.excelfiletext = mainwindowforfileselection[16]
+        self.seqlabel = mainwindowforfileselection[17]
+        self.markingitembutton = mainwindowforfileselection[18]
         self.gdf = gdf
+        self.mainwindow = mainwindow
         self.loaddxftoframe()
 
     def loaddxftoframe(self):
@@ -108,6 +111,9 @@ class dxfloader(object):
                     self.rosnode,
                     self.file_path,
                     self.excelfiletext,
+                    self.seqlabel,
+                    self.mainwindow,
+                    self.markingitembutton
                 )
 
     # process geometry in geodata pandas

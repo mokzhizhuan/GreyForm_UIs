@@ -39,9 +39,7 @@ class Ui_Dialog_Close(QMainWindow):
         )
         buttonBox.setObjectName("buttonBox")
         buttonBox.accepted.connect(dialog.close)
-        buttonBox.accepted.connect(
-            lambda: Ui_Dialog_Close.runbacktomenuUI(self, ros_node)
-        )
+        buttonBox.accepted.connect(self.close)
         buttonBox.rejected.connect(dialog.close)
         dialog_layout.addWidget(buttonBox)
         dialog.exec_()

@@ -17,7 +17,7 @@ import PythonApplication.loadpyvista as loadingstl
 
 # progress bar to load the imported stl to pyvista or gl view widget
 class pythonProgressBar(QDialog):
-    def __init__(self, value, file_path, mainwindowforfileselection):
+    def __init__(self, value, file_path, mainwindowforfileselection, mainwindow):
         # starting initialize
         super().__init__()
         progress_layout = QVBoxLayout()
@@ -53,6 +53,9 @@ class pythonProgressBar(QDialog):
         self.localizebutton = mainwindowforfileselection[14]
         self.rosnode = mainwindowforfileselection[15]
         self.excelfiletext = mainwindowforfileselection[16]
+        self.seqlabel = mainwindowforfileselection[17]
+        self.markingitembutton = mainwindowforfileselection[18]
+        self.mainwindow = mainwindow
         self.start_progress()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
@@ -130,6 +133,9 @@ class pythonProgressBar(QDialog):
             self.rosnode,
             self.filepath,
             self.excelfiletext,
+            self.seqlabel,
+            self.mainwindow,
+            self.markingitembutton
         )
         self.close()
 

@@ -12,7 +12,8 @@ from std_msgs.msg import String
 from threading import Thread
 import jsonimport as jsonfileopener
 
-#app init window
+
+# app init window
 class Ui_InitilizeWindow(QMainWindow):
     def __init__(self, ros_node):
         # starting initialize
@@ -26,6 +27,7 @@ class Ui_InitilizeWindow(QMainWindow):
             self.selected_time_zone,
             self.width,
             self.height,
+            self.interfacehelper,
         ) = jsonfileopener.jsopen(jsonfile)
         self.font_size = int(font)
         self.font = QFont()
@@ -43,13 +45,13 @@ class Ui_InitilizeWindow(QMainWindow):
             "timezone": self.selected_time_zone,
             "password": str(self.password),
         }
-        self.initstart.CloseButton.clicked.connect(self.initstart.close)
+        self.initstart.CloseButton.clicked.connect(self.initstart.deleteLater)
         self.initstart.StartButton.clicked.connect(
             lambda: initconfirm.ConfirminitDialog.show_dialog_confirm(self, ros_node)
-            )
+        )
         self.stretch()
-    
-    #organized strechtable window for init application
+
+    # organized strechtable window for init application
     def stretch(self):
         self.boxLayout = QVBoxLayout()
         self.boxLayout.addStretch(1)
@@ -61,7 +63,8 @@ class Ui_InitilizeWindow(QMainWindow):
         self.centralWidget.setLayout(self.boxLayout)
         self.initstart.setCentralWidget(self.centralWidget)
 
-#ros_talker start
+
+# ros_talker start
 def ros_spin(node):
     executor = MultiThreadedExecutor()
     executor.add_node(node)
@@ -69,7 +72,8 @@ def ros_spin(node):
         executor.spin()
     finally:
         executor.shutdown()
-        node.destroy_node()           
+        node.destroy_node()
+
 
 if __name__ == "__main__":
     # Initialize the ROS node

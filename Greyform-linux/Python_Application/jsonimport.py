@@ -11,6 +11,7 @@ def jsopen(jsonfile):
             password = data["password"]
             selected_time_zone = data["timezone"]
             width, height = map(int, resolution.split(" x "))
+            interfacehelper = data["userhelper"]
     except FileNotFoundError:
         font = 30
         theme = "Gray"
@@ -19,4 +20,4 @@ def jsopen(jsonfile):
         width = 800
         height = 600
         pass
-    return font, theme, password, selected_time_zone, width, height
+    return font, theme, password, selected_time_zone, width, height , interfacehelper

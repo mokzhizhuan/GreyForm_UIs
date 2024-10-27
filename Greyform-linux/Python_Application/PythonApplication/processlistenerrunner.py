@@ -11,12 +11,14 @@ from PyQt5.QtWidgets import (
 import subprocess
 import os
 import time
+import PythonApplication.markingitem as markingdialogitem
 
 
 class StatusSignals(QObject):
     status_signal = pyqtSignal(str)
 
-#Run Listener Node dialog
+
+# Run Listener Node dialog
 class ListenerNodeRunner(QMainWindow):
     def __init__(
         self,
@@ -29,6 +31,10 @@ class ListenerNodeRunner(QMainWindow):
         Stagelabel,
         cube_actor,
         dataseqtext,
+        maxlen,
+        counter,
+        markingreq,
+        dialog
     ):
         # starting initialize
         super().__init__()
@@ -42,6 +48,10 @@ class ListenerNodeRunner(QMainWindow):
         self.Stagelabel = Stagelabel
         self.cube_actor = cube_actor
         self.dataseqtext = dataseqtext
+        self.maxlen = maxlen
+        self.markingreq = markingreq
+        self.counter = counter
+        self.dialog = dialog
         self.signals = StatusSignals()
         self.listener_started = False
         self.signals.status_signal.connect(self.update_status)
@@ -75,7 +85,7 @@ class ListenerNodeRunner(QMainWindow):
         self.setWindowTitle("Listener Node Status")
         self.setGeometry(400, 400, 500, 500)
 
-    #interacting running process
+    # interacting running process
     def run_listener_node(self):
         if self.listener_started is not True:
             try:
@@ -85,18 +95,17 @@ class ListenerNodeRunner(QMainWindow):
             except Exception as e:
                 self.signals.status_signal.emit(f"Status: Error - {str(e)}")
         else:
-            for i in range(self.dataseqtext):
-                self.talker_node.publish_file_message(self.file, self.excel_data)
-                self.talker_node.publish_selection_message(
-                    self.wall_number[i],
-                    self.sectionnumber[i],
-                    self.picked_position[i],
-                    self.Stagelabel,
-                    self.cube_actor,
-                )
+            self.talker_node.publish_file_message(self.file, self.excel_data)
+            self.talker_node.publish_selection_message(
+                self.wall_number,
+                self.sectionnumber,
+                self.picked_position,
+                self.Stagelabel,
+                self.cube_actor,
+            )
             self.talker_node.showdialog()
 
-    #ros running process
+    # ros running process
     def _run_subprocess(self):
         try:
             process = subprocess.Popen(
@@ -118,9 +127,29 @@ class ListenerNodeRunner(QMainWindow):
                     f"Status: Error - {stderr.decode('utf-8')}"
                 )
             else:
-                self.signals.status_signal.emit("Status: Completed")
+                if self.counter < self.maxlen:
+                    self.update_dialog()
+                    self.signals.status_signal.emit(
+                        "Status: the marking item is completed, the next marking item will be at the marking dialog"
+                    )
+                else:
+                    self.signals.status_signal.emit(
+                        "Status: all the marked items are Completed, please move on to the next sequence or close the program"
+                    )
         except Exception as e:
             self.signals.status_signal.emit(f"Status: Error - {str(e)}")
 
     def update_status(self, status):
         self.status_label.setText(status)
+
+    def update_dialog(self):
+        self.dialog.close()
+        if self.counter < self.maxlen:
+            self.dialog = markingdialogitem.markingitemdialog(
+                self.markingreq, self.counter, self.maxlen
+            )
+            self.dialog.updatemarkingitem()
+        else:
+            print(
+                "Marking is completed, You can proceed to click another sequence or close the application"
+            )

@@ -11,6 +11,7 @@ class restoredefaultsetting(object):
         self,
         accountinfo,
         themebox,
+        userinterfacebox,
         Text_size,
         resolutioncomboBox,
         country,
@@ -35,6 +36,7 @@ class restoredefaultsetting(object):
         self.PasslineEdit = PasslineEdit
         self.windowwidth = windowwidth
         self.windowheight = windowheight
+        self.userinterfacebox = userinterfacebox
         self.stackedWidget_main = stackedWidget_main
         self.restore_defaults()
 
@@ -61,6 +63,11 @@ class restoredefaultsetting(object):
         )
         if timezone_index >= 0:
             self.country.setCurrentIndex(timezone_index)
+        userinterface_index = self.userinterfacebox.findText(
+            self.default_settings["userinterface"], Qt.MatchFixedString
+        )
+        if userinterface_index >= 0:
+            self.userinterfacebox.setCurrentIndex(userinterface_index)
         self.accountinfo[0]["Pass"] = self.default_settings["password"]
         self.PasslineEdit.setText(self.default_settings["password"])
         self.settingchange = setting.Setting(
@@ -75,3 +82,10 @@ class restoredefaultsetting(object):
         self.settingchange.update_font(font_index)
         self.settingchange.change_resolution(resolution_index)
         self.settingchange.updateTimeLabel(timezone_index)
+        self.Helperinterfacebuttons()
+
+    def Helperinterfacebuttons(self):
+        if self.interfacehelper == "on":
+            self.mainwindow.helperButton.setText("Helper Display : " + self.interfacehelper)
+        else:
+            self.mainwindow.helperButton.setText("Helper Display : " + self.interfacehelper)
