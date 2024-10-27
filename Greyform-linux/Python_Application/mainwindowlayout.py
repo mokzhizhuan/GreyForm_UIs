@@ -27,7 +27,6 @@ class Ui_MainWindow_layout(object):
         settinguipage,
         stackedWidget_main,
         usermanualButton,
-        skipButton,
         SettingButton,
         settingpage,
     ):
@@ -53,7 +52,6 @@ class Ui_MainWindow_layout(object):
         self.stackedWidget_main = stackedWidget_main
         self.SettingButton = SettingButton
         self.usermanualButton = usermanualButton
-        self.skipButton = skipButton
         self.excelfilelayout = excelfilelayout
         self.setStretch()
 
@@ -66,14 +64,10 @@ class Ui_MainWindow_layout(object):
         )
         self.settingusermanuallayout.addWidget(self.usermanualButton)
         self.settingusermanuallayout.addItem(self.horizontalSpacer)
-        self.settingusermanuallayout.addWidget(self.skipButton)
-        self.settingusermanuallayout.addItem(self.horizontalSpacer)
         self.settingusermanuallayout.addWidget(self.SettingButton)
         self.settingusermanuallayout.setStretch(0, 1)
         self.settingusermanuallayout.setStretch(1, 1)
         self.settingusermanuallayout.setStretch(2, 1)
-        self.settingusermanuallayout.setStretch(3, 1)
-        self.settingusermanuallayout.setStretch(4, 1)
         self.boxLayout.addLayout(self.settingusermanuallayout)
         self.boxLayout.addWidget(self.stackedWidget)
         self.boxLayout.setStretch(0, 1)

@@ -23,7 +23,6 @@ class SettingLayout(object):
         serviceipaddresspage,
         layoutWidgetservicestextsize,
         host,
-        userinterfacehelperlayout,
         layoutWidgetservicesresolution,
         layoutWidgetservicescountryGMT,
         layoutWidgetservicessetpass,
@@ -58,7 +57,6 @@ class SettingLayout(object):
         self.serviceipaddresspage = serviceipaddresspage
         self.layoutWidgetservicestextsize = layoutWidgetservicestextsize
         self.host = host
-        self.userinterfacehelperlayout = userinterfacehelperlayout
         self.layoutWidgetservicesresolution = layoutWidgetservicesresolution
         self.layoutWidgetservicescountryGMT = layoutWidgetservicescountryGMT
         self.layoutWidgetservicessetpass = layoutWidgetservicessetpass
@@ -101,7 +99,6 @@ class SettingLayout(object):
         self.settingboxserviceslayout = QVBoxLayout()
         self.settingboxserviceslayout.addWidget(self.layoutWidgetservicestextsize)
         self.settingboxserviceslayout.addWidget(self.host)
-        self.settingboxserviceslayout.addWidget(self.userinterfacehelperlayout)
         self.settingboxserviceslayout.addWidget(self.layoutWidgetservicesresolution)
         self.settingboxserviceslayout.addWidget(self.layoutWidgetservicescountryGMT)
         self.settingboxserviceslayout.addWidget(self.layoutWidgetservicessetpass)

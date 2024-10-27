@@ -9,8 +9,7 @@ import PythonApplication.fileselectionmesh as fileselectionmesh
 from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
-import PythonApplication.usermanual as userHelper
-import PythonApplication.ui_helper as UserInterfaces
+import PythonApplication.usermanual as guicontrols
 import PythonApplication.setting as setting
 import jsonimport as jsonfileopener
 import vtk
@@ -37,7 +36,6 @@ class Ui_MainWindow(QMainWindow):
             self.selected_time_zone,
             self.width,
             self.height,
-            self.interfacehelper,
         ) = jsonfileopener.jsopen(jsonfile)
         self.font_size = int(font)
         self.font = QFont()
@@ -46,19 +44,13 @@ class Ui_MainWindow(QMainWindow):
         self.file = None
         self.file_path = None
         self.ros_node = ros_node
-        """self.userinterfacehelp = UserInterfaces.Ui_Dialog_Helper(
-            self.interfacehelper, self.mainwindow
-        )"""
-        #self.interfacehelper = self.userinterfacehelp.ask_first_time_user()
         self.default_settings = {
             "theme": str(self.theme),
             "font_size": self.font_size,
             "resolution": f"{self.width} x {self.height}",
             "timezone": self.selected_time_zone,
             "password": str(self.password),
-            "userinterface": str(self.interfacehelper),
         }
-        #self.Helperinterfacebuttons()
         if self.width == 1920 and self.height == 1080:
             self.mainwindow.showMaximized()
         else:
@@ -71,17 +63,6 @@ class Ui_MainWindow(QMainWindow):
         self.excel_file_selected = False
         self.file_list_selected = False
         self.setupUi()
-
-    # display warning and helper interface
-    def Helperinterfacebuttons(self):
-        if self.interfacehelper == "on":
-            self.mainwindow.helperButton.setText(
-                "Helper Display : " + self.interfacehelper
-            )
-        else:
-            self.mainwindow.helperButton.setText(
-                "Helper Display : " + self.interfacehelper
-            )
 
     # apply font
     def apply_font_to_widgets(self, parent, font):
@@ -130,13 +111,12 @@ class Ui_MainWindow(QMainWindow):
             self.default_settings,
             self.mainwindow.stackedWidget_main,
         )  # insert setting
-        self.usermanualinstruct = userHelper.Usermanual(
+        self.usermanualinstruct = guicontrols.Usermanual(
             self.font,
             self.mainwindow.stackedWidget_main,
             self.mainwindow.usermanualpage,
         )  # users manual instruction page
         self.mainwindow.LocalizationButton.hide()
-        self.mainwindow.helperButton.hide()
         self.setStretch()
 
     # button interaction
@@ -146,7 +126,6 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.SettingButton.clicked.connect(self.directtosettingpage)
         self.mainwindow.usermanualButton.clicked.connect(self.directtousermanualpage)
         self.mainwindow.excelFilePathButton.clicked.connect(self.excelfilesdirectory)
-        self.mainwindow.helperButton.clicked.connect(self.helpinterface)
         self.buttonui = mainwindowbuttonUIinteraction.mainwindowbuttonUI(
             self.mainwindow,
             self.mainwindow.stackedWidget,
@@ -164,19 +143,6 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.MarkingButton,
             self.ros_node,
         )
-
-    # interface for user friendly gui
-    def helpinterface(self):
-        if self.interfacehelper == "on":
-            self.interfacehelper = "off"
-            self.mainwindow.helperButton.setText(
-                "Helper Display : " + self.interfacehelper
-            )
-        else:
-            self.interfacehelper = "on"
-            self.mainwindow.helperButton.setText(
-                "Helper Display : " + self.interfacehelper
-            )
 
     # main ui page interaction
     def directtosettingpage(self):
@@ -285,7 +251,6 @@ class Ui_MainWindow(QMainWindow):
             self.settingpageuipage,
             self.mainwindow.mainconfiguration,
             self.mainwindow.usermanualButton,
-            self.mainwindow.helperButton,
             self.mainwindow.SettingButton,
             self.mainwindow.settingpage,
         )

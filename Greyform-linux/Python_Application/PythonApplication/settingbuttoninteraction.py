@@ -23,7 +23,6 @@ class settingbuttonUI(object):
         PowerButton,
         maintitlelabel,
         themebox,
-        userinterfacebox,
         fontsizebox,
         resolutionbox,
         timezonebox,
@@ -31,7 +30,6 @@ class settingbuttonUI(object):
         MainWindow,
         saved_setting,
         stackedWidget_main,
-        interfacehelper
     ):
         # starting initialize
         super().__init__()
@@ -49,10 +47,8 @@ class settingbuttonUI(object):
         self.themebox = themebox
         self.fontsizebox = fontsizebox
         self.resolutionbox = resolutionbox
-        self.interfacehelper = interfacehelper
         self.timezonebox = timezonebox
         self.passwordedit = passwordedit
-        self.userinterfacebox = userinterfacebox
         self.MainWindow = MainWindow
         self.savesettings = saved_setting
         self.windowwidth, self.windowheight = map(
@@ -129,18 +125,10 @@ class settingbuttonUI(object):
             "resolution": self.resolutionbox.currentText(),
             "timezone": self.timezonebox.currentText(),
             "password": self.passwordedit.text(),
-            "userhelper" : self.userinterfacebox.currentText(),
         }
         with open("settings.json", "w") as f:
             json.dump(self.savesettings, f)
-        self.Helperinterfacebuttons()
         self.show_save_dialog()
-
-    def Helperinterfacebuttons(self):
-        if self.interfacehelper == "on":
-            self.MainWindow.helperButton.setText("Helper Display : " + self.interfacehelper)
-        else:
-            self.MainWindow.helperButton.setText("Helper Display : " + self.interfacehelper)
 
 
     #save dialog setting

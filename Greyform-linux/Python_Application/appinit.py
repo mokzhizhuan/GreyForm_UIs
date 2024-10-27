@@ -27,7 +27,6 @@ class Ui_InitilizeWindow(QMainWindow):
             self.selected_time_zone,
             self.width,
             self.height,
-            self.interfacehelper,
         ) = jsonfileopener.jsopen(jsonfile)
         self.font_size = int(font)
         self.font = QFont()
