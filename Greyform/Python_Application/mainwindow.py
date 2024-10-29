@@ -145,6 +145,8 @@ class Ui_MainWindow(QMainWindow):
         model = QFileSystemModel()
         model.setRootPath(self.filepaths)
         model.setFilter(QDir.NoDotAndDotDot | QDir.Files)
+        model.setNameFilters(["*.dxf", "*.stl", "*.ifc"])
+        model.setNameFilterDisables(False)
         self.mainwindow.Selectivefilelistview.setModel(model)
         self.mainwindow.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
         self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)
