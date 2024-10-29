@@ -1,0 +1,693 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>694</width>
+    <height>548</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QLabel" name="labeltitlsetting">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>10</y>
+     <width>689</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Maximum">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>20</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::AutoText</enum>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QWidget" name="settinglayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>50</y>
+     <width>689</width>
+     <height>481</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,1,1,1,1,1,1,1">
+      <item>
+       <widget class="QPushButton" name="HomeButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Home</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="WifiButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Wifi</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="serviceIPAddressButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Service IP Address</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ServicesButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Services and Resolution</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="UserButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>User</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="PowerButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Power/ShutDown/Restart</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="AboutButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>About</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="MarkingbackButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Back to GreyForm UI</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,1">
+      <item>
+       <widget class="QLabel" name="maintitlelabel">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QStackedWidget" name="stackedWidgetsetting">
+        <widget class="QWidget" name="settingHomepage">
+         <widget class="QWidget" name="layoutWidgethome">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>130</y>
+            <width>319</width>
+            <height>111</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="colortitlelabel">
+             <property name="text">
+              <string>Color Theme</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="themebox">
+             <item>
+              <property name="text">
+               <string>Gray</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Black</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Other Color</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QPushButton" name="restoreDefaultsButton">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>344</y>
+            <width>319</width>
+            <height>81</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Restore to Defaults</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="wifipage">
+         <widget class="QLabel" name="interface_label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>319</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QTreeWidget" name="treeWidget">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>40</y>
+            <width>319</width>
+            <height>399</height>
+           </rect>
+          </property>
+          <column>
+           <property name="text">
+            <string>SSID</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Signal Strength</string>
+           </property>
+          </column>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="serviceipaddresspage">
+         <widget class="QLabel" name="ip_label">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>10</y>
+            <width>309</width>
+            <height>197</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+         <widget class="QLabel" name="Portnumipadd">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>240</y>
+            <width>309</width>
+            <height>196</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="servicespage">
+         <widget class="QWidget" name="layoutWidgetservicestextsize">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>110</y>
+            <width>319</width>
+            <height>36</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,1">
+           <item>
+            <widget class="QLabel" name="Textsizelab">
+             <property name="font">
+              <font>
+               <pointsize>15</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Font Size:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="Text_size">
+             <property name="font">
+              <font>
+               <pointsize>15</pointsize>
+              </font>
+             </property>
+             <item>
+              <property name="text">
+               <string>16</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>18</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>20</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>22</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>24</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>26</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>28</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>30</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>32</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>36</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>40</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QLabel" name="host">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>60</y>
+            <width>319</width>
+            <height>36</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Host:</string>
+          </property>
+         </widget>
+         <widget class="QWidget" name="layoutWidgetservicesresolution">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>152</y>
+            <width>319</width>
+            <height>36</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,1">
+           <item>
+            <widget class="QLabel" name="Resolutionlab">
+             <property name="font">
+              <font>
+               <pointsize>15</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Resolution:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="resolutioncomboBox">
+             <property name="font">
+              <font>
+               <pointsize>15</pointsize>
+              </font>
+             </property>
+             <item>
+              <property name="text">
+               <string>1920 x 1080</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1600 x 900</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1366 x 768</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>1280 x 720</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>800 x 600</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="layoutWidgetservicescountryGMT">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>319</y>
+            <width>319</width>
+            <height>35</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,1">
+           <item>
+            <widget class="QLabel" name="setcountryGMT">
+             <property name="font">
+              <font>
+               <pointsize>15</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Country:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="country">
+             <property name="font">
+              <font>
+               <pointsize>15</pointsize>
+              </font>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QLabel" name="SystemDate">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>194</y>
+            <width>319</width>
+            <height>35</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>System Date: </string>
+          </property>
+         </widget>
+         <widget class="QWidget" name="layoutWidgetservicessetpass">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>360</y>
+            <width>319</width>
+            <height>36</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="1,1">
+           <item>
+            <widget class="QLabel" name="setpassword">
+             <property name="font">
+              <font>
+               <pointsize>15</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Set User Password: </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="PasslineEdit">
+             <property name="font">
+              <font>
+               <pointsize>15</pointsize>
+               <stylestrategy>PreferDefault</stylestrategy>
+              </font>
+             </property>
+             <property name="echoMode">
+              <enum>QLineEdit::Password</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QLabel" name="Systemtime">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>277</y>
+            <width>319</width>
+            <height>36</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>System Time: </string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="SystemMemory">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>235</y>
+            <width>319</width>
+            <height>36</height>
+           </rect>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>15</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>System Memory: </string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="UserPage"/>
+        <widget class="QWidget" name="AboutPage">
+         <widget class="QLabel" name="version_label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>310</y>
+            <width>319</width>
+            <height>90</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+         <widget class="QLabel" name="titlelabel">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>117</y>
+            <width>319</width>
+            <height>91</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+         <widget class="QLabel" name="author_label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>21</y>
+            <width>319</width>
+            <height>90</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+         <widget class="QLabel" name="info_label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>214</y>
+            <width>319</width>
+            <height>90</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="RestartPowerOffPage"/>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

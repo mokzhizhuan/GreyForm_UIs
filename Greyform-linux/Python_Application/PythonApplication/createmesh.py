@@ -11,7 +11,6 @@ from stl import mesh
 import PythonApplication.interactiveevent as events
 import PythonApplication.exceldatavtk as vtk_data_excel
 import PythonApplication.markingprogressbar as stageofmarking
-import PythonApplication.usercontroldialog as usercontrols
 import PythonApplication.markingitem as markingdialogitem
 
 
@@ -110,6 +109,18 @@ class createMesh(QMainWindow):
         self.excel_elements_data, self.maxarraylen, self.counter = self.dialogmarking()
         self.loadStl(self.dataseqtext)
 
+    def checkseqreq(self):
+        if self.dataseqtext == 1:
+            target_category = "Piping"
+            markingreq = self.find_in_categories(self.excel_elements, target_category)
+        elif self.dataseqtext == 2:
+            target_category = "Tiling/Floor"
+            markingreq  = self.find_in_categories(self.excel_elements, target_category)
+        elif self.dataseqtext == 3:
+            target_category = "Fitting"
+            markingreq  = self.find_in_categories(self.excel_elements, target_category)
+        return markingreq
+
     def dialogmarking(self):
         counter = 0
         combined_data = {
@@ -137,6 +148,9 @@ class createMesh(QMainWindow):
             self.dialog = markingdialogitem.markingitemdialog(
                 self.excel_elements_data, self.counter , self.maxarraylen
             )
+            font = self.dialog.font() 
+            font.setPointSize(20) 
+            self.dialog.setFont(font)
             self.dialog.show()
         else:
             print("Marking is completed, You can proceed to click another sequence or close the application")

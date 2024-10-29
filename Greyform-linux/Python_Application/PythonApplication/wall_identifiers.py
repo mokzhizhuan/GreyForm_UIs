@@ -43,24 +43,17 @@ class wall_Interaction(object):
 
     # middle click interaction for storing
     def setwallinteractiondata(self, obj, event):
-        if self.counter < self.maxlen:
-            self.interactor_style.SetMotionFactor(8)
-            click_pos = self.renderwindowinteractor.GetEventPosition()
-            picker = vtk.vtkCellPicker()
-            self.renderwindowinteractor.GetRenderWindow().GetInteractor().SetPicker(
-                picker
-            )
-            picker.Pick(click_pos[0], click_pos[1], 0, self.render)
-            pickedposition = [
-                picker.GetPickPosition()[0],
-                picker.GetPickPosition()[1],
-                picker.GetPickPosition()[2],
-            ]
-            self.checkpositionreq(pickedposition)
-        else:
-            self.show_error_message(
-                "All the marking item in the sequence is completed , please click another sequence."
-            )
+        self.interactor_style.SetMotionFactor(8)
+        click_pos = self.renderwindowinteractor.GetEventPosition()
+        picker = vtk.vtkCellPicker()
+        self.renderwindowinteractor.GetRenderWindow().GetInteractor().SetPicker(picker)
+        picker.Pick(click_pos[0], click_pos[1], 0, self.render)
+        pickedposition = [
+            picker.GetPickPosition()[0],
+            picker.GetPickPosition()[1],
+            picker.GetPickPosition()[2],
+        ]
+        self.checkpositionreq(pickedposition)
 
     def checkpositionreq(self, picker):
         markers = self.clickreq(picker)

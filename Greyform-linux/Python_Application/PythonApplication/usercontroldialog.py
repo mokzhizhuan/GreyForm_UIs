@@ -43,12 +43,9 @@ class TControlsDialog(QDialog):
         button_layout = QHBoxLayout()
 
         accept_button = QPushButton("Accept")
-        decline_button = QPushButton("Decline")
 
         button_layout.addWidget(accept_button)
-        button_layout.addWidget(decline_button)
         layout.addLayout(button_layout)
 
         # Connect buttons to respective dialog outcomes
         accept_button.clicked.connect(self.accept)
-        decline_button.clicked.connect(self.reject)

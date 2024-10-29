@@ -3,7 +3,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
-#layout for main window
+
+#main window layout
 class Ui_MainWindow_layout(object):
     def __init__(
         self,
@@ -26,6 +27,7 @@ class Ui_MainWindow_layout(object):
         settinguipage,
         stackedWidget_main,
         usermanualButton,
+        skipButton,
         SettingButton,
         settingpage,
     ):
@@ -51,10 +53,11 @@ class Ui_MainWindow_layout(object):
         self.stackedWidget_main = stackedWidget_main
         self.SettingButton = SettingButton
         self.usermanualButton = usermanualButton
+        self.skipButton = skipButton
         self.excelfilelayout = excelfilelayout
         self.setStretch()
 
-    #organized strechtable window for main application
+    #stretch layout
     def setStretch(self):
         self.boxLayout = QVBoxLayout()
         self.settingusermanuallayout = QHBoxLayout()
@@ -63,10 +66,14 @@ class Ui_MainWindow_layout(object):
         )
         self.settingusermanuallayout.addWidget(self.usermanualButton)
         self.settingusermanuallayout.addItem(self.horizontalSpacer)
+        self.settingusermanuallayout.addWidget(self.skipButton)
+        self.settingusermanuallayout.addItem(self.horizontalSpacer)
         self.settingusermanuallayout.addWidget(self.SettingButton)
         self.settingusermanuallayout.setStretch(0, 1)
-        self.settingusermanuallayout.setStretch(1, 4)
+        self.settingusermanuallayout.setStretch(1, 1)
         self.settingusermanuallayout.setStretch(2, 1)
+        self.settingusermanuallayout.setStretch(3, 1)
+        self.settingusermanuallayout.setStretch(4, 1)
         self.boxLayout.addLayout(self.settingusermanuallayout)
         self.boxLayout.addWidget(self.stackedWidget)
         self.boxLayout.setStretch(0, 1)

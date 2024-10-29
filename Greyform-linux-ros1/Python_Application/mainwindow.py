@@ -10,9 +10,10 @@ from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
 import PythonApplication.usermanual as userHelper
+import PythonApplication.ui_helper as UserInterfaces
 import PythonApplication.setting as setting
-import vtk
 import jsonimport as jsonfileopener
+import vtk
 import os
 from src.talker_listener.talker_listener import talker_node as RosPublisher
 import rospy
@@ -33,6 +34,7 @@ class Ui_MainWindow(QMainWindow):
             self.selected_time_zone,
             self.width,
             self.height,
+            self.interfacehelper,
         ) = jsonfileopener.jsopen(jsonfile)
         self.font_size = int(font)
         self.font = QFont()
@@ -45,7 +47,6 @@ class Ui_MainWindow(QMainWindow):
         self.filepaths = os.getcwd()
         self.file = None
         self.file_path = None
-        self.excelfilepath = None
         self.ros_node = ros_node
         self.default_settings = {
             "theme": str(self.theme),
@@ -53,13 +54,24 @@ class Ui_MainWindow(QMainWindow):
             "resolution": f"{self.width} x {self.height}",
             "timezone": self.selected_time_zone,
             "password": str(self.password),
+            "userinterface" : str(self.interfacehelper),
         }
+        self.userinterfacehelp = UserInterfaces.Ui_Dialog_Helper(self.interfacehelper, self.mainwindow)
+        self.interfacehelper = self.userinterfacehelp.ask_first_time_user()
+        self.Helperinterfacebuttons()
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
         self.apply_font_to_widgets(self.mainwindow, self.font)
+        self.excelfilepath = None
         self.excel_file_selected = False
         self.file_list_selected = False
         self.setupUi()
+
+    def Helperinterfacebuttons(self):
+        if self.interfacehelper == "on":
+            self.mainwindow.skipButton.show()
+        else:
+            self.mainwindow.skipButton.hide()
 
     # apply font
     def apply_font_to_widgets(self, parent, font):
@@ -138,6 +150,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.CloseButton,
             self.mainwindow.ConfirmAckButton,
             self.mainwindow.MarkingButton,
+            self.mainwindow.skipButton,
             self.ros_node
         )
 
@@ -156,6 +169,8 @@ class Ui_MainWindow(QMainWindow):
         model = QFileSystemModel()
         model.setRootPath(self.filepaths)
         model.setFilter(QDir.NoDotAndDotDot | QDir.Files)
+        model.setNameFilters(["*.dxf", "*.stl", "*.ifc"])
+        model.setNameFilterDisables(False)
         self.mainwindow.Selectivefilelistview.setModel(model)
         self.mainwindow.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
         self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)
@@ -242,6 +257,7 @@ class Ui_MainWindow(QMainWindow):
             self.settingpageuipage,
             self.mainwindow.mainconfiguration,
             self.mainwindow.usermanualButton,
+            self.mainwindow.skipButton,
             self.mainwindow.SettingButton,
             self.mainwindow.settingpage,
         )

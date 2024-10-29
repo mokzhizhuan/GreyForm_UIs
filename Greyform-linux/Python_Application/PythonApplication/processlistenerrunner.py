@@ -143,7 +143,6 @@ class ListenerNodeRunner(QMainWindow):
         self.status_label.setText(status)
 
     def update_dialog(self):
-        self.dialog.close()
         if self.counter < self.maxlen:
             self.dialog = markingdialogitem.markingitemdialog(
                 self.markingreq, self.counter, self.maxlen

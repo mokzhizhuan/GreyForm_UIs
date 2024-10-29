@@ -2,7 +2,7 @@ import menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
 import PythonApplication.menu_confirmack as confirmack
 
-#main window buttoninteraction
+#main window button interaction
 class mainwindowbuttonUI(object):
     def __init__(
         self,
@@ -20,6 +20,7 @@ class mainwindowbuttonUI(object):
         CloseButton,
         ConfirmAckButton,
         MarkingButton,
+        skipButton,
         ros_node,
     ):
         # starting initialize
@@ -39,9 +40,10 @@ class mainwindowbuttonUI(object):
         self.ConfirmAckButton = ConfirmAckButton
         self.MarkingButton = MarkingButton
         self.ros_node = ros_node
+        self.skipButton = skipButton
         self.button_UI()
 
-    #stackwidet page ui
+    #stacked widget page ui
     def startconfigure(self):
         self.stackedWidget.setCurrentIndex(1)
 
@@ -57,7 +59,7 @@ class mainwindowbuttonUI(object):
     def homeui(self):
         self.stackedWidget.setCurrentIndex(0)
 
-    #button interaction
+    #button interaction ui
     def button_UI(self):
         self.menuStartButton.clicked.connect(self.startconfigure)
         self.menuCloseButton.clicked.connect(
@@ -72,6 +74,7 @@ class mainwindowbuttonUI(object):
                 self.stackedWidget,
             )
         )
+        self.skipButton.clicked.connect(self.skipinterface)
         self.BackButton_Page_2.clicked.connect(self.startconfigure)
         self.BackButton_Page_3.clicked.connect(self.configurestage)
         self.NextButton_Page_3.clicked.connect(self.guiconfigure)
@@ -88,3 +91,6 @@ class mainwindowbuttonUI(object):
                 self.mainwindow
             )
         )
+
+    def skipinterface(self):
+        self.skipButton.hide()

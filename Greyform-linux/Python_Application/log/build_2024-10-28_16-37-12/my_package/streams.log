@@ -1,0 +1,20 @@
+[1.910s] Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package -- -j8 -l8
+[2.140s] Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package -- -j8 -l8
+[2.341s] Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package
+[2.390s] -- Install configuration: ""
+[2.391s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/ament_index/resource_index/package_run_dependencies/my_package
+[2.391s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/ament_index/resource_index/parent_prefix_path/my_package
+[2.392s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/ament_prefix_path.sh
+[2.394s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/ament_prefix_path.dsv
+[2.395s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/path.sh
+[2.395s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/path.dsv
+[2.396s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.bash
+[2.396s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.sh
+[2.397s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.zsh
+[2.397s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.dsv
+[2.403s] -- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.dsv
+[2.403s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/ament_index/resource_index/packages/my_package
+[2.404s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/cmake/my_packageConfig.cmake
+[2.404s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/cmake/my_packageConfig-version.cmake
+[2.404s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.xml
+[2.411s] Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package

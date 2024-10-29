@@ -23,6 +23,7 @@ class settingbuttonUI(object):
         PowerButton,
         maintitlelabel,
         themebox,
+        userinterfacebox,
         fontsizebox,
         resolutionbox,
         timezonebox,
@@ -49,6 +50,7 @@ class settingbuttonUI(object):
         self.resolutionbox = resolutionbox
         self.timezonebox = timezonebox
         self.passwordedit = passwordedit
+        self.userinterfacebox = userinterfacebox
         self.MainWindow = MainWindow
         self.savesettings = saved_setting
         self.windowwidth, self.windowheight = map(
@@ -125,10 +127,18 @@ class settingbuttonUI(object):
             "resolution": self.resolutionbox.currentText(),
             "timezone": self.timezonebox.currentText(),
             "password": self.passwordedit.text(),
+            "userhelper" : self.userinterfacebox.currentText(),
         }
         with open("settings.json", "w") as f:
             json.dump(self.savesettings, f)
+        self.Helperinterfacebuttons()
         self.show_save_dialog()
+
+    def Helperinterfacebuttons(self):
+        if self.userinterfacebox.currentText() == "on":
+            self.MainWindow.skipButton.show()
+        else:
+            self.MainWindow.skipButton.hide()
 
     #save dialog setting
     def show_save_dialog(self):
