@@ -50,6 +50,6 @@ class Ui_Dialog_Close(QMainWindow):
             app = QApplication(sys.argv)
         else:
             app = QApplication.instance()
-        main_window_menu = initlizemenu.Ui_InitilizeWindow(ros_node)
-        main_window_menu.show()
+        #main_window_menu = initlizemenu.Ui_InitilizeWindow(ros_node)
+        #main_window_menu.show()
         self.close()

@@ -9,6 +9,11 @@ import tkinter as tk
 from tkinter import messagebox
 import time
 
+# import rospy
+# from sensor_msgs.msg import LaserScan
+# this scan import is for scanning the robot , I will implement it tomorrow .
+# It is not avaiable to implement for now, Dont uncomment it first
+
 
 # insert interactive event for the stl mesh , left click is for moving the stl ,
 # right click is to insert the actor in the room view , right click for room interact shower and toilet
@@ -234,14 +239,14 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             actor_position = self.old_actor_position
             self.refresh()
 
-    #show error message dialog
+    # show error message dialog
     def show_error_message(self, message):
         root = tk.Tk()
-        root.withdraw()  
+        root.withdraw()
         messagebox.showerror("Error", message)
         root.destroy()
 
-    #reset interaction
+    # reset interaction
     def reset_interaction(self):
         self.interaction_enabled = True
         self.localizebutton.setEnabled(True)
