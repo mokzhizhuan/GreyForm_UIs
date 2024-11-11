@@ -10,8 +10,8 @@
   ((wallselection
     :reader wallselection
     :initarg :wallselection
-    :type cl:integer
-    :initform 0)
+    :type cl:string
+    :initform "")
    (typeselection
     :reader typeselection
     :initarg :typeselection
@@ -68,12 +68,12 @@
   (default_position m))
 (cl:defmethod roslisp-msg-protocol:serialize ((msg <SelectionWall>) ostream)
   "Serializes a message object of type '<SelectionWall>"
-  (cl:let* ((signed (cl:slot-value msg 'wallselection)) (unsigned (cl:if (cl:< signed 0) (cl:+ signed 4294967296) signed)))
-    (cl:write-byte (cl:ldb (cl:byte 8 0) unsigned) ostream)
-    (cl:write-byte (cl:ldb (cl:byte 8 8) unsigned) ostream)
-    (cl:write-byte (cl:ldb (cl:byte 8 16) unsigned) ostream)
-    (cl:write-byte (cl:ldb (cl:byte 8 24) unsigned) ostream)
-    )
+  (cl:let ((__ros_str_len (cl:length (cl:slot-value msg 'wallselection))))
+    (cl:write-byte (cl:ldb (cl:byte 8 0) __ros_str_len) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 8) __ros_str_len) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 16) __ros_str_len) ostream)
+    (cl:write-byte (cl:ldb (cl:byte 8 24) __ros_str_len) ostream))
+  (cl:map cl:nil #'(cl:lambda (c) (cl:write-byte (cl:char-code c) ostream)) (cl:slot-value msg 'wallselection))
   (cl:let ((__ros_str_len (cl:length (cl:slot-value msg 'typeselection))))
     (cl:write-byte (cl:ldb (cl:byte 8 0) __ros_str_len) ostream)
     (cl:write-byte (cl:ldb (cl:byte 8 8) __ros_str_len) ostream)
@@ -113,12 +113,14 @@
 )
 (cl:defmethod roslisp-msg-protocol:deserialize ((msg <SelectionWall>) istream)
   "Deserializes a message object of type '<SelectionWall>"
-    (cl:let ((unsigned 0))
-      (cl:setf (cl:ldb (cl:byte 8 0) unsigned) (cl:read-byte istream))
-      (cl:setf (cl:ldb (cl:byte 8 8) unsigned) (cl:read-byte istream))
-      (cl:setf (cl:ldb (cl:byte 8 16) unsigned) (cl:read-byte istream))
-      (cl:setf (cl:ldb (cl:byte 8 24) unsigned) (cl:read-byte istream))
-      (cl:setf (cl:slot-value msg 'wallselection) (cl:if (cl:< unsigned 2147483648) unsigned (cl:- unsigned 4294967296))))
+    (cl:let ((__ros_str_len 0))
+      (cl:setf (cl:ldb (cl:byte 8 0) __ros_str_len) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 8) __ros_str_len) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 16) __ros_str_len) (cl:read-byte istream))
+      (cl:setf (cl:ldb (cl:byte 8 24) __ros_str_len) (cl:read-byte istream))
+      (cl:setf (cl:slot-value msg 'wallselection) (cl:make-string __ros_str_len))
+      (cl:dotimes (__ros_str_idx __ros_str_len msg)
+        (cl:setf (cl:char (cl:slot-value msg 'wallselection) __ros_str_idx) (cl:code-char (cl:read-byte istream)))))
     (cl:let ((__ros_str_len 0))
       (cl:setf (cl:ldb (cl:byte 8 0) __ros_str_len) (cl:read-byte istream))
       (cl:setf (cl:ldb (cl:byte 8 8) __ros_str_len) (cl:read-byte istream))
@@ -171,19 +173,19 @@
   "my_robot_wallinterfaces/SelectionWall")
 (cl:defmethod roslisp-msg-protocol:md5sum ((type (cl:eql '<SelectionWall>)))
   "Returns md5sum for a message object of type '<SelectionWall>"
-  "58c6387955db224451fe1a297bbab86a")
+  "3018aa4e69906a564df217c351a9673e")
 (cl:defmethod roslisp-msg-protocol:md5sum ((type (cl:eql 'SelectionWall)))
   "Returns md5sum for a message object of type 'SelectionWall"
-  "58c6387955db224451fe1a297bbab86a")
+  "3018aa4e69906a564df217c351a9673e")
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql '<SelectionWall>)))
   "Returns full string definition for message of type '<SelectionWall>"
-  (cl:format cl:nil "int32 wallselection~%string typeselection~%int32 sectionselection~%int32[] picked_position~%int32[] default_position~%~%~%"))
+  (cl:format cl:nil "string wallselection~%string typeselection~%int32 sectionselection~%int32[] picked_position~%int32[] default_position~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:message-definition ((type (cl:eql 'SelectionWall)))
   "Returns full string definition for message of type 'SelectionWall"
-  (cl:format cl:nil "int32 wallselection~%string typeselection~%int32 sectionselection~%int32[] picked_position~%int32[] default_position~%~%~%"))
+  (cl:format cl:nil "string wallselection~%string typeselection~%int32 sectionselection~%int32[] picked_position~%int32[] default_position~%~%~%"))
 (cl:defmethod roslisp-msg-protocol:serialization-length ((msg <SelectionWall>))
   (cl:+ 0
-     4
+     4 (cl:length (cl:slot-value msg 'wallselection))
      4 (cl:length (cl:slot-value msg 'typeselection))
      4
      4 (cl:reduce #'cl:+ (cl:slot-value msg 'picked_position) :key #'(cl:lambda (ele) (cl:declare (cl:ignorable ele)) (cl:+ 4)))

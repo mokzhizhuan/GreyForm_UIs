@@ -130,7 +130,7 @@ void resize_function__SelectionWall__default_position(void * untyped_member, siz
 static const ::rosidl_typesupport_introspection_cpp::MessageMember SelectionWall_message_member_array[5] = {
   {
     "wallselection",  // name
-    ::rosidl_typesupport_introspection_cpp::ROS_TYPE_INT32,  // type
+    ::rosidl_typesupport_introspection_cpp::ROS_TYPE_STRING,  // type
     0,  // upper bound of string
     nullptr,  // members of sub message
     false,  // is array

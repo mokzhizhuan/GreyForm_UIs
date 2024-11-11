@@ -37,7 +37,6 @@ class Setting(QWidget):
         font = default_settings["font_size"]
         self.theme = default_settings["theme"]
         self.password = default_settings["password"]
-        self.interfacehelper = default_settings["userinterface"]
         self.font_size = int(font)
         self.selected_time_zone = default_settings["timezone"]
         self.default_settings = default_settings
@@ -70,11 +69,6 @@ class Setting(QWidget):
         )
         if Text_index >= 0:
             self.settingform.Text_size.setCurrentIndex(Text_index)
-        userinterface_index = self.settingform.userinterfacebox.findText(
-            self.default_settings["userinterface"], Qt.MatchFixedString
-        )
-        if userinterface_index >= 0:
-            self.settingform.userinterfacebox.setCurrentIndex(userinterface_index)
         self.font = QFont()
         self.font.setPointSize(int(self.font_size))
         self.apply_font_to_widgets(self.settingform, self.font)
@@ -129,7 +123,6 @@ class Setting(QWidget):
             lambda: default.restoredefaultsetting(
                 self.accountinfo,
                 self.settingform.themebox,
-                self.settingform.userinterfacebox,
                 self.settingform.Text_size,
                 self.settingform.resolutioncomboBox,
                 self.settingform.country,
@@ -173,7 +166,6 @@ class Setting(QWidget):
             self.settingform.PowerButton,
             self.settingform.maintitlelabel,
             self.settingform.themebox,
-            self.settingform.userinterfacebox,
             self.settingform.Text_size,
             self.settingform.resolutioncomboBox,
             self.settingform.country,
@@ -195,7 +187,6 @@ class Setting(QWidget):
         self.memorytimer.start(1000)
         settingtextlayout.SettingText(
             self.settingform.labeltitlsetting,
-            self.settingform.ip_label,
             self.settingform.titlelabel,
             self.settingform.info_label,
             self.settingform.version_label,
@@ -224,7 +215,7 @@ class Setting(QWidget):
             self.selected_time_zone, self.settingform.Systemtime
         )
 
-    #memory update
+    #update memory
     def update_memory(self):
         # Update the system memory text
         process = psutil.Process(os.getpid())
@@ -291,7 +282,6 @@ class Setting(QWidget):
             self.settingform.serviceipaddresspage,
             self.settingform.layoutWidgetservicestextsize,
             self.settingform.host,
-            self.settingform.LayoutWidgetuserinterface,
             self.settingform.layoutWidgetservicesresolution,
             self.settingform.layoutWidgetservicescountryGMT,
             self.settingform.layoutWidgetservicessetpass,

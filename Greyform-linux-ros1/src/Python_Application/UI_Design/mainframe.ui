@@ -492,7 +492,7 @@
               </layout>
              </item>
              <item>
-              <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="1,1,1">
+              <layout class="QHBoxLayout" name="horizontalLayout_10" stretch="1,1">
                <item>
                 <widget class="QPushButton" name="ConfirmButton">
                  <property name="sizePolicy">
@@ -503,19 +503,6 @@
                  </property>
                  <property name="text">
                   <string>Confirm</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="markingitembutton">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="text">
-                  <string>Show Marking</string>
                  </property>
                 </widget>
                </item>
@@ -679,7 +666,50 @@
           <height>251</height>
          </rect>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="2">
+        <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="1,2">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,1,1">
+           <item>
+            <widget class="QPushButton" name="StageButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Stage 1</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="StageButton_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Stage 2</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="StageButton_3">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Stage 3</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
          <item>
           <layout class="QVBoxLayout" name="verticalLayout">
            <item>

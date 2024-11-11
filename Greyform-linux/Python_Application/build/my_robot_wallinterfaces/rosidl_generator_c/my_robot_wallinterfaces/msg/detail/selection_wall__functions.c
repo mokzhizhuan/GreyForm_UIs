@@ -12,6 +12,7 @@
 
 
 // Include directives for member types
+// Member `wallselection`
 // Member `typeselection`
 #include "rosidl_runtime_c/string_functions.h"
 // Member `picked_position`
@@ -25,6 +26,10 @@ my_robot_wallinterfaces__msg__SelectionWall__init(my_robot_wallinterfaces__msg__
     return false;
   }
   // wallselection
+  if (!rosidl_runtime_c__String__init(&msg->wallselection)) {
+    my_robot_wallinterfaces__msg__SelectionWall__fini(msg);
+    return false;
+  }
   // typeselection
   if (!rosidl_runtime_c__String__init(&msg->typeselection)) {
     my_robot_wallinterfaces__msg__SelectionWall__fini(msg);
@@ -51,6 +56,7 @@ my_robot_wallinterfaces__msg__SelectionWall__fini(my_robot_wallinterfaces__msg__
     return;
   }
   // wallselection
+  rosidl_runtime_c__String__fini(&msg->wallselection);
   // typeselection
   rosidl_runtime_c__String__fini(&msg->typeselection);
   // sectionselection
@@ -67,7 +73,9 @@ my_robot_wallinterfaces__msg__SelectionWall__are_equal(const my_robot_wallinterf
     return false;
   }
   // wallselection
-  if (lhs->wallselection != rhs->wallselection) {
+  if (!rosidl_runtime_c__String__are_equal(
+      &(lhs->wallselection), &(rhs->wallselection)))
+  {
     return false;
   }
   // typeselection
@@ -104,7 +112,11 @@ my_robot_wallinterfaces__msg__SelectionWall__copy(
     return false;
   }
   // wallselection
-  output->wallselection = input->wallselection;
+  if (!rosidl_runtime_c__String__copy(
+      &(input->wallselection), &(output->wallselection)))
+  {
+    return false;
+  }
   // typeselection
   if (!rosidl_runtime_c__String__copy(
       &(input->typeselection), &(output->typeselection)))

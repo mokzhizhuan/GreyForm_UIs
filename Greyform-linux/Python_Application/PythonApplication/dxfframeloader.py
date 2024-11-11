@@ -24,6 +24,7 @@ class dxfloader(object):
         super().__init__()
         self.file_path = file_path
         self.mainwindowforfileselection = mainwindowforfileselection
+        self.mainwindow = mainwindow
         self.loader = mainwindowforfileselection[0]
         self.loader_2 = mainwindowforfileselection[1]
         self.renderer = mainwindowforfileselection[2]
@@ -37,14 +38,15 @@ class dxfloader(object):
         self.seq2Button = mainwindowforfileselection[10]
         self.seq3Button = mainwindowforfileselection[11]
         self.NextButton_Page_3 = mainwindowforfileselection[12]
-        self.Stagelabel = mainwindowforfileselection[13]
-        self.localizebutton = mainwindowforfileselection[14]
-        self.rosnode = mainwindowforfileselection[15]
-        self.excelfiletext = mainwindowforfileselection[16]
-        self.seqlabel = mainwindowforfileselection[17]
-        self.markingitembutton = mainwindowforfileselection[18]
+        self.localizebutton = mainwindowforfileselection[13]
+        self.rosnode = mainwindowforfileselection[14]
+        self.excelfiletext = mainwindowforfileselection[15]
+        self.seqlabel = mainwindowforfileselection[16]
+        self.Stagelabel = mainwindowforfileselection[17]
+        self.StageButton = mainwindowforfileselection[18]
+        self.StageButton_2 = mainwindowforfileselection[19]
+        self.StageButton_3 = mainwindowforfileselection[20]
         self.gdf = gdf
-        self.mainwindow = mainwindow
         self.loaddxftoframe()
 
     def loaddxftoframe(self):
@@ -106,14 +108,16 @@ class dxfloader(object):
                     self.seq2Button,
                     self.seq3Button,
                     self.NextButton_Page_3,
-                    self.Stagelabel,
                     self.localizebutton,
                     self.rosnode,
                     self.file_path,
                     self.excelfiletext,
                     self.seqlabel,
                     self.mainwindow,
-                    self.markingitembutton
+                    self.Stagelabel,
+                    self.StageButton,
+                    self.StageButton_2,
+                    self.StageButton_3,
                 )
 
     # process geometry in geodata pandas

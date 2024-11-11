@@ -19,14 +19,14 @@
 (defmethod my_robot_wallinterfaces::SelectionWall
   (:init
    (&key
-    ((:wallselection __wallselection) 0)
+    ((:wallselection __wallselection) "")
     ((:typeselection __typeselection) "")
     ((:sectionselection __sectionselection) 0)
     ((:picked_position __picked_position) (make-array 0 :initial-element 0 :element-type :integer))
     ((:default_position __default_position) (make-array 0 :initial-element 0 :element-type :integer))
     )
    (send-super :init)
-   (setq _wallselection (round __wallselection))
+   (setq _wallselection (string __wallselection))
    (setq _typeselection (string __typeselection))
    (setq _sectionselection (round __sectionselection))
    (setq _picked_position __picked_position)
@@ -50,8 +50,8 @@
   (:serialization-length
    ()
    (+
-    ;; int32 _wallselection
-    4
+    ;; string _wallselection
+    4 (length _wallselection)
     ;; string _typeselection
     4 (length _typeselection)
     ;; int32 _sectionselection
@@ -65,8 +65,8 @@
    (&optional strm)
    (let ((s (if strm strm
               (make-string-output-stream (send self :serialization-length)))))
-     ;; int32 _wallselection
-       (write-long _wallselection s)
+     ;; string _wallselection
+       (write-long (length _wallselection) s) (princ _wallselection s)
      ;; string _typeselection
        (write-long (length _typeselection) s) (princ _typeselection s)
      ;; int32 _sectionselection
@@ -85,8 +85,8 @@
      (if (null strm) (get-output-stream-string s))))
   (:deserialize
    (buf &optional (ptr- 0))
-   ;; int32 _wallselection
-     (setq _wallselection (sys::peek buf ptr- :integer)) (incf ptr- 4)
+   ;; string _wallselection
+     (let (n) (setq n (sys::peek buf ptr- :integer)) (incf ptr- 4) (setq _wallselection (subseq buf ptr- (+ ptr- n))) (incf ptr- n))
    ;; string _typeselection
      (let (n) (setq n (sys::peek buf ptr- :integer)) (incf ptr- 4) (setq _typeselection (subseq buf ptr- (+ ptr- n))) (incf ptr- n))
    ;; int32 _sectionselection
@@ -109,10 +109,10 @@
    self)
   )
 
-(setf (get my_robot_wallinterfaces::SelectionWall :md5sum-) "58c6387955db224451fe1a297bbab86a")
+(setf (get my_robot_wallinterfaces::SelectionWall :md5sum-) "3018aa4e69906a564df217c351a9673e")
 (setf (get my_robot_wallinterfaces::SelectionWall :datatype-) "my_robot_wallinterfaces/SelectionWall")
 (setf (get my_robot_wallinterfaces::SelectionWall :definition-)
-      "int32 wallselection
+      "string wallselection
 string typeselection
 int32 sectionselection
 int32[] picked_position
@@ -122,6 +122,6 @@ int32[] default_position
 
 
 
-(provide :my_robot_wallinterfaces/SelectionWall "58c6387955db224451fe1a297bbab86a")
+(provide :my_robot_wallinterfaces/SelectionWall "3018aa4e69906a564df217c351a9673e")
 
 

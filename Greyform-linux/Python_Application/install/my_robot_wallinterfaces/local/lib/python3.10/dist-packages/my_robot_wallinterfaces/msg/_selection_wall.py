@@ -67,7 +67,7 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
     ]
 
     _fields_and_field_types = {
-        'wallselection': 'int32',
+        'wallselection': 'string',
         'typeselection': 'string',
         'sectionselection': 'int32',
         'picked_position': 'sequence<int32>',
@@ -75,7 +75,7 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
     }
 
     SLOT_TYPES = (
-        rosidl_parser.definition.BasicType('int32'),  # noqa: E501
+        rosidl_parser.definition.UnboundedString(),  # noqa: E501
         rosidl_parser.definition.UnboundedString(),  # noqa: E501
         rosidl_parser.definition.BasicType('int32'),  # noqa: E501
         rosidl_parser.definition.UnboundedSequence(rosidl_parser.definition.BasicType('int32')),  # noqa: E501
@@ -86,7 +86,7 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
         assert all('_' + key in self.__slots__ for key in kwargs.keys()), \
             'Invalid arguments passed to constructor: %s' % \
             ', '.join(sorted(k for k in kwargs.keys() if '_' + k not in self.__slots__))
-        self.wallselection = kwargs.get('wallselection', int())
+        self.wallselection = kwargs.get('wallselection', str())
         self.typeselection = kwargs.get('typeselection', str())
         self.sectionselection = kwargs.get('sectionselection', int())
         self.picked_position = array.array('i', kwargs.get('picked_position', []))
@@ -147,10 +147,8 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
     def wallselection(self, value):
         if __debug__:
             assert \
-                isinstance(value, int), \
-                "The 'wallselection' field must be of type 'int'"
-            assert value >= -2147483648 and value < 2147483648, \
-                "The 'wallselection' field must be an integer in [-2147483648, 2147483647]"
+                isinstance(value, str), \
+                "The 'wallselection' field must be of type 'str'"
         self._wallselection = value
 
     @builtins.property

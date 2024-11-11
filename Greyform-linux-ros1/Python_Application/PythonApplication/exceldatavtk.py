@@ -1,9 +1,9 @@
 import pandas as pd
 import vtk
 
-#Excel extractor
-def exceldataextractor():
-    excel_file_path = "exporteddatas.xlsx"
+
+# excel extractor for vtk
+def exceldataextractor(excel_file_path):
     all_sheets = pd.read_excel(excel_file_path, sheet_name=None)
     wall_numbers = []
     markingidentifiers = []
@@ -59,3 +59,37 @@ def exceldataextractor():
             )
     return wall_identifiers
 
+
+def exceldataextractorelement(excel_file_path):
+    all_sheets = pd.read_excel(excel_file_path, sheet_name=None)
+    wall_numbers = []
+    markingidentifiers = []
+    wall_numbers_by_sheet = {}
+    for sheet_name, df in all_sheets.items():
+        wall_numbers = df["Wall Number"].tolist()
+        markingidentifiers = df["Point number/name"].tolist()
+        positionx = [0 if x < 0 else x for x in df["Position X (m)"].tolist()]
+        positiony = [0 if y < 0 else y for y in df["Position Y (m)"].tolist()]
+        positionz = [0 if z < 0 else z for z in df["Position Z (m)"].tolist()]
+        shapetype = df["Shape type"].tolist()
+        categories = []
+        for identifier in markingidentifiers:
+            identifier = str(identifier) if not pd.isna(identifier) else ""
+            if "pipe" in identifier.lower():
+                categories.append("Piping")
+            elif "floor" in identifier.lower():
+                categories.append("Tiling/Floor")
+            elif any(kw in identifier.lower() for kw in ["door", "wall", "light"]):
+                categories.append("Fitting")
+            else:
+                categories.append(sheet_name)
+        wall_numbers_by_sheet[sheet_name] = {
+            "markingidentifiers": markingidentifiers,
+            "wall_numbers": wall_numbers,
+            "Position X (m)": positionx,
+            "Position Y (m)": positiony,
+            "Position Z (m)": positionz,
+            "Shape type": shapetype,
+            "Categories": categories,
+        }
+    return wall_numbers_by_sheet

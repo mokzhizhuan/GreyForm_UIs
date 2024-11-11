@@ -202,7 +202,7 @@
           <height>381</height>
          </rect>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_20" stretch="1,1">
+        <layout class="QHBoxLayout" name="horizontalLayout_20" stretch="2,2">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_17" stretch="2,1">
            <item>
@@ -320,7 +320,7 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="1,1">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_4" stretch="2,1">
+          <layout class="QVBoxLayout" name="verticalLayout_4" stretch="3,1">
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_18" stretch="1,1,1">
              <item>
@@ -451,12 +451,24 @@
             <enum>QLayout::SetNoConstraint</enum>
            </property>
            <item>
-            <layout class="QVBoxLayout" name="verticalLayout_6" stretch="2,1">
+            <layout class="QVBoxLayout" name="verticalLayout_6" stretch="3,1">
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_21" stretch="1,1,0">
+              <layout class="QVBoxLayout" name="verticalLayout_21" stretch="0,1,1,0">
                <property name="sizeConstraint">
                 <enum>QLayout::SetNoConstraint</enum>
                </property>
+               <item>
+                <widget class="QLabel" name="seqlabel_2">
+                 <property name="font">
+                  <font>
+                   <pointsize>16</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Sequence : </string>
+                 </property>
+                </widget>
+               </item>
                <item>
                 <widget class="QLabel" name="Stagelabel">
                  <property name="text">
@@ -654,7 +666,50 @@
           <height>251</height>
          </rect>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="2">
+        <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="1,2">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,1,1">
+           <item>
+            <widget class="QPushButton" name="StageButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Stage 1</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="StageButton_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Stage 2</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="StageButton_3">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Stage 3</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
          <item>
           <layout class="QVBoxLayout" name="verticalLayout">
            <item>
@@ -709,7 +764,7 @@
             </font>
            </property>
            <property name="text">
-            <string>Back to Marking</string>
+            <string>Back to Marking Controls</string>
            </property>
           </widget>
          </item>
@@ -823,30 +878,6 @@
       </property>
       <property name="text">
        <string>User Manual</string>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="skipButton">
-      <property name="geometry">
-       <rect>
-        <x>310</x>
-        <y>10</y>
-        <width>160</width>
-        <height>50</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>20</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Skip</string>
       </property>
      </widget>
     </widget>

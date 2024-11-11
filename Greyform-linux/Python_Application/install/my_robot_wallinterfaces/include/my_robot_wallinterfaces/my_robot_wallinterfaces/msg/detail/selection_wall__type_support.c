@@ -13,6 +13,7 @@
 
 
 // Include directives for member types
+// Member `wallselection`
 // Member `typeselection`
 #include "rosidl_runtime_c/string_functions.h"
 // Member `picked_position`
@@ -151,7 +152,7 @@ bool my_robot_wallinterfaces__msg__SelectionWall__rosidl_typesupport_introspecti
 static rosidl_typesupport_introspection_c__MessageMember my_robot_wallinterfaces__msg__SelectionWall__rosidl_typesupport_introspection_c__SelectionWall_message_member_array[5] = {
   {
     "wallselection",  // name
-    rosidl_typesupport_introspection_c__ROS_TYPE_INT32,  // type
+    rosidl_typesupport_introspection_c__ROS_TYPE_STRING,  // type
     0,  // upper bound of string
     NULL,  // members of sub message
     false,  // is array

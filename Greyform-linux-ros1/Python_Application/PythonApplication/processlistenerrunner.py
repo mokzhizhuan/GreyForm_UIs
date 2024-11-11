@@ -10,13 +10,13 @@ from PyQt5.QtWidgets import (
 )
 import subprocess
 import os
-import time
 
 
 class StatusSignals(QObject):
     status_signal = pyqtSignal(str)
 
-#Run Listener Node dialog
+
+# Run Listener Node dialog
 class ListenerNodeRunner(QMainWindow):
     def __init__(
         self,
@@ -25,10 +25,14 @@ class ListenerNodeRunner(QMainWindow):
         excel_data,
         wall_number,
         sectionnumber,
-        picked_position,
+        markingitemsbasedonwallnumber,
         Stagelabel,
         cube_actor,
         dataseqtext,
+        maxlen,
+        counter,
+        markingreq,
+        dialog,
     ):
         # starting initialize
         super().__init__()
@@ -38,15 +42,20 @@ class ListenerNodeRunner(QMainWindow):
         self.excel_data = excel_data
         self.wall_number = wall_number
         self.sectionnumber = sectionnumber
-        self.picked_position = picked_position
+        self.markingitemsbasedonwallnumber = markingitemsbasedonwallnumber
         self.Stagelabel = Stagelabel
         self.cube_actor = cube_actor
         self.dataseqtext = dataseqtext
+        self.maxlen = maxlen
+        self.markingreq = markingreq
+        self.counter = counter
+        self.dialog = dialog
         self.signals = StatusSignals()
         self.listener_started = False
+        self.spacing = "/n"
         self.signals.status_signal.connect(self.update_status)
 
-    #listener runner process ui
+    # listener runner process ui
     def initUI(self):
         self.status_label = QLabel("Status: Not Running", self)
         self.status_label.setStyleSheet(
@@ -76,7 +85,7 @@ class ListenerNodeRunner(QMainWindow):
         self.setWindowTitle("Listener Node Status")
         self.setGeometry(400, 400, 500, 500)
 
-    #interacting running process
+    # interacting running process
     def run_listener_node(self):
         if self.listener_started is not True:
             try:
@@ -86,18 +95,26 @@ class ListenerNodeRunner(QMainWindow):
             except Exception as e:
                 self.signals.status_signal.emit(f"Status: Error - {str(e)}")
         else:
-            for i in range(self.dataseqtext):
-                self.talker_node.publish_file_message(self.file, self.excel_data)
-                self.talker_node.publish_selection_message(
-                    self.wall_number[i],
-                    self.sectionnumber[i],
-                    self.picked_position[i],
-                    self.Stagelabel,
-                    self.cube_actor,
-                )
+            for positions, data in self.markingitemsbasedonwallnumber.items():
+                for i, (posX, posY, posZ) in enumerate(
+                    zip(data["posX"], data["posY"], data["posZ"])
+                ):
+                    picked_position = [
+                        int(data["posX"][i]),
+                        int(data["posY"][i]),
+                        int(data["posZ"][i]),
+                    ]
+                    self.talker_node.publish_file_message(self.file, self.excel_data)
+                    self.talker_node.publish_selection_message(
+                        self.wall_number,
+                        self.sectionnumber,
+                        picked_position,
+                        self.Stagelabel,
+                        self.cube_actor,
+                    )
             self.talker_node.showdialog()
 
-    #ros running process
+    # ros running process
     def _run_process(self):
         env = os.environ.copy()
         env["ROS_MASTER_URI"] = "http://localhost:11311"
@@ -112,16 +129,18 @@ class ListenerNodeRunner(QMainWindow):
         )
         stdout, stderr = process.communicate()
         if process.returncode == 0:
-            print("Node started successfully.")
-            print(stdout.decode("utf-8"))
+            self.signals.status_signal.emit("Node started successfully.")
+            self.signals.status_signal.emit(stdout.decode("utf-8"))
         else:
-            print("Failed to start node.")
-            print(stderr.decode("utf-8"))
+            self.signals.status_signal.emit("Failed to start node.")
+            self.signals.status_signal.emit(stderr.decode("utf-8"))
         self.process_finished()
 
-    #process completed
+    # process completed
     def process_finished(self):
-        self.signals.status_signal.emit("Status: Completed")
+        self.signals.status_signal.emit(
+            "Status: Completed , Please include another sequence , Stage and wall number"
+        )
         self.listener_started = True
 
     def update_status(self, status):

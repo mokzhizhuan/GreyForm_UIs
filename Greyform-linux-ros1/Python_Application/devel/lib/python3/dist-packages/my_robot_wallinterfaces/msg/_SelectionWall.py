@@ -8,17 +8,17 @@ import struct
 
 
 class SelectionWall(genpy.Message):
-  _md5sum = "58c6387955db224451fe1a297bbab86a"
+  _md5sum = "3018aa4e69906a564df217c351a9673e"
   _type = "my_robot_wallinterfaces/SelectionWall"
   _has_header = False  # flag to mark the presence of a Header object
-  _full_text = """int32 wallselection
+  _full_text = """string wallselection
 string typeselection
 int32 sectionselection
 int32[] picked_position
 int32[] default_position
 """
   __slots__ = ['wallselection','typeselection','sectionselection','picked_position','default_position']
-  _slot_types = ['int32','string','int32','int32[]','int32[]']
+  _slot_types = ['string','string','int32','int32[]','int32[]']
 
   def __init__(self, *args, **kwds):
     """
@@ -38,7 +38,7 @@ int32[] default_position
       super(SelectionWall, self).__init__(*args, **kwds)
       # message fields cannot be None, assign default values for those that are
       if self.wallselection is None:
-        self.wallselection = 0
+        self.wallselection = ''
       if self.typeselection is None:
         self.typeselection = ''
       if self.sectionselection is None:
@@ -48,7 +48,7 @@ int32[] default_position
       if self.default_position is None:
         self.default_position = []
     else:
-      self.wallselection = 0
+      self.wallselection = ''
       self.typeselection = ''
       self.sectionselection = 0
       self.picked_position = []
@@ -67,7 +67,11 @@ int32[] default_position
     """
     try:
       _x = self.wallselection
-      buff.write(_get_struct_i().pack(_x))
+      length = len(_x)
+      if python3 or type(_x) == unicode:
+        _x = _x.encode('utf-8')
+        length = len(_x)
+      buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
       _x = self.typeselection
       length = len(_x)
       if python3 or type(_x) == unicode:
@@ -98,7 +102,13 @@ int32[] default_position
       end = 0
       start = end
       end += 4
-      (self.wallselection,) = _get_struct_i().unpack(str[start:end])
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      if python3:
+        self.wallselection = str[start:end].decode('utf-8', 'rosmsg')
+      else:
+        self.wallselection = str[start:end]
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])
@@ -140,7 +150,11 @@ int32[] default_position
     """
     try:
       _x = self.wallselection
-      buff.write(_get_struct_i().pack(_x))
+      length = len(_x)
+      if python3 or type(_x) == unicode:
+        _x = _x.encode('utf-8')
+        length = len(_x)
+      buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
       _x = self.typeselection
       length = len(_x)
       if python3 or type(_x) == unicode:
@@ -172,7 +186,13 @@ int32[] default_position
       end = 0
       start = end
       end += 4
-      (self.wallselection,) = _get_struct_i().unpack(str[start:end])
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      if python3:
+        self.wallselection = str[start:end].decode('utf-8', 'rosmsg')
+      else:
+        self.wallselection = str[start:end]
       start = end
       end += 4
       (length,) = _struct_I.unpack(str[start:end])

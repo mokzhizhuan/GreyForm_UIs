@@ -11,7 +11,6 @@ class SettingText(object):
     def __init__(
         self,
         labeltitlsetting,
-        ip_label,
         titlelabel,
         info_label,
         version_label,
@@ -25,7 +24,6 @@ class SettingText(object):
         # starting initialize
         super().__init__()
         self.labeltitlsetting = labeltitlsetting
-        self.ip_label = ip_label
         self.titlelabel = titlelabel
         self.info_label = info_label
         self.version_label = version_label
@@ -54,7 +52,7 @@ class SettingText(object):
         self.userlabel.setText(f"<h2>User: {self.accountinfo[0]['UserID']}</h2>")
         self.PasslineEdit.setText(f"{self.accountinfo[0]['Pass']}")
         self.PasslineEdit.returnPressed.connect(self.changepassfunction)
-    
+
     #change pass ui loader
     def changepassfunction(self):
         password = self.PasslineEdit.text()

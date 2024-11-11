@@ -38,19 +38,20 @@ struct SelectionWall_
     if (rosidl_runtime_cpp::MessageInitialization::ALL == _init ||
       rosidl_runtime_cpp::MessageInitialization::ZERO == _init)
     {
-      this->wallselection = 0l;
+      this->wallselection = "";
       this->typeselection = "";
       this->sectionselection = 0l;
     }
   }
 
   explicit SelectionWall_(const ContainerAllocator & _alloc, rosidl_runtime_cpp::MessageInitialization _init = rosidl_runtime_cpp::MessageInitialization::ALL)
-  : typeselection(_alloc)
+  : wallselection(_alloc),
+    typeselection(_alloc)
   {
     if (rosidl_runtime_cpp::MessageInitialization::ALL == _init ||
       rosidl_runtime_cpp::MessageInitialization::ZERO == _init)
     {
-      this->wallselection = 0l;
+      this->wallselection = "";
       this->typeselection = "";
       this->sectionselection = 0l;
     }
@@ -58,7 +59,7 @@ struct SelectionWall_
 
   // field types and members
   using _wallselection_type =
-    int32_t;
+    std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>;
   _wallselection_type wallselection;
   using _typeselection_type =
     std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>;
@@ -75,7 +76,7 @@ struct SelectionWall_
 
   // setters for named parameter idiom
   Type & set__wallselection(
-    const int32_t & _arg)
+    const std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> & _arg)
   {
     this->wallselection = _arg;
     return *this;

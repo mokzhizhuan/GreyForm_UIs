@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import rospy
 import sys
 from my_robot_wallinterfaces.msg import FileExtractionMessage, SelectionWall
@@ -87,7 +86,7 @@ class TalkerNode:
     ):
         try:
             msg = SelectionWall()
-            msg.wallselection = int(wall_number)
+            msg.wallselection = str(wall_number)
             msg.typeselection = f"{Stagelabel.text()}"
             msg.sectionselection = sectionnumber
             picked_position = [
@@ -107,7 +106,7 @@ class TalkerNode:
                 f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"
                 f"{self.spacing}typeselection={msg.typeselection},"
                 f"{self.spacing}sectionselection={msg.sectionselection}"
-                f"{self.spacing}{list(msg.picked_position)}"
+                f"{self.spacing}{list(msg.picked_position)}{self.spacing}"
             )
         except Exception as e:
             self.errormessage += f"{self.spacing}Failed to publish selection message: {e}"

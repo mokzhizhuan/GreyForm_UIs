@@ -10,8 +10,6 @@ from PyQt5.QtWidgets import (
 )
 import subprocess
 import os
-import time
-import PythonApplication.markingitem as markingdialogitem
 
 
 class StatusSignals(QObject):
@@ -27,14 +25,14 @@ class ListenerNodeRunner(QMainWindow):
         excel_data,
         wall_number,
         sectionnumber,
-        picked_position,
+        markingitemsbasedonwallnumber,
         Stagelabel,
         cube_actor,
         dataseqtext,
         maxlen,
         counter,
         markingreq,
-        dialog
+        dialog,
     ):
         # starting initialize
         super().__init__()
@@ -44,7 +42,7 @@ class ListenerNodeRunner(QMainWindow):
         self.excel_data = excel_data
         self.wall_number = wall_number
         self.sectionnumber = sectionnumber
-        self.picked_position = picked_position
+        self.markingitemsbasedonwallnumber = markingitemsbasedonwallnumber
         self.Stagelabel = Stagelabel
         self.cube_actor = cube_actor
         self.dataseqtext = dataseqtext
@@ -54,6 +52,7 @@ class ListenerNodeRunner(QMainWindow):
         self.dialog = dialog
         self.signals = StatusSignals()
         self.listener_started = False
+        self.spacing = "/n"
         self.signals.status_signal.connect(self.update_status)
 
     def initUI(self):
@@ -76,9 +75,21 @@ class ListenerNodeRunner(QMainWindow):
             """
         )
         self.run_button.clicked.connect(self.run_listener_node)
+        self.close_button = QPushButton("Close", self)
+        self.close_button.setStyleSheet(
+            """
+            QPushButton {
+                font-size: 20px;           
+                min-height: 100px;   
+                icon-size: 100px 100px;        
+            }
+            """
+        )
+        self.close_button.clicked.connect(self.close)
         layout = QVBoxLayout()
         layout.addWidget(self.status_label)
         layout.addWidget(self.run_button)
+        layout.addWidget(self.close_button)
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)
@@ -95,14 +106,23 @@ class ListenerNodeRunner(QMainWindow):
             except Exception as e:
                 self.signals.status_signal.emit(f"Status: Error - {str(e)}")
         else:
-            self.talker_node.publish_file_message(self.file, self.excel_data)
-            self.talker_node.publish_selection_message(
-                self.wall_number,
-                self.sectionnumber,
-                self.picked_position,
-                self.Stagelabel,
-                self.cube_actor,
-            )
+            for positions, data in self.markingitemsbasedonwallnumber.items():
+                for i, (posX, posY, posZ) in enumerate(
+                    zip(data["posX"], data["posY"], data["posZ"])
+                ):
+                    picked_position = [
+                        int(data["posX"][i]),
+                        int(data["posY"][i]),
+                        int(data["posZ"][i]),
+                    ]
+                    self.talker_node.publish_file_message(self.file, self.excel_data)
+                    self.talker_node.publish_selection_message(
+                        self.wall_number,
+                        self.sectionnumber,
+                        picked_position,
+                        self.Stagelabel,
+                        self.cube_actor,
+                    )
             self.talker_node.showdialog()
 
     # ros running process
@@ -127,28 +147,12 @@ class ListenerNodeRunner(QMainWindow):
                     f"Status: Error - {stderr.decode('utf-8')}"
                 )
             else:
-                if self.counter < self.maxlen:
-                    self.update_dialog()
-                    self.signals.status_signal.emit(
-                        "Status: the marking item is completed, the next marking item will be at the marking dialog"
-                    )
-                else:
-                    self.signals.status_signal.emit(
-                        "Status: all the marked items are Completed, please move on to the next sequence or close the program"
-                    )
+                self.signals.status_signal.emit(
+                    "Status: the marking items are completed, Please include another sequence , Stage and wall number"
+                )
         except Exception as e:
             self.signals.status_signal.emit(f"Status: Error - {str(e)}")
 
     def update_status(self, status):
         self.status_label.setText(status)
 
-    def update_dialog(self):
-        if self.counter < self.maxlen:
-            self.dialog = markingdialogitem.markingitemdialog(
-                self.markingreq, self.counter, self.maxlen
-            )
-            self.dialog.updatemarkingitem()
-        else:
-            print(
-                "Marking is completed, You can proceed to click another sequence or close the application"
-            )

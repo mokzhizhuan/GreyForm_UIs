@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import PythonApplication.processlistenerrunner as ProcessListener
 import tkinter as tk
-from tkinter import messagebox
+import PythonApplication.exceldatalegend as datalegends
 
 
 # wall interaction to interact with ros listener and ros talker
@@ -37,70 +37,107 @@ class wall_Interaction(object):
         self.maxlen = setcamerainteraction[22]
         self.counter = setcamerainteraction[23]
         self.dialog = setcamerainteraction[24]
+        self.Stagetext = setcamerainteraction[25]
         self.interaction_enabled = True
         self.ros_node = ros_node
         self.spacing = "\n"
+        incurdatamethod = datalegends.Exportexcelinfolegend(self.markingreq)
+        self.markingitems = incurdatamethod.returndata()
+        self.counter = 0
 
     # middle click interaction for storing
     def setwallinteractiondata(self, obj, event):
-        self.interactor_style.SetMotionFactor(8)
-        click_pos = self.renderwindowinteractor.GetEventPosition()
-        picker = vtk.vtkCellPicker()
-        self.renderwindowinteractor.GetRenderWindow().GetInteractor().SetPicker(picker)
-        picker.Pick(click_pos[0], click_pos[1], 0, self.render)
-        pickedposition = [
-            picker.GetPickPosition()[0],
-            picker.GetPickPosition()[1],
-            picker.GetPickPosition()[2],
-        ]
-        self.checkpositionreq(pickedposition)
-
-    def checkpositionreq(self, picker):
-        markers = self.clickreq(picker)
-        if markers == True:
-            self.picked_position_quad = picker
-            self.picked_position = picker
-            showmsg = (
-                f"Picker position is intact with the sequence object.{self.spacing}"
-                f"Picked position : {picker} {self.spacing}"
+        if (
+            self.Stagetext.text() == "Stage 1"
+            or self.Stagetext.text() == "Stage 2"
+            or self.Stagetext.text() == "Stage 3"
+        ):
+            self.interactor_style.SetMotionFactor(8)
+            click_pos = self.renderwindowinteractor.GetEventPosition()
+            picker = vtk.vtkCellPicker()
+            self.renderwindowinteractor.GetRenderWindow().GetInteractor().SetPicker(
+                picker
             )
-            self.show_message(showmsg)
+            picker.Pick(click_pos[0], click_pos[1], 0, self.render)
+            self.pickedposition = [
+                picker.GetPickPosition()[0],
+                picker.GetPickPosition()[1],
+                picker.GetPickPosition()[2],
+            ]
+            self.picked_position_quad = [
+                picker.GetPickPosition()[0],
+                picker.GetPickPosition()[1],
+                picker.GetPickPosition()[2],
+            ]
+            self.wall_storing()
             self.localizebutton.show()
             self.localizebutton.clicked.connect(self.publish_message)
         else:
-            errormsg = (
-                f"Picker position is not intact with the sequence object, please try again.{self.spacing}"
-                f"Picked position : {picker} {self.spacing}"
-                f"Marking item {self.markingreq['markingidentifiers'][self.counter]} {self.spacing}"
-                f"Position [{self.markingreq['Position X (m)'][self.counter]},"
-                f"{self.markingreq['Position Y (m)'][self.counter]},"
-                f" {self.markingreq['Position Z (m)'][self.counter]} {self.spacing}"
-                f"Distance between the object and picker : {self.distances}"
+            self.show_error_message(
+                "Invalid Stage , please click the Stage 1, 2, 3 button."
             )
-            self.show_error_message(errormsg)
 
     # publisher to listener and talker node runner
-    def publish_message(self):
+    def wall_storing(self):
         self.wall_filtered_identifiers = self.fliterbywallnum()
-        message_error = True
-        wallnumber, sectionnumber = self.distance(
-            self.picked_position, self.picked_position_quad
+        self.wallnumber, self.sectionnumber = self.distance(
+            self.pickedposition, self.picked_position_quad
         )
-        if self.file_path:
-            if ".stl" in self.file_path:
-                self.publish_message_ros(self.file_path, wallnumber, sectionnumber)
-            elif ".ifc" in self.file_path:
-                file = "output.stl"
-                self.publish_message_ros(file, wallnumber, sectionnumber)
-            elif ".dxf" in self.file_path:
-                file = "output.stl"
-                self.publish_message_ros(file, wallnumber, sectionnumber)
-            else:
-                if message_error == True:
-                    self.show_error_message("File is invalid, please try again")
-                    message_error = False
+        self.markingitemsbasedonwallnumber = {}
+        for stage, data in self.markingitems.items():
+            filtered_data = {
+                "markingidentifiers": [],
+                "wall_numbers": [],
+                "posX": [],
+                "posY": [],
+                "posZ": [],
+                "Shape type": [],
+            }
+
+            for i, wall_number in enumerate(data["wall_numbers"]):
+                if wall_number == self.wallnumber:
+                    filtered_data["markingidentifiers"].append(
+                        data["markingidentifiers"][i]
+                    )
+                    filtered_data["wall_numbers"].append(wall_number)
+                    filtered_data["posX"].append(data["Position X (m)"][i])
+                    filtered_data["posY"].append(data["Position Y (m)"][i])
+                    filtered_data["posZ"].append(data["Position Z (m)"][i])
+                    filtered_data["Shape type"].append(data["Shape type"][i])
+            if filtered_data["wall_numbers"]:
+                self.markingitemsbasedonwallnumber[stage] = filtered_data
+        if self.markingitemsbasedonwallnumber:
+            self.show_message("Items that are near the wall are stored.")
+        else:
+            self.show_error_message("There are no items avaiable in the wall")
+
+    def publish_message(self):
+        if self.markingitemsbasedonwallnumber:
+            if self.file_path:
+                if ".stl" in self.file_path:
+                    self.publish_message_ros(
+                        self.file_path, self.wallnumber, self.sectionnumber
+                    )
+                elif ".ifc" in self.file_path:
+                    file = "output.stl"
+                    self.publish_message_ros(file, self.wallnumber, self.sectionnumber)
+                elif ".dxf" in self.file_path:
+                    file = "output.stl"
+                    self.publish_message_ros(file, self.wallnumber, self.sectionnumber)
                 else:
-                    return
+                    if message_error == True:
+                        self.show_error_message("File is invalid, please try again")
+                        message_error = False
+                    else:
+                        return
+        else:
+            errormessage = (
+                f"There is no object intact with the wall, Please click another wall"
+                f"{self.spacing} Wall Number : {self.wallnumber}"
+                f"{self.spacing} Data : {self.markingitemsbasedonwallnumber}"
+                f"{self.spacing}Position : {self.pickedposition}"
+            )
+            self.show_error_message(errormessage)
 
     def show_message(self, message):
         root = tk.Tk()
@@ -139,7 +176,7 @@ class wall_Interaction(object):
             self.exceldata,
             wallnumber,
             sectionnumber,
-            self.picked_position,
+            self.markingitemsbasedonwallnumber,
             self.Stagelabel,
             self.cubeactor,
             self.dataseqtext,
@@ -149,18 +186,6 @@ class wall_Interaction(object):
             self.dialog,
         )
         self.listenerdialog.show()
-
-    def clickreq(self, picked_position):
-        threshold_distance = 900
-        markers = False
-        positions_x = self.markingreq["Position X (m)"][self.counter]
-        positions_y = self.markingreq["Position Y (m)"][self.counter]
-        positions_z = self.markingreq["Position Z (m)"][self.counter]
-        identifier_position = np.array([positions_x, positions_y, positions_z])
-        self.distances = np.linalg.norm(np.array(picked_position) - identifier_position)
-        if self.distances <= threshold_distance:
-            markers = True
-        return markers
 
     # distance checker
     def distance(self, sequence_pos, sequence_pos_quad):
@@ -225,6 +250,24 @@ class wall_Interaction(object):
                 distance = self.calculate_distance(sequence_pos[2], max_z)
                 if distance <= self.distances:
                     wall_number = wall_numbers
+                    wall_position = np.array(
+                        [
+                            group["Position X (m)"],
+                            group["Position Y (m)"],
+                            group["Position Z (m)"],
+                        ]
+                    )
+                    distances = self.calculate_distances(sequence_pos, wall_position)
+                    if (distances <= self.distancerange).all():
+                        name = group["Point number/name"]
+                        self.Stagename(self, name)
+                    sequence_pos_quad[1] = sequence_pos[1] - (self.meshbound[3] / 2)
+                    sequence_pos_quad[0] = sequence_pos[0] - (self.meshbound[1] / 2)
+                    sectionnumber = self.determine_quadrant(
+                        sequence_pos_quad[0], sequence_pos_quad[1]
+                    )
+                else:
+                    wall_number = "F"
                     wall_position = np.array(
                         [
                             group["Position X (m)"],

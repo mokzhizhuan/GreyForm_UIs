@@ -107,6 +107,8 @@ class ListenerNode:
             command=self.show_info_dialog,
         )
         self.button.pack()
+        #message = "Point that are not maked: row[Position X (m)],row[Position Y (m)],row[Position Z (m)],"
+        #message = "The point that the robot marks is not on reach , Please move the robot"
 
     #file listener callback implementation
     def file_listener_callback(self, msg):

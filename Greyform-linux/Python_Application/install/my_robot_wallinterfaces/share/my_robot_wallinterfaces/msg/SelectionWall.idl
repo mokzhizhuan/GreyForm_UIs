@@ -6,7 +6,7 @@
 module my_robot_wallinterfaces {
   module msg {
     struct SelectionWall {
-      int32 wallselection;
+      string wallselection;
 
       string typeselection;
 

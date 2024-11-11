@@ -36,8 +36,6 @@ class pythonProgressBar(QDialog):
         self.value = value
         self.loader = mainwindowforfileselection[0]
         self.loader_2 = mainwindowforfileselection[1]
-        self.filepath = file_path
-        self.meshsplot = None
         self.renderer = mainwindowforfileselection[2]
         self.renderWindowInteractor = mainwindowforfileselection[3]
         self.Ylabel = mainwindowforfileselection[4]
@@ -49,8 +47,14 @@ class pythonProgressBar(QDialog):
         self.seq2Button = mainwindowforfileselection[10]
         self.seq3Button = mainwindowforfileselection[11]
         self.NextButton_Page_3 = mainwindowforfileselection[12]
-        self.Stagelabel = mainwindowforfileselection[13]
-        self.excelfiletext = mainwindowforfileselection[16]
+        self.localizebutton = mainwindowforfileselection[13]
+        self.rosnode = mainwindowforfileselection[14]
+        self.excelfiletext = mainwindowforfileselection[15]
+        self.seqlabel = mainwindowforfileselection[16]
+        self.Stagelabel = mainwindowforfileselection[17]
+        self.StageButton = mainwindowforfileselection[18]
+        self.StageButton_2 = mainwindowforfileselection[19]
+        self.StageButton_3 = mainwindowforfileselection[20]
         self.start_progress()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
@@ -127,8 +131,12 @@ class pythonProgressBar(QDialog):
             self.seq3Button,
             self.NextButton_Page_3,
             self.Stagelabel,
-            output_stl_path,
+            self.localizebutton,
+            self.rosnode,
+            self.filepath,
             self.excelfiletext,
+            self.seqlabel,
+            self.mainwindow,
         )
         self.close()
 

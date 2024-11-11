@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QPushButton, QMainWindow
+from PyQt5.QtWidgets import QDialog, QLabel, QVBoxLayout, QPushButton, QMainWindow, QScrollArea
 from PyQt5.QtCore import QTimer
 
 #include dialog
@@ -8,6 +8,8 @@ class LogDialog(QDialog):
         super(LogDialog, self).__init__()
         self.setWindowTitle(f"{title} {log_type.capitalize()} Message")
         layout = QVBoxLayout()
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
         label = QLabel(message)
         label.setStyleSheet(
             """
@@ -16,7 +18,9 @@ class LogDialog(QDialog):
             }
             """
         )
-        layout.addWidget(label)
+        label.setWordWrap(True)
+        scroll_area.setWidget(label)
+        layout.addWidget(scroll_area)
         ok_button = QPushButton("OK")
         ok_button.setStyleSheet(
             """

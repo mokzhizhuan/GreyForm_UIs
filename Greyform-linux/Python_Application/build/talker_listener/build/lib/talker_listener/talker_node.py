@@ -54,7 +54,7 @@ class TalkerNode(Node):
     ):
         try:
             msg = SelectionWall()
-            msg.wallselection = int(wall_number)
+            msg.wallselection = str(wall_number)
             msg.typeselection = f"{Stagelabel.text()}"
             msg.sectionselection = sectionnumber
             picked_position = [

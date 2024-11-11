@@ -11,7 +11,6 @@ from stl import mesh
 import PythonApplication.interactiveevent as events
 import PythonApplication.exceldatavtk as vtk_data_excel
 import PythonApplication.markingprogressbar as stageofmarking
-import PythonApplication.markingitem as markingdialogitem
 
 
 # create the imported stl mesh in vtk frame
@@ -30,14 +29,16 @@ class createMesh(QMainWindow):
         seq2Button,
         seq3Button,
         NextButton_Page_3,
-        Stagelabel,
         localizebutton,
         ros_node,
         file_path,
         excelfiletext,
         seqlabel,
         mainwindow,
-        markingitembutton
+        Stagelabel,
+        StageButton,
+        StageButton_2,
+        StageButton_3,
     ):
         # starting initialize
         super().__init__()
@@ -67,10 +68,12 @@ class createMesh(QMainWindow):
         self.NextButton_Page_3 = NextButton_Page_3
         self.seqlabel = seqlabel
         self.mainwindow = mainwindow
-        self.markingitembutton = markingitembutton
+        self.Stagelabel = Stagelabel
+        self.StageButton = StageButton
+        self.StageButton_2 = StageButton_2
+        self.StageButton_3 = StageButton_3
         self.button_UI()
         self.retranslateUi()
-        self.Stagelabel = Stagelabel
         if self.excelfiletext.toPlainText() != "":
             self.wall_identifiers = vtk_data_excel.exceldataextractor(
                 self.excelfiletext.toPlainText()
@@ -91,8 +94,14 @@ class createMesh(QMainWindow):
         self.seq3Button.clicked.connect(
             lambda: self.addseqtext(self.seq3Button, self.NextButton_Page_3)
         )
-        self.NextButton_Page_3.clicked.connect(self.open_marking_dialog)
-        self.markingitembutton.clicked.connect(self.open_marking_dialog)
+        self.StageButton.clicked.connect(lambda: self.addStagetext(self.StageButton))
+        self.StageButton_2.clicked.connect(lambda: self.addStagetext(self.StageButton_2))
+        self.StageButton_3.clicked.connect(lambda: self.addStagetext(self.StageButton_3))
+
+    def addStagetext(self, StageButton):
+        self.stagetext = StageButton.text()
+        self.Stagelabel.setText(self.stagetext)
+        
 
     # store sequence as a variable
     def addseqtext(self, buttonseq, buttonnextpage):
@@ -130,6 +139,7 @@ class createMesh(QMainWindow):
             "Position Y (m)": [],
             "Position Z (m)": [],
             "Shape type": [],
+            "Stages": [],
         }
         for sheet_name, data in self.markingreq.items():
             combined_data["markingidentifiers"].extend(data["markingidentifiers"])
@@ -138,24 +148,9 @@ class createMesh(QMainWindow):
             combined_data["Position Y (m)"].extend(data["Position Y (m)"])
             combined_data["Position Z (m)"].extend(data["Position Z (m)"])
             combined_data["Shape type"].extend(data["Shape type"])
+            combined_data["Stages"].extend([None] * len(data["markingidentifiers"]))
         maxarray = len(combined_data)
         return combined_data, maxarray, counter
-
-    def open_marking_dialog(self):
-        if self.dialog is not None:
-            self.dialog.close()
-        if self.counter < self.maxarraylen:
-            self.dialog = markingdialogitem.markingitemdialog(
-                self.excel_elements_data, self.counter, self.maxarraylen
-            )
-            font = self.dialog.font()
-            font.setPointSize(20)
-            self.dialog.setFont(font)
-            self.dialog.show()
-        else:
-            print(
-                "Marking is completed, You can proceed to click another sequence or close the application"
-            )
 
     def checkseqreq(self):
         if self.dataseqtext == 1:
@@ -292,10 +287,11 @@ class createMesh(QMainWindow):
             self.Stagelabel,
             self.excelfiletext,
             dataseqtext,
-            self.excel_elements_data, 
-            self.maxarraylen, 
+            self.excel_elements_data,
+            self.maxarraylen,
             self.counter,
-            self.dialog
+            self.dialog,
+            self.Stagelabel
         ]
         camera = events.myInteractorStyle(
             setcamerainteraction,

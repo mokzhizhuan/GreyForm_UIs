@@ -8,6 +8,13 @@ import tkinter as tk
 from tkinter import messagebox
 import time
 
+# import rospy
+# from sensor_msgs.msg import LaserScan
+# this scan import is for scanning the robot , I will implement it tomorrow .
+# It is not avaiable to implement for now, Dont uncomment it first
+# rospy.init_node('scan_values')
+# sub = rospy.Subscriber('/kobuki/laser/scan', LaserScan, callback)
+# rospy.spin()
 
 # insert interactive event for the stl mesh , left click is for moving the stl ,
 # right click is to insert the actor in the room view , right click for room interact shower and toilet

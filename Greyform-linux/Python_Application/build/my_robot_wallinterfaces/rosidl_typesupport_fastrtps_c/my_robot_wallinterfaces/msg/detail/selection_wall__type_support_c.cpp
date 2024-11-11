@@ -36,8 +36,8 @@ extern "C"
 
 #include "rosidl_runtime_c/primitives_sequence.h"  // default_position, picked_position
 #include "rosidl_runtime_c/primitives_sequence_functions.h"  // default_position, picked_position
-#include "rosidl_runtime_c/string.h"  // typeselection
-#include "rosidl_runtime_c/string_functions.h"  // typeselection
+#include "rosidl_runtime_c/string.h"  // typeselection, wallselection
+#include "rosidl_runtime_c/string_functions.h"  // typeselection, wallselection
 
 // forward declare type support functions
 
@@ -55,7 +55,16 @@ static bool _SelectionWall__cdr_serialize(
   const _SelectionWall__ros_msg_type * ros_message = static_cast<const _SelectionWall__ros_msg_type *>(untyped_ros_message);
   // Field name: wallselection
   {
-    cdr << ros_message->wallselection;
+    const rosidl_runtime_c__String * str = &ros_message->wallselection;
+    if (str->capacity == 0 || str->capacity <= str->size) {
+      fprintf(stderr, "string capacity not greater than size\n");
+      return false;
+    }
+    if (str->data[str->size] != '\0') {
+      fprintf(stderr, "string not null-terminated\n");
+      return false;
+    }
+    cdr << str->data;
   }
 
   // Field name: typeselection
@@ -107,7 +116,18 @@ static bool _SelectionWall__cdr_deserialize(
   _SelectionWall__ros_msg_type * ros_message = static_cast<_SelectionWall__ros_msg_type *>(untyped_ros_message);
   // Field name: wallselection
   {
-    cdr >> ros_message->wallselection;
+    std::string tmp;
+    cdr >> tmp;
+    if (!ros_message->wallselection.data) {
+      rosidl_runtime_c__String__init(&ros_message->wallselection);
+    }
+    bool succeeded = rosidl_runtime_c__String__assign(
+      &ros_message->wallselection,
+      tmp.c_str());
+    if (!succeeded) {
+      fprintf(stderr, "failed to assign string into field 'wallselection'\n");
+      return false;
+    }
   }
 
   // Field name: typeselection
@@ -181,11 +201,9 @@ size_t get_serialized_size_my_robot_wallinterfaces__msg__SelectionWall(
   (void)wchar_size;
 
   // field.name wallselection
-  {
-    size_t item_size = sizeof(ros_message->wallselection);
-    current_alignment += item_size +
-      eprosima::fastcdr::Cdr::alignment(current_alignment, item_size);
-  }
+  current_alignment += padding +
+    eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
+    (ros_message->wallselection.size + 1);
   // field.name typeselection
   current_alignment += padding +
     eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
@@ -251,9 +269,13 @@ size_t max_serialized_size_my_robot_wallinterfaces__msg__SelectionWall(
   {
     size_t array_size = 1;
 
-    last_member_size = array_size * sizeof(uint32_t);
-    current_alignment += array_size * sizeof(uint32_t) +
-      eprosima::fastcdr::Cdr::alignment(current_alignment, sizeof(uint32_t));
+    full_bounded = false;
+    is_plain = false;
+    for (size_t index = 0; index < array_size; ++index) {
+      current_alignment += padding +
+        eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
+        1;
+    }
   }
   // member: typeselection
   {

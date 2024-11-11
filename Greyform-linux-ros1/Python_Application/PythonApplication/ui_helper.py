@@ -22,9 +22,7 @@ class Ui_Dialog_Helper(QWidget):
         # Set interfacehelper based on the response
         if response == QMessageBox.Yes:
             self.interfacehelper = "on"
-            print("Interface helper is set to ON.")
         else:
             self.interfacehelper = "off"
-            print("Interface helper is set to OFF.")
         self.main_window.show()
         return self.interfacehelper

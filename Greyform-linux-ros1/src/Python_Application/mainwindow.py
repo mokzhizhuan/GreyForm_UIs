@@ -193,12 +193,14 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.seq2Button,
             self.mainwindow.seq3Button,
             self.mainwindow.NextButton_Page_3,
-            self.mainwindow.Stagelabel,
             self.mainwindow.LocalizationButton,
             self.ros_node,
             self.mainwindow.excelfilpathtext,
             self.mainwindow.seqlabel_2,
-            self.mainwindow.markingitembutton
+            self.mainwindow.Stagelabel,
+            self.mainwindow.StageButton,
+            self.mainwindow.StageButton_2,
+            self.mainwindow.StageButton_3,
         ]
         fileselectionmesh.FileSelectionMesh(self.file_path, mainwindowforfileselection, self.mainwindow)
         if ".stl" in file:

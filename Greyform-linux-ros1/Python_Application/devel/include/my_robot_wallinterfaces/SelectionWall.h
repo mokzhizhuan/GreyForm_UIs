@@ -24,14 +24,14 @@ struct SelectionWall_
   typedef SelectionWall_<ContainerAllocator> Type;
 
   SelectionWall_()
-    : wallselection(0)
+    : wallselection()
     , typeselection()
     , sectionselection(0)
     , picked_position()
     , default_position()  {
     }
   SelectionWall_(const ContainerAllocator& _alloc)
-    : wallselection(0)
+    : wallselection(_alloc)
     , typeselection(_alloc)
     , sectionselection(0)
     , picked_position(_alloc)
@@ -41,7 +41,7 @@ struct SelectionWall_
 
 
 
-   typedef int32_t _wallselection_type;
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> _wallselection_type;
   _wallselection_type wallselection;
 
    typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> _typeselection_type;
@@ -146,12 +146,12 @@ struct MD5Sum< ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "58c6387955db224451fe1a297bbab86a";
+    return "3018aa4e69906a564df217c351a9673e";
   }
 
   static const char* value(const ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0x58c6387955db2244ULL;
-  static const uint64_t static_value2 = 0x51fe1a297bbab86aULL;
+  static const uint64_t static_value1 = 0x3018aa4e69906a56ULL;
+  static const uint64_t static_value2 = 0x4df217c351a9673eULL;
 };
 
 template<class ContainerAllocator>
@@ -170,7 +170,7 @@ struct Definition< ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocator>
 {
   static const char* value()
   {
-    return "int32 wallselection\n"
+    return "string wallselection\n"
 "string typeselection\n"
 "int32 sectionselection\n"
 "int32[] picked_position\n"
@@ -217,7 +217,7 @@ struct Printer< ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocator> >
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocator>& v)
   {
     s << indent << "wallselection: ";
-    Printer<int32_t>::stream(s, indent + "  ", v.wallselection);
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.wallselection);
     s << indent << "typeselection: ";
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.typeselection);
     s << indent << "sectionselection: ";

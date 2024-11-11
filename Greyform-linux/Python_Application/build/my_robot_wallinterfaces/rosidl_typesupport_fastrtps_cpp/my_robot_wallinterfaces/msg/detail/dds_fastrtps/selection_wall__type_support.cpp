@@ -91,11 +91,9 @@ get_serialized_size(
   (void)wchar_size;
 
   // Member: wallselection
-  {
-    size_t item_size = sizeof(ros_message.wallselection);
-    current_alignment += item_size +
-      eprosima::fastcdr::Cdr::alignment(current_alignment, item_size);
-  }
+  current_alignment += padding +
+    eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
+    (ros_message.wallselection.size() + 1);
   // Member: typeselection
   current_alignment += padding +
     eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
@@ -154,9 +152,13 @@ max_serialized_size_SelectionWall(
   {
     size_t array_size = 1;
 
-    last_member_size = array_size * sizeof(uint32_t);
-    current_alignment += array_size * sizeof(uint32_t) +
-      eprosima::fastcdr::Cdr::alignment(current_alignment, sizeof(uint32_t));
+    full_bounded = false;
+    is_plain = false;
+    for (size_t index = 0; index < array_size; ++index) {
+      current_alignment += padding +
+        eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
+        1;
+    }
   }
 
   // Member: typeselection
