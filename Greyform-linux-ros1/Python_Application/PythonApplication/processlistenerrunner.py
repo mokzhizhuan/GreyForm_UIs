@@ -76,9 +76,21 @@ class ListenerNodeRunner(QMainWindow):
             """
         )
         self.run_button.clicked.connect(self.run_listener_node)
+        self.close_button = QPushButton("Close", self)
+        self.close_button.setStyleSheet(
+            """
+            QPushButton {
+                font-size: 20px;           
+                min-height: 100px;   
+                icon-size: 100px 100px;        
+            }
+            """
+        )
+        self.close_button.clicked.connect(self.close)
         layout = QVBoxLayout()
         layout.addWidget(self.status_label)
         layout.addWidget(self.run_button)
+        layout.addWidget(self.close_button)
         container = QWidget()
         container.setLayout(layout)
         self.setCentralWidget(container)

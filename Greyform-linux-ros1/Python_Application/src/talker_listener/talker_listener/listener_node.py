@@ -101,12 +101,20 @@ class ListenerNode:
     def setup_tk_ui(self):
         self.label = tk.Label(self.root, text="ROS Node Initialized")
         self.label.pack()
-        self.button = tk.Button(
+        self.show_message_button = tk.Button(
             self.root,
             text="Show Message",
-            command=self.show_info_dialog,
+            command=self.show_info_dialog
         )
-        self.button.pack()
+        self.show_message_button.pack()
+    
+        # Adding a close button
+        self.close_button = tk.Button(
+            self.root,
+            text="Close",
+            command=self.root.destroy  # This will close the Tkinter window
+        )
+        self.close_button.pack()
         #message = "Point that are not maked: row[Position X (m)],row[Position Y (m)],row[Position Z (m)],"
         #message = "The point that the robot marks is not on reach , Please move the robot"
 
@@ -143,17 +151,23 @@ class ListenerNode:
                 self.selection_callback(msg)
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
+            print(message)
 
     #process excel data for finalization
     def process_excel_data(self, excel_filepath):
         try:
             self.excelitems = pd.read_excel(excel_filepath, sheet_name=None)
-            threshold_distance = 600
             processed_data = {}
             for sheet_name, data in self.excelitems.items():
                 df = pd.DataFrame(data)
                 for index, row in df.iterrows():
+                    self.storedxpos = df.at[index, "Position X (m)"]
+                    self.storedypos = df.at[index, "Position Y (m)"]
                     self.storedzpos = df.at[index, "Position Z (m)"]
+                    if df.at[index, "Position X (m)"] < 0:
+                        df.at[index, "Position X (m)"] = 0
+                    if df.at[index, "Position Y (m)"] < 0:
+                        df.at[index, "Position Y (m)"] = 0
                     if df.at[index, "Position Z (m)"] < 0:
                         df.at[index, "Position Z (m)"] = 0
                     wall_position = np.array(
@@ -166,9 +180,15 @@ class ListenerNode:
                     distance = self.calculate_distance(
                         self.picked_position, wall_position
                     )
-                    if distance <= threshold_distance:
-                        self.message += f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
+                    wallnumberreq = df.at[index, "Wall Number"]
+                    if distance == 0 and self.wallselection == wallnumberreq:
+                        self.message += (
+                            f"{self.spacing}Points in {self.picked_position} {row['Wall Number']} " 
+                            f"on sheet {sheet_name} are marked."
+                        )
                         df.at[index, "Status"] = "done"
+                    df.at[index, "Position X (m)"] = self.storedzpos
+                    df.at[index, "Position Y (m)"] = self.storedzpos
                     df.at[index, "Position Z (m)"] = self.storedzpos
                 processed_data[sheet_name] = df
             with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
@@ -177,8 +197,10 @@ class ListenerNode:
                 self.message += f"{self.spacing}Excel data processed successfully."
         except FileNotFoundError as e:
             message = f"Excel file not found: {e}"
+            print(message)
         except Exception as e:
             message = f"Failed to process Excel file: {e}"
+            print(message)
 
     #set callback for listener and talker
     def set_file_callback(self, callback):

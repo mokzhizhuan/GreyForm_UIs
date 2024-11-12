@@ -61,8 +61,14 @@ bool my_robot_wallinterfaces__msg__selection_wall__convert_from_py(PyObject * _p
     if (!field) {
       return false;
     }
-    assert(PyLong_Check(field));
-    ros_message->wallselection = (int32_t)PyLong_AsLong(field);
+    assert(PyUnicode_Check(field));
+    PyObject * encoded_field = PyUnicode_AsUTF8String(field);
+    if (!encoded_field) {
+      Py_DECREF(field);
+      return false;
+    }
+    rosidl_runtime_c__String__assign(&ros_message->wallselection, PyBytes_AS_STRING(encoded_field));
+    Py_DECREF(encoded_field);
     Py_DECREF(field);
   }
   {  // typeselection
@@ -237,7 +243,13 @@ PyObject * my_robot_wallinterfaces__msg__selection_wall__convert_to_py(void * ra
   my_robot_wallinterfaces__msg__SelectionWall * ros_message = (my_robot_wallinterfaces__msg__SelectionWall *)raw_ros_message;
   {  // wallselection
     PyObject * field = NULL;
-    field = PyLong_FromLong(ros_message->wallselection);
+    field = PyUnicode_DecodeUTF8(
+      ros_message->wallselection.data,
+      strlen(ros_message->wallselection.data),
+      "replace");
+    if (!field) {
+      return NULL;
+    }
     {
       int rc = PyObject_SetAttrString(_pymessage, "wallselection", field);
       Py_DECREF(field);

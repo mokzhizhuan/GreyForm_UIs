@@ -193,6 +193,7 @@ class wall_Interaction(object):
         self.distances = 50
         self.distancerange = 600
         wall_number = None
+        sectionnumber = None
         for wall_numbers, group in self.wall_filtered_identifiers:
             min_x, max_x = (
                 group["Position X (m)"].min(),
@@ -266,24 +267,24 @@ class wall_Interaction(object):
                     sectionnumber = self.determine_quadrant(
                         sequence_pos_quad[0], sequence_pos_quad[1]
                     )
-                else:
-                    wall_number = "F"
-                    wall_position = np.array(
-                        [
-                            group["Position X (m)"],
-                            group["Position Y (m)"],
-                            group["Position Z (m)"],
-                        ]
-                    )
-                    distances = self.calculate_distances(sequence_pos, wall_position)
-                    if (distances <= self.distancerange).all():
-                        name = group["Point number/name"]
-                        self.Stagename(self, name)
-                    sequence_pos_quad[1] = sequence_pos[1] - (self.meshbound[3] / 2)
-                    sequence_pos_quad[0] = sequence_pos[0] - (self.meshbound[1] / 2)
-                    sectionnumber = self.determine_quadrant(
-                        sequence_pos_quad[0], sequence_pos_quad[1]
-                    )
+            else:
+                wall_number = "F"
+                wall_position = np.array(
+                    [
+                        group["Position X (m)"],
+                        group["Position Y (m)"],
+                        group["Position Z (m)"],
+                    ]
+                )
+                distances = self.calculate_distances(sequence_pos, wall_position)
+                if (distances <= self.distancerange).all():
+                    name = group["Point number/name"]
+                    self.Stagename(self, name)
+                sequence_pos_quad[1] = sequence_pos[1] - (self.meshbound[3] / 2)
+                sequence_pos_quad[0] = sequence_pos[0] - (self.meshbound[1] / 2)
+                sectionnumber = self.determine_quadrant(
+                    sequence_pos_quad[0], sequence_pos_quad[1]
+                )
         return wall_number, sectionnumber
 
     # distance calculation

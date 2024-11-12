@@ -114,12 +114,21 @@ class ListenerNode(Node):
     def setup_tk_ui(self):
         self.label = tk.Label(self.root, text="ROS Node Initialized")
         self.label.pack()
-        self.button = tk.Button(
+        self.show_message_button = tk.Button(
             self.root,
             text="Show Message",
-            command=self.show_info_dialog,
+            command=self.show_info_dialog
         )
-        self.button.pack()
+        self.show_message_button.pack()
+    
+        # Adding a close button
+        self.close_button = tk.Button(
+            self.root,
+            text="Close",
+            command=self.root.destroy  
+        )
+        self.close_button.pack()
+        
 
     # file listener callback implementation
     def file_listener_callback(self, msg):
@@ -161,12 +170,17 @@ class ListenerNode(Node):
     def process_excel_data(self, excel_filepath):
         try:
             self.excelitems = pd.read_excel(excel_filepath, sheet_name=None)
-            threshold_distance = 900
             processed_data = {}
             for sheet_name, data in self.excelitems.items():
                 df = pd.DataFrame(data)
                 for index, row in df.iterrows():
+                    self.storedxpos = df.at[index, "Position X (m)"]
+                    self.storedypos = df.at[index, "Position Y (m)"]
                     self.storedzpos = df.at[index, "Position Z (m)"]
+                    if df.at[index, "Position X (m)"] < 0:
+                        df.at[index, "Position X (m)"] = 0
+                    if df.at[index, "Position Y (m)"] < 0:
+                        df.at[index, "Position Y (m)"] = 0
                     if df.at[index, "Position Z (m)"] < 0:
                         df.at[index, "Position Z (m)"] = 0
                     wall_position = np.array(
@@ -179,9 +193,15 @@ class ListenerNode(Node):
                     distance = self.calculate_distance(
                         self.picked_position, wall_position
                     )
-                    if distance <= threshold_distance:
-                        self.message += f"{self.spacing}Picked position is near Wall Number {row['Wall Number']} on sheet {sheet_name}."
+                    wallnumberreq = df.at[index, "Wall Number"]
+                    if distance == 0 and self.wallselection == wallnumberreq:
+                        self.message +=  (
+                            f"{self.spacing}Points in {self.picked_position} {row['Wall Number']} " 
+                            f"on sheet {sheet_name} are marked."
+                        )
                         df.at[index, "Status"] = "done"
+                    df.at[index, "Position X (m)"] = self.storedzpos
+                    df.at[index, "Position Y (m)"] = self.storedzpos
                     df.at[index, "Position Z (m)"] = self.storedzpos
                 processed_data[sheet_name] = df
             with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
