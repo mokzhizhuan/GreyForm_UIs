@@ -44,7 +44,7 @@ class ScrollableDialog(Toplevel):
         super().__init__(root)
         self.root = root
         self.title(title)
-        self.geometry("400x300")
+        self.geometry("1000x600")
         style = ttk.Style()
         self.listener = listener
         self.message = message
@@ -115,20 +115,15 @@ class ListenerNode(Node):
         self.label = tk.Label(self.root, text="ROS Node Initialized")
         self.label.pack()
         self.show_message_button = tk.Button(
-            self.root,
-            text="Show Message",
-            command=self.show_info_dialog
+            self.root, text="Show Message", command=self.show_info_dialog
         )
         self.show_message_button.pack()
-    
+
         # Adding a close button
         self.close_button = tk.Button(
-            self.root,
-            text="Close",
-            command=self.root.destroy  
+            self.root, text="Close", command=self.root.destroy
         )
         self.close_button.pack()
-        
 
     # file listener callback implementation
     def file_listener_callback(self, msg):
@@ -171,38 +166,39 @@ class ListenerNode(Node):
         try:
             self.excelitems = pd.read_excel(excel_filepath, sheet_name=None)
             processed_data = {}
+            self.message += f"{self.spacing}Item Postion is marking : {self.picked_position}{self.spacing}"
             for sheet_name, data in self.excelitems.items():
                 df = pd.DataFrame(data)
                 for index, row in df.iterrows():
-                    self.storedxpos = df.at[index, "Position X (m)"]
-                    self.storedypos = df.at[index, "Position Y (m)"]
-                    self.storedzpos = df.at[index, "Position Z (m)"]
-                    if df.at[index, "Position X (m)"] < 0:
+                    original_x = df.at[index, "Position X (m)"]
+                    original_y = df.at[index, "Position Y (m)"]
+                    original_z = df.at[index, "Position Z (m)"]
+                    if original_x < 0:
                         df.at[index, "Position X (m)"] = 0
-                    if df.at[index, "Position Y (m)"] < 0:
+                    if original_y < 0:
                         df.at[index, "Position Y (m)"] = 0
-                    if df.at[index, "Position Z (m)"] < 0:
+                    if original_z < 0:
                         df.at[index, "Position Z (m)"] = 0
                     wall_position = np.array(
                         [
-                            row["Position X (m)"],
-                            row["Position Y (m)"],
-                            row["Position Z (m)"],
+                            df.at[index, "Position X (m)"],
+                            df.at[index, "Position Y (m)"],
+                            df.at[index, "Position Z (m)"],
                         ]
                     )
                     distance = self.calculate_distance(
                         self.picked_position, wall_position
                     )
-                    wallnumberreq = df.at[index, "Wall Number"]
+                    wallnumberreq = str(df.at[index, "Wall Number"])
                     if distance == 0 and self.wallselection == wallnumberreq:
-                        self.message +=  (
-                            f"{self.spacing}Points in {self.picked_position} {row['Wall Number']} " 
+                        self.message += (
+                            f"{self.spacing}Points in {self.picked_position} {row['Wall Number']} "
                             f"on sheet {sheet_name} are marked."
                         )
                         df.at[index, "Status"] = "done"
-                    df.at[index, "Position X (m)"] = self.storedzpos
-                    df.at[index, "Position Y (m)"] = self.storedzpos
-                    df.at[index, "Position Z (m)"] = self.storedzpos
+                    df.at[index, "Position X (m)"] = original_x
+                    df.at[index, "Position Y (m)"] = original_y
+                    df.at[index, "Position Z (m)"] = original_z
                 processed_data[sheet_name] = df
             with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
                 for sheet_name, df in processed_data.items():

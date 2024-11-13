@@ -10,7 +10,6 @@ from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
 import PythonApplication.usermanual as userHelper
-import PythonApplication.ui_helper as UserInterfaces
 import PythonApplication.setting as setting
 import jsonimport as jsonfileopener
 import vtk

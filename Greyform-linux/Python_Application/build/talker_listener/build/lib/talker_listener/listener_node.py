@@ -174,36 +174,35 @@ class ListenerNode(Node):
             for sheet_name, data in self.excelitems.items():
                 df = pd.DataFrame(data)
                 for index, row in df.iterrows():
-                    self.storedxpos = df.at[index, "Position X (m)"]
-                    self.storedypos = df.at[index, "Position Y (m)"]
-                    self.storedzpos = df.at[index, "Position Z (m)"]
-                    if df.at[index, "Position X (m)"] < 0:
+                    original_x = df.at[index, "Position X (m)"]
+                    original_y = df.at[index, "Position Y (m)"]
+                    original_z = df.at[index, "Position Z (m)"]
+                    if original_x < 0:
                         df.at[index, "Position X (m)"] = 0
-                    if df.at[index, "Position Y (m)"] < 0:
+                    if original_y < 0:
                         df.at[index, "Position Y (m)"] = 0
-                    if df.at[index, "Position Z (m)"] < 0:
+                    if original_z < 0:
                         df.at[index, "Position Z (m)"] = 0
                     wall_position = np.array(
                         [
-                            row["Position X (m)"],
-                            row["Position Y (m)"],
-                            row["Position Z (m)"],
+                            df.at[index, "Position X (m)"],
+                            df.at[index, "Position Y (m)"],
+                            df.at[index, "Position Z (m)"],
                         ]
                     )
                     distance = self.calculate_distance(
                         self.picked_position, wall_position
                     )
-                    wallnumberreq = df.at[index, "Wall Number"]
-                    print(self.wallselection)
+                    wallnumberreq = str(df.at[index, "Wall Number"])
                     if distance == 0 and self.wallselection == wallnumberreq:
                         self.message +=  (
                             f"{self.spacing}Points in {self.picked_position} {row['Wall Number']} " 
                             f"on sheet {sheet_name} are marked."
                         )
                         df.at[index, "Status"] = "done"
-                    df.at[index, "Position X (m)"] = self.storedzpos
-                    df.at[index, "Position Y (m)"] = self.storedzpos
-                    df.at[index, "Position Z (m)"] = self.storedzpos
+                    df.at[index, "Position X (m)"] = original_x
+                    df.at[index, "Position Y (m)"] = original_y
+                    df.at[index, "Position Z (m)"] = original_z
                 processed_data[sheet_name] = df
             with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
                 for sheet_name, df in processed_data.items():

@@ -68,7 +68,6 @@ class TalkerNode(Node):
                 int(cube_actor.GetPosition()[1]),
                 int(cube_actor.GetPosition()[2]),
             ]
-            msg.default_position = default_position
             self.selection_publisher_.publish(msg)
             self.message += (
                 f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"

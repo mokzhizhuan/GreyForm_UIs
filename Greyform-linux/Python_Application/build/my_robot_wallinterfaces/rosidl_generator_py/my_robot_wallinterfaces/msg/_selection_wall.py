@@ -6,7 +6,6 @@
 # Import statements for member types
 
 # Member 'picked_position'
-# Member 'default_position'
 import array  # noqa: E402, I100
 
 import builtins  # noqa: E402, I100
@@ -63,7 +62,6 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
         '_typeselection',
         '_sectionselection',
         '_picked_position',
-        '_default_position',
     ]
 
     _fields_and_field_types = {
@@ -71,14 +69,12 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
         'typeselection': 'string',
         'sectionselection': 'int32',
         'picked_position': 'sequence<int32>',
-        'default_position': 'sequence<int32>',
     }
 
     SLOT_TYPES = (
         rosidl_parser.definition.UnboundedString(),  # noqa: E501
         rosidl_parser.definition.UnboundedString(),  # noqa: E501
         rosidl_parser.definition.BasicType('int32'),  # noqa: E501
-        rosidl_parser.definition.UnboundedSequence(rosidl_parser.definition.BasicType('int32')),  # noqa: E501
         rosidl_parser.definition.UnboundedSequence(rosidl_parser.definition.BasicType('int32')),  # noqa: E501
     )
 
@@ -90,7 +86,6 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
         self.typeselection = kwargs.get('typeselection', str())
         self.sectionselection = kwargs.get('sectionselection', int())
         self.picked_position = array.array('i', kwargs.get('picked_position', []))
-        self.default_position = array.array('i', kwargs.get('default_position', []))
 
     def __repr__(self):
         typename = self.__class__.__module__.split('.')
@@ -128,8 +123,6 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
         if self.sectionselection != other.sectionselection:
             return False
         if self.picked_position != other.picked_position:
-            return False
-        if self.default_position != other.default_position:
             return False
         return True
 
@@ -206,31 +199,3 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
                  all(val >= -2147483648 and val < 2147483648 for val in value)), \
                 "The 'picked_position' field must be a set or sequence and each value of type 'int' and each integer in [-2147483648, 2147483647]"
         self._picked_position = array.array('i', value)
-
-    @builtins.property
-    def default_position(self):
-        """Message field 'default_position'."""
-        return self._default_position
-
-    @default_position.setter
-    def default_position(self, value):
-        if isinstance(value, array.array):
-            assert value.typecode == 'i', \
-                "The 'default_position' array.array() must have the type code of 'i'"
-            self._default_position = value
-            return
-        if __debug__:
-            from collections.abc import Sequence
-            from collections.abc import Set
-            from collections import UserList
-            from collections import UserString
-            assert \
-                ((isinstance(value, Sequence) or
-                  isinstance(value, Set) or
-                  isinstance(value, UserList)) and
-                 not isinstance(value, str) and
-                 not isinstance(value, UserString) and
-                 all(isinstance(v, int) for v in value) and
-                 all(val >= -2147483648 and val < 2147483648 for val in value)), \
-                "The 'default_position' field must be a set or sequence and each value of type 'int' and each integer in [-2147483648, 2147483647]"
-        self._default_position = array.array('i', value)
