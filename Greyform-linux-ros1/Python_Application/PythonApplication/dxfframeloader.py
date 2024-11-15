@@ -34,18 +34,14 @@ class dxfloader(object):
         self.Xlabel_before = mainwindowforfileselection[6]
         self.Ylabel_before = mainwindowforfileselection[7]
         self.Zlabel_before = mainwindowforfileselection[8]
-        self.seq1Button = mainwindowforfileselection[9]
-        self.seq2Button = mainwindowforfileselection[10]
-        self.seq3Button = mainwindowforfileselection[11]
-        self.NextButton_Page_3 = mainwindowforfileselection[12]
-        self.localizebutton = mainwindowforfileselection[13]
-        self.rosnode = mainwindowforfileselection[14]
-        self.excelfiletext = mainwindowforfileselection[15]
-        self.seqlabel = mainwindowforfileselection[16]
-        self.Stagelabel = mainwindowforfileselection[17]
-        self.StageButton = mainwindowforfileselection[18]
-        self.StageButton_2 = mainwindowforfileselection[19]
-        self.StageButton_3 = mainwindowforfileselection[20]
+        self.seqButton = mainwindowforfileselection[9]
+        self.NextButton_Page_3 = mainwindowforfileselection[10]
+        self.localizebutton = mainwindowforfileselection[11]
+        self.rosnode = mainwindowforfileselection[12]
+        self.excelfiletext = mainwindowforfileselection[13]
+        self.seqlabel = mainwindowforfileselection[14]
+        self.Stagelabel = mainwindowforfileselection[15]
+        self.StageButton = mainwindowforfileselection[16]
         self.gdf = gdf
         self.loaddxftoframe()
 
@@ -104,9 +100,7 @@ class dxfloader(object):
                     self.Xlabel_before,
                     self.Ylabel_before,
                     self.Zlabel_before,
-                    self.seq1Button,
-                    self.seq2Button,
-                    self.seq3Button,
+                    self.seqButton,
                     self.NextButton_Page_3,
                     self.localizebutton,
                     self.rosnode,
@@ -116,8 +110,6 @@ class dxfloader(object):
                     self.mainwindow,
                     self.Stagelabel,
                     self.StageButton,
-                    self.StageButton_2,
-                    self.StageButton_3,
                 )
 
     # process geometry in geodata pandas

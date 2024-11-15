@@ -13,6 +13,7 @@ class SettingLayout(object):
         labeltitlsetting,
         settinglayoutWidget,
         layoutWidgethome,
+        layoutWidgethome_2,
         restoreDefaultsButton,
         settingHomepage,
         interface_label,
@@ -26,6 +27,7 @@ class SettingLayout(object):
         layoutWidgetservicesresolution,
         layoutWidgetservicescountryGMT,
         layoutWidgetservicessetpass,
+        layoutWidgetspeed,
         SystemDate,
         Systemtime,
         SystemMemory,
@@ -74,6 +76,8 @@ class SettingLayout(object):
         self.AboutPage = AboutPage
         self.restartwidget = restartwidget
         self.RestartPowerOffPage = RestartPowerOffPage
+        self.layoutWidgetservicespeed = layoutWidgetspeed
+        self.layoutWidgethome_button = layoutWidgethome_2
         self.setStretch()
 
     # organized strechtable window for setting
@@ -84,9 +88,11 @@ class SettingLayout(object):
         self.settingform.setLayout(self.settingboxlayout)
         self.settingboxhomelayout = QVBoxLayout()
         self.settingboxhomelayout.addWidget(self.layoutWidgethome)
+        self.settingboxhomelayout.addWidget(self.layoutWidgethome_button)
         self.settingboxhomelayout.addWidget(self.restoreDefaultsButton)
         self.settingboxhomelayout.setStretch(0, 1)
         self.settingboxhomelayout.setStretch(1, 1)
+        self.settingboxhomelayout.setStretch(2, 1)
         self.settingHomepage.setLayout(self.settingboxhomelayout)
         self.settingboxwifilayout = QVBoxLayout()
         self.settingboxwifilayout.addWidget(self.interface_label)
@@ -97,8 +103,9 @@ class SettingLayout(object):
         self.settingboxserviceipaddresslayout.addWidget(self.Portnumipadd)
         self.serviceipaddresspage.setLayout(self.settingboxserviceipaddresslayout)
         self.settingboxserviceslayout = QVBoxLayout()
-        self.settingboxserviceslayout.addWidget(self.layoutWidgetservicestextsize)
         self.settingboxserviceslayout.addWidget(self.host)
+        self.settingboxserviceslayout.addWidget(self.layoutWidgetservicespeed)
+        self.settingboxserviceslayout.addWidget(self.layoutWidgetservicestextsize)
         self.settingboxserviceslayout.addWidget(self.layoutWidgetservicesresolution)
         self.settingboxserviceslayout.addWidget(self.layoutWidgetservicescountryGMT)
         self.settingboxserviceslayout.addWidget(self.layoutWidgetservicessetpass)

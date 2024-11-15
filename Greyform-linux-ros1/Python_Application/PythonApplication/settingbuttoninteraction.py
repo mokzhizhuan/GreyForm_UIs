@@ -23,6 +23,9 @@ class settingbuttonUI(object):
         PowerButton,
         maintitlelabel,
         themebox,
+        themetextbox,
+        buttonthemebox,
+        buttonthemetextbox,
         fontsizebox,
         resolutionbox,
         timezonebox,
@@ -45,6 +48,9 @@ class settingbuttonUI(object):
         self.PowerButton = PowerButton
         self.maintitlelabel = maintitlelabel
         self.themebox = themebox
+        self.themetextbox = themetextbox
+        self.buttonthemebox = buttonthemebox
+        self.buttonthemetextbox = buttonthemetextbox
         self.fontsizebox = fontsizebox
         self.resolutionbox = resolutionbox
         self.timezonebox = timezonebox
@@ -121,6 +127,9 @@ class settingbuttonUI(object):
     def save_settings(self):
         self.savesettings = {
             "theme": self.themebox.currentText(),
+            "text_label" : self.themetextbox.currentText(),
+            "buttontheme" : self.buttonthemebox.currentText(),
+            "buttontext" : self.buttonthemetextbox.currentText(),
             "font_size": self.fontsizebox.currentText(),
             "resolution": self.resolutionbox.currentText(),
             "timezone": self.timezonebox.currentText(),

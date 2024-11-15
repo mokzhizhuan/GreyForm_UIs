@@ -21,6 +21,7 @@ class Setting(QWidget):
         self,
         stackedwidgetpage,
         MainWindow,
+        centralwidget,
         windowwidth,
         windowheight,
         default_settings,
@@ -33,6 +34,7 @@ class Setting(QWidget):
         self.windowheight = windowheight
         self.settingform = uic.loadUi("UI_Design/setting.ui", self)
         self.MainWindow = MainWindow
+        self.centralwidget = centralwidget
         self.accountinfo = [{"UserID": "admin", "Pass": "pass"}]
         font = default_settings["font_size"]
         self.theme = default_settings["theme"]
@@ -42,6 +44,8 @@ class Setting(QWidget):
         self.default_settings = default_settings
         self.saved_setting = self.default_settings
         self.stackedWidget_main = stackedWidget_main
+        self.buttoncolor = None
+        self.buttoncolortext = None
         self.setupUi()
 
     # setup ui setting from the page
@@ -54,6 +58,9 @@ class Setting(QWidget):
         self.setinterfacelabel(interface_info, ip_address, host, ports_text)
         # home
         self.settingform.themebox.currentIndexChanged.connect(self.colorchange)
+        self.settingform.themetextbox.currentIndexChanged.connect(self.colorchangetext)
+        self.settingform.buttonthemebox.currentIndexChanged.connect(self.colorchangebutton)
+        self.settingform.buttonthemetextbox.currentIndexChanged.connect(self.colorchangetextbutton)
         # wifi
         self.settingform.treeWidget.setColumnWidth(0, 500)
         self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
@@ -107,6 +114,9 @@ class Setting(QWidget):
             self.MainWindow,
             self.saved_setting,
             self.settingform.themebox,
+            self.themetextbox,
+            self.settingform.buttonthemebox,
+            self.buttonthemetextbox,
             self.settingform.Text_size,
             self.settingform.resolutioncomboBox,
             self.settingform.country,
@@ -123,6 +133,9 @@ class Setting(QWidget):
             lambda: default.restoredefaultsetting(
                 self.accountinfo,
                 self.settingform.themebox,
+                self.themetextbox,
+                self.settingform.buttonthemebox,
+                self.buttonthemetextbox,
                 self.settingform.Text_size,
                 self.settingform.resolutioncomboBox,
                 self.settingform.country,
@@ -166,6 +179,9 @@ class Setting(QWidget):
             self.settingform.PowerButton,
             self.settingform.maintitlelabel,
             self.settingform.themebox,
+            self.settingform.themetextbox,
+            self.settingform.buttonthemebox,
+            self.settingform.buttonthemetextbox,
             self.settingform.Text_size,
             self.settingform.resolutioncomboBox,
             self.settingform.country,
@@ -253,9 +269,7 @@ class Setting(QWidget):
     # color change
     def colorchange(self, index):
         self.color = self.settingform.themebox.currentText()
-        if self.color == "White":
-            self.MainWindow.setStyleSheet(f"background-color : {self.color}")
-        elif self.color == "Gray":
+        if self.color == "Gray":
             self.MainWindow.setStyleSheet(self.styleSheet())
         elif self.color == "Black":
             self.MainWindow.setStyleSheet(
@@ -264,6 +278,52 @@ class Setting(QWidget):
         else:
             color = QColorDialog.getColor()
             self.MainWindow.setStyleSheet(f"background-color : {color.name()}")
+    
+    def colorchangetext(self, index):
+        self.colortext = self.settingform.themetextbox.currentText()
+        if self.colortext == "Gray":
+            for child in self.centralwidget.findChildren(QLabel):
+                child.setStyleSheet(f"color: {self.colortext}")
+        elif self.colortext == "Black":
+            for child in self.centralwidget.findChildren(QLabel):
+                child.setStyleSheet(f"color: {self.colortext}")
+        else:
+            color = QColorDialog.getColor()
+            if color.isValid():  
+                selected_color = color.name()
+                for child in self.centralwidget.findChildren(QLabel):
+                    child.setStyleSheet(f"color: {selected_color}")
+
+    def colorchangebutton(self, index):
+        self.buttoncolor = self.settingform.buttonthemebox.currentText()
+        if self.buttoncolor == "Gray":
+            for child in self.centralwidget.findChildren(QPushButton):
+                child.setStyleSheet(f"background-color: {self.buttoncolor}; color: black;")
+        elif self.buttoncolor == "Black":
+            for child in self.centralwidget.findChildren(QPushButton):
+                child.setStyleSheet(f"background-color: {self.buttoncolor}; color: white;")
+        else:
+            color = QColorDialog.getColor()
+            if color.isValid():  
+                selected_color = color.name()
+                self.buttoncolor = selected_color
+                for child in self.centralwidget.findChildren(QPushButton):
+                    child.setStyleSheet(f"background-color: {selected_color}; color: white;")
+
+    def colorchangetextbutton(self, index):
+        self.buttoncolortext = self.settingform.buttonthemetextbox.currentText()
+        if self.buttoncolortext == "Gray":
+            for child in self.centralwidget.findChildren(QPushButton):
+                child.setStyleSheet(f"background-color: {self.buttoncolor}; color: {self.buttoncolortext}")
+        elif self.buttoncolortext == "Black":
+            for child in self.centralwidget.findChildren(QPushButton):
+                child.setStyleSheet(f"background-color: {self.buttoncolor}; color: {self.buttoncolortext}")
+        else:
+            color = QColorDialog.getColor()
+            if color.isValid():  
+                selected_color = color.name()
+                for child in self.centralwidget.findChildren(QPushButton):
+                    child.setStyleSheet(f"background-color: {self.buttoncolor}; color: {selected_color}")
 
     #set layout for setting
     def setStretch(self):
@@ -272,6 +332,7 @@ class Setting(QWidget):
             self.settingform.labeltitlsetting,
             self.settingform.settinglayoutWidget,
             self.settingform.layoutWidgethome,
+            self.settingform.layoutWidgethome_2,
             self.settingform.restoreDefaultsButton,
             self.settingform.settingHomepage,
             self.settingform.interface_label,
@@ -285,6 +346,7 @@ class Setting(QWidget):
             self.settingform.layoutWidgetservicesresolution,
             self.settingform.layoutWidgetservicescountryGMT,
             self.settingform.layoutWidgetservicessetpass,
+            self.settingform.horizontalLayoutWidgetspeed,
             self.settingform.SystemDate,
             self.settingform.Systemtime,
             self.settingform.SystemMemory,

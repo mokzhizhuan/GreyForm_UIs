@@ -322,9 +322,9 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_4" stretch="3,1">
            <item>
-            <layout class="QVBoxLayout" name="verticalLayout_18" stretch="1,1,1">
+            <layout class="QVBoxLayout" name="verticalLayout_18" stretch="1,1">
              <item>
-              <widget class="QPushButton" name="seq1Button">
+              <widget class="QPushButton" name="SequenceButton">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
@@ -337,43 +337,25 @@
                 </font>
                </property>
                <property name="text">
-                <string>Sequence 1</string>
+                <string>Add Sequence</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="seq2Button">
+              <widget class="QPushButton" name="StageButton">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
                <property name="font">
                 <font>
-                 <pointsize>30</pointsize>
+                 <pointsize>20</pointsize>
                 </font>
                </property>
                <property name="text">
-                <string>Sequence 2</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="seq3Button">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>30</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Sequence 3</string>
+                <string>Add Stages</string>
                </property>
               </widget>
              </item>
@@ -381,19 +363,6 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_9">
-             <item>
-              <widget class="QPushButton" name="NextButton_Page_3">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Next</string>
-               </property>
-              </widget>
-             </item>
              <item>
               <widget class="QPushButton" name="BackButton_Page_2">
                <property name="sizePolicy">
@@ -404,6 +373,19 @@
                </property>
                <property name="text">
                 <string>Back</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="NextButton_Page_3">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Next</string>
                </property>
               </widget>
              </item>
@@ -666,50 +648,7 @@
           <height>251</height>
          </rect>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="1,2">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,1,1">
-           <item>
-            <widget class="QPushButton" name="StageButton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Stage 1</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="StageButton_2">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Stage 2</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="StageButton_3">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Stage 3</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
+        <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="2">
          <item>
           <layout class="QVBoxLayout" name="verticalLayout">
            <item>
@@ -831,7 +770,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="ConfirmAckButton">
+              <widget class="QPushButton" name="FeedbackButton">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
                  <horstretch>0</horstretch>
@@ -844,7 +783,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Acknowledge</string>
+                <string>Feedback</string>
                </property>
               </widget>
              </item>

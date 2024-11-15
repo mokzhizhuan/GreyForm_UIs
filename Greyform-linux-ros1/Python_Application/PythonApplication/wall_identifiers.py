@@ -106,7 +106,7 @@ class wall_Interaction(object):
                     filtered_data["Shape type"].append(data["Shape type"][i])
             if filtered_data["wall_numbers"]:
                 self.markingitemsbasedonwallnumber[stage] = filtered_data
-        if self.markingitemsbasedonwallnumber is not None:
+        if self.markingitemsbasedonwallnumber:
             self.show_message(f"Items that are near the wall are stored.{self.spacing}{self.markingitemsbasedonwallnumber}")
         else:
             self.show_error_message("There are no items avaiable in the wall")
