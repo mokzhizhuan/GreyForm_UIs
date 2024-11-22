@@ -15,6 +15,7 @@ import PythonApplication.createmesh as Createmesh
 from stl import mesh
 import meshio
 import pyvista as pv
+import pandas as pd
 import numpy as np
 
 
@@ -111,6 +112,9 @@ class dxfloader(object):
                     self.Stagelabel,
                     self.StageButton,
                 )
+        self.gdf['geometry'] = self.gdf['geometry'].apply(lambda x: x.wkt if x else None)
+        df = pd.DataFrame(self.gdf)
+        df.to_excel('output.xlsx', index=False)
 
     # process geometry in geodata pandas
     def process_line_string(self, geometry, offset):

@@ -1,8 +1,7 @@
-from PyQt5 import uic
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+from PyQt5 import uic 
+from PyQt5.QtWidgets import QWidget, QLabel, QStackedWidget, QColorDialog, QPushButton 
+from PyQt5.QtCore import QTimer, Qt 
+from PyQt5.QtGui import QFont , QColor
 import PythonApplication.restoredefault as default
 import PythonApplication.reset as closewindow
 import PythonApplication.login as Login
@@ -13,9 +12,9 @@ import PythonApplication.settingtext as settingtextlayout
 import pytz
 import psutil
 import os
+import re
 
 
-# setting loader
 class Setting(QWidget):
     def __init__(
         self,
@@ -27,171 +26,139 @@ class Setting(QWidget):
         default_settings,
         stackedWidget_main,
     ):
-        # starting initialize
         super(Setting, self).__init__()
-        self.stackedWidget = stackedwidgetpage
-        self.windowwidth = windowwidth
-        self.windowheight = windowheight
+        self.init_variables(
+            stackedwidgetpage,
+            MainWindow,
+            centralwidget,
+            windowwidth,
+            windowheight,
+            default_settings,
+            stackedWidget_main,
+        )
         self.settingform = uic.loadUi("UI_Design/setting.ui", self)
-        self.MainWindow = MainWindow
-        self.centralwidget = centralwidget
-        self.accountinfo = [{"UserID": "admin", "Pass": "pass"}]
-        font = default_settings["font_size"]
-        self.theme = default_settings["theme"]
-        self.password = default_settings["password"]
-        self.font_size = int(font)
-        self.selected_time_zone = default_settings["timezone"]
-        self.default_settings = default_settings
-        self.saved_setting = self.default_settings
-        self.stackedWidget_main = stackedWidget_main
-        self.buttoncolor = None
-        self.buttoncolortext = None
         self.setupUi()
+        self.retranslateUi()
 
-    # setup ui setting from the page
+    def init_variables(
+        self,
+        stackedwidgetpage,
+        MainWindow,
+        centralwidget,
+        windowwidth,
+        windowheight,
+        default_settings,
+        stackedWidget_main,
+    ):
+        self.stackedWidget, self.MainWindow, self.centralwidget = (
+            stackedwidgetpage,
+            MainWindow,
+            centralwidget,
+        )
+        self.windowwidth, self.windowheight, self.stackedWidget_main = (
+            windowwidth,
+            windowheight,
+            stackedWidget_main,
+        )
+        self.default_settings = self.saved_setting = default_settings
+        self.font_size = int(default_settings["font_size"])
+        self.selected_time_zone = default_settings["timezone"]
+        self.accountinfo = [{"UserID": "admin", "Pass": "pass"}]
+        self.font = QFont()
+        self.font.setPointSize(self.font_size)
+        self.colors = {
+            "theme": default_settings["themeothercolor"],
+            "text": default_settings["text_labelothercolor"],
+            "button": default_settings["buttonthemeothercolor"],
+            "button_text": default_settings["buttontextothercolor"],
+        }
+
     def setupUi(self):
         self.button_UI()
+        self.load_UIsettings()
+        self.init_interface_settings()
+        self.setup_font_and_resolution()
+        self.setup_timezone_selection()
+        self.setup_user_login()
+        self.setup_restart_widget()
+        self.init_timers()
+        self.setup_text_and_layout()
+        self.connect_events()
+
+    def load_UIsettings(self):
+        settings_map = {
+            "theme": (self.themebox, "themeothercolor", "theme"),
+            "text_label": (self.themetextbox, "text_labelothercolor", "text"),
+            "buttontheme": (self.buttonthemebox, "buttonthemeothercolor", "button"),
+            "buttontext": (self.buttonthemetextbox, "buttontextothercolor", "button_text"),
+        }
+        for key, (combobox, other_key, color_key) in settings_map.items():
+            predefined_value = self.default_settings.get(key, "Gray" if "theme" in key else "Black")
+            other_color = self.default_settings.get(other_key, "")
+
+            if predefined_value == "Other Color " and other_color:
+                self.colors[color_key] = other_color
+                self.apply_color_to_widgets(color_key)
+                
+            else:
+                combobox.setCurrentText(predefined_value)
+        self.apply_color_to_widgets("theme")
+        self.apply_color_to_widgets("text")
+        self.apply_color_to_widgets("button")
+        self.apply_color_to_widgets("button_text")
+
+    def init_interface_settings(self):
         interface_name, ip_address, host, ports_text = (
             interface_signals.get_active_wifi_interface()
         )
-        interface_info = f"Interface: {interface_name}"
-        self.setinterfacelabel(interface_info, ip_address, host, ports_text)
-        # home
-        self.settingform.themebox.currentIndexChanged.connect(self.colorchange)
-        self.settingform.themetextbox.currentIndexChanged.connect(self.colorchangetext)
-        self.settingform.buttonthemebox.currentIndexChanged.connect(self.colorchangebutton)
-        self.settingform.buttonthemetextbox.currentIndexChanged.connect(self.colorchangetextbutton)
-        # wifi
-        self.settingform.treeWidget.setColumnWidth(0, 500)
-        self.settingform.maintitlelabel.setText("<h3>Home Setting</h3>")
-        self.interfaces = interface_signals.get_wireless_interfaces()
-        interface_signals.show_interface(
-            self.interfaces,
-            self.settingform.treeWidget,
-        )
+        self.set_interface_labels(interface_name, ip_address, host, ports_text)
+        interfaces = interface_signals.get_wireless_interfaces()
+        interface_signals.show_interface(interfaces, self.settingform.treeWidget)
         self.settingform.treeWidget.itemClicked.connect(self.ethernet_item_clicked)
-        # setting host services and resolution and font
-        Text_index = self.settingform.Text_size.findText(
-            str(self.default_settings["font_size"]), Qt.MatchFixedString
-        )
-        if Text_index >= 0:
-            self.settingform.Text_size.setCurrentIndex(Text_index)
-        self.font = QFont()
-        self.font.setPointSize(int(self.font_size))
+
+
+    def setup_font_and_resolution(self):
+        self.settingform.Text_size.setCurrentText(str(self.font_size))
         self.apply_font_to_widgets(self.settingform, self.font)
-        self.settingform.Text_size.currentIndexChanged[int].connect(self.update_font)
-        self.settingform.resolutioncomboBox.currentIndexChanged.connect(
-            self.change_resolution
+        self.settingform.resolutioncomboBox.setCurrentText(
+            self.default_settings["resolution"]
         )
-        resolution_index = self.settingform.resolutioncomboBox.findText(
-            self.default_settings["resolution"], Qt.MatchFixedString
-        )
-        if resolution_index >= 0:
-            self.settingform.resolutioncomboBox.setCurrentIndex(resolution_index)
-        all_timezones = pytz.all_timezones
-        for timezone in all_timezones:
-            self.settingform.country.addItem(timezone)
-        timezone_index = self.settingform.country.findText(
-            self.selected_time_zone, Qt.MatchFixedString
-        )
-        if timezone_index >= 0:
-            self.settingform.country.setCurrentIndex(timezone_index)
-        self.settingform.country.currentIndexChanged.connect(self.updateTimeLabel)
+
+    def setup_timezone_selection(self):
+        self.settingform.country.addItems(pytz.all_timezones)
+        self.settingform.country.setCurrentText(self.selected_time_zone)
+
+    def setup_user_login(self):
         self.userlabel = QLabel(self.settingform.UserPage)
-        self.userlabel.setGeometry(10, 10, 400, 40)
-        # User info login
         self.loginwidget = QStackedWidget(self.settingform.UserPage)
-        loginwindow = Login.Login(
+        login_window = Login.Login(
             self.accountinfo,
             self.loginwidget,
             self.userlabel,
             self.settingform.UserPage,
         )
-        self.loginwidget.addWidget(loginwindow)
+        self.loginwidget.addWidget(login_window)
         self.loginwidget.setGeometry(10, 70, 700, 800)
-        # power and restart
-        self.restartwidgetwindow = closewindow.RestartCloseWidget(
-            self.MainWindow,
-            self.saved_setting,
-            self.settingform.themebox,
-            self.themetextbox,
-            self.settingform.buttonthemebox,
-            self.buttonthemetextbox,
-            self.settingform.Text_size,
-            self.settingform.resolutioncomboBox,
-            self.settingform.country,
-            self.font_size,
-            self.password,
-        )
-        self.restartwidgetwindow.show()
+
+    def setup_restart_widget(self):
         self.restartwidget = QStackedWidget(self.settingform.RestartPowerOffPage)
-        self.restartwidget.addWidget(self.restartwidgetwindow)
-        self.restartwidget.setGeometry(150, 460, 300, 300)
-        self.setStretch()
-        self.retranslateUi()
-        self.settingform.restoreDefaultsButton.clicked.connect(
-            lambda: default.restoredefaultsetting(
-                self.accountinfo,
+        self.restartwidget.addWidget(
+            closewindow.RestartCloseWidget(
+                self.MainWindow,
+                self.saved_setting,
                 self.settingform.themebox,
-                self.themetextbox,
+                self.settingform.themetextbox,
                 self.settingform.buttonthemebox,
-                self.buttonthemetextbox,
+                self.settingform.buttonthemetextbox,
                 self.settingform.Text_size,
                 self.settingform.resolutioncomboBox,
                 self.settingform.country,
-                self.default_settings,
-                self.settingform.PasslineEdit,
-                self.stackedWidget,
-                self.MainWindow,
-                self.windowwidth,
-                self.windowheight,
-                self.stackedWidget_main,
+                self.font_size,
+                self.default_settings["password"],
             )
         )
+        self.restartwidget.setGeometry(150, 460, 300, 300)
 
-    # ethernet
-    def ethernet_item_clicked(self, item, column):
-        interface_name = item.text(column)
-        interfaces = interface_signals.get_wireless_interfaces()
-        interface_info, ip_address, host, ports_text = interface_signals.get_interface(
-            interfaces, interface_name
-        )
-        self.setinterfacelabel(interface_info, ip_address, host, ports_text)
-
-    def setinterfacelabel(self, interface_info, ip_address, host, ports_text):
-        self.settingform.interface_label.setText(interface_info)
-        self.settingform.ip_label.setText(f"IP Address : {ip_address}")
-        self.settingform.host.setText(f"Host: {host}")
-        self.settingform.Portnumipadd.setText(f"Port: {ports_text}")
-
-    # button interaction page
-    def button_UI(self):
-        self.settingbutton = settingbuttonUIinteraction.settingbuttonUI(
-            self.settingform.MarkingbackButton,
-            self.settingform.stackedWidgetsetting,
-            self.stackedWidget,
-            self.settingform.HomeButton,
-            self.settingform.WifiButton,
-            self.settingform.serviceIPAddressButton,
-            self.settingform.ServicesButton,
-            self.settingform.UserButton,
-            self.settingform.AboutButton,
-            self.settingform.PowerButton,
-            self.settingform.maintitlelabel,
-            self.settingform.themebox,
-            self.settingform.themetextbox,
-            self.settingform.buttonthemebox,
-            self.settingform.buttonthemetextbox,
-            self.settingform.Text_size,
-            self.settingform.resolutioncomboBox,
-            self.settingform.country,
-            self.settingform.PasslineEdit,
-            self.MainWindow,
-            self.saved_setting,
-            self.stackedWidget_main,
-        )
-
-    # add text
     def retranslateUi(self):
         self.update_time()
         self.timer = QTimer(self)
@@ -214,12 +181,6 @@ class Setting(QWidget):
             self.accountinfo,
         )
 
-    # set pass
-    def changepassfunction(self):
-        password = self.settingform.PasslineEdit.text()
-        self.accountinfo[0]["Pass"] = password
-
-    # set time in am/pm format
     def update_time(self):
         self.settingbutton.updatingtime(
             self.selected_time_zone, self.settingform.Systemtime
@@ -231,7 +192,7 @@ class Setting(QWidget):
             self.selected_time_zone, self.settingform.Systemtime
         )
 
-    #update memory
+    # update memory
     def update_memory(self):
         # Update the system memory text
         process = psutil.Process(os.getpid())
@@ -240,93 +201,15 @@ class Setting(QWidget):
             f"System Memory Usage : {memory_usage:.2f} MB"
         )
 
-    # update font size
-    def update_font(self, index):
-        self.font_size = int(self.settingform.Text_size.currentText())
-        self.font.setPointSize(self.font_size)
-        self.settingform.setFont(self.font)
-        self.MainWindow.setFont(self.font)
-        self.apply_font_to_widgets(self.settingform, self.font)
-        self.apply_font_to_widgets(self.MainWindow, self.font)
+    def init_timers(self):
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_time)
+        self.timer.start(1000)
+        self.memorytimer = QTimer(self)
+        self.memorytimer.timeout.connect(self.update_memory)
+        self.memorytimer.start(1000)
 
-    def apply_font_to_widgets(self, parent, font):
-        if hasattr(parent, "setFont"):
-            parent.setFont(font)
-        if hasattr(parent, "children"):
-            for child in parent.children():
-                self.apply_font_to_widgets(child, font)
-
-    # update resolution
-    def change_resolution(self, index):
-        resolution = self.settingform.resolutioncomboBox.currentText()
-        width, height = map(int, resolution.split("x"))
-        if width == 1920 and height == 1080:
-            self.MainWindow.showMaximized()
-        else:
-            self.MainWindow.showNormal()
-            self.MainWindow.resize(width, height)
-
-    # color change
-    def colorchange(self, index):
-        self.color = self.settingform.themebox.currentText()
-        if self.color == "Gray":
-            self.MainWindow.setStyleSheet(self.styleSheet())
-        elif self.color == "Black":
-            self.MainWindow.setStyleSheet(
-                f"color: white; background-color : {self.color}"
-            )
-        else:
-            color = QColorDialog.getColor()
-            self.MainWindow.setStyleSheet(f"background-color : {color.name()}")
-    
-    def colorchangetext(self, index):
-        self.colortext = self.settingform.themetextbox.currentText()
-        if self.colortext == "Gray":
-            for child in self.centralwidget.findChildren(QLabel):
-                child.setStyleSheet(f"color: {self.colortext}")
-        elif self.colortext == "Black":
-            for child in self.centralwidget.findChildren(QLabel):
-                child.setStyleSheet(f"color: {self.colortext}")
-        else:
-            color = QColorDialog.getColor()
-            if color.isValid():  
-                selected_color = color.name()
-                for child in self.centralwidget.findChildren(QLabel):
-                    child.setStyleSheet(f"color: {selected_color}")
-
-    def colorchangebutton(self, index):
-        self.buttoncolor = self.settingform.buttonthemebox.currentText()
-        if self.buttoncolor == "Gray":
-            for child in self.centralwidget.findChildren(QPushButton):
-                child.setStyleSheet(f"background-color: {self.buttoncolor}; color: black;")
-        elif self.buttoncolor == "Black":
-            for child in self.centralwidget.findChildren(QPushButton):
-                child.setStyleSheet(f"background-color: {self.buttoncolor}; color: white;")
-        else:
-            color = QColorDialog.getColor()
-            if color.isValid():  
-                selected_color = color.name()
-                self.buttoncolor = selected_color
-                for child in self.centralwidget.findChildren(QPushButton):
-                    child.setStyleSheet(f"background-color: {selected_color}; color: white;")
-
-    def colorchangetextbutton(self, index):
-        self.buttoncolortext = self.settingform.buttonthemetextbox.currentText()
-        if self.buttoncolortext == "Gray":
-            for child in self.centralwidget.findChildren(QPushButton):
-                child.setStyleSheet(f"background-color: {self.buttoncolor}; color: {self.buttoncolortext}")
-        elif self.buttoncolortext == "Black":
-            for child in self.centralwidget.findChildren(QPushButton):
-                child.setStyleSheet(f"background-color: {self.buttoncolor}; color: {self.buttoncolortext}")
-        else:
-            color = QColorDialog.getColor()
-            if color.isValid():  
-                selected_color = color.name()
-                for child in self.centralwidget.findChildren(QPushButton):
-                    child.setStyleSheet(f"background-color: {self.buttoncolor}; color: {selected_color}")
-
-    #set layout for setting
-    def setStretch(self):
+    def setup_text_and_layout(self):
         settinglayoutUi.SettingLayout(
             self.settingform,
             self.settingform.labeltitlsetting,
@@ -362,3 +245,155 @@ class Setting(QWidget):
             self.restartwidget,
             self.settingform.RestartPowerOffPage,
         )
+
+    def connect_events(self):
+        self.settingform.themebox.currentIndexChanged.connect(
+            lambda: self.update_color("theme")
+        )
+        self.settingform.themetextbox.currentIndexChanged.connect(
+            lambda: self.update_color("text")
+        )
+        self.settingform.buttonthemebox.currentIndexChanged.connect(
+            lambda: self.update_color("button")
+        )
+        self.settingform.buttonthemetextbox.currentIndexChanged.connect(
+            lambda: self.update_color("button_text")
+        )
+        self.settingform.restoreDefaultsButton.clicked.connect(
+            lambda: default.restoredefaultsetting(
+                self.accountinfo,
+                self.settingform.themebox,
+                self.settingform.themetextbox,
+                self.settingform.buttonthemebox,
+                self.settingform.buttonthemetextbox,
+                self.settingform.Text_size,
+                self.settingform.resolutioncomboBox,
+                self.settingform.country,
+                self.default_settings,
+                self.settingform.PasslineEdit,
+                self.stackedWidget,
+                self.MainWindow,
+                self.windowwidth,
+                self.windowheight,
+                self.stackedWidget_main,
+            )
+        )
+
+    def button_UI(self):
+        self.settingbutton = settingbuttonUIinteraction.settingbuttonUI(
+            self.settingform.MarkingbackButton,
+            self.settingform.stackedWidgetsetting,
+            self.stackedWidget,
+            self.settingform.HomeButton,
+            self.settingform.WifiButton,
+            self.settingform.serviceIPAddressButton,
+            self.settingform.ServicesButton,
+            self.settingform.UserButton,
+            self.settingform.AboutButton,
+            self.settingform.PowerButton,
+            self.settingform.maintitlelabel,
+            self.settingform.themebox,
+            self.settingform.themetextbox,
+            self.settingform.buttonthemebox,
+            self.settingform.buttonthemetextbox,
+            self.settingform.Text_size,
+            self.settingform.resolutioncomboBox,
+            self.settingform.country,
+            self.settingform.PasslineEdit,
+            self.MainWindow,
+            self.saved_setting,
+            self.stackedWidget_main,
+            self.colors,
+        )
+
+    def ethernet_item_clicked(self, item, column):
+        interface_name = item.text(column)
+        interface_info, ip_address, host, ports_text = interface_signals.get_interface(
+            self.interfaces, interface_name
+        )
+        self.set_interface_labels(interface_info, ip_address, host, ports_text)
+
+    def set_interface_labels(self, interface_info, ip_address, host, ports_text):
+        self.settingform.interface_label.setText(interface_info)
+        self.settingform.ip_label.setText(f"IP Address: {ip_address}")
+        self.settingform.host.setText(f"Host: {host}")
+        self.settingform.Portnumipadd.setText(f"Port: {ports_text}")
+
+    def update_color(self, element):
+        element_to_box = {
+            "theme": self.settingform.themebox,
+            "text": self.settingform.themetextbox,
+            "button": self.settingform.buttonthemebox,
+            "button_text": self.settingform.buttonthemetextbox,
+        }
+        box = element_to_box.get(element)
+        if not box:
+            raise ValueError(f"Unknown element: {element}")
+        if "Other Color" in box.currentText():
+            selected_color = QColorDialog.getColor()
+            if selected_color.isValid():
+                self.colors[element] = selected_color.name()
+        else:
+            self.colors[element] = box.currentText()
+        self.apply_color_to_widgets(element)
+
+    def apply_color_to_widgets(self, element):
+        if element == "theme":
+            self.MainWindow.setStyleSheet(f"background-color: {self.colors[element]}")
+            self.settingform.setStyleSheet(f"background-color: {self.colors[element]}")
+        elif element == "text":
+            for child in self.centralwidget.findChildren(QLabel):
+                child.setStyleSheet(f"color: {self.colors[element]}")
+            for child in self.settingform.centralwidget.findChildren(QLabel):
+                child.setStyleSheet(f"color: {self.colors[element]}")
+        elif element == "button":
+            for child in self.centralwidget.findChildren(QPushButton):
+                current_style = child.styleSheet()
+                text_color = self.extract_style_property(current_style, "color")
+                child.setStyleSheet(
+                    f"background-color: {self.colors[element]}; color: {text_color or 'black'};"
+                )
+            for child in self.settingform.centralwidget.findChildren(QPushButton):
+                current_style = child.styleSheet()
+                text_color = self.extract_style_property(current_style, "color")
+                child.setStyleSheet(
+                    f"background-color: {self.colors[element]}; color: {text_color or 'black'};"
+                )
+        elif element == "button_text":
+            for child in self.centralwidget.findChildren(QPushButton):
+                current_style = child.styleSheet()
+                background_color = self.extract_style_property(
+                    current_style, "background-color"
+                )
+                child.setStyleSheet(
+                    f"background-color: {background_color or 'default'}; color: {self.colors[element]};"
+                )
+            for child in self.settingform.centralwidget.findChildren(QPushButton):
+                current_style = child.styleSheet()
+                background_color = self.extract_style_property(
+                    current_style, "background-color"
+                )
+                child.setStyleSheet(
+                    f"background-color: {background_color or 'default'}; color: {self.colors[element]};"
+                )
+
+    def extract_style_property(self, style, property_name):
+        pattern = rf"{property_name}\s*:\s*([^;]+);"
+        match = re.search(pattern, style)
+        return match.group(1).strip() if match else None
+
+    def update_time(self):
+        self.settingbutton.updatingtime(
+            self.selected_time_zone, self.settingform.Systemtime
+        )
+
+    def update_memory(self):
+        memory_usage = psutil.Process(os.getpid()).memory_info().rss / (1024 * 1024)
+        self.settingform.SystemMemory.setText(
+            f"System Memory Usage: {memory_usage:.2f} MB"
+        )
+
+    def apply_font_to_widgets(self, parent, font):
+        parent.setFont(font)
+        for child in parent.findChildren(QWidget):
+            child.setFont(font)

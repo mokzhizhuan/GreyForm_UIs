@@ -9,9 +9,13 @@ def jsopen(jsonfile):
             resolution = data["resolution"]
             font = data["font_size"]
             theme = data["theme"]
+            themecolor = data["themeothercolor"]
             texttheme = data["text_label"]
+            text_labelothercolor = data["text_labelothercolor"]
             buttoncolor = data["buttontheme"]
+            buttonthemeothercolor = data["buttonthemeothercolor"]
             buttoncolortext = data["buttontext"]
+            buttontextothercolor = data["buttontextothercolor"]
             password = data["password"]
             selected_time_zone = data["timezone"]
             width, height = map(int, resolution.split(" x "))
@@ -29,9 +33,13 @@ def jsopen(jsonfile):
     return (
         font,
         theme,
+        themecolor,
         texttheme,
+        text_labelothercolor,
         buttoncolor,
+        buttonthemeothercolor,
         buttoncolortext,
+        buttontextothercolor,
         password,
         selected_time_zone,
         width,

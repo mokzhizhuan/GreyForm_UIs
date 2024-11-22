@@ -31,9 +31,13 @@ class Ui_MainWindow(QMainWindow):
         (
             font,
             self.theme,
+            self.themecolor,
             self.texttheme,
+            self.text_labelothercolor,
             self.buttontheme,
+            self.buttonthemeothercolor,
             self.buttontexttheme,
+            self.buttontextothercolor,
             self.password,
             self.selected_time_zone,
             self.width,
@@ -48,9 +52,13 @@ class Ui_MainWindow(QMainWindow):
         self.ros_node = ros_node
         self.default_settings = {
             "theme": str(self.theme),
-            "text_label": str(self.texttheme),
-            "buttontheme": str(self.buttontheme),
-            "buttontext": str(self.buttontexttheme),
+            "themeothercolor": str(self.themecolor),
+            "text_label": self.texttheme,
+            "text_labelothercolor": self.text_labelothercolor,
+            "buttontheme": self.buttontheme,
+            "buttonthemeothercolor": self.buttonthemeothercolor,
+            "buttontext": self.buttontexttheme,
+            "buttontextothercolor": self.buttontextothercolor,
             "font_size": self.font_size,
             "resolution": f"{self.width} x {self.height}",
             "timezone": self.selected_time_zone,
@@ -67,11 +75,18 @@ class Ui_MainWindow(QMainWindow):
         self.excelfilepath = None
         self.excel_file_selected = False
         self.file_list_selected = False
+        config = {
+            'maincolor': self.theme,
+            'themecolor': self.themecolor,
+            'maincolortext': self.texttheme,
+            'text_labelothercolor': self.text_labelothercolor,
+            'buttoncolor': self.buttontheme,
+            'buttonthemeothercolor': self.buttonthemeothercolor,
+            'buttontextcolor': self.buttontexttheme,
+            'buttontextothercolor': self.buttontextothercolor
+        }
         self.themebuilder = mainthemebuilder.themechange(
-            self.theme,
-            self.texttheme,
-            self.buttontheme,
-            self.buttontexttheme,
+            config,
             self.mainwindow.centralwidget,
             self.mainwindow,
         )

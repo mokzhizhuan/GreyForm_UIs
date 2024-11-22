@@ -115,7 +115,14 @@ class RestartCloseWidget(QWidget):
             "password": self.passwordedit.text(),
         }
         with open("settings.json", "w") as f:
-            json.dump(self.savesettings, f)
+            f.write('{\n')
+            last_key = list(self.savesettings.keys())[-1]
+            for key, value in self.savesettings.items():
+                if key != last_key:
+                    f.write(f'    "{key}": "{value}",\n')  # Comma for all but last entry
+                else:
+                    f.write(f'    "{key}": "{value}"\n')  # No comma for last entry
+            f.write('}\n')
 
     # show close dialog
     def show_close_dialog(self):
