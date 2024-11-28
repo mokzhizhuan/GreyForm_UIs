@@ -29,7 +29,6 @@ class createMesh(QMainWindow):
         seq3Button,
         NextButton_Page_3,
         Seqlabel,
-        localizebutton,
         file_path,
     ):
         # starting initialize
@@ -51,7 +50,6 @@ class createMesh(QMainWindow):
         self.seq3Button = seq3Button
         self.NextButton_Page_3 = NextButton_Page_3
         self.Seqlabel = Seqlabel
-        self.localizebutton = localizebutton
         self.filepath = file_path
         self.ren.SetBackground(1, 1, 1)
         self.dataseqtext = None

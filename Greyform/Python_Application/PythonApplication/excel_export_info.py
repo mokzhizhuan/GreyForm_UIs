@@ -1,12 +1,22 @@
 import pandas as pd
+import ifcopenshell
+import ifcopenshell.geom
+import meshio
+import multiprocessing
 import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
+import numpy as np
 
 #export excel sheet
 class Exportexcelinfo(object):
-    def __init__(self, file, class_type):
+    def __init__(self, file, class_type, wall_dimensions,widtharea,heightarea):
         # starting initialize
         super().__init__()
+        self.file = file
+        self.class_type = class_type
+        self.wall_dimensions = wall_dimensions
+        self.widtharea = widtharea
+        self.heightarea = heightarea
         try:
             data = self.get_objects_data_by_class(file, class_type)
             attributes = [
@@ -19,6 +29,11 @@ class Exportexcelinfo(object):
                 "Wall Number",
                 "Shape type",
                 "Status",
+                "Quadrant",
+                "Unnamed : 9",
+                "Width",
+                "Height",
+                "Orientation",
             ]
             self.add_legends()
             pandas_data = []
@@ -33,18 +48,47 @@ class Exportexcelinfo(object):
                 self.determine_wall_number, axis=1
             )
             dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
+            dataframe["Orientation"] = dataframe.apply(
+                self.determine_wall_number, axis=1
+            )
+            dataframe[["Position X (m)", "Position Y (m)", "Position Z (m)"]] = dataframe.apply(
+                self.determine_pipes_pos, axis=1
+            )
+            dataframe[["Width", "Height"]] = dataframe.apply(self.determinewallbasedonwidthandheight, axis=1)
             file_name = f"exporteddatass.xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 for object_class in dataframe["Class"].unique():
                     df_class = dataframe[dataframe["Class"] == object_class]
                     df_class = df_class.drop(["Class"], axis=1)
-                    df_class = df_class.dropna(axis=1, how="all")
                     df_class.to_excel(writer, sheet_name=object_class)
                     worksheet = writer.sheets[object_class]
                     self.apply_rotation_to_markers(worksheet, df_class)
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
     
+    def determine_pipes_pos(self, row):
+        name = row["Point number/name"]
+        pipes = self.file.by_type("IFCFLOWSEGMENT")
+        for pipe in pipes:
+            if "pipe" in name.lower():
+                if pipe.ObjectPlacement:
+                    placement = pipe.ObjectPlacement.RelativePlacement
+                    if placement and placement.Location:
+                        x, y, z = placement.Location.Coordinates
+                        return pd.Series([x, y, z])
+        return pd.Series([row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"]])
+    
+    def determinewallbasedonwidthandheight(self, row):
+        for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
+            if (index+1) == row["Wall Number"]:
+                width = dims.get('width', 'Not available')  
+                height = dims.get('height', 'Not available')
+                return pd.Series([width,height])
+        if row["Wall Number"] == 7 or row["Wall Number"] == "F":
+            return pd.Series([self.widtharea,self.heightarea])
+        return pd.Series([0,0])
+
+        
     def add_legends(self):
         dataframe_Legend = pd.read_excel(
                 "Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2
@@ -106,6 +150,11 @@ class Exportexcelinfo(object):
                     "Wall Number": str(wall_number),
                     "Shape type": "",
                     "Status": "blank",
+                    "Quadrant" : 1,
+                    "Unnamed : 9" : "",
+                    "Width" : "",
+                    "Height" : "",
+                    "Orientation" : "",
                 }
             )
         return objects_data
@@ -180,30 +229,20 @@ class Exportexcelinfo(object):
 
     #determine wall number based on the exceldata name
     def determine_wall_number(self, row):
-        wallnum = None
+        wallnum = "F"
         name = row["Point number/name"]
-        if pd.isnull(name):
-            self.index += 1
-            return None
-        name = str(name)
-        if self.index == 117:
-            self.index += 1
-            return None
         if self.wall_name in name:
             if self.indexwall < len(self.wall_600x600mm):
                 wallnum = self.wallnumber(self.wall_600x600mm[self.indexwall]["Pin ID"])
-                self.indexwall += 1
-                self.index += 1
                 return wallnum
         for data_legend in self.wall_legend:
             data_pen_name = data_legend.get(self.pen_column)
             data_pin_id = data_legend.get(self.pin_id_column)
             if data_pen_name in name:
                 wallnum = self.wallnumber(data_pin_id)
-                self.index += 1
                 return wallnum
-        wallnum = self.wallnumber(name)
-        self.index += 1
+        if "CP" in name or "LP" in name or "SP" in name or "TMP" in name:
+            wallnum = self.wallnumber(name)
         return wallnum
 
     #get wall number form excel data

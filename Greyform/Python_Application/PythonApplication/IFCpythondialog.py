@@ -17,7 +17,8 @@ import PythonApplication.loadpyvista as loadingstl
 import PythonApplication.excel_export_info as biminfo
 import numpy as np
 
-#ifc loader
+
+# ifc loader
 class ProgressBarDialogIFC(QDialog):
     def __init__(self, total_steps, ifc_file, mainwindowforfileselection):
         # starting initialize
@@ -44,12 +45,12 @@ class ProgressBarDialogIFC(QDialog):
         self.Seqlabel = mainwindowforfileselection[13]
         self.localizebutton = mainwindowforfileselection[14]
         self.progress_bar = QProgressBar(self)
-        self.progress_bar.setFont(QFont('Arial', 30))
+        self.progress_bar.setFont(QFont("Arial", 30))
         self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)
         self.progress_bar.setGeometry(30, 130, 340, 200)
         label = QLabel("Graphics is converting , please wait.")
         label.setGeometry(QtCore.QRect(50, 30, 200, 100))
-        label.setFont(QFont('Arial', 30)) 
+        label.setFont(QFont("Arial", 30))
         label.setWordWrap(True)
         label.setObjectName("label")
         self.timer = QTimer(self)
@@ -73,7 +74,7 @@ class ProgressBarDialogIFC(QDialog):
             self.progress_bar.setValue(0)  # Reset progress to 0
             self.timer.start(100)
 
-    #execute loading ifc program
+    # execute loading ifc program
     def ifcprogramexecute(self):
         self.update_progress()
         try:
@@ -85,6 +86,7 @@ class ProgressBarDialogIFC(QDialog):
             if iterator.initialize():
                 stl_data = {"points": [], "cells": [], "material_ids": []}
                 # making sure it scale the same as the stl file diagram based on ifc
+                wall_dimensions = {}
                 scale_factor = 1500.0
                 # Collect all unique element types
                 try:
@@ -106,13 +108,24 @@ class ProgressBarDialogIFC(QDialog):
                         ]
                         scaled_grouped_verts = np.array(grouped_verts) * scale_factor
                         # data array for STL
+                        if "IfcWallStandardCase" in element_type:
+                            if "Basic Wall:BSS.50" in element.Name:
+                                x_coords, y_coords, z_coords = zip(*scaled_grouped_verts)
+                                width = max(x_coords) - min(x_coords)
+                                height = max(y_coords) - min(y_coords)
+                                depth = max(z_coords) - min(z_coords)
+                                wall_dimensions[f"{element.Name} {guid}"] = {
+                                    "width": int(round(width)),
+                                    "height": int(round(height)),
+                                    "depth": int(round(depth)),
+                                }
                         if element_type != "IfcOpeningElement":
                             stl_vert_index_offset = len(stl_data["points"])
                             stl_data["points"].extend(scaled_grouped_verts)
                             stl_data["cells"].extend(
                                 [
                                     [
-                                        face[0] + stl_vert_index_offset,
+                                        face[0] + stl_vert_index_offset,    
                                         face[1] + stl_vert_index_offset,
                                         face[2] + stl_vert_index_offset,
                                     ]
@@ -120,12 +133,16 @@ class ProgressBarDialogIFC(QDialog):
                                 ]
                             )
                             stl_data["material_ids"].extend(material_ids)
+                        x_coordsarea, y_coordsarea, z_coordsarea = zip(*scaled_grouped_verts)
+                        widtharea = int(round(max(x_coordsarea))) 
+                        heightarea = int(round(max(y_coordsarea)))
                         if not iterator.next():
                             break
                 except Exception as e:
                     self.log_error(f"Error while processing IFC shapes: {e}")
                 self.convertStl(stl_data)
-                biminfo.Exportexcelinfo(self.ifc_file, "IfcElement")
+                dominant_data_wall = self.dominant_dimensions(wall_dimensions)
+                biminfo.Exportexcelinfo(self.ifc_file, "IfcElement", dominant_data_wall, widtharea, heightarea)
                 try:
                     self.stlloader()
                 except Exception as e:
@@ -136,7 +153,14 @@ class ProgressBarDialogIFC(QDialog):
             )
         self.close()
 
-    #include error in text file
+    def dominant_dimensions(self, wall_data):
+        results = {}
+        for wall, dimensions in wall_data.items():
+            sorted_dims = sorted(dimensions.items(), key=lambda x: x[1], reverse=True)
+            results[wall] = {"width": sorted_dims[0][1], "height": sorted_dims[1][1]}
+        return results
+
+    # include error in text file
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
             log_file.write(message + "\n")
