@@ -6,10 +6,12 @@ import multiprocessing
 import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
 import numpy as np
+import math
 
-#export excel sheet
+
+# export excel sheet
 class Exportexcelinfo(object):
-    def __init__(self, file, class_type, wall_dimensions,widtharea,heightarea):
+    def __init__(self, file, class_type, wall_dimensions, widtharea, heightarea):
         # starting initialize
         super().__init__()
         self.file = file
@@ -48,13 +50,12 @@ class Exportexcelinfo(object):
                 self.determine_wall_number, axis=1
             )
             dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
-            dataframe["Orientation"] = dataframe.apply(
-                self.determine_wall_number, axis=1
+            dataframe[["Position X (m)", "Position Y (m)", "Position Z (m)"]] = (
+                dataframe.apply(self.determine_pipes_pos, axis=1)
             )
-            dataframe[["Position X (m)", "Position Y (m)", "Position Z (m)"]] = dataframe.apply(
-                self.determine_pipes_pos, axis=1
+            dataframe[["Width", "Height"]] = dataframe.apply(
+                self.determinewallbasedonwidthandheight, axis=1
             )
-            dataframe[["Width", "Height"]] = dataframe.apply(self.determinewallbasedonwidthandheight, axis=1)
             file_name = f"exporteddatass.xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 for object_class in dataframe["Class"].unique():
@@ -65,34 +66,92 @@ class Exportexcelinfo(object):
                     self.apply_rotation_to_markers(worksheet, df_class)
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
-    
+
     def determine_pipes_pos(self, row):
         name = row["Point number/name"]
-        pipes = self.file.by_type("IFCFLOWSEGMENT")
+        pipes = self.file.by_type("IFCFlowSegment")
         for pipe in pipes:
-            if "pipe" in name.lower():
-                if pipe.ObjectPlacement:
-                    placement = pipe.ObjectPlacement.RelativePlacement
-                    if placement and placement.Location:
-                        x, y, z = placement.Location.Coordinates
-                        return pd.Series([x, y, z])
-        return pd.Series([row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"]])
-    
+            if name in pipe:
+                if pipe.Representation:
+                    for representation in pipe.Representation.Representations:
+                        if hasattr(representation, "Items"):
+                            for item in representation.Items:
+                                if item.is_a("IfcExtrudedAreaSolid"):
+                                    profile = item.SweptArea
+                                    if profile.is_a("IfcCircleProfileDef"):
+                                        center = item.Position.Location
+                                        radius = profile.Radius
+                                        radius = round(radius,1)
+                                        if center.is_a("IfcCartesianPoint"):
+                                            center_coords = center.Coordinates
+                                        diameterpoint = []
+                                        diameterpoint.append([center_coords[0]+radius,center_coords[1],center_coords[2]])
+                                        diameterpoint.append([center_coords[0]-radius,center_coords[1],center_coords[2]])
+                                        return pd.Series(
+                                            [
+                                                abs(int(round(center_coords[0]))),
+                                                abs(int(round(center_coords[1]))),
+                                                abs(int(round(center_coords[2]))),
+                                            ]
+                                        )
+                                    if profile.is_a("IfcArbitraryClosedProfileDef"):
+                                        outer_curve = profile.OuterCurve
+                                        if outer_curve.is_a("IfcCompositeCurve"):
+                                            points = []
+                                            for segment in outer_curve.Segments:
+                                                parent_curve = segment.ParentCurve
+                                                if parent_curve.is_a("IfcPolyline"):
+                                                    segment_points = [
+                                                        tuple(int(abs(round(coord))) for coord in p.Coordinates)
+                                                        for p in parent_curve.Points
+                                                        if p.is_a("IFCCartesianPoint")
+                                                    ]
+                                                    points.extend(segment_points)
+                                            if points:
+                                                num_points = len(points)
+                                                center_x = (
+                                                    sum(p[0] for p in points)
+                                                    / num_points
+                                                )
+                                                center_y = (
+                                                    sum(p[1] for p in points)
+                                                    / num_points
+                                                )
+                                                center_z = (
+                                                    sum(
+                                                        p[2] if len(p) > 2 else 0
+                                                        for p in points
+                                                    )
+                                                    / num_points
+                                                )
+                                                center_x = round(center_x, 6)
+                                                center_y = round(center_y, 6)
+                                                center_z = round(center_z, 6)
+                                                return pd.Series(
+                                                    [
+                                                        int(abs(round(center_x))),
+                                                        int(abs(round(center_y))),
+                                                        int(abs(round(center_z))),
+                                                    ]
+                                                )
+        return pd.Series(
+            [row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"]]
+        )
+
     def determinewallbasedonwidthandheight(self, row):
         for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
-            if (index+1) == row["Wall Number"]:
-                width = dims.get('width', 'Not available')  
-                height = dims.get('height', 'Not available')
-                return pd.Series([width,height])
+            if (index + 1) == row["Wall Number"]:
+                width = dims.get("width", "Not available")
+                height = dims.get("height", "Not available")
+                return pd.Series([width, height])
         if row["Wall Number"] == 7 or row["Wall Number"] == "F":
-            return pd.Series([self.widtharea,self.heightarea])
-        return pd.Series([0,0])
+            return pd.Series([self.widtharea, self.heightarea])
+        return pd.Series([0, 0])
 
-        
     def add_legends(self):
         dataframe_Legend = pd.read_excel(
-                "Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2
-            )
+            "Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2
+        )
         self.pen_column = dataframe_Legend.columns[3]
         self.pin_id_column = dataframe_Legend.columns[9]
         dataframe_Legend = dataframe_Legend[[self.pen_column, self.pin_id_column]]
@@ -122,7 +181,7 @@ class Exportexcelinfo(object):
                         }
                     )
 
-    #get object data based on class using ifc
+    # get object data based on class using ifc
     def get_objects_data_by_class(self, file, class_type):
         objects_data = []
         objects = file.by_type(class_type)
@@ -144,27 +203,27 @@ class Exportexcelinfo(object):
                         else object.Name
                     ),
                     "Point number/name": name,
-                    "Position X (m)": int(x),
-                    "Position Y (m)": int(y),
-                    "Position Z (m)": int(z),
+                    "Position X (m)": abs(int(x)),
+                    "Position Y (m)": abs(int(y)),
+                    "Position Z (m)": abs(int(z)),
                     "Wall Number": str(wall_number),
                     "Shape type": "",
                     "Status": "blank",
-                    "Quadrant" : 1,
-                    "Unnamed : 9" : "",
-                    "Width" : "",
-                    "Height" : "",
-                    "Orientation" : "",
+                    "Quadrant": 1,
+                    "Unnamed : 9": "",
+                    "Width": "",
+                    "Height": "",
+                    "Orientation": "",
                 }
             )
         return objects_data
 
-    #error will send into the error log text
+    # error will send into the error log text
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
             log_file.write(message + "\n")
 
-    #add marker and store it in the excel data
+    # add marker and store it in the excel data
     def add_markers(self, row):
         if pd.isnull(row["Point number/name"]):
             return "6"
@@ -178,7 +237,7 @@ class Exportexcelinfo(object):
                 return "+"
         return "6"
 
-    #convert to other wall number for rotation
+    # convert to other wall number for rotation
     def apply_rotation_to_markers(self, worksheet, df_class):
         marker_col_index = df_class.columns.get_loc("Shape type")
         for row_idx, (name, marker) in enumerate(
@@ -207,7 +266,7 @@ class Exportexcelinfo(object):
                     marker = 6
                     worksheet.write(row_idx, marker_col_index + 1, marker)
 
-    #get attribute value for excel data
+    # get attribute value for excel data
     def get_attribute_value(self, object_data, attribute):
         if "." not in attribute:
             return object_data[attribute]
@@ -227,7 +286,7 @@ class Exportexcelinfo(object):
         else:
             return None
 
-    #determine wall number based on the exceldata name
+    # determine wall number based on the exceldata name
     def determine_wall_number(self, row):
         wallnum = "F"
         name = row["Point number/name"]
@@ -245,7 +304,7 @@ class Exportexcelinfo(object):
             wallnum = self.wallnumber(name)
         return wallnum
 
-    #get wall number form excel data
+    # get wall number form excel data
     def wallnumber(self, name):
         if "CP" in name:
             index = name.index("CP") + 2
