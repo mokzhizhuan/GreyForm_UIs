@@ -82,6 +82,7 @@ class Exportexcelinfo(object):
                                         center = item.Position.Location
                                         radius = profile.Radius
                                         radius = round(radius,1)
+                                        diameter = radius*2
                                         if center.is_a("IfcCartesianPoint"):
                                             center_coords = center.Coordinates
                                         diameterpoint = []
@@ -108,6 +109,8 @@ class Exportexcelinfo(object):
                                                     ]
                                                     points.extend(segment_points)
                                             if points:
+                                                x_values = [p[0] for p in points]
+                                                diameter_x = max(x_values)
                                                 num_points = len(points)
                                                 center_x = (
                                                     sum(p[0] for p in points)
