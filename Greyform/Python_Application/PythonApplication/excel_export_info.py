@@ -36,6 +36,7 @@ class Exportexcelinfo(object):
                 "Width",
                 "Height",
                 "Orientation",
+                "Diameter"
             ]
             self.add_legends()
             pandas_data = []
@@ -50,7 +51,7 @@ class Exportexcelinfo(object):
                 self.determine_wall_number, axis=1
             )
             dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
-            dataframe[["Position X (m)", "Position Y (m)", "Position Z (m)"]] = (
+            dataframe[["Position X (m)", "Position Y (m)", "Position Z (m)","Diameter"]] = (
                 dataframe.apply(self.determine_pipes_pos, axis=1)
             )
             dataframe[["Width", "Height"]] = dataframe.apply(
@@ -93,6 +94,7 @@ class Exportexcelinfo(object):
                                                 abs(int(round(center_coords[0]))),
                                                 abs(int(round(center_coords[1]))),
                                                 abs(int(round(center_coords[2]))),
+                                                diameter
                                             ]
                                         )
                                     if profile.is_a("IfcArbitraryClosedProfileDef"):
@@ -135,10 +137,11 @@ class Exportexcelinfo(object):
                                                         int(abs(round(center_x))),
                                                         int(abs(round(center_y))),
                                                         int(abs(round(center_z))),
+                                                        diameter_x
                                                     ]
                                                 )
         return pd.Series(
-            [row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"]]
+            [row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"],""]
         )
 
     def determinewallbasedonwidthandheight(self, row):
@@ -217,6 +220,7 @@ class Exportexcelinfo(object):
                     "Width": "",
                     "Height": "",
                     "Orientation": "",
+                    "Diameter" : "",
                 }
             )
         return objects_data
