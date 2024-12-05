@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
     QVBoxLayout,
     QDialog,
@@ -16,13 +16,11 @@ import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl
 import PythonApplication.excel_export_info as biminfo
 import numpy as np
-import warnings
-warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
-#ifc progress dialog
+# ifc loader
 class ProgressBarDialogIFC(QDialog):
-    def __init__(self, total_steps, ifc_file, mainwindowforfileselection , mainwindow):
+    def __init__(self, total_steps, ifc_file, mainwindowforfileselection):
         # starting initialize
         super().__init__()
         progress_layout = QVBoxLayout()
@@ -44,13 +42,8 @@ class ProgressBarDialogIFC(QDialog):
         self.seq2Button = mainwindowforfileselection[10]
         self.seq3Button = mainwindowforfileselection[11]
         self.NextButton_Page_3 = mainwindowforfileselection[12]
-        self.Stagelabel = mainwindowforfileselection[13]
+        self.Seqlabel = mainwindowforfileselection[13]
         self.localizebutton = mainwindowforfileselection[14]
-        self.rosnode = mainwindowforfileselection[15]
-        self.excelfiletext = mainwindowforfileselection[16]
-        self.seqlabel = mainwindowforfileselection[17]
-        self.markingitembutton = mainwindowforfileselection[18]
-        self.mainwindow = mainwindow
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFont(QFont("Arial", 30))
         self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)
@@ -74,14 +67,14 @@ class ProgressBarDialogIFC(QDialog):
         value = self.progress_bar.value()
         if value < 100:
             self.progress_bar.setValue(value + 1)
-            # Update progress again after 100%
+            # Update progress again after 100 milliseconds
             QTimer.singleShot(100, self.update_progress)
         else:
             self.timer.stop()  # Stop the timer when progress reaches 100%
             self.progress_bar.setValue(0)  # Reset progress to 0
             self.timer.start(100)
 
-    #program execution when loading
+    # execute loading ifc program
     def ifcprogramexecute(self):
         self.update_progress()
         try:
@@ -92,9 +85,10 @@ class ProgressBarDialogIFC(QDialog):
             )
             if iterator.initialize():
                 stl_data = {"points": [], "cells": [], "material_ids": []}
+                # making sure it scale the same as the stl file diagram based on ifc
+                wall_dimensions = {}
                 scale_factor = 1500.0
                 # Collect all unique element types
-                biminfo.Exportexcelinfo(self.ifc_file, "IfcElement")
                 try:
                     while True:
                         shape = iterator.get()
@@ -113,13 +107,25 @@ class ProgressBarDialogIFC(QDialog):
                             for i in range(0, len(faces), 3)
                         ]
                         scaled_grouped_verts = np.array(grouped_verts) * scale_factor
+                        # data array for STL
+                        if "IfcWallStandardCase" in element_type:
+                            if "Basic Wall:BSS.50" in element.Name:
+                                x_coords, y_coords, z_coords = zip(*scaled_grouped_verts)
+                                width = max(x_coords) - min(x_coords)
+                                height = max(y_coords) - min(y_coords)
+                                depth = max(z_coords) - min(z_coords)
+                                wall_dimensions[f"{element.Name} {guid}"] = {
+                                    "width": int(round(width)),
+                                    "height": int(round(height)),
+                                    "depth": int(round(depth)),
+                                }
                         if element_type != "IfcOpeningElement":
                             stl_vert_index_offset = len(stl_data["points"])
                             stl_data["points"].extend(scaled_grouped_verts)
                             stl_data["cells"].extend(
                                 [
                                     [
-                                        face[0] + stl_vert_index_offset,
+                                        face[0] + stl_vert_index_offset,    
                                         face[1] + stl_vert_index_offset,
                                         face[2] + stl_vert_index_offset,
                                     ]
@@ -127,11 +133,16 @@ class ProgressBarDialogIFC(QDialog):
                                 ]
                             )
                             stl_data["material_ids"].extend(material_ids)
+                        x_coordsarea, y_coordsarea, z_coordsarea = zip(*scaled_grouped_verts)
+                        widtharea = int(round(max(x_coordsarea))) 
+                        heightarea = int(round(max(y_coordsarea)))
                         if not iterator.next():
                             break
                 except Exception as e:
                     self.log_error(f"Error while processing IFC shapes: {e}")
                 self.convertStl(stl_data)
+                dominant_data_wall = self.dominant_dimensions(wall_dimensions)
+                biminfo.Exportexcelinfo(self.ifc_file, "IfcElement", dominant_data_wall, widtharea, heightarea)
                 try:
                     self.stlloader()
                 except Exception as e:
@@ -142,7 +153,14 @@ class ProgressBarDialogIFC(QDialog):
             )
         self.close()
 
-    #log error write the errlog text file
+    def dominant_dimensions(self, wall_data):
+        results = {}
+        for wall, dimensions in wall_data.items():
+            sorted_dims = sorted(dimensions.items(), key=lambda x: x[1], reverse=True)
+            results[wall] = {"width": sorted_dims[0][1], "height": sorted_dims[1][1]}
+        return results
+
+    # include error in text file
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
             log_file.write(message + "\n")
@@ -152,7 +170,6 @@ class ProgressBarDialogIFC(QDialog):
         try:
             points = np.array(data["points"])
             cells = [("triangle", np.array(data["cells"]))]
-            # Create material ID array for each face
             self.stl_file = "output.stl"
             mesh = meshio.Mesh(points=points, cells=cells)
             mesh.cell_data["triangle"] = [np.array(data["material_ids"])]
@@ -163,31 +180,7 @@ class ProgressBarDialogIFC(QDialog):
 
     # add mesh in pyvista frame
     def stlloader(self):
-        meshs = meshio.read(self.stl_file)
-        offset = []
-        cells = []
-        cell_types = []
-        for cell_block in meshs.cells:
-            cell_type = cell_block.type
-            cell_data = cell_block.data
-            num_points_per_cell = cell_data.shape[1]
-            offsets = np.arange(
-                start=num_points_per_cell,
-                stop=num_points_per_cell * (len(cell_data) + 1),
-                step=num_points_per_cell,
-            )
-            offset.append(offsets)
-            cells.append(
-                np.hstack(
-                    (np.full((len(cell_data), 1), num_points_per_cell), cell_data)
-                ).flatten()
-            )
-            cell_types.append(cell_type)
-        if len(cells) > 1:
-            vtk_cells = np.concatenate(cells)
-        else:
-            vtk_cells = cells[0]
-        self.meshsplot = pv.PolyData(meshs.points, vtk_cells)
+        self.meshsplot = pv.read(self.stl_file)
         loadingstl.StLloaderpyvista(self.meshsplot, self.loader, self.loader_2)
         Createmesh.createMesh(
             self.renderer,
@@ -202,13 +195,7 @@ class ProgressBarDialogIFC(QDialog):
             self.seq2Button,
             self.seq3Button,
             self.NextButton_Page_3,
-            self.Stagelabel,
-            self.localizebutton,
-            self.rosnode,
+            self.Seqlabel,
             self.stl_file,
-            self.excelfiletext,
-            self.seqlabel,
-            self.mainwindow,
-            self.markingitembutton
         )
         self.close()
