@@ -68,6 +68,7 @@ class Exportexcelinfo(object):
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
 
+    #pipes insertion with ifccratesionpoint
     def determine_pipes_pos(self, row):
         name = row["Point number/name"]
         pipes = self.file.by_type("IFCFlowSegment")
@@ -144,6 +145,7 @@ class Exportexcelinfo(object):
             [row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"],""]
         )
 
+    #get wall height and width
     def determinewallbasedonwidthandheight(self, row):
         for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
             if (index + 1) == row["Wall Number"]:
@@ -154,6 +156,7 @@ class Exportexcelinfo(object):
             return pd.Series([self.widtharea, self.heightarea])
         return pd.Series([0, 0])
 
+    #add legneds
     def add_legends(self):
         dataframe_Legend = pd.read_excel(
             "Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2
