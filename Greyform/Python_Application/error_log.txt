@@ -1,0 +1,2 @@
+
+Failed to load stlfile in the frame: 'IfcBuildingElementProxy'

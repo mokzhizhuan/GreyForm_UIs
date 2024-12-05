@@ -36,7 +36,7 @@ class Exportexcelinfo(object):
                 "Width",
                 "Height",
                 "Orientation",
-                "Diameter"
+                "Diameter",
             ]
             self.add_legends()
             pandas_data = []
@@ -51,9 +51,9 @@ class Exportexcelinfo(object):
                 self.determine_wall_number, axis=1
             )
             dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
-            dataframe[["Position X (m)", "Position Y (m)", "Position Z (m)","Diameter"]] = (
-                dataframe.apply(self.determine_pipes_pos, axis=1)
-            )
+            dataframe[
+                ["Position X (m)", "Position Y (m)", "Position Z (m)", "Diameter"]
+            ] = dataframe.apply(self.determine_pipes_pos, axis=1)
             dataframe[["Width", "Height"]] = dataframe.apply(
                 self.determinewallbasedonwidthandheight, axis=1
             )
@@ -68,7 +68,7 @@ class Exportexcelinfo(object):
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
 
-    #pipes insertion with ifccratesionpoint
+    # pipes insertion with ifccratesionpoint
     def determine_pipes_pos(self, row):
         name = row["Point number/name"]
         pipes = self.file.by_type("IFCFlowSegment")
@@ -83,37 +83,57 @@ class Exportexcelinfo(object):
                                     if profile.is_a("IfcCircleProfileDef"):
                                         center = item.Position.Location
                                         radius = profile.Radius
-                                        radius = round(radius,1)
-                                        diameter = radius*2
+                                        radius = round(radius, 1)
+                                        diameter = radius * 2
                                         if center.is_a("IfcCartesianPoint"):
                                             center_coords = center.Coordinates
                                         diameterpoint = []
-                                        diameterpoint.append([center_coords[0]+radius,center_coords[1],center_coords[2]])
-                                        diameterpoint.append([center_coords[0]-radius,center_coords[1],center_coords[2]])
+                                        diameterpoint.append(
+                                            [
+                                                center_coords[0] + radius,
+                                                center_coords[1],
+                                                center_coords[2],
+                                            ]
+                                        )
+                                        diameterpoint.append(
+                                            [
+                                                center_coords[0] - radius,
+                                                center_coords[1],
+                                                center_coords[2],
+                                            ]
+                                        )
                                         return pd.Series(
                                             [
                                                 abs(int(round(center_coords[0]))),
                                                 abs(int(round(center_coords[1]))),
                                                 abs(int(round(center_coords[2]))),
-                                                diameter
+                                                diameter,
                                             ]
                                         )
                                     if profile.is_a("IfcArbitraryClosedProfileDef"):
                                         outer_curve = profile.OuterCurve
                                         if outer_curve.is_a("IfcCompositeCurve"):
                                             points = []
+                                            diameterspoint = []
                                             for segment in outer_curve.Segments:
                                                 parent_curve = segment.ParentCurve
                                                 if parent_curve.is_a("IfcPolyline"):
                                                     segment_points = [
-                                                        tuple(int(abs(round(coord))) for coord in p.Coordinates)
+                                                        tuple(
+                                                            int(abs(round(coord)))
+                                                            for coord in p.Coordinates
+                                                        )
                                                         for p in parent_curve.Points
                                                         if p.is_a("IFCCartesianPoint")
                                                     ]
+                                                    diametersegmentpoints = [
+                                                        p.Coordinates for p in parent_curve.Points if p.is_a("IFCCartesianPoint")
+                                                    ]
+                                                    diameterspoint.extend(diametersegmentpoints)
                                                     points.extend(segment_points)
-                                            if points:
-                                                x_values = [p[0] for p in points]
-                                                diameter_x = max(x_values)
+                                            if points and diameterspoint:
+                                                x_values = [p[0] for p in diameterspoint]
+                                                diameter_x = max(x_values) - min(x_values)
                                                 num_points = len(points)
                                                 center_x = (
                                                     sum(p[0] for p in points)
@@ -138,14 +158,14 @@ class Exportexcelinfo(object):
                                                         int(abs(round(center_x))),
                                                         int(abs(round(center_y))),
                                                         int(abs(round(center_z))),
-                                                        diameter_x
+                                                        diameter_x,
                                                     ]
                                                 )
         return pd.Series(
-            [row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"],""]
+            [row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"], ""]
         )
 
-    #get wall height and width
+    # get wall height and width
     def determinewallbasedonwidthandheight(self, row):
         for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
             if (index + 1) == row["Wall Number"]:
@@ -156,7 +176,7 @@ class Exportexcelinfo(object):
             return pd.Series([self.widtharea, self.heightarea])
         return pd.Series([0, 0])
 
-    #add legneds
+    # add legneds
     def add_legends(self):
         dataframe_Legend = pd.read_excel(
             "Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2
@@ -223,7 +243,7 @@ class Exportexcelinfo(object):
                     "Width": "",
                     "Height": "",
                     "Orientation": "",
-                    "Diameter" : "",
+                    "Diameter": "",
                 }
             )
         return objects_data
