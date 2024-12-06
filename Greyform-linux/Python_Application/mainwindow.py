@@ -9,9 +9,10 @@ import PythonApplication.fileselectionmesh as fileselectionmesh
 from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
-import PythonApplication.usermanual as guicontrols
+import PythonApplication.usermanual as userHelper
 import PythonApplication.setting as setting
 import jsonimport as jsonfileopener
+import mainthheme as mainthemebuilder
 import vtk
 import os
 import talker_listener.talker_node as RosPublisher
@@ -32,6 +33,13 @@ class Ui_MainWindow(QMainWindow):
         (
             font,
             self.theme,
+            self.themecolor,
+            self.texttheme,
+            self.text_labelothercolor,
+            self.buttontheme,
+            self.buttonthemeothercolor,
+            self.buttontexttheme,
+            self.buttontextothercolor,
             self.password,
             self.selected_time_zone,
             self.width,
@@ -46,6 +54,13 @@ class Ui_MainWindow(QMainWindow):
         self.ros_node = ros_node
         self.default_settings = {
             "theme": str(self.theme),
+            "themeothercolor": str(self.themecolor),
+            "text_label": self.texttheme,
+            "text_labelothercolor": self.text_labelothercolor,
+            "buttontheme": self.buttontheme,
+            "buttonthemeothercolor": self.buttonthemeothercolor,
+            "buttontext": self.buttontexttheme,
+            "buttontextothercolor": self.buttontextothercolor,
             "font_size": self.font_size,
             "resolution": f"{self.width} x {self.height}",
             "timezone": self.selected_time_zone,
@@ -62,6 +77,21 @@ class Ui_MainWindow(QMainWindow):
         self.excelfilepath = None
         self.excel_file_selected = False
         self.file_list_selected = False
+        config = {
+            'maincolor': self.theme,
+            'themecolor': self.themecolor,
+            'maincolortext': self.texttheme,
+            'text_labelothercolor': self.text_labelothercolor,
+            'buttoncolor': self.buttontheme,
+            'buttonthemeothercolor': self.buttonthemeothercolor,
+            'buttontextcolor': self.buttontexttheme,
+            'buttontextothercolor': self.buttontextothercolor
+        }
+        self.themebuilder = mainthemebuilder.themechange(
+            config,
+            self.mainwindow.centralwidget,
+            self.mainwindow,
+        )
         self.setupUi()
 
     # apply font
@@ -106,11 +136,17 @@ class Ui_MainWindow(QMainWindow):
         self.settingpageuipage = setting.Setting(
             self.mainwindow.stackedWidget,
             self.mainwindow,
+            self.mainwindow.centralwidget,
             self.width,
             self.height,
             self.default_settings,
             self.mainwindow.stackedWidget_main,
-        )  # insert setting 
+        )   # insert setting 
+        self.usermanualinstruct = userHelper.Usermanual(
+            self.font,
+            self.mainwindow.stackedWidget_main,
+            self.mainwindow.usermanualpage,
+        ) 
         self.mainwindow.LocalizationButton.hide()
         self.setStretch()
 
@@ -134,7 +170,6 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.ConfirmButton,
             self.mainwindow.HomeButton,
             self.mainwindow.CloseButton,
-            self.mainwindow.ConfirmAckButton,
             self.mainwindow.MarkingButton,
             self.ros_node,
         )
@@ -185,9 +220,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.Xlabel_2,
             self.mainwindow.Ylabel_2,
             self.mainwindow.Zlabel,
-            self.mainwindow.seq1Button,
-            self.mainwindow.seq2Button,
-            self.mainwindow.seq3Button,
+            self.mainwindow.SequenceButton,
             self.mainwindow.NextButton_Page_3,
             self.mainwindow.LocalizationButton,
             self.ros_node,
@@ -195,8 +228,6 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.seqlabel_2,
             self.mainwindow.Stagelabel,
             self.mainwindow.StageButton,
-            self.mainwindow.StageButton_2,
-            self.mainwindow.StageButton_3,
         ]
         fileselectionmesh.FileSelectionMesh(self.file_path, mainwindowforfileselection, self.mainwindow)
         if ".stl" in file:

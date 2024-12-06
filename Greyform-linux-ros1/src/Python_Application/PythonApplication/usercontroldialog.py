@@ -32,23 +32,12 @@ class TControlsDialog(QDialog):
             "5. Middle click is to add the position in a sequence (this will include a storing position variable UI).\n"
             "6. Press 'L' key to reset to the default view."
         )
-
-        # Read-only text edit to display the terms
         controls_text_edit = QTextEdit(self)
         controls_text_edit.setText(controls_text)
-        controls_text_edit.setReadOnly(True)  # Set read-only mode
+        controls_text_edit.setReadOnly(True)
         layout.addWidget(controls_text_edit)
-
-        # Buttons for Accept and Decline
         button_layout = QHBoxLayout()
-
         accept_button = QPushButton("Accept")
-        decline_button = QPushButton("Decline")
-
         button_layout.addWidget(accept_button)
-        button_layout.addWidget(decline_button)
         layout.addLayout(button_layout)
-
-        # Connect buttons to respective dialog outcomes
         accept_button.clicked.connect(self.accept)
-        decline_button.clicked.connect(self.reject)

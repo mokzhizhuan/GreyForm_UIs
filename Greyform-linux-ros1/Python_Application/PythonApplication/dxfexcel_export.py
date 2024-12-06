@@ -12,6 +12,8 @@ def read_dxf_to_gdf(filepath):
     data = []
     for entity in msp:
         try:
+            geom = None
+            x, y, z = None, None, None
             if entity.dxftype() == 'POINT':
                 x, y, z = entity.dxf.location
                 geom = Point(x, y, z)
@@ -19,18 +21,19 @@ def read_dxf_to_gdf(filepath):
                 start = (float(entity.dxf.start.x), float(entity.dxf.start.y))
                 end = (float(entity.dxf.end.x), float(entity.dxf.end.y))
                 geom = LineString([start, end])
+                x, y = geom.centroid.x, geom.centroid.y
             elif entity.dxftype() == 'LWPOLYLINE':
                 points = entity.get_points(format='xy')
                 geom = Polygon(points)
-
+                x, y = geom.centroid.x, geom.centroid.y 
             if geom:
                 data.append({
                     'Class': entity.dxftype(),
                     'Marking type': entity.dxftype(),
                     'Point number/name': entity.dxf.handle,
-                    'Position X (m)': getattr(geom, 'x', None),
-                    'Position Y (m)': getattr(geom, 'y', None),
-                    'Position Z (m)': getattr(geom, 'z', 0),
+                    'Position X (m)': x,
+                    'Position Y (m)': y,
+                    'Position Z (m)': z if z is not None else 0,
                     'Wall Number': '',
                     'Shape type': '',
                     'Status': 'Active',

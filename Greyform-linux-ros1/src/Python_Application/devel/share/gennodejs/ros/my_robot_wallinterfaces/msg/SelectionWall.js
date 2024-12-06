@@ -22,7 +22,6 @@ class SelectionWall {
       this.typeselection = null;
       this.sectionselection = null;
       this.picked_position = null;
-      this.default_position = null;
     }
     else {
       if (initObj.hasOwnProperty('wallselection')) {
@@ -49,12 +48,6 @@ class SelectionWall {
       else {
         this.picked_position = [];
       }
-      if (initObj.hasOwnProperty('default_position')) {
-        this.default_position = initObj.default_position
-      }
-      else {
-        this.default_position = [];
-      }
     }
   }
 
@@ -68,8 +61,6 @@ class SelectionWall {
     bufferOffset = _serializer.int32(obj.sectionselection, buffer, bufferOffset);
     // Serialize message field [picked_position]
     bufferOffset = _arraySerializer.int32(obj.picked_position, buffer, bufferOffset, null);
-    // Serialize message field [default_position]
-    bufferOffset = _arraySerializer.int32(obj.default_position, buffer, bufferOffset, null);
     return bufferOffset;
   }
 
@@ -85,8 +76,6 @@ class SelectionWall {
     data.sectionselection = _deserializer.int32(buffer, bufferOffset);
     // Deserialize message field [picked_position]
     data.picked_position = _arrayDeserializer.int32(buffer, bufferOffset, null)
-    // Deserialize message field [default_position]
-    data.default_position = _arrayDeserializer.int32(buffer, bufferOffset, null)
     return data;
   }
 
@@ -95,8 +84,7 @@ class SelectionWall {
     length += _getByteLength(object.wallselection);
     length += _getByteLength(object.typeselection);
     length += 4 * object.picked_position.length;
-    length += 4 * object.default_position.length;
-    return length + 20;
+    return length + 16;
   }
 
   static datatype() {
@@ -106,7 +94,7 @@ class SelectionWall {
 
   static md5sum() {
     //Returns md5sum for a message object
-    return '3018aa4e69906a564df217c351a9673e';
+    return '64cb68372925c449ff91dd3a5f92a356';
   }
 
   static messageDefinition() {
@@ -116,7 +104,6 @@ class SelectionWall {
     string typeselection
     int32 sectionselection
     int32[] picked_position
-    int32[] default_position
     
     `;
   }
@@ -153,13 +140,6 @@ class SelectionWall {
     }
     else {
       resolved.picked_position = []
-    }
-
-    if (msg.default_position !== undefined) {
-      resolved.default_position = msg.default_position;
-    }
-    else {
-      resolved.default_position = []
     }
 
     return resolved;

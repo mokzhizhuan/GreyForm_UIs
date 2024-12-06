@@ -24,14 +24,14 @@ def exceldataextractor(excel_file_path):
             "Shape type": shapetype,
         }
     wall_identifiers = []
-    wall_numbers = wall_numbers_by_sheet["IfcBuildingElementProxy"]["wall_numbers"]
-    markingidentifiers = wall_numbers_by_sheet["IfcBuildingElementProxy"][
+    wall_numbers = wall_numbers_by_sheet["BuildingElementProxy"]["wall_numbers"]
+    markingidentifiers = wall_numbers_by_sheet["BuildingElementProxy"][
         "markingidentifiers"
     ]
-    shapetypes = wall_numbers_by_sheet["IfcBuildingElementProxy"]["Shape type"]
-    PositionX = wall_numbers_by_sheet["IfcBuildingElementProxy"]["Position X (m)"]
-    PositionY = wall_numbers_by_sheet["IfcBuildingElementProxy"]["Position Y (m)"]
-    PositionZ = wall_numbers_by_sheet["IfcBuildingElementProxy"]["Position Z (m)"]
+    shapetypes = wall_numbers_by_sheet["BuildingElementProxy"]["Shape type"]
+    PositionX = wall_numbers_by_sheet["BuildingElementProxy"]["Position X (m)"]
+    PositionY = wall_numbers_by_sheet["BuildingElementProxy"]["Position Y (m)"]
+    PositionZ = wall_numbers_by_sheet["BuildingElementProxy"]["Position Z (m)"]
     for rowidx, (name, wall_num, posx, posy, posz, shapetype) in enumerate(
         zip(
             markingidentifiers,

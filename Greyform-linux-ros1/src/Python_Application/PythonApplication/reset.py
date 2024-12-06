@@ -13,13 +13,17 @@ import appinit as initlizemenu
 from PyQt5.QtGui import *
 import json
 
-#restart and shutdown or close
+
+# restart and shutdown or close
 class RestartCloseWidget(QWidget):
     def __init__(
         self,
         MainWindow,
         saved_setting,
         themebox,
+        themetextbox,
+        buttonthemebox,
+        buttonthemetextbox,
         Text_size,
         resolutioncomboBox,
         country,
@@ -31,6 +35,9 @@ class RestartCloseWidget(QWidget):
         self.MainWindow = MainWindow
         self.savesetting = saved_setting
         self.themebox = themebox
+        self.themetextbox = themetextbox
+        self.buttonthemebox = buttonthemebox
+        self.buttonthemetextbox = buttonthemetextbox
         self.Text_size = Text_size
         self.resolutioncomboBox = resolutioncomboBox
         self.country = country
@@ -38,7 +45,7 @@ class RestartCloseWidget(QWidget):
         self.password = password
         self.initUI()
 
-    #ui loader in the setting
+    # ui loader in the setting
     def initUI(self):
         button_layout = QHBoxLayout()
         restart_btn = QPushButton("Restart App", self)
@@ -58,7 +65,7 @@ class RestartCloseWidget(QWidget):
         button_layout.addWidget(close_btn)
         self.setLayout(button_layout)
 
-    #show restart dialog
+    # show restart dialog
     def show_restart_dialog(self):
         reply = QMessageBox(self)
         reply.setIcon(QMessageBox.Question)
@@ -72,7 +79,7 @@ class RestartCloseWidget(QWidget):
             self.save_settings()
             self.restart()
 
-    #set style for the dialog
+    # set style for the dialog
     def setstylesheet(self, reply):
         reply.setStyleSheet(
             """
@@ -95,19 +102,29 @@ class RestartCloseWidget(QWidget):
             """
         )
 
-    #save setting
+    # save setting
     def save_settings(self):
         self.savesettings = {
             "theme": self.themebox.currentText(),
-            "font_size": self.Text_size.currentText(),
-            "resolution": self.resolutioncomboBox.currentText(),
-            "timezone": self.country.currentText(),
-            "password": self.password,
+            "text_label": self.themetextbox.currentText(),
+            "buttontheme": self.buttonthemebox.currentText(),
+            "buttontext": self.buttonthemetextbox.currentText(),
+            "font_size": self.fontsizebox.currentText(),
+            "resolution": self.resolutionbox.currentText(),
+            "timezone": self.timezonebox.currentText(),
+            "password": self.passwordedit.text(),
         }
         with open("settings.json", "w") as f:
-            json.dump(self.savesettings, f)
+            f.write('{\n')
+            last_key = list(self.savesettings.keys())[-1]
+            for key, value in self.savesettings.items():
+                if key != last_key:
+                    f.write(f'    "{key}": "{value}",\n')  # Comma for all but last entry
+                else:
+                    f.write(f'    "{key}": "{value}"\n')  # No comma for last entry
+            f.write('}\n')
 
-    #show close dialog
+    # show close dialog
     def show_close_dialog(self):
         reply = QMessageBox(self)
         reply.setIcon(QMessageBox.Question)
@@ -121,12 +138,12 @@ class RestartCloseWidget(QWidget):
             self.save_settings()
             self.MainWindow.close()
 
-    #restart
+    # restart
     def restart(self):
         python = sys.executable
         os.execl(python, python, *sys.argv)
 
-    #run back to app init
+    # run back to app init
     def runbacktomenuUI(self, ros_node):
         reply = QMessageBox(self)
         reply.setIcon(QMessageBox.Question)

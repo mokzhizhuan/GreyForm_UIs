@@ -11,6 +11,9 @@ class restoredefaultsetting(object):
         self,
         accountinfo,
         themebox,
+        themetextbox,
+        buttonthemebox,
+        buttonthemetextbox,
         Text_size,
         resolutioncomboBox,
         country,
@@ -28,6 +31,9 @@ class restoredefaultsetting(object):
         self.MainWindow = MainWindow
         self.accountinfo = accountinfo
         self.themebox = themebox
+        self.themetextbox = themetextbox
+        self.buttonthemebox = buttonthemebox
+        self.buttonthemetextbox = buttonthemetextbox
         self.Text_size = Text_size
         self.resolutioncomboBox = resolutioncomboBox
         self.country = country
@@ -41,6 +47,21 @@ class restoredefaultsetting(object):
     def restore_defaults(self):
         self.accountinfo[0]["Pass"] = "pass"
         # Restore default theme
+        theme_index = self.themebox.findText(
+            self.default_settings["theme"], Qt.MatchFixedString
+        )
+        if theme_index >= 0:
+            self.themebox.setCurrentIndex(theme_index)
+        theme_index = self.themebox.findText(
+            self.default_settings["theme"], Qt.MatchFixedString
+        )
+        if theme_index >= 0:
+            self.themebox.setCurrentIndex(theme_index)
+        theme_index = self.themebox.findText(
+            self.default_settings["theme"], Qt.MatchFixedString
+        )
+        if theme_index >= 0:
+            self.themebox.setCurrentIndex(theme_index)
         theme_index = self.themebox.findText(
             self.default_settings["theme"], Qt.MatchFixedString
         )

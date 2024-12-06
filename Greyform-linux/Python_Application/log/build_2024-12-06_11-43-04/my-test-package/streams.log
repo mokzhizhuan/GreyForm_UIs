@@ -1,0 +1,15 @@
+[3.102s] Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/env/lib/python3.10/site-packages/pkg_resources/tests/data/my-test-package-source': PYTHONPATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../../../../../build/my-test-package build --build-base /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/build install --record /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/install.log --single-version-externally-managed
+[4.258s] running egg_info
+[4.258s] writing ../../../../../../../../build/my-test-package/my_test_package.egg-info/PKG-INFO
+[4.259s] writing dependency_links to ../../../../../../../../build/my-test-package/my_test_package.egg-info/dependency_links.txt
+[4.261s] writing top-level names to ../../../../../../../../build/my-test-package/my_test_package.egg-info/top_level.txt
+[4.262s] reading manifest file '../../../../../../../../build/my-test-package/my_test_package.egg-info/SOURCES.txt'
+[4.264s] writing manifest file '../../../../../../../../build/my-test-package/my_test_package.egg-info/SOURCES.txt'
+[4.264s] running build
+[4.265s] running install
+[4.265s] running install_egg_info
+[4.276s] removing '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages/my_test_package-1.0-py3.10.egg-info' (and everything under it)
+[4.280s] Copying ../../../../../../../../build/my-test-package/my_test_package.egg-info to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages/my_test_package-1.0-py3.10.egg-info
+[4.285s] running install_scripts
+[4.386s] writing list of installed files to '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/install.log'
+[5.188s] Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/env/lib/python3.10/site-packages/pkg_resources/tests/data/my-test-package-source' returned '0': PYTHONPATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../../../../../build/my-test-package build --build-base /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/build install --record /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/install.log --single-version-externally-managed

@@ -7,7 +7,8 @@ import pytz
 import datetime
 from tzlocal import get_localzone
 
-#button interaction for setting
+
+# button interaction for setting
 class settingbuttonUI(object):
     def __init__(
         self,
@@ -23,6 +24,9 @@ class settingbuttonUI(object):
         PowerButton,
         maintitlelabel,
         themebox,
+        themetextbox,
+        buttonthemebox,
+        buttonthemetextbox,
         fontsizebox,
         resolutionbox,
         timezonebox,
@@ -30,6 +34,7 @@ class settingbuttonUI(object):
         MainWindow,
         saved_setting,
         stackedWidget_main,
+        colors
     ):
         # starting initialize
         super().__init__()
@@ -45,19 +50,23 @@ class settingbuttonUI(object):
         self.PowerButton = PowerButton
         self.maintitlelabel = maintitlelabel
         self.themebox = themebox
+        self.themetextbox = themetextbox
+        self.buttonthemebox = buttonthemebox
+        self.buttonthemetextbox = buttonthemetextbox
         self.fontsizebox = fontsizebox
         self.resolutionbox = resolutionbox
         self.timezonebox = timezonebox
         self.passwordedit = passwordedit
         self.MainWindow = MainWindow
         self.savesettings = saved_setting
+        self.colors = colors
         self.windowwidth, self.windowheight = map(
             int, self.savesettings["resolution"].split("x")
         )
         self.stackedWidget_main = stackedWidget_main
         self.button_UI()
 
-    #setting button ui implementation
+    # setting button ui implementation
     def button_UI(self):
         self.MarkingbackButton.clicked.connect(self.confirm_save_settings)
         self.HomeButton.clicked.connect(self.homepages)
@@ -111,27 +120,63 @@ class settingbuttonUI(object):
     def Powerpages(self):
         self.maintitlelabel.setText("<h3>Power Setting</h3>")
 
-    #confirm save setting
+    # confirm save setting
     def confirm_save_settings(self):
         dialog = SaveSettingsDialog.SettingsDialog()
         if dialog.exec_() == QDialog.Accepted:
             self.save_settings()
 
-    #save setting to json file
+    # save setting to json file
     def save_settings(self):
-        self.savesettings = {
+        self.savesettings = self.storesettings()
+        with open("settings.json", "w") as f:
+            f.write("{\n")
+            last_key = list(self.savesettings.keys())[-1]
+            for key, value in self.savesettings.items():
+                if key != last_key:
+                    f.write(
+                        f'    "{key}": "{value}",\n'
+                    )  # Comma for all but last entry
+                else:
+                    f.write(f'    "{key}": "{value}"\n')  # No comma for last entry
+            f.write("}\n")
+        self.show_save_dialog()
+
+    def storesettings(self):
+        saved_colors = {
+            key: self.get_color_name(self.colors.get(key, self.colors[key])) or self.colors[key]
+            for key in self.colors
+        }
+        savesettings = {
             "theme": self.themebox.currentText(),
+            "themeothercolor": saved_colors.get("theme", ""),
+            "text_label": self.themetextbox.currentText(),
+            "text_labelothercolor": saved_colors.get("text", ""),
+            "buttontheme": self.buttonthemebox.currentText(),
+            "buttonthemeothercolor": saved_colors.get("button", ""),
+            "buttontext": self.buttonthemetextbox.currentText(),
+            "buttontextothercolor": saved_colors.get("button_text", ""),
             "font_size": self.fontsizebox.currentText(),
             "resolution": self.resolutionbox.currentText(),
             "timezone": self.timezonebox.currentText(),
             "password": self.passwordedit.text(),
         }
-        with open("settings.json", "w") as f:
-            json.dump(self.savesettings, f)
-        self.show_save_dialog()
+        return savesettings
 
+    def get_color_name(self, color_option):
+        if isinstance(color_option, QColor):
+            return color_option.name()
+        if isinstance(color_option, str):
+            color = QColor(color_option)
+            if color.isValid():
+                color_name = color.colorNames()
+                for name in color_name:
+                    if color.name().lower() == QColor(name).name().lower():
+                        return name.capitalize()
+                return color_option  
+        return "" 
 
-    #save dialog setting
+    # save dialog setting
     def show_save_dialog(self):
         msg = QMessageBox()
         msg.setIcon(QMessageBox.Information)
@@ -163,7 +208,7 @@ class settingbuttonUI(object):
         self.stackedWidget_main.setCurrentIndex(0)
         msg.exec_()
 
-    #color background change
+    # color background change
     def colorchange(self):
         if self.themebox.currentIndex() == 1:
             self.color = "#D3D3D3"
@@ -172,8 +217,8 @@ class settingbuttonUI(object):
             color = QColorDialog.getColor()
             self.MainWindow.setStyleSheet(f"background-color : {color.name()}")
 
-    #time updated
-    def updatingtime(self , selected_time_zone , Systemtime):
+    # time updated
+    def updatingtime(self, selected_time_zone, Systemtime):
         tz = pytz.timezone(selected_time_zone)
         now = datetime.datetime.now(tz)
         formatted_time = now.strftime("%I:%M %p").lstrip("0")

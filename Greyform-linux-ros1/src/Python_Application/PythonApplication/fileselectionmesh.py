@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.progressBar as Progress
 import PythonApplication.dxfframeloader as dxfload
+from shapely.geometry import Polygon
 import geopandas as gpd
 
 # load pyvista in the frame

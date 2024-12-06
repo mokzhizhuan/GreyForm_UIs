@@ -11,7 +11,8 @@ from stl import mesh
 import PythonApplication.interactiveevent as events
 import PythonApplication.exceldatavtk as vtk_data_excel
 import PythonApplication.markingprogressbar as stageofmarking
-import PythonApplication.markingitem as markingdialogitem
+import PythonApplication.stagedialog as addStage
+import PythonApplication.sequencedialog as addsequence
 
 
 # create the imported stl mesh in vtk frame
@@ -26,9 +27,7 @@ class createMesh(QMainWindow):
         xlabelbefore,
         ylabelbefore,
         zlabelbefore,
-        seq1Button,
-        seq2Button,
-        seq3Button,
+        seqButton,
         NextButton_Page_3,
         localizebutton,
         ros_node,
@@ -38,8 +37,6 @@ class createMesh(QMainWindow):
         mainwindow,
         Stagelabel,
         StageButton,
-        StageButton_2,
-        StageButton_3,
     ):
         # starting initialize
         super().__init__()
@@ -63,18 +60,15 @@ class createMesh(QMainWindow):
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
-        self.seq1Button = seq1Button
-        self.seq2Button = seq2Button
-        self.seq3Button = seq3Button
+        self.seqButton = seqButton
         self.NextButton_Page_3 = NextButton_Page_3
         self.seqlabel = seqlabel
         self.mainwindow = mainwindow
         self.Stagelabel = Stagelabel
         self.StageButton = StageButton
-        self.StageButton_2 = StageButton_2
-        self.StageButton_3 = StageButton_3
+        self.stagetext = None
+        self.dataseqtext = None
         self.button_UI()
-        self.retranslateUi()
         if self.excelfiletext.toPlainText() != "":
             self.wall_identifiers = vtk_data_excel.exceldataextractor(
                 self.excelfiletext.toPlainText()
@@ -86,48 +80,50 @@ class createMesh(QMainWindow):
 
     # setup button interaction and store in the ui
     def button_UI(self):
-        self.seq1Button.clicked.connect(
-            lambda: self.addseqtext(self.seq1Button, self.NextButton_Page_3)
-        )
-        self.seq2Button.clicked.connect(
-            lambda: self.addseqtext(self.seq2Button, self.NextButton_Page_3)
-        )
-        self.seq3Button.clicked.connect(
-            lambda: self.addseqtext(self.seq3Button, self.NextButton_Page_3)
-        )
-        self.StageButton.clicked.connect(lambda: self.addStagetext(self.StageButton))
-        self.StageButton_2.clicked.connect(lambda: self.addStagetext(self.StageButton_2))
-        self.StageButton_3.clicked.connect(lambda: self.addStagetext(self.StageButton_3))
+        self.seqButton.clicked.connect(lambda: self.addseqtext())
+        self.StageButton.clicked.connect(lambda: self.addStagetext())
 
-    def addStagetext(self, StageButton):
-        self.stagetext = StageButton.text()
+    def addStagetext(self):
+        stagedialog = addStage.StageNumberDialog()
+        stagenumber = None
+        if stagedialog.exec_() == QDialog.Accepted:
+            stagenumber = stagedialog.get_selected_stagenumber()
+        self.stagetext = f"Stage {stagenumber}"
         self.Stagelabel.setText(self.stagetext)
+        self.shownextpage()
+        
 
     # store sequence as a variable
-    def addseqtext(self, buttonseq, buttonnextpage):
-        self.dataseqtext = buttonseq.text()
-        self.dataseqtext = self.dataseqtext.replace("Sequence ", "")
-        self.dataseqtext = int(self.dataseqtext)
-        self.textseq = buttonseq.text()
-        self.textseq = self.textseq.replace("Sequence ", "Sequence : ")
-        self.seqlabel.setText(self.textseq)
-        markingprogessbar = stageofmarking.MarkingProgressBar()
-        markingprogessbar.exec_()
-        buttonnextpage.show()
+    def addseqtext(self):
+        seqdialog = addsequence.SeqnumberDialog()
+        self.dataseqtext = None
+        if seqdialog.exec_() == QDialog.Accepted:
+            self.dataseqtext = seqdialog.get_selected_seqnumber()
+        self.sequencetext = f"Sequence : {self.dataseqtext}"
+        self.seqlabel.setText(self.sequencetext)
         self.markingreq = self.checkseqreq()
         self.excel_elements_data, self.maxarraylen, self.counter = self.dialogmarking()
-        self.loadStl(self.dataseqtext)
+        self.shownextpage()
+    
+
+    def shownextpage(self):
+        if self.stagetext and self.dataseqtext:
+            markingprogessbar = stageofmarking.MarkingProgressBar()
+            markingprogessbar.exec_()
+            self.NextButton_Page_3.show()
+            self.loadStl(self.dataseqtext)
 
     def checkseqreq(self):
+        markingreq = None
         if self.dataseqtext == 1:
             target_category = "Piping"
             markingreq = self.find_in_categories(self.excel_elements, target_category)
         elif self.dataseqtext == 2:
             target_category = "Tiling/Floor"
-            markingreq  = self.find_in_categories(self.excel_elements, target_category)
+            markingreq = self.find_in_categories(self.excel_elements, target_category)
         elif self.dataseqtext == 3:
             target_category = "Fitting"
-            markingreq  = self.find_in_categories(self.excel_elements, target_category)
+            markingreq = self.find_in_categories(self.excel_elements, target_category)
         return markingreq
 
     def dialogmarking(self):
@@ -139,6 +135,7 @@ class createMesh(QMainWindow):
             "Position Y (m)": [],
             "Position Z (m)": [],
             "Shape type": [],
+            "Stages": [],
         }
         for sheet_name, data in self.markingreq.items():
             combined_data["markingidentifiers"].extend(data["markingidentifiers"])
@@ -147,20 +144,9 @@ class createMesh(QMainWindow):
             combined_data["Position Y (m)"].extend(data["Position Y (m)"])
             combined_data["Position Z (m)"].extend(data["Position Z (m)"])
             combined_data["Shape type"].extend(data["Shape type"])
+            combined_data["Stages"].extend([None] * len(data["markingidentifiers"]))
         maxarray = len(combined_data)
         return combined_data, maxarray, counter
-
-    def checkseqreq(self):
-        if self.dataseqtext == 1:
-            target_category = "Piping"
-            markingreq = self.find_in_categories(self.excel_elements, target_category)
-        elif self.dataseqtext == 2:
-            target_category = "Tiling/Floor"
-            markingreq = self.find_in_categories(self.excel_elements, target_category)
-        elif self.dataseqtext == 3:
-            target_category = "Fitting"
-            markingreq = self.find_in_categories(self.excel_elements, target_category)
-        return markingreq
 
     def find_in_categories(self, wall_numbers_by_sheet, target_category):
         result = {}
@@ -249,7 +235,7 @@ class createMesh(QMainWindow):
         self.set_Collision()
         self.setupvtkframe(dataseqtext)
 
-    # insert collision
+    # include collision
     def set_Collision(self):
         self.collisionFilter = vtk.vtkCollisionDetectionFilter()
         self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
@@ -348,15 +334,6 @@ class createMesh(QMainWindow):
         for i in range(6):
             self.meshbounds[i] = int(self.actor.GetBounds()[i])
 
-    # clear actor
-    def clearactor(self):
-        actors = self.ren.GetActors()
-        actors.InitTraversal()
-        actor = actors.GetNextActor()
-        while actor:
-            self.ren.RemoveActor(actor)
-            actor = actors.GetNextActor()
-
     # create visual actor for frame controls
     def create_cube_actor(self):
         self.cube_source = vtk.vtkCubeSource()
@@ -373,6 +350,15 @@ class createMesh(QMainWindow):
         self.cube_actor.GetProperty().SetOpacity(0.0)
         return self.cube_actor
 
+    # clear actor
+    def clearactor(self):
+        actors = self.ren.GetActors()
+        actors.InitTraversal()
+        actor = actors.GetNextActor()
+        while actor:
+            self.ren.RemoveActor(actor)
+            actor = actors.GetNextActor()
+
     # set actor in the vtk mapper
     def polyDataToActor(self):
         mapper = vtk.vtkPolyDataMapper()
@@ -384,7 +370,3 @@ class createMesh(QMainWindow):
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
 
-    def retranslateUi(self):
-        self.seq1Button.setToolTip("Please include sequence")
-        self.seq2Button.setToolTip("Please include sequence")
-        self.seq3Button.setToolTip("Please include sequence")

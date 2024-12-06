@@ -25,7 +25,6 @@ class mainwindowbuttonUI(object):
         ConfirmButton,
         HomeButton,
         CloseButton,
-        ConfirmAckButton,
         MarkingButton,
         ros_node,
     ):
@@ -43,7 +42,6 @@ class mainwindowbuttonUI(object):
         self.ConfirmButton = ConfirmButton
         self.HomeButton = HomeButton
         self.CloseButton = CloseButton
-        self.ConfirmAckButton = ConfirmAckButton
         self.MarkingButton = MarkingButton
         self.ros_node = ros_node
         self.button_UI()
@@ -96,10 +94,5 @@ class mainwindowbuttonUI(object):
         self.CloseButton.clicked.connect(
             lambda: closewindow.Ui_Dialog_Close.show_dialog_close(
                 self.mainwindow, self.ros_node
-            )
-        )
-        self.ConfirmAckButton.clicked.connect(
-            lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(
-                self.mainwindow
             )
         )
