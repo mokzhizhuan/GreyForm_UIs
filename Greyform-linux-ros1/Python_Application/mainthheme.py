@@ -13,21 +13,29 @@ class themechange(object):
     def apply_styles(self):
         if self.config['maincolor'] == "Gray":
             self.mainWindow.setStyleSheet("")
+        elif self.config['maincolor'] == "Black":
+            self.mainWindow.setStyleSheet(f"background-color: {self.config['maincolor']};")
         else:
             main_bg_color = self.config['maincolor'] if self.config['maincolor'] != "Other Color" else self.config['themecolor']
             self.mainWindow.setStyleSheet(f"background-color: {main_bg_color};")
         if self.config['maincolortext'] == "Gray":
             self.apply_widget_style(QLabel, "")
+        elif self.config['maincolortext'] == "Black":
+            self.apply_widget_style(QLabel, f"background-color: {self.config['maincolor']};")
         else:
             text_color = self.config['maincolortext'] if self.config['maincolortext'] != "Other Color" else self.config['text_labelothercolor']
             self.apply_widget_style(QLabel, f"color: {text_color};")
         if self.config['buttoncolor'] == "Gray":
             button_style = ""
+        elif self.config['buttoncolor'] == "Black":
+            button_style = f"background-color: {self.config['buttoncolor']};"
         else:
             button_bg_color = self.config['buttoncolor'] if self.config['buttoncolor'] != "Other Color" else self.config['buttonthemeothercolor']
             button_style = f"background-color: {button_bg_color};"
         if self.config['buttontextcolor'] == "Gray":
             button_style += ""
+        elif self.config['buttontextcolor'] == "Black":
+            button_style += f" color: {self.config['buttontextcolor']};"
         else:
             button_text_color = self.config['buttontextcolor'] if self.config['buttontextcolor'] != "Other Color" else self.config['buttontextothercolor']
             button_style += f" color: {button_text_color};"

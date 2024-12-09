@@ -77,7 +77,7 @@ class Ui_MainWindow(QMainWindow):
         self.excelfilepath = None
         self.excel_file_selected = False
         self.file_list_selected = False
-        config = {
+        self.config = {
             'maincolor': self.theme,
             'themecolor': self.themecolor,
             'maincolortext': self.texttheme,
@@ -88,7 +88,7 @@ class Ui_MainWindow(QMainWindow):
             'buttontextothercolor': self.buttontextothercolor
         }
         self.themebuilder = mainthemebuilder.themechange(
-            config,
+            self.config,
             self.mainwindow.centralwidget,
             self.mainwindow,
         )
@@ -141,6 +141,7 @@ class Ui_MainWindow(QMainWindow):
             self.height,
             self.default_settings,
             self.mainwindow.stackedWidget_main,
+            self.config
         )   # insert setting 
         self.usermanualinstruct = userHelper.Usermanual(
             self.font,

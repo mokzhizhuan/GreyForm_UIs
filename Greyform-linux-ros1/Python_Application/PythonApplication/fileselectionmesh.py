@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.progressBar as Progress
 import PythonApplication.dxfframeloader as dxfload
-import PythonApplication.dxfexcel_export as dxfexceldata
+from shapely.geometry import Polygon
 import geopandas as gpd
 
 # load pyvista in the frame
@@ -27,5 +27,4 @@ class FileSelectionMesh():
             progressbarprogram.exec_()
         elif ".dxf" in self.file_path:
             gdf = gpd.read_file(self.file_path, engine="fiona")
-            dxfexceldata.read_dxf_to_gdf(self.file_path)
             dxfload.dxfloader(self.file_path, self.mainwindowforfileselection, gdf , self.mainwindow)
