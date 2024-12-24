@@ -11,8 +11,6 @@ from stl import mesh
 import PythonApplication.interactiveevent as events
 import PythonApplication.exceldatavtk as vtk_data_excel
 import PythonApplication.markingprogressbar as stageofmarking
-import PythonApplication.stagedialog as addStage
-import PythonApplication.sequencedialog as addsequence
 
 
 # create the imported stl mesh in vtk frame
@@ -22,21 +20,14 @@ class createMesh(QMainWindow):
         ren,
         polydata,
         renderwindowinteractor,
-        ylabel,
-        xlabel,
         xlabelbefore,
         ylabelbefore,
         zlabelbefore,
-        seqButton,
-        NextButton_Page_3,
         localizebutton,
         ros_node,
         file_path,
-        excelfiletext,
-        seqlabel,
         mainwindow,
         Stagelabel,
-        StageButton,
     ):
         # starting initialize
         super().__init__()
@@ -51,139 +42,31 @@ class createMesh(QMainWindow):
         self.xlabelbefore = xlabelbefore
         self.ylabelbefore = ylabelbefore
         self.zlabelbefore = zlabelbefore
-        self.xlabels = xlabel
-        self.ylabels = ylabel
         self.localizebutton = localizebutton
         self.ros_node = ros_node
         self.filepath = file_path
-        self.excelfiletext = excelfiletext
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
-        self.seqButton = seqButton
-        self.NextButton_Page_3 = NextButton_Page_3
-        self.seqlabel = seqlabel
         self.mainwindow = mainwindow
         self.Stagelabel = Stagelabel
-        self.StageButton = StageButton
-        self.stagetext = None
-        self.dataseqtext = None
-        self.button_UI()
-        if self.excelfiletext.toPlainText() != "":
-            self.wall_identifiers = vtk_data_excel.exceldataextractor(
-                self.excelfiletext.toPlainText()
-            )
-            self.excel_elements = vtk_data_excel.exceldataextractorelement(
-                self.excelfiletext.toPlainText()
-            )
-        self.dataseqtext = None
+        self.stagetext = "Stage 1"
+        Stagelabel.setText(self.stagetext)
+        self.wall_identifiers , self.wall , self.excelfiletext = vtk_data_excel.exceldataextractor()
+        print(self.wall_identifiers)
+        print(self.wall)
+        self.loadStl()
 
-    # setup button interaction and store in the ui
-    def button_UI(self):
-        self.seqButton.clicked.connect(lambda: self.addseqtext())
-        self.StageButton.clicked.connect(lambda: self.addStagetext())
-
-    def addStagetext(self):
-        stagedialog = addStage.StageNumberDialog()
-        stagenumber = None
-        if stagedialog.exec_() == QDialog.Accepted:
-            stagenumber = stagedialog.get_selected_stagenumber()
-        self.stagetext = f"Stage {stagenumber}"
-        self.Stagelabel.setText(self.stagetext)
-        self.shownextpage()
-        
-
-    # store sequence as a variable
-    def addseqtext(self):
-        seqdialog = addsequence.SeqnumberDialog()
-        self.dataseqtext = None
-        if seqdialog.exec_() == QDialog.Accepted:
-            self.dataseqtext = seqdialog.get_selected_seqnumber()
-        self.sequencetext = f"Sequence : {self.dataseqtext}"
-        self.seqlabel.setText(self.sequencetext)
-        self.markingreq = self.checkseqreq()
-        self.excel_elements_data, self.maxarraylen, self.counter = self.dialogmarking()
-        self.shownextpage()
-    
-
-    def shownextpage(self):
-        if self.stagetext and self.dataseqtext:
-            markingprogessbar = stageofmarking.MarkingProgressBar()
-            markingprogessbar.exec_()
-            self.NextButton_Page_3.show()
-            self.loadStl(self.dataseqtext)
-
-    def checkseqreq(self):
-        markingreq = None
-        if self.dataseqtext == 1:
-            target_category = "Piping"
-            markingreq = self.find_in_categories(self.excel_elements, target_category)
-        elif self.dataseqtext == 2:
-            target_category = "Tiling/Floor"
-            markingreq = self.find_in_categories(self.excel_elements, target_category)
-        elif self.dataseqtext == 3:
-            target_category = "Fitting"
-            markingreq = self.find_in_categories(self.excel_elements, target_category)
-        return markingreq
-
-    def dialogmarking(self):
-        counter = 0
-        combined_data = {
-            "markingidentifiers": [],
-            "wall_numbers": [],
-            "Position X (m)": [],
-            "Position Y (m)": [],
-            "Position Z (m)": [],
-            "Shape type": [],
-            "Stages": [],
-        }
-        for sheet_name, data in self.markingreq.items():
-            combined_data["markingidentifiers"].extend(data["markingidentifiers"])
-            combined_data["wall_numbers"].extend(data["wall_numbers"])
-            combined_data["Position X (m)"].extend(data["Position X (m)"])
-            combined_data["Position Y (m)"].extend(data["Position Y (m)"])
-            combined_data["Position Z (m)"].extend(data["Position Z (m)"])
-            combined_data["Shape type"].extend(data["Shape type"])
-            combined_data["Stages"].extend([None] * len(data["markingidentifiers"]))
-        maxarray = len(combined_data)
-        return combined_data, maxarray, counter
-
-    def find_in_categories(self, wall_numbers_by_sheet, target_category):
-        result = {}
-        for sheet_name, sheet_data in wall_numbers_by_sheet.items():
-            matching_indexes = [
-                i
-                for i, category in enumerate(sheet_data["Categories"])
-                if category == target_category
-            ]
-            if matching_indexes:
-                result[sheet_name] = {
-                    "markingidentifiers": [
-                        sheet_data["markingidentifiers"][i] for i in matching_indexes
-                    ],
-                    "wall_numbers": [
-                        sheet_data["wall_numbers"][i] for i in matching_indexes
-                    ],
-                    "Position X (m)": [
-                        sheet_data["Position X (m)"][i] for i in matching_indexes
-                    ],
-                    "Position Y (m)": [
-                        sheet_data["Position Y (m)"][i] for i in matching_indexes
-                    ],
-                    "Position Z (m)": [
-                        sheet_data["Position Z (m)"][i] for i in matching_indexes
-                    ],
-                    "Shape type": [
-                        sheet_data["Shape type"][i] for i in matching_indexes
-                    ],
-                    "Categories": [
-                        sheet_data["Categories"][i] for i in matching_indexes
-                    ],
-                }
-        return result
+    def show_cancelation_dialog(self, text):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setWindowTitle("Cancellation")
+        msg.setText(text)
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
 
     # load stl in vtk frame
-    def loadStl(self, dataseqtext):
+    def loadStl(self):
         meshs = mesh.Mesh.from_file(self.polydata)
         points = meshs.points.reshape(-1, 3)
         faces = np.arange(points.shape[0]).reshape(-1, 3)
@@ -208,11 +91,10 @@ class createMesh(QMainWindow):
         x_coords = []
         y_coords = []
         z_coords = []
-        if self.excelfiletext.toPlainText() != "":
-            for wall_identify in self.wall_identifiers:
-                x_coords.append(wall_identify["Position X (m)"])
-                y_coords.append(wall_identify["Position Y (m)"])
-                z_coords.append(wall_identify["Position Z (m)"])
+        for wall_identify in self.wall:
+            x_coords.append(wall_identify["Position X (m)"])
+            y_coords.append(wall_identify["Position Y (m)"])
+            z_coords.append(wall_identify["Position Z (m)"])
         self.cubeactor = self.create_cube_actor()
         self.cameraactor = self.create_cube_actor()
         self.cubeactor.SetPosition(160, self.center[1], self.center[2])
@@ -233,7 +115,7 @@ class createMesh(QMainWindow):
         self.ren.AddActor(self.actor)
         self.oldcamerapos = self.cubeactor.GetPosition()
         self.set_Collision()
-        self.setupvtkframe(dataseqtext)
+        self.setupvtkframe()
 
     # include collision
     def set_Collision(self):
@@ -248,10 +130,8 @@ class createMesh(QMainWindow):
         self.collisionFilter.GenerateScalarsOn()
 
     # setup vtk frame ui
-    def setupvtkframe(self, dataseqtext):
+    def setupvtkframe(self):
         setcamerainteraction = [
-            self.xlabels,
-            self.ylabels,
             self.ren,
             self.renderwindowinteractor,
             self.meshbounds,
@@ -268,14 +148,9 @@ class createMesh(QMainWindow):
             self.spaceseperation,
             self.center,
             self.filepath,
-            self.Stagelabel,
             self.excelfiletext,
-            dataseqtext,
-            self.excel_elements_data,
-            self.maxarraylen,
-            self.counter,
             self.dialog,
-            self.Stagelabel
+            self.stagetext,
         ]
         camera = events.myInteractorStyle(
             setcamerainteraction,

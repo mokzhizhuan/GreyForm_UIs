@@ -27,22 +27,19 @@ class dxfloader(object):
         self.mainwindowforfileselection = mainwindowforfileselection
         self.mainwindow = mainwindow
         self.loader = mainwindowforfileselection[0]
-        self.loader_2 = mainwindowforfileselection[1]
-        self.renderer = mainwindowforfileselection[2]
-        self.renderWindowInteractor = mainwindowforfileselection[3]
-        self.Ylabel = mainwindowforfileselection[4]
-        self.Xlabel = mainwindowforfileselection[5]
-        self.Xlabel_before = mainwindowforfileselection[6]
-        self.Ylabel_before = mainwindowforfileselection[7]
-        self.Zlabel_before = mainwindowforfileselection[8]
-        self.seqButton = mainwindowforfileselection[9]
-        self.NextButton_Page_3 = mainwindowforfileselection[10]
-        self.localizebutton = mainwindowforfileselection[11]
-        self.rosnode = mainwindowforfileselection[12]
-        self.excelfiletext = mainwindowforfileselection[13]
-        self.seqlabel = mainwindowforfileselection[14]
-        self.Stagelabel = mainwindowforfileselection[15]
-        self.StageButton = mainwindowforfileselection[16]
+        self.renderer = mainwindowforfileselection[1]
+        self.renderWindowInteractor = mainwindowforfileselection[2]
+        self.Xlabel_before = mainwindowforfileselection[3]
+        self.Ylabel_before = mainwindowforfileselection[4]
+        self.Zlabel_before = mainwindowforfileselection[5]
+        self.seqButton = mainwindowforfileselection[6]
+        self.NextButton_Page_3 = mainwindowforfileselection[7]
+        self.localizebutton = mainwindowforfileselection[8]
+        self.rosnode = mainwindowforfileselection[9]
+        self.excelfiletext = mainwindowforfileselection[10]
+        self.seqlabel = mainwindowforfileselection[11]
+        self.Stagelabel = mainwindowforfileselection[12]
+        self.StageButton = mainwindowforfileselection[13]
         self.gdf = gdf
         self.loaddxftoframe()
 
@@ -91,13 +88,11 @@ class dxfloader(object):
                 else:
                     vtk_cells = cells[0]
                 self.meshsplot = pv.PolyData(meshs.points, vtk_cells)
-                loadingstl.StLloaderpyvista(self.meshsplot, self.loader, self.loader_2)
+                loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
                 Createmesh.createMesh(
                     self.renderer,
                     output_stl_path,
                     self.renderWindowInteractor,
-                    self.Ylabel,
-                    self.Xlabel,
                     self.Xlabel_before,
                     self.Ylabel_before,
                     self.Zlabel_before,
@@ -112,7 +107,6 @@ class dxfloader(object):
                     self.Stagelabel,
                     self.StageButton,
                 )
-
 
     # process geometry in geodata pandas
     def process_line_string(self, geometry, offset):

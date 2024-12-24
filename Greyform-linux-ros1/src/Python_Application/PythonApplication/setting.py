@@ -9,6 +9,7 @@ import PythonApplication.interfacesignal as interface_signals
 import PythonApplication.settinglayout as settinglayoutUi
 import PythonApplication.settingbuttoninteraction as settingbuttonUIinteraction
 import PythonApplication.settingtext as settingtextlayout
+import PythonApplication.settingmainthheme as settingthemebuilder
 import pytz
 import psutil
 import os
@@ -25,8 +26,10 @@ class Setting(QWidget):
         windowheight,
         default_settings,
         stackedWidget_main,
+        config
     ):
         super(Setting, self).__init__()
+        self.settingform = uic.loadUi("UI_Design/setting.ui", self)
         self.init_variables(
             stackedwidgetpage,
             MainWindow,
@@ -35,8 +38,8 @@ class Setting(QWidget):
             windowheight,
             default_settings,
             stackedWidget_main,
+            config,
         )
-        self.settingform = uic.loadUi("UI_Design/setting.ui", self)
         self.setupUi()
         self.retranslateUi()
 
@@ -49,6 +52,7 @@ class Setting(QWidget):
         windowheight,
         default_settings,
         stackedWidget_main,
+        config,
     ):
         self.stackedWidget, self.MainWindow, self.centralwidget = (
             stackedwidgetpage,
@@ -60,12 +64,17 @@ class Setting(QWidget):
             windowheight,
             stackedWidget_main,
         )
+        self.config = config
         self.default_settings = self.saved_setting = default_settings
         self.font_size = int(default_settings["font_size"])
         self.selected_time_zone = default_settings["timezone"]
         self.accountinfo = [{"UserID": "admin", "Pass": "pass"}]
         self.font = QFont()
         self.font.setPointSize(self.font_size)
+        self.themebuilder = settingthemebuilder.SettingThemeChange(
+            self.config,
+            self.settingform,
+        )
         self.colors = {
             "theme": default_settings["themeothercolor"],
             "text": default_settings["text_labelothercolor"],

@@ -34,7 +34,7 @@
       <property name="geometry">
        <rect>
         <x>620</x>
-        <y>10</y>
+        <y>20</y>
         <width>151</width>
         <height>51</height>
        </rect>
@@ -168,117 +168,93 @@
        <widget class="QWidget" name="horizontalLayoutWidget">
         <property name="geometry">
          <rect>
-          <x>0</x>
+          <x>10</x>
           <y>10</y>
-          <width>791</width>
-          <height>72</height>
+          <width>391</width>
+          <height>471</height>
          </rect>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_18" stretch="2,1">
+        <layout class="QVBoxLayout" name="verticalLayout_17" stretch="2,1">
          <item>
-          <widget class="QTextEdit" name="excelfilpathtext"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="excelFilePathButton">
+          <widget class="QListView" name="Selectivefilelistview">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+            <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="text">
-            <string>Insert Excel File</string>
-           </property>
           </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <widget class="QPushButton" name="FilePathButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>File_Path</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="BacktoMenuButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Back To Menu</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="NextButton_Page_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Next</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="horizontalLayoutWidgetPage2">
+       <widget class="QWidget" name="horizontalLayoutWidget2">
         <property name="geometry">
          <rect>
-          <x>0</x>
-          <y>90</y>
-          <width>791</width>
-          <height>381</height>
+          <x>410</x>
+          <y>10</y>
+          <width>381</width>
+          <height>471</height>
          </rect>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_20" stretch="2,2">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0">
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_17" stretch="2,1">
-           <item>
-            <widget class="QListView" name="Selectivefilelistview">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_8">
-             <item>
-              <widget class="QPushButton" name="FilePathButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>File_Path</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="BacktoMenuButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Back To Menu</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="NextButton_Page_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Next</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0">
-           <item>
-            <widget class="QFrame" name="pyvistaframe">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <widget class="QFrame" name="pyvistaframe">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -290,134 +266,7 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <widget class="QLabel" name="Itemlabel">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>10</y>
-          <width>781</width>
-          <height>17</height>
-         </rect>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Product :</string>
-        </property>
-       </widget>
-       <widget class="QWidget" name="layoutWidgetpage3">
-        <property name="geometry">
-         <rect>
-          <x>0</x>
-          <y>30</y>
-          <width>801</width>
-          <height>451</height>
-         </rect>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="1,1">
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_4" stretch="3,1">
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_18" stretch="1,1">
-             <item>
-              <widget class="QPushButton" name="SequenceButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>30</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Add Sequence</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="StageButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>20</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Add Stages</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_9">
-             <item>
-              <widget class="QPushButton" name="BackButton_Page_2">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Back</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="NextButton_Page_3">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Next</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
-           <item>
-            <widget class="QFrame" name="pyvistaframe_2">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
-      </widget>
-      <widget class="QWidget" name="page_3">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <widget class="QWidget" name="horizontalLayoutWidgetpage4">
+       <widget class="QWidget" name="horizontalLayoutWidgetpage2">
         <property name="geometry">
          <rect>
           <x>0</x>
@@ -426,7 +275,7 @@
           <height>201</height>
          </rect>
         </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,1,1">
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,1">
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_17" stretch="0">
            <property name="sizeConstraint">
@@ -435,22 +284,10 @@
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_6" stretch="3,1">
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_21" stretch="0,1,1,0">
+              <layout class="QVBoxLayout" name="verticalLayout_21" stretch="1,1,0">
                <property name="sizeConstraint">
                 <enum>QLayout::SetNoConstraint</enum>
                </property>
-               <item>
-                <widget class="QLabel" name="seqlabel_2">
-                 <property name="font">
-                  <font>
-                   <pointsize>16</pointsize>
-                  </font>
-                 </property>
-                 <property name="text">
-                  <string>Sequence : </string>
-                 </property>
-                </widget>
-               </item>
                <item>
                 <widget class="QLabel" name="Stagelabel">
                  <property name="text">
@@ -502,53 +339,6 @@
                 </widget>
                </item>
               </layout>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_22" stretch="1,1,1">
-           <item>
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Click Mouse Display</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="0,0">
-             <item>
-              <widget class="QLabel" name="titleXlabel">
-               <property name="text">
-                <string>Width:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="Xlabel">
-               <property name="text">
-                <string>800</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_14" stretch="0,0">
-             <item>
-              <widget class="QLabel" name="titleYlabel">
-               <property name="text">
-                <string>Height:</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="Ylabel">
-               <property name="text">
-                <string>800</string>
-               </property>
-              </widget>
              </item>
             </layout>
            </item>
@@ -639,7 +429,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QWidget" name="layoutWidgetpage4">
+       <widget class="QWidget" name="layoutWidgetpage2">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -672,27 +462,51 @@
         </layout>
        </widget>
       </widget>
-      <widget class="QWidget" name="page_4">
+      <widget class="QWidget" name="page_3">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>1</horstretch>
          <verstretch>1</verstretch>
         </sizepolicy>
        </property>
-       <widget class="QWidget" name="layoutWidgetpage5">
+       <widget class="QPushButton" name="MarkingButton">
         <property name="geometry">
          <rect>
-          <x>0</x>
-          <y>10</y>
-          <width>791</width>
-          <height>471</height>
+          <x>20</x>
+          <y>20</y>
+          <width>751</width>
+          <height>141</height>
          </rect>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_23" stretch="1,1">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>40</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Back to Marking Ui</string>
+        </property>
+       </widget>
+       <widget class="QWidget" name="">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>170</y>
+          <width>751</width>
+          <height>161</height>
+         </rect>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="1,1">
          <item>
-          <widget class="QPushButton" name="MarkingButton">
+          <widget class="QPushButton" name="HomeButton">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -703,125 +517,58 @@
             </font>
            </property>
            <property name="text">
-            <string>Back to Marking Controls</string>
+            <string>Home</string>
            </property>
           </widget>
          </item>
          <item>
-          <layout class="QVBoxLayout" name="verticalLayout_24" stretch="1,1">
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="1,1">
-             <item>
-              <widget class="QPushButton" name="HomeButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>40</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Home</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="LocalizationButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>40</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Localization</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="1,1">
-             <item>
-              <widget class="QPushButton" name="CloseButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>40</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Abort/Close</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="FeedbackButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="font">
-                <font>
-                 <pointsize>40</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Feedback</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
+          <widget class="QPushButton" name="LocalizationButton">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>40</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Localization</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
+       <widget class="QPushButton" name="CloseButton">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>340</y>
+          <width>751</width>
+          <height>121</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>40</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Abort/Close</string>
+        </property>
+       </widget>
       </widget>
-     </widget>
-     <widget class="QPushButton" name="usermanualButton">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>10</y>
-        <width>151</width>
-        <height>51</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>15</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>User Manual</string>
-      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="settingpage"/>
-    <widget class="QWidget" name="usermanualpage"/>
    </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>

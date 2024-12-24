@@ -10,23 +10,21 @@ class LeftInteractorStyle(object):
         # starting initialize
         super().__init__()
         self.interactor_style = interactor_style
-        self.xlabels = setcamerainteraction[0]
-        self.ylabels = setcamerainteraction[1]
-        self.render = setcamerainteraction[2]
-        self.renderwindowinteractor = setcamerainteraction[3]
-        self.meshbound = setcamerainteraction[4]
-        self.xlabelbefore = setcamerainteraction[5]
-        self.ylabelbefore = setcamerainteraction[6]
-        self.zlabelbefore = setcamerainteraction[7]
-        self.mesh = setcamerainteraction[8]
-        self.polys = setcamerainteraction[9]
-        self.reader = setcamerainteraction[10]
-        self.cubeactor = setcamerainteraction[11]
-        self.cameraactor = setcamerainteraction[12]
-        self.displayoldpos = setcamerainteraction[13]
-        self.old_actor_position = setcamerainteraction[13]
-        self.spaceseperation = setcamerainteraction[15]
-        self.center = setcamerainteraction[16]
+        self.render = setcamerainteraction[0]
+        self.renderwindowinteractor = setcamerainteraction[1]
+        self.meshbound = setcamerainteraction[2]
+        self.xlabelbefore = setcamerainteraction[3]
+        self.ylabelbefore = setcamerainteraction[4]
+        self.zlabelbefore = setcamerainteraction[5]
+        self.mesh = setcamerainteraction[6]
+        self.polys = setcamerainteraction[7]
+        self.reader = setcamerainteraction[8]
+        self.cubeactor = setcamerainteraction[9]
+        self.cameraactor = setcamerainteraction[10]
+        self.displayoldpos = setcamerainteraction[11]
+        self.old_actor_position = setcamerainteraction[11]
+        self.spaceseperation = setcamerainteraction[13]
+        self.center = setcamerainteraction[14]
         self.defaultposition = [0, 0, 1]
         self.center = center
         self.collisionFilter = vtk.vtkCollisionDetectionFilter()
@@ -60,7 +58,6 @@ class LeftInteractorStyle(object):
     def leftButtonPressEvent(self, obj, event):
         self.leftbuttoninteraction = True
         clickPos = self.renderwindowinteractor.GetEventPosition()  # <<<-----<
-        self.displayclickpostext(clickPos)
         self.current_zoom_factor = 1.0
         self.interactor_style.OnLeftButtonDown()
 
@@ -69,7 +66,6 @@ class LeftInteractorStyle(object):
         clickPos = self.renderwindowinteractor.GetEventPosition()
         if self.leftbuttoninteraction is True:
             self.interactor_style.SetMotionFactor(8)
-            self.displayclickpostext(clickPos)
             camera = self.render.GetActiveCamera()
             camera_pos = camera.GetPosition()
             self.cameraactor.SetPosition(camera_pos)
@@ -171,14 +167,6 @@ class LeftInteractorStyle(object):
         self.interactor_style.OnMouseWheelBackward()
 
     #display text
-    def displayclickpostext(self, clickPos):
-        self.xlabels.setText(
-            self._translate("MainWindow", str("{0:.2f}".format(clickPos[0])))
-        )
-        self.ylabels.setText(
-            self._translate("MainWindow", str("{0:.2f}".format(clickPos[1])))
-        )
-
     def displaytext(self, camera):
         self.xlabelbefore.setText(
             self._translate(

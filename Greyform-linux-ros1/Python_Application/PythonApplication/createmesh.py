@@ -11,8 +11,6 @@ from stl import mesh
 import PythonApplication.interactiveevent as events
 import PythonApplication.exceldatavtk as vtk_data_excel
 import PythonApplication.markingprogressbar as stageofmarking
-import PythonApplication.stagedialog as addStage
-import PythonApplication.sequencedialog as addsequence
 
 
 # create the imported stl mesh in vtk frame
@@ -22,8 +20,6 @@ class createMesh(QMainWindow):
         ren,
         polydata,
         renderwindowinteractor,
-        ylabel,
-        xlabel,
         xlabelbefore,
         ylabelbefore,
         zlabelbefore,
@@ -51,8 +47,6 @@ class createMesh(QMainWindow):
         self.xlabelbefore = xlabelbefore
         self.ylabelbefore = ylabelbefore
         self.zlabelbefore = zlabelbefore
-        self.xlabels = xlabel
-        self.ylabels = ylabel
         self.localizebutton = localizebutton
         self.ros_node = ros_node
         self.filepath = file_path
@@ -78,40 +72,13 @@ class createMesh(QMainWindow):
             )
         self.dataseqtext = None
 
-    # setup button interaction and store in the ui
-    def button_UI(self):
-        self.seqButton.clicked.connect(lambda: self.addseqtext())
-        self.StageButton.clicked.connect(lambda: self.addStagetext())
-
-    def addStagetext(self):
-        stagedialog = addStage.StageNumberDialog()
-        stagenumber = None
-        if stagedialog.exec_() == QDialog.Accepted:
-            stagenumber = stagedialog.get_selected_stagenumber()
-        self.stagetext = f"Stage {stagenumber}"
-        self.Stagelabel.setText(self.stagetext)
-        self.shownextpage()
-        
-
-    # store sequence as a variable
-    def addseqtext(self):
-        seqdialog = addsequence.SeqnumberDialog()
-        self.dataseqtext = None
-        if seqdialog.exec_() == QDialog.Accepted:
-            self.dataseqtext = seqdialog.get_selected_seqnumber()
-        self.sequencetext = f"Sequence : {self.dataseqtext}"
-        self.seqlabel.setText(self.sequencetext)
-        self.markingreq = self.checkseqreq()
-        self.excel_elements_data, self.maxarraylen, self.counter = self.dialogmarking()
-        self.shownextpage()
-    
-
-    def shownextpage(self):
-        if self.stagetext and self.dataseqtext:
-            markingprogessbar = stageofmarking.MarkingProgressBar()
-            markingprogessbar.exec_()
-            self.NextButton_Page_3.show()
-            self.loadStl(self.dataseqtext)
+    def show_cancelation_dialog(self, text):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setWindowTitle("Cancellation")
+        msg.setText(text)
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
 
     def checkseqreq(self):
         markingreq = None
@@ -250,8 +217,6 @@ class createMesh(QMainWindow):
     # setup vtk frame ui
     def setupvtkframe(self, dataseqtext):
         setcamerainteraction = [
-            self.xlabels,
-            self.ylabels,
             self.ren,
             self.renderwindowinteractor,
             self.meshbounds,
@@ -271,9 +236,6 @@ class createMesh(QMainWindow):
             self.Stagelabel,
             self.excelfiletext,
             dataseqtext,
-            self.excel_elements_data,
-            self.maxarraylen,
-            self.counter,
             self.dialog,
             self.Stagelabel
         ]

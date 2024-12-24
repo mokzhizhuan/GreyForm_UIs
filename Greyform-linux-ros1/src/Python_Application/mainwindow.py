@@ -9,13 +9,13 @@ import PythonApplication.fileselectionmesh as fileselectionmesh
 from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
-import PythonApplication.usermanual as userHelper
 import PythonApplication.setting as setting
 import jsonimport as jsonfileopener
 import mainthheme as mainthemebuilder
 import vtk
 import os
 from src.talker_listener.talker_listener import talker_node as RosPublisher
+import pyvista as pv
 import rospy
 
 
@@ -72,10 +72,10 @@ class Ui_MainWindow(QMainWindow):
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
         self.apply_font_to_widgets(self.mainwindow, self.font)
-        self.excelfilepath = None
+        self.excelfilepath = "exporteddatass.xlsx"
         self.excel_file_selected = False
         self.file_list_selected = False
-        config = {
+        self.config = {
             'maincolor': self.theme,
             'themecolor': self.themecolor,
             'maincolortext': self.texttheme,
@@ -86,10 +86,11 @@ class Ui_MainWindow(QMainWindow):
             'buttontextothercolor': self.buttontextothercolor
         }
         self.themebuilder = mainthemebuilder.themechange(
-            config,
+            self.config,
             self.mainwindow.centralwidget,
             self.mainwindow,
         )
+        self.stagestoring = ["Stage 1", "Stage 2" , "Stage 3", "Obstacles"]
         self.setupUi()
 
     # apply font
@@ -103,7 +104,6 @@ class Ui_MainWindow(QMainWindow):
     # setup UI
     def setupUi(self):
         self.mainwindow.NextButton_Page_2.hide()
-        self.mainwindow.NextButton_Page_3.hide()
         self.plotterloader = QtInteractor(
             self.mainwindow.pyvistaframe,
             line_smoothing=True,
@@ -112,14 +112,6 @@ class Ui_MainWindow(QMainWindow):
             multi_samples=8,
         )
         self.plotterloader.enable()
-        self.plotterloader_2 = QtInteractor(
-            self.mainwindow.pyvistaframe_2,
-            line_smoothing=True,
-            point_smoothing=True,
-            polygon_smoothing=True,
-            multi_samples=8,
-        )
-        self.plotterloader_2.enable()
         self.renderWindowInteractor = (
             QVTKRenderWindowInteractor.QVTKRenderWindowInteractor(
                 self.mainwindow.vtkframe
@@ -127,7 +119,6 @@ class Ui_MainWindow(QMainWindow):
         )
         self.SettingButton.clicked.connect(self.directtosettingpage)
         self.mainwindow.horizontalLayout_2.addWidget(self.plotterloader.interactor)
-        self.mainwindow.horizontalLayout_4.addWidget(self.plotterloader_2.interactor)
         self.mainwindow.verticalLayout.addWidget(self.renderWindowInteractor)
         self.retranslateUi()
         self.button_UI()
@@ -139,12 +130,8 @@ class Ui_MainWindow(QMainWindow):
             self.height,
             self.default_settings,
             self.mainwindow.stackedWidget_main,
-        )  # insert setting
-        self.usermanualinstruct = userHelper.Usermanual(
-            self.font,
-            self.mainwindow.stackedWidget_main,
-            self.mainwindow.usermanualpage,
-        )  # users manual instruction page
+            self.config
+        )  # insert setting 
         self.mainwindow.LocalizationButton.hide()
         self.setStretch()
 
@@ -153,8 +140,6 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_selection_changed)
         self.mainwindow.FilePathButton.clicked.connect(self.browsefilesdirectory)
         self.mainwindow.SettingButton.clicked.connect(self.directtosettingpage)
-        self.mainwindow.usermanualButton.clicked.connect(self.directtousermanualpage)
-        self.mainwindow.excelFilePathButton.clicked.connect(self.excelfilesdirectory)
         self.buttonui = mainwindowbuttonUIinteraction.mainwindowbuttonUI(
             self.mainwindow,
             self.mainwindow.stackedWidget,
@@ -162,13 +147,10 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.menuCloseButton,
             self.mainwindow.NextButton_Page_2,
             self.mainwindow.BacktoMenuButton,
-            self.mainwindow.BackButton_Page_2,
             self.mainwindow.BackButton_2,
-            self.mainwindow.NextButton_Page_3,
             self.mainwindow.ConfirmButton,
             self.mainwindow.HomeButton,
             self.mainwindow.CloseButton,
-            self.mainwindow.FeedbackButton,
             self.mainwindow.MarkingButton,
             self.ros_node,
         )
@@ -176,9 +158,6 @@ class Ui_MainWindow(QMainWindow):
     # main ui page interaction
     def directtosettingpage(self):
         self.mainwindow.stackedWidget_main.setCurrentIndex(1)
-
-    def directtousermanualpage(self):
-        self.mainwindow.stackedWidget_main.setCurrentIndex(2)
 
     # file directory for 3d objects
     def browsefilesdirectory(self):
@@ -194,15 +173,6 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
         self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)
 
-    # excel file directory info
-    def excelfilesdirectory(self):
-        self.excelfilepath, _ = QFileDialog.getOpenFileName(
-            self, "Choose Excel File", "", "Excel Files (*.xlsx *.xls)"
-        )
-        if self.excelfilepath:
-            self.mainwindow.excelfilpathtext.setText(self.excelfilepath)
-        self.excel_file_selected = True
-        self.check_if_both_selected()
 
     # file selection when clicked
     def on_selection_changed(self, index):
@@ -211,22 +181,14 @@ class Ui_MainWindow(QMainWindow):
         file = self.mainwindow.Selectivefilelistview.model().itemData(index)[0]
         mainwindowforfileselection = [
             self.plotterloader,
-            self.plotterloader_2,
             self.renderer,
             self.renderWindowInteractor,
-            self.mainwindow.Ylabel,
-            self.mainwindow.Xlabel,
             self.mainwindow.Xlabel_2,
             self.mainwindow.Ylabel_2,
             self.mainwindow.Zlabel,
-            self.mainwindow.SequenceButton,
-            self.mainwindow.NextButton_Page_3,
             self.mainwindow.LocalizationButton,
             self.ros_node,
-            self.mainwindow.excelfilpathtext,
-            self.mainwindow.seqlabel_2,
             self.mainwindow.Stagelabel,
-            self.mainwindow.StageButton,
         ]
         fileselectionmesh.FileSelectionMesh(
             self.file_path, mainwindowforfileselection, self.mainwindow
@@ -237,22 +199,12 @@ class Ui_MainWindow(QMainWindow):
             self.file = file.replace(".ifc", "")
         elif ".dxf" in file:
             self.file = file.replace(".dxf", "")
-        self.mainwindow.Itemlabel.setText(
-            self._translate("MainWindow", "Product : " + str(self.file))
-        )
         self.mainwindow.Itemlabel_2.setText(
             self._translate("MainWindow", "Product: " + str(self.file))
         )
         self.file_list_selected = True
         self.show_completion_message()
-        self.check_if_both_selected()
-
-    # condition for excel file and stl loader have been loaded
-    def check_if_both_selected(self):
-        if self.excel_file_selected == True and self.file_list_selected == True:
-            self.mainwindow.NextButton_Page_2.show()
-        else:
-            self.mainwindow.NextButton_Page_2.hide()
+        self.mainwindow.NextButton_Page_2.show()
 
     # main window layout
     def setStretch(self):
@@ -266,19 +218,16 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.horizontalLayout,
             self.mainwindow.mainmenu,
             self.mainwindow.horizontalLayoutWidget,
-            self.mainwindow.horizontalLayoutWidgetPage2,
+            self.mainwindow.horizontalLayoutWidget2,
             self.mainwindow.page,
-            self.mainwindow.Itemlabel,
-            self.mainwindow.layoutWidgetpage3,
             self.mainwindow.page_2,
-            self.mainwindow.layoutWidgetpage4,
-            self.mainwindow.horizontalLayoutWidgetpage4,
+            self.mainwindow.horizontalLayoutWidgetpage2,
+            self.mainwindow.layoutWidgetpage2,
             self.mainwindow.page_3,
-            self.mainwindow.layoutWidgetpage5,
-            self.mainwindow.page_4,
-            self.settingpageuipage,
+            self.mainwindow.MarkingButton,
+            self.mainwindow.horizontalLayoutWidgetpage4,
+            self.mainwindow.CloseButton,
             self.mainwindow.mainconfiguration,
-            self.mainwindow.usermanualButton,
             self.mainwindow.SettingButton,
             self.mainwindow.settingpage,
         )
@@ -308,9 +257,6 @@ class Ui_MainWindow(QMainWindow):
     def retranslateUi(self):
         self.mainwindow.displaybeforelabel.setText(
             self._translate("MainWindow", "Mesh Camera Dimensions")
-        )
-        self.mainwindow.label_2.setText(
-            self._translate("MainWindow", "Click Position", None)
         )
         self.mainwindow.FilePathButton.setToolTip(
             "Please insert File path, for stl , ifc , dxf , etc."

@@ -28,24 +28,21 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.addactor = self.AddObserver(
             "RightButtonPressEvent", self.RightButtonPressEvent
         )
-        self.xlabels = setcamerainteraction[0]
-        self.ylabels = setcamerainteraction[1]
-        self.render = setcamerainteraction[2]
-        self.renderwindowinteractor = setcamerainteraction[3]
-        self.meshbound = setcamerainteraction[4]
-        self.xlabelbefore = setcamerainteraction[5]
-        self.ylabelbefore = setcamerainteraction[6]
-        self.zlabelbefore = setcamerainteraction[7]
-        self.mesh = setcamerainteraction[8]
-        self.polys = setcamerainteraction[9]
-        self.reader = setcamerainteraction[10]
-        self.cubeactor = setcamerainteraction[11]
-        self.cameraactor = setcamerainteraction[12]
-        self.oldcamerapos = setcamerainteraction[13]
-        self.old_actor_position = setcamerainteraction[13]
-        self.collisionFilter = setcamerainteraction[14]
-        self.spaceseperation = setcamerainteraction[15]
-        self.center = setcamerainteraction[16]
+        self.render = setcamerainteraction[0]
+        self.renderwindowinteractor = setcamerainteraction[1]
+        self.meshbound = setcamerainteraction[2]
+        self.xlabelbefore = setcamerainteraction[3]
+        self.ylabelbefore = setcamerainteraction[4]
+        self.zlabelbefore = setcamerainteraction[5]
+        self.mesh = setcamerainteraction[6]
+        self.polys = setcamerainteraction[7]
+        self.reader = setcamerainteraction[8]
+        self.cubeactor = setcamerainteraction[9]
+        self.cameraactor = setcamerainteraction[10]
+        self.displayoldpos = setcamerainteraction[11]
+        self.old_actor_position = setcamerainteraction[11]
+        self.spaceseperation = setcamerainteraction[13]
+        self.center = setcamerainteraction[14]
         camera = self.render.GetActiveCamera()
         self.actor_speed = 20
         self.threshold = 20
@@ -80,12 +77,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     # inside view
     def RightButtonPressEvent(self, obj, event):
         clickPos = self.GetInteractor().GetEventPosition()  # <<<-----<
-        self.xlabels.setText(
-            self._translate("MainWindow", str("{0:.2f}".format(clickPos[0])))
-        )
-        self.ylabels.setText(
-            self._translate("MainWindow", str("{0:.2f}".format(clickPos[1])))
-        )
         camera = self.render.GetActiveCamera()
         camera.SetPosition(self.old_actor_position)
         self.cubeactor.SetPosition(self.old_actor_position)

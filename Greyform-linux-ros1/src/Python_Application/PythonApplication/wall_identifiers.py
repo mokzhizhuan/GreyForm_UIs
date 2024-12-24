@@ -24,33 +24,28 @@ class wall_Interaction(object):
         self.setcamerainteraction = setcamerainteraction
         self.wall_identifiers = wall_identifiers
         self.localizebutton = localizebutton
-        self.render = setcamerainteraction[2]
-        self.meshbound = setcamerainteraction[4]
-        self.renderwindowinteractor = setcamerainteraction[3]
-        self.file_path = setcamerainteraction[17]
-        self.reader = setcamerainteraction[10]
-        self.Stagelabel = setcamerainteraction[18]
-        self.excelfiletext = setcamerainteraction[19]
-        self.cubeactor = setcamerainteraction[11]
-        self.dataseqtext = setcamerainteraction[20]
-        self.markingreq = setcamerainteraction[21]
-        self.maxlen = setcamerainteraction[22]
-        self.counter = setcamerainteraction[23]
-        self.dialog = setcamerainteraction[24]
-        self.Stagetext = setcamerainteraction[25]
+        self.render = setcamerainteraction[0]
+        self.meshbound = setcamerainteraction[2]
+        self.renderwindowinteractor = setcamerainteraction[1]
+        self.file_path = setcamerainteraction[15]
+        self.reader = setcamerainteraction[8]
+        self.excelfiletext = setcamerainteraction[16]
+        self.cubeactor = setcamerainteraction[9]
+        self.markingreq = setcamerainteraction[17]
+        self.dialog = setcamerainteraction[17]
+        self.Stagetext = setcamerainteraction[18]
         self.interaction_enabled = True
         self.ros_node = ros_node
         self.spacing = "\n"
         incurdatamethod = datalegends.Exportexcelinfolegend(self.markingreq)
-        self.markingitems = incurdatamethod.returndata()
-        self.counter = 0
+        #self.markingitems = incurdatamethod.returndata()
 
     # middle click interaction for storing
     def setwallinteractiondata(self, obj, event):
         if (
-            self.Stagetext.text() == "Stage 1"
-            or self.Stagetext.text() == "Stage 2"
-            or self.Stagetext.text() == "Stage 3"
+            self.Stagetext == "Stage 1"
+            or self.Stagetext == "Stage 2"
+            or self.Stagetext == "Stage 3"
         ):
             self.interactor_style.SetMotionFactor(8)
             click_pos = self.renderwindowinteractor.GetEventPosition()
@@ -69,9 +64,9 @@ class wall_Interaction(object):
                 picker.GetPickPosition()[1],
                 picker.GetPickPosition()[2],
             ]
-            self.wall_storing()
+            #self.wall_storing()
             self.localizebutton.show()
-            self.localizebutton.clicked.connect(self.publish_message)
+            #self.localizebutton.clicked.connect(self.publish_message)
         else:
             self.show_error_message(
                 "Invalid Stage , please click the Stage 1, 2, 3 button."
@@ -160,32 +155,19 @@ class wall_Interaction(object):
 
     # message variable will be sent to process runner for running the talker node and listener node
     def publish_message_ros(self, file, wallnumber, sectionnumber):
-        self.exceldata = self.excelfiletext.toPlainText()
-        """self.talker_node.run_listernernode(
-            file,
-            exceldata,
-            wall_number,
-            sectionnumber,
-            picked_position,
-            Stagelabel,
-            cube_actor,
-        )"""
-        self.listenerdialog = ProcessListener.ListenerNodeRunner(
+        self.exceldata = self.excelfiletext
+        """self.listenerdialog = ProcessListener.ListenerNodeRunner(
             self.ros_node,
             file,
             self.exceldata,
             wallnumber,
             sectionnumber,
             self.markingitemsbasedonwallnumber,
-            self.Stagelabel,
             self.cubeactor,
-            self.dataseqtext,
-            self.maxlen,
-            self.counter,
             self.markingreq,
             self.dialog,
         )
-        self.listenerdialog.show()
+        self.listenerdialog.show()"""
 
     # distance checker
     def distance(self, sequence_pos, sequence_pos_quad):
