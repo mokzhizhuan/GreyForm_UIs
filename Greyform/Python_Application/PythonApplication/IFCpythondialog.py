@@ -15,6 +15,7 @@ import pyvista as pv
 import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl
 import PythonApplication.excel_export_info as biminfo
+import PythonApplication.excel_export_4sidesinfo as bim4sideinfo
 import numpy as np
 
 
@@ -44,6 +45,7 @@ class ProgressBarDialogIFC(QDialog):
         self.NextButton_Page_3 = mainwindowforfileselection[12]
         self.Seqlabel = mainwindowforfileselection[13]
         self.localizebutton = mainwindowforfileselection[14]
+        self.spacing = "\n"
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFont(QFont("Arial", 30))
         self.progress_bar.setAlignment(QtCore.Qt.AlignCenter)
@@ -85,41 +87,27 @@ class ProgressBarDialogIFC(QDialog):
             )
             if iterator.initialize():
                 stl_data = {"points": [], "cells": [], "material_ids": []}
-                # making sure it scale the same as the stl file diagram based on ifc
                 wall_dimensions = {}
-                scale_factor = 1500.0
-                # Collect all unique element types
+                self.scale_factor = 1500.0
                 try:
                     while True:
                         shape = iterator.get()
                         guid = shape.guid
                         element = self.ifc_file.by_guid(guid)
                         element_type = element.is_a() if element else "Unknown"
-                        faces = shape.geometry.faces
-                        verts = shape.geometry.verts
-                        material_ids = shape.geometry.material_ids
-                        grouped_verts = [
-                            [verts[i], verts[i + 1], verts[i + 2]]
-                            for i in range(0, len(verts), 3)
-                        ]
-                        grouped_faces = [
-                            [faces[i], faces[i + 1], faces[i + 2]]
-                            for i in range(0, len(faces), 3)
-                        ]
-                        scaled_grouped_verts = np.array(grouped_verts) * scale_factor
-                        # data array for STL
-                        if "IfcWallStandardCase" in element_type:
-                            if "Basic Wall:BSS.50" in element.Name:
-                                x_coords, y_coords, z_coords = zip(*scaled_grouped_verts)
-                                width = max(x_coords) - min(x_coords)
-                                height = max(y_coords) - min(y_coords)
-                                depth = max(z_coords) - min(z_coords)
-                                wall_dimensions[f"{element.Name} {guid}"] = {
-                                    "width": int(round(width)),
-                                    "height": int(round(height)),
-                                    "depth": int(round(depth)),
-                                }
-                        if element_type != "IfcOpeningElement":
+                        if element_type.lower() != "ifcopeningelement":
+                            faces = shape.geometry.faces
+                            verts = shape.geometry.verts
+                            material_ids = shape.geometry.material_ids
+                            grouped_verts = [
+                                [verts[i], verts[i + 1], verts[i + 2]]
+                                for i in range(0, len(verts), 3)
+                            ]
+                            grouped_faces = [
+                                [faces[i], faces[i + 1], faces[i + 2]]
+                                for i in range(0, len(faces), 3)
+                            ]
+                            scaled_grouped_verts = np.array(grouped_verts) * self.scale_factor
                             stl_vert_index_offset = len(stl_data["points"])
                             stl_data["points"].extend(scaled_grouped_verts)
                             stl_data["cells"].extend(
@@ -133,16 +121,37 @@ class ProgressBarDialogIFC(QDialog):
                                 ]
                             )
                             stl_data["material_ids"].extend(material_ids)
-                        x_coordsarea, y_coordsarea, z_coordsarea = zip(*scaled_grouped_verts)
-                        widtharea = int(round(max(x_coordsarea))) 
-                        heightarea = int(round(max(y_coordsarea)))
+                            # data array for STL
                         if not iterator.next():
                             break
+                    walls = self.ifc_file.by_type('IfcWallStandardCase')
+                    widths = []
+                    for wall in walls:
+                        if "Basic Wall:BSS.50" in wall.Name:
+                            width, height , depth= self.get_wall_dimensions(wall)
+                            dimensions = self.get_wall_dimensions(wall)
+                            if width and height :
+                                wall_dimensions[wall.Name] = {
+                                    "width" : int(round(width)),
+                                    "height" : int(round(height)),
+                                    "depth" : int(round(depth)),
+                                }
+                            if dimensions[0]:  
+                                widths.append(int(round(dimensions[0])))
+                    if len(widths) > 1 and len(widths) == 6:
+                        top_two = sorted(widths, reverse=True)[:2] 
+                    elif len(widths) > 1 and len(widths) == 4:
+                        top_two = sorted(widths, reverse=True)[:3] 
+                        top_two[0] = top_two[0] + 50
+                    else:
+                        top_two = widths  
                 except Exception as e:
                     self.log_error(f"Error while processing IFC shapes: {e}")
                 self.convertStl(stl_data)
-                dominant_data_wall = self.dominant_dimensions(wall_dimensions)
-                biminfo.Exportexcelinfo(self.ifc_file, "IfcElement", dominant_data_wall, widtharea, heightarea)
+                if len(wall_dimensions) == 6 :
+                    biminfo.Exportexcelinfo(self.ifc_file, "IfcElement", wall_dimensions, top_two)
+                else:
+                    bim4sideinfo.Exportexcelinfo(self.ifc_file, "IfcElement", wall_dimensions, top_two)
                 try:
                     self.stlloader()
                 except Exception as e:
@@ -153,22 +162,42 @@ class ProgressBarDialogIFC(QDialog):
             )
         self.close()
 
-    def dominant_dimensions(self, wall_data):
-        results = {}
-        for wall, dimensions in wall_data.items():
-            sorted_dims = sorted(dimensions.items(), key=lambda x: x[1], reverse=True)
-            results[wall] = {"width": sorted_dims[0][1], "height": sorted_dims[1][1]}
-        return results
+    def get_wall_dimensions(self, wall):
+        for representation in wall.Representation.Representations:
+            if representation.RepresentationType == 'SweptSolid':
+                solid = representation.Items[0]
+                extruded_area = solid.SweptArea
+                extrusion_depth = solid.Depth if hasattr(solid, 'Depth') else None
+                if hasattr(extruded_area, 'XDim') and hasattr(extruded_area, 'YDim'):
+                    width = extruded_area.XDim
+                    height = extruded_area.YDim
+                    return width, height , extrusion_depth
+            elif representation.RepresentationIdentifier == 'Body' and representation.RepresentationType == 'Clipping':
+                for item in representation.Items:
+                    if item.is_a('IfcBooleanClippingResult'):
+                        if item.FirstOperand.is_a('IfcExtrudedAreaSolid'):
+                            extruded_area_solid = item.FirstOperand
+                            depth = extruded_area_solid.Depth
+                            profile = extruded_area_solid.SweptArea
+                            width = profile.XDim
+                            height = profile.YDim
+                            return width, height, depth
+        return None, None , None
 
     # include error in text file
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
             log_file.write(message + "\n")
 
+    def log(self, message):
+        with open("log.txt", "a") as log_file:
+            log_file.write(message + "\n")
+
     # Convert to meshio format and write to STL
     def convertStl(self, data):
         try:
             points = np.array(data["points"])
+            message = f"Points: {self.spacing}"
             cells = [("triangle", np.array(data["cells"]))]
             self.stl_file = "output.stl"
             mesh = meshio.Mesh(points=points, cells=cells)

@@ -1,28 +1,25 @@
 import pandas as pd
-import ifcopenshell
-import ifcopenshell.geom
-import meshio
-import multiprocessing
 import ifcopenshell.util.element as Element
-from ifcopenshell.util.placement import get_local_placement
+from ifcopenshell.util.placement import get_local_placement, get_axis2placement
+import PythonApplication.arraystorage as storingelement
+import ifcopenshell
 import numpy as np
-import math
 
 
 # export excel sheet
 class Exportexcelinfo(object):
-    def __init__(self, file, class_type, wall_dimensions, widtharea, heightarea):
+    def __init__(self, file, class_type, wall_dimensions, floor):
         # starting initialize
         super().__init__()
         self.file = file
-        self.class_type = class_type
         self.wall_dimensions = wall_dimensions
-        self.widtharea = widtharea
-        self.heightarea = heightarea
+        self.floor = floor
+        self.stagecategory = storingelement.stagecatergorize(self.file)
+        self.wallformat , self.heighttotal = storingelement.wall_format4sides(self.wall_dimensions)
         try:
             data = self.get_objects_data_by_class(file, class_type)
             attributes = [
-                "Class",
+                "Stage",
                 "Marking type",
                 "Point number/name",
                 "Position X (m)",
@@ -38,7 +35,14 @@ class Exportexcelinfo(object):
                 "Orientation",
                 "Diameter",
             ]
-            self.add_legends()
+            (
+                self.wall_legend,
+                self.pen_column,
+                self.pin_id_column,
+                self.wall_600x600mm,
+                self.wall_name,
+                self.indexwall,
+            ) = storingelement.add_legends()
             pandas_data = []
             for object_data in data:
                 row = []
@@ -50,23 +54,142 @@ class Exportexcelinfo(object):
             dataframe["Wall Number"] = dataframe.apply(
                 self.determine_wall_number, axis=1
             )
+            dataframe["Unnamed : 9"] = dataframe.apply(self.setunwantedpos, axis=1)
             dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
             dataframe[
                 ["Position X (m)", "Position Y (m)", "Position Z (m)", "Diameter"]
             ] = dataframe.apply(self.determine_pipes_pos, axis=1)
+            dataframe["Wall Number"] = dataframe.apply(self.determine_walls, axis=1)
             dataframe[["Width", "Height"]] = dataframe.apply(
                 self.determinewallbasedonwidthandheight, axis=1
             )
+            dataframe["Wall Number"] = dataframe.apply(self.itemposition , axis=1)
+            dataframe["Wall Number"] = dataframe.apply(self.wall_increment, axis=1)
+            dataframe["Stage"] = dataframe.apply(self.applystage, axis=1)
+            stages = sorted(
+                dataframe["Stage"].unique(), key=lambda x: (x == "Obstacles", x)
+            )
             file_name = f"exporteddatass.xlsx"
             with pd.ExcelWriter(file_name) as writer:
-                for object_class in dataframe["Class"].unique():
-                    df_class = dataframe[dataframe["Class"] == object_class]
-                    df_class = df_class.drop(["Class"], axis=1)
+                "stage 1, stage 2 , stage 3 , obstacle"
+                for object_class in stages:
+                    df_class = dataframe[dataframe["Stage"] == object_class]
+                    df_class = df_class.drop(["Stage"], axis=1)
                     df_class.to_excel(writer, sheet_name=object_class)
                     worksheet = writer.sheets[object_class]
                     self.apply_rotation_to_markers(worksheet, df_class)
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
+
+    def itemposition(self, row):
+        register = row["Unnamed : 9"]
+        walls = 0
+        if register != "Unregistered":
+            for index, (wall, bounds) in enumerate(self.wallformat.items()):
+                if bounds["axis"] == "x":
+                    if row["Position X (m)"] <= bounds["width"] and (
+                        row["Position Z (m)"] >= 145
+                        and row["Position Z (m)"] <= bounds["height"] - 60
+                    ):
+                        if index + 1 == 2 and (
+                            row["Position Y (m)"] >= bounds["width"] - 550
+                            and row["Position Y (m)"] <= bounds["width"]
+                        ):
+                            return wall
+                        if (
+                            index + 1 == 4
+                            and (
+                                row["Position X (m)"] >= self.floor[0] - bounds["width"]
+                                and row["Position X (m)"] <= self.floor[0]
+                            )
+                            and (
+                                row["Position Z (m)"] >= 145
+                                and row["Position Z (m)"] <= bounds["height"] - 60
+                            )
+                        ):
+                            return wall
+                        if (index + 1 == 6) and row["Position Y (m)"] <= 50:
+                            return wall
+                        return wall
+                elif bounds["axis"] == "y":
+                    if (
+                        row["Position Y (m)"] >= 50
+                        and row["Position Y (m)"] <= bounds["width"]
+                    ) and (
+                        row["Position Z (m)"] >= 145
+                        and row["Position Z (m)"] <= bounds["height"] - 60
+                    ):
+                        if index + 1 == 3 and (
+                            row["Position Y (m)"] >= (self.floor[1] - bounds["width"])
+                            and row["Position Y (m)"] <= self.floor[1]
+                        ):
+                            return wall
+                        return wall
+            if row["Position Z (m)"] <= 145:
+                walls = 7
+                return walls
+            elif row["Position Z (m)"] >= self.heighttotal-60 and row["Position Z (m)"] <= self.heighttotal:
+                walls = 8
+                return walls
+        return row["Wall Number"]
+
+    def setunwantedpos(self, row):
+        name = row["Point number/name"]
+        if (
+            "CP" in name
+            or "LP" in name
+            or "SP" in name
+            or "TMP" in name
+            or "Floor" in name
+            or "Ceiling" in name
+            or "Basic Wall:BSS.50" in name
+        ):
+            return "Unregistered"
+        return ""
+
+    def applystage(self, row):
+        stage = ""
+        stagenum = ""
+        name = row["Point number/name"]
+        if self.wall_name in name:
+            if self.indexwall < len(self.wall_600x600mm):
+                stagenum = self.stagenumber(
+                    self.wall_600x600mm[self.indexwall]["Pin ID"]
+                )
+        for data_legend in self.wall_legend:
+            data_pen_name = data_legend.get(self.pen_column)
+            data_pin_id = data_legend.get(self.pin_id_column)
+            if data_pen_name in name:
+                stagenum = self.stagenumber(data_pin_id)
+        if "CP" in name or "LP" in name or "SP" in name or "TMP" in name:
+            stagenum = self.stagenumber(name)
+        for stage, names in self.stagecategory.items():
+            for namesatge in names:
+                if name == namesatge:
+                    return stage
+        if stagenum:
+            stage = f"Stage {stagenum}"
+        else:
+            stage = "Obstacles"
+        return stage
+
+    def stagenumber(self, name):
+        if "CP" in name:
+            index = name.index("CP") + 4
+            if index < len(name) and name[index].isdigit():
+                return int(name[index])
+        if "LP" in name:
+            index = name.index("LP") + 4
+            if index < len(name) and name[index].isdigit():
+                return int(name[index])
+        if "SP" in name:
+            index = name.index("SP") + 4
+            if index < len(name) and name[index].isdigit():
+                return int(name[index])
+        if "TMP" in name:
+            index = name.index("TMP") + 5
+            if index < len(name) and name[index].isdigit():
+                return int(name[index])
 
     # pipes insertion with ifccratesionpoint
     def determine_pipes_pos(self, row):
@@ -87,21 +210,6 @@ class Exportexcelinfo(object):
                                         diameter = radius * 2
                                         if center.is_a("IfcCartesianPoint"):
                                             center_coords = center.Coordinates
-                                        diameterpoint = []
-                                        diameterpoint.append(
-                                            [
-                                                center_coords[0] + radius,
-                                                center_coords[1],
-                                                center_coords[2],
-                                            ]
-                                        )
-                                        diameterpoint.append(
-                                            [
-                                                center_coords[0] - radius,
-                                                center_coords[1],
-                                                center_coords[2],
-                                            ]
-                                        )
                                         return pd.Series(
                                             [
                                                 abs(int(round(center_coords[0]))),
@@ -112,103 +220,131 @@ class Exportexcelinfo(object):
                                         )
                                     if profile.is_a("IfcArbitraryClosedProfileDef"):
                                         outer_curve = profile.OuterCurve
+                                        center = item.Position.Location
+                                        center_coords = center.Coordinates
                                         if outer_curve.is_a("IfcCompositeCurve"):
-                                            points = []
                                             diameterspoint = []
                                             for segment in outer_curve.Segments:
                                                 parent_curve = segment.ParentCurve
                                                 if parent_curve.is_a("IfcPolyline"):
-                                                    segment_points = [
-                                                        tuple(
-                                                            int(abs(round(coord)))
-                                                            for coord in p.Coordinates
-                                                        )
+                                                    diametersegmentpoints = [
+                                                        p.Coordinates
                                                         for p in parent_curve.Points
                                                         if p.is_a("IFCCartesianPoint")
                                                     ]
-                                                    diametersegmentpoints = [
-                                                        p.Coordinates for p in parent_curve.Points if p.is_a("IFCCartesianPoint")
-                                                    ]
-                                                    diameterspoint.extend(diametersegmentpoints)
-                                                    points.extend(segment_points)
-                                            if points and diameterspoint:
-                                                x_values = [p[0] for p in diameterspoint]
-                                                diameter_x = max(x_values) - min(x_values)
-                                                num_points = len(points)
-                                                center_x = (
-                                                    sum(p[0] for p in points)
-                                                    / num_points
-                                                )
-                                                center_y = (
-                                                    sum(p[1] for p in points)
-                                                    / num_points
-                                                )
-                                                center_z = (
-                                                    sum(
-                                                        p[2] if len(p) > 2 else 0
-                                                        for p in points
+                                                    diameterspoint.extend(
+                                                        diametersegmentpoints
                                                     )
-                                                    / num_points
+                                            if diameterspoint:
+                                                x_values = [
+                                                    p[0] for p in diameterspoint
+                                                ]
+                                                diameter_x = max(x_values) - min(
+                                                    x_values
                                                 )
-                                                center_x = round(center_x, 6)
-                                                center_y = round(center_y, 6)
-                                                center_z = round(center_z, 6)
                                                 return pd.Series(
                                                     [
-                                                        int(abs(round(center_x))),
-                                                        int(abs(round(center_y))),
-                                                        int(abs(round(center_z))),
+                                                        abs(
+                                                            int(round(center_coords[0]))
+                                                        ),
+                                                        abs(
+                                                            int(round(center_coords[1]))
+                                                        ),
+                                                        abs(
+                                                            int(round(center_coords[2]))
+                                                        ),
                                                         diameter_x,
                                                     ]
                                                 )
+        elements = self.file.by_type("IfcRectangleProfileDef")
+        for element in elements:
+            if "Shower Ledge" in element and "Shower Ledge" in name:
+                for use in self.file.get_inverse(element):
+                    placement = use.Position
+                    coords = placement.Location.Coordinates
+                    return pd.Series(
+                        [
+                            abs(int(round(coords[0]))),
+                            abs(int(round(coords[1]))),
+                            abs(int(round(coords[2]))),
+                            row["Diameter"],
+                        ]
+                    )
+        openingelems = self.file.by_type("IFCOpeningElement")
+        for openingelem in openingelems:
+            if name in openingelem and "Basic Wall:BSS" in name:
+                if openingelem.Representation:
+                    for representation in openingelem.Representation.Representations:
+                        for item in representation.Items:
+                            center = item.Position.Location
+                            center_coords = center.Coordinates
+                            return pd.Series(
+                                [
+                                    abs(int(round(center_coords[0]))),
+                                    abs(int(round(center_coords[1]))),
+                                    abs(int(round(center_coords[2]))),
+                                    row["Diameter"],
+                                ]
+                            )
+        doorelems = self.file.by_type("IFCDoor")
+        for doorelem in doorelems:
+            if name in doorelem and "BSS.Shower Glass Door" in name:
+                if doorelem.ObjectPlacement:
+                    placement = doorelem.ObjectPlacement
+                    while (
+                        hasattr(placement, "PlacementRelTo")
+                        and placement.PlacementRelTo
+                    ):
+                        placement = placement.PlacementRelTo
+                        if hasattr(placement, "RelativePlacement"):
+                            location = placement.RelativePlacement.Location
+                            coords = location.Coordinates
+                            return pd.Series(
+                                [
+                                    abs(int(round(coords[0]))),
+                                    abs(int(round(coords[1]))),
+                                    abs(int(round(coords[2]))),
+                                    row["Diameter"],
+                                ]
+                            )
         return pd.Series(
-            [row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"], ""]
+            [
+                row["Position X (m)"],
+                row["Position Y (m)"],
+                row["Position Z (m)"],
+                row["Diameter"],
+            ]
         )
+
+    def determine_walls(self, row):
+        for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
+            if "Basic Wall:BSS.50" in wall and wall == row["Point number/name"]:
+                return index + 1
+        return row["Wall Number"]
+
+    def wall_increment(self, row):
+        if row["Wall Number"] == 6:
+            return 1
+        elif row["Wall Number"] < 6:
+            return row["Wall Number"] + 1
+        return row["Wall Number"]
 
     # get wall height and width
     def determinewallbasedonwidthandheight(self, row):
         for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
             if (index + 1) == row["Wall Number"]:
                 width = dims.get("width", "Not available")
+                depth = dims.get("depth", "Not available")
                 height = dims.get("height", "Not available")
-                return pd.Series([width, height])
-        if row["Wall Number"] == 7 or row["Wall Number"] == "F":
-            return pd.Series([self.widtharea, self.heightarea])
+                if row["Wall Number"] in [2, 5]:
+                    return pd.Series([width + height, depth + height + 10])
+                if index + 1 == len(self.wall_dimensions):
+                    return pd.Series([width + (height * 2), depth + height + 10])
+                return pd.Series([width, depth + height + 10])
+            if row["Wall Number"] == 7 or row["Wall Number"] == 8:
+                height = dims.get("height", "Not available")
+                return pd.Series([self.floor[0] + (height * 2), self.floor[1]])
         return pd.Series([0, 0])
-
-    # add legneds
-    def add_legends(self):
-        dataframe_Legend = pd.read_excel(
-            "Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2
-        )
-        self.pen_column = dataframe_Legend.columns[3]
-        self.pin_id_column = dataframe_Legend.columns[9]
-        dataframe_Legend = dataframe_Legend[[self.pen_column, self.pin_id_column]]
-        if (
-            self.pen_column in dataframe_Legend.columns
-            and self.pin_id_column in dataframe_Legend.columns
-        ):
-            dataframe_Legend[self.pen_column].fillna("", inplace=True)
-            dataframe_Legend[self.pin_id_column].fillna("", inplace=True)
-            filtered_dataframe = dataframe_Legend[
-                (dataframe_Legend[self.pen_column] != "")
-                & (dataframe_Legend[self.pin_id_column] != "")
-            ]
-            self.wall_legend = filtered_dataframe.to_dict(orient="records")
-            self.wall_name = "BSS.20mm Wall Finishes (600x600mm)"
-            self.wall_600x600mm = []
-            self.indexwall = 0
-            self.index = 0
-            for data_legend in self.wall_legend:
-                data_pen_name = data_legend.get(self.pen_column)
-                data_pin_id = data_legend.get(self.pin_id_column)
-                if self.wall_name in data_pen_name:
-                    self.wall_600x600mm.append(
-                        {
-                            "Penetration/Fitting/Reference Point Name": data_pen_name,
-                            "Pin ID": data_pin_id,
-                        }
-                    )
 
     # get object data based on class using ifc
     def get_objects_data_by_class(self, file, class_type):
@@ -225,7 +361,7 @@ class Exportexcelinfo(object):
                     x, y, z = placement.Location.Coordinates
             objects_data.append(
                 {
-                    "Class": str(object.is_a()).replace("Ifc", ""),
+                    "Stage": "",
                     "Marking type": (
                         Element.get_type(object).Name
                         if Element.get_type(object)
@@ -318,7 +454,7 @@ class Exportexcelinfo(object):
 
     # determine wall number based on the exceldata name
     def determine_wall_number(self, row):
-        wallnum = "F"
+        wallnum = 7
         name = row["Point number/name"]
         if self.wall_name in name:
             if self.indexwall < len(self.wall_600x600mm):
@@ -332,6 +468,8 @@ class Exportexcelinfo(object):
                 return wallnum
         if "CP" in name or "LP" in name or "SP" in name or "TMP" in name:
             wallnum = self.wallnumber(name)
+        if "Floor:BSS.60" in name or "Celling" in name:
+            wallnum = 8
         return wallnum
 
     # get wall number form excel data
