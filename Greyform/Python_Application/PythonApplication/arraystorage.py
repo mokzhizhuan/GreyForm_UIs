@@ -20,7 +20,7 @@ def stagecatergorize(ifc_file):
         ):
             if name:
                 data["Stage 1"].append(name)
-        elif element.is_a("IfcCovering"):
+        elif element.is_a("IfcCovering") or element.is_a("IfcWallStandardCase"):
             if name:
                 data["Stage 2"].append(name)
         elif name and (
@@ -33,11 +33,10 @@ def stagecatergorize(ifc_file):
         elif (
             element.is_a("IfcDoor")
             or element.is_a("IfcFurnishingElement")
-            or element.is_a("IfcWallStandardCase")
             or element.is_a("IfcSlab")
         ):
             if name:
-                data["Stage 3"].append(name)
+                data["Stage 2" if "Floor" in name or "Wall"in name else "Stage 3"].append(name)
 
     return data
 
@@ -87,9 +86,17 @@ def wall_format(wall):
         else:
             axis = "x"
         if index + 1 in [2, 5]:
-            wall_format[index + 1] = {"axis": axis, "width": width + height, "height": depth + height + 10}
+            wall_format[index + 1] = {
+                "axis": axis,
+                "width": width + height,
+                "height": depth + height + 10,
+            }
         elif index + 1 in [6]:
-            wall_format[index + 1] = {"axis": axis, "width": width + (height * 2), "height": depth + height + 10}
+            wall_format[index + 1] = {
+                "axis": axis,
+                "width": width + (height * 2),
+                "height": depth + height + 10,
+            }
         else:
             wall_format[index + 1] = {
                 "axis": axis,
@@ -97,7 +104,8 @@ def wall_format(wall):
                 "height": depth + height + 10,
             }
         heighttotal = depth + height + 10
-    return wall_format , heighttotal
+    return wall_format, heighttotal
+
 
 def wall_format4sides(wall):
     wall_format = {}
@@ -111,9 +119,17 @@ def wall_format4sides(wall):
         else:
             axis = "x"
         if index + 1 in [2, 3]:
-            wall_format[index + 1] = {"axis": axis, "width": width + height, "height": depth + height + 10}
+            wall_format[index + 1] = {
+                "axis": axis,
+                "width": width + height,
+                "height": depth + height + 10,
+            }
         elif index + 1 in [4]:
-            wall_format[index + 1] = {"axis": axis, "width": width + (height * 2), "height": depth + height + 10}
+            wall_format[index + 1] = {
+                "axis": axis,
+                "width": width + (height * 2),
+                "height": depth + height + 10,
+            }
         else:
             wall_format[index + 1] = {
                 "axis": axis,
@@ -121,4 +137,4 @@ def wall_format4sides(wall):
                 "height": depth + height + 10,
             }
         heighttotal = depth + height + 10
-    return wall_format , heighttotal
+    return wall_format, heighttotal

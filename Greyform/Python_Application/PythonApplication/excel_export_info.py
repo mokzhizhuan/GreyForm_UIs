@@ -15,7 +15,9 @@ class Exportexcelinfo(object):
         self.wall_dimensions = wall_dimensions
         self.floor = floor
         self.stagecategory = storingelement.stagecatergorize(self.file)
-        self.wallformat , self.heighttotal = storingelement.wall_format4sides(self.wall_dimensions)
+        self.wallformat, self.heighttotal = storingelement.wall_format4sides(
+            self.wall_dimensions
+        )
         try:
             data = self.get_objects_data_by_class(file, class_type)
             attributes = [
@@ -63,12 +65,16 @@ class Exportexcelinfo(object):
             dataframe[["Width", "Height"]] = dataframe.apply(
                 self.determinewallbasedonwidthandheight, axis=1
             )
-            dataframe["Wall Number"] = dataframe.apply(self.itemposition , axis=1)
+            dataframe["Wall Number"] = dataframe.apply(self.itemposition, axis=1)
             dataframe["Wall Number"] = dataframe.apply(self.wall_increment, axis=1)
             dataframe["Stage"] = dataframe.apply(self.applystage, axis=1)
             stages = sorted(
                 dataframe["Stage"].unique(), key=lambda x: (x == "Obstacles", x)
             )
+            dataframe = dataframe[
+                (dataframe["Wall Number"] != 8)
+                | (dataframe["Point number/name"].str.contains("CP|LP|SP|TMP"))
+            ]
             file_name = f"exporteddatass.xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
@@ -128,7 +134,10 @@ class Exportexcelinfo(object):
             if row["Position Z (m)"] <= 145:
                 walls = 7
                 return walls
-            elif row["Position Z (m)"] >= self.heighttotal-60 and row["Position Z (m)"] <= self.heighttotal:
+            elif (
+                row["Position Z (m)"] >= self.heighttotal - 60
+                and row["Position Z (m)"] <= self.heighttotal
+            ):
                 walls = 8
                 return walls
         return row["Wall Number"]

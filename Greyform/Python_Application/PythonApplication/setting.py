@@ -156,9 +156,9 @@ class Setting(QWidget):
 
     # detect WIFI
     def refreshWiFiList(self):
-        wifisetup.setup_wifi(
+        """wifisetup.setup_wifi(
             self.settingform.treeWidget, self.settingform.interface_label
-        )
+        )"""
 
     # add text
     def retranslateUi(self):

@@ -69,6 +69,7 @@ class Exportexcelinfo(object):
             stages = sorted(
                 dataframe["Stage"].unique(), key=lambda x: (x == "Obstacles", x)
             )
+            dataframe = dataframe[dataframe["Wall Number"] != 6]
             file_name = f"exporteddatass4sides.xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
