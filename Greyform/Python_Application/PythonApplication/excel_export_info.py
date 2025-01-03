@@ -62,18 +62,27 @@ class Exportexcelinfo(object):
                 ["Position X (m)", "Position Y (m)", "Position Z (m)", "Diameter"]
             ] = dataframe.apply(self.determine_pipes_pos, axis=1)
             dataframe["Wall Number"] = dataframe.apply(self.determine_walls, axis=1)
-            dataframe[["Width", "Height"]] = dataframe.apply(
-                self.determinewallbasedonwidthandheight, axis=1
-            )
+            dataframe[
+                [
+                    "Width",
+                    "Height",
+                    "Position X (m)",
+                    "Position Y (m)",
+                    "Position Z (m)",
+                ]
+            ] = dataframe.apply(self.determinewallbasedonwidthandheight, axis=1)
             dataframe["Wall Number"] = dataframe.apply(self.itemposition, axis=1)
             dataframe["Wall Number"] = dataframe.apply(self.wall_increment, axis=1)
             dataframe["Stage"] = dataframe.apply(self.applystage, axis=1)
             stages = sorted(
                 dataframe["Stage"].unique(), key=lambda x: (x == "Obstacles", x)
             )
+            unwanted_substrings = ["CP", "LP", "SP", "TMP", "Floor", "Ceiling"]
             dataframe = dataframe[
                 (dataframe["Wall Number"] != 8)
-                | (dataframe["Point number/name"].str.contains("CP|LP|SP|TMP"))
+                | ~dataframe["Point number/name"].map(
+                    lambda x: any(sub in x for sub in unwanted_substrings)
+                )
             ]
             file_name = f"exporteddatass.xlsx"
             with pd.ExcelWriter(file_name) as writer:
@@ -340,20 +349,93 @@ class Exportexcelinfo(object):
 
     # get wall height and width
     def determinewallbasedonwidthandheight(self, row):
+        name = row["Point number/name"]
         for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
             if (index + 1) == row["Wall Number"]:
                 width = dims.get("width", "Not available")
                 depth = dims.get("depth", "Not available")
                 height = dims.get("height", "Not available")
                 if row["Wall Number"] in [2, 5]:
-                    return pd.Series([width + height, depth + height + 10])
+                    return pd.Series(
+                        [
+                            width + height,
+                            depth + height + 10,
+                            row["Position X (m)"],
+                            row["Position Y (m)"],
+                            row["Position Z (m)"],
+                        ]
+                    )
                 if index + 1 == len(self.wall_dimensions):
-                    return pd.Series([width + (height * 2), depth + height + 10])
-                return pd.Series([width, depth + height + 10])
-            if row["Wall Number"] == 7 or row["Wall Number"] == 8:
+                    return pd.Series(
+                        [
+                            width + (height * 2),
+                            depth + height + 10,
+                            row["Position X (m)"],
+                            row["Position Y (m)"],
+                            row["Position Z (m)"],
+                        ]
+                    )
+                return pd.Series(
+                    [
+                        width,
+                        depth + height + 10,
+                        row["Position X (m)"],
+                        row["Position Y (m)"],
+                        row["Position Z (m)"],
+                    ]
+                )
+            if row["Wall Number"] == 7:
                 height = dims.get("height", "Not available")
-                return pd.Series([self.floor[0] + (height * 2), self.floor[1]])
-        return pd.Series([0, 0])
+                if "Floor" in name:
+                    return pd.Series(
+                        [
+                            self.floor[0] + (height * 2),
+                            self.floor[1],
+                            (self.floor[0] + (height * 2)) / 2,
+                            self.floor[1] / 2,
+                            0,
+                        ]
+                    )
+                return pd.Series(
+                    [
+                        self.floor[0] + (height * 2),
+                        self.floor[1],
+                        row["Position X (m)"],
+                        row["Position Y (m)"],
+                        row["Position Z (m)"],
+                    ]
+                )
+            elif row["Wall Number"] == 8:
+                height = dims.get("height", "Not available")
+                depth = dims.get("depth", "Not available")
+                if "Floor" in name:
+                    return pd.Series(
+                        [
+                            self.floor[0] + (height * 2),
+                            self.floor[1],
+                            (self.floor[0] + (height * 2)) / 2,
+                            self.floor[1] / 2,
+                            depth + height + 10,
+                        ]
+                    )
+                return pd.Series(
+                    [
+                        self.floor[0] + (height * 2),
+                        self.floor[1],
+                        row["Position X (m)"],
+                        row["Position Y (m)"],
+                        row["Position Z (m)"],
+                    ]
+                )
+        return pd.Series(
+            [
+                0,
+                0,
+                row["Position X (m)"],
+                row["Position Y (m)"],
+                row["Position Z (m)"],
+            ]
+        )
 
     # get object data based on class using ifc
     def get_objects_data_by_class(self, file, class_type):
@@ -368,6 +450,13 @@ class Exportexcelinfo(object):
                 placement = object.ObjectPlacement.RelativePlacement
                 if placement and placement.Location:
                     x, y, z = placement.Location.Coordinates
+            level_name = ""
+            if hasattr(object, "ContainedInStructure"):
+                for rel in object.ContainedInStructure:
+                    if rel.RelatingStructure and hasattr(rel.RelatingStructure, "Name"):
+                        level_name = rel.RelatingStructure.Name
+            if "CEILING" in level_name:
+                continue  
             objects_data.append(
                 {
                     "Stage": "",

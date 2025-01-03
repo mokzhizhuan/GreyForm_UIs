@@ -2,7 +2,6 @@ import pandas as pd
 import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement, get_axis2placement
 import PythonApplication.arraystorage as storingelement
-import ifcopenshell
 import numpy as np
 
 
@@ -330,6 +329,13 @@ class Exportexcelinfo(object):
                 placement = object.ObjectPlacement.RelativePlacement
                 if placement and placement.Location:
                     x, y, z = placement.Location.Coordinates
+            level_name = ""
+            if hasattr(object, "ContainedInStructure"):
+                for rel in object.ContainedInStructure:
+                    if rel.RelatingStructure and hasattr(rel.RelatingStructure, "Name"):
+                        level_name = rel.RelatingStructure.Name
+            if "CEILING" in level_name:
+                continue  
             objects_data.append(
                 {
                     "Stage": "",

@@ -7,17 +7,10 @@ def stagecatergorize(ifc_file):
     def safe_get_name(element):
         return getattr(
             element, "Name", None
-        )  # Returns None if Name attribute does not exist
-
-    # Categorize elements by their roles and typical use in the construction
+        )  
     for element in ifc_file:
         name = safe_get_name(element)
-        if (
-            element.is_a("IfcFlowFitting")
-            or element.is_a("IfcFlowController")
-            or element.is_a("IfcFlowTerminal")
-            or element.is_a("IfcFlowSegment")
-        ):
+        if element.is_a("IfcFlowSegment"):
             if name:
                 data["Stage 1"].append(name)
         elif element.is_a("IfcCovering") or element.is_a("IfcWallStandardCase"):
@@ -34,10 +27,16 @@ def stagecatergorize(ifc_file):
             element.is_a("IfcDoor")
             or element.is_a("IfcFurnishingElement")
             or element.is_a("IfcSlab")
+            or element.is_a("IfcFlowTerminal")
+            or  element.is_a("IfcFlowFitting")
         ):
             if name:
-                data["Stage 2" if "Floor" in name or "Wall"in name else "Stage 3"].append(name)
-
+                if "Floor" in name or "Wall" in name:
+                    data["Stage 2"].append(name)
+                elif "BSS.Round" in name or "Elbow" in name or "M_Transition" in name:
+                    data["Stage 1"].append(name)
+                else:
+                    data["Stage 3"].append(name)
     return data
 
 
