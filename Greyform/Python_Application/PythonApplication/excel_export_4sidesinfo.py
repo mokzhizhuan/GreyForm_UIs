@@ -13,8 +13,12 @@ class Exportexcelinfo(object):
         self.file = file
         self.wall_dimensions = wall_dimensions
         self.floor = floor
+
         self.stagecategory = storingelement.stagecatergorize(self.file)
-        self.wallformat, self.heighttotal = storingelement.wall_format(self.wall_dimensions)
+        self.wallformat, self.heighttotal = storingelement.wall_format4sides(
+            self.wall_dimensions
+        )
+        self.addranges()
         try:
             data = self.get_objects_data_by_class(file, class_type)
             attributes = [
@@ -59,10 +63,12 @@ class Exportexcelinfo(object):
                 ["Position X (m)", "Position Y (m)", "Position Z (m)", "Diameter"]
             ] = dataframe.apply(self.determine_pipes_pos, axis=1)
             dataframe["Wall Number"] = dataframe.apply(self.determine_walls, axis=1)
+            dataframe[["Wall Number", "Orientation"]] = dataframe.apply(
+                self.itemposition, axis=1
+            )
             dataframe[["Width", "Height"]] = dataframe.apply(
                 self.determinewallbasedonwidthandheight, axis=1
             )
-            dataframe["Wall Number"] = dataframe.apply(self.itemposition , axis=1)
             dataframe["Wall Number"] = dataframe.apply(self.wall_increment, axis=1)
             dataframe["Stage"] = dataframe.apply(self.applystage, axis=1)
             stages = sorted(
@@ -70,6 +76,7 @@ class Exportexcelinfo(object):
             )
             dataframe = dataframe[dataframe["Wall Number"] != 6]
             file_name = f"exporteddatass4sides.xlsx"
+            print(self.wallformat)
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
                 for object_class in stages:
@@ -81,30 +88,104 @@ class Exportexcelinfo(object):
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
 
+    def addranges(self):
+        current_y = 0
+        current_x = 0
+        max_y = self.floor[1] # Maximum Y position based on the image
+        max_x = self.floor[0]  # Maximum X position based on the image
+
+        for wall_id, wall in self.wallformat.items():
+            if 'pos_y_range' not in wall or wall['pos_y_range'] is None:
+                wall['pos_y_range'] = (0, 0)
+
+            if 'pos_x_range' not in wall or wall['pos_x_range'] is None:
+                wall['pos_x_range'] = (0, 0)
+            if wall['axis'] == 'y':  # Wall along the Y-axis
+                # Y-axis walls increase current_y
+                if wall_id == 1:  # Specific for Wall 1
+                    wall['pos_x_range'] = (0, 50)
+                    wall['pos_y_range'] = (0, max_y)
+                elif wall_id == 3:  # Specific for wall 3
+                    wall['pos_x_range'] = (self.floor[1]-50,self.floor[1])
+                    wall['pos_y_range'] = (0, self.floor[1])
+                else:
+                    wall['pos_x_range'] = (0, max_x)
+                    wall['pos_y_range'] = (current_y, current_y + self.floor[0])
+            elif wall['axis'] == 'x':  # Wall along the X-axis
+                # X-axis walls increase current_x
+                if wall_id == 2:  # Specific for Wall 2
+                    wall['pos_x_range'] = (0, wall['width'])
+                    wall['pos_y_range'] = (max_y-self.wallformat[3]["width"]+50, max_y) 
+                elif wall_id == 4:  # Specific for Wall 4
+                    wall['pos_x_range'] = (0, max_x)
+                    wall['pos_y_range'] = (max_y-50, max_y)
+                else:
+                    wall['pos_x_range'] = (current_x, current_x + max_x)
+                    wall['pos_y_range'] = (0, max_y)
+            wall['pos_x_range'] = (max(0, wall['pos_x_range'][0]), min(max_x, wall['pos_x_range'][1]))
+            wall['pos_y_range'] = (max(0, wall['pos_y_range'][0]), min(max_y, wall['pos_y_range'][1]))
+
     def itemposition(self, row):
         register = row["Unnamed : 9"]
         walls = 0
         if register != "Unregistered":
-            for index, (wall, bounds) in enumerate(self.wallformat.items()):
-                if bounds["axis"] == "x":
-                    if row["Position X (m)"] <= bounds["width"] and (
-                        row["Position Z (m)"] >= 70
-                        and row["Position Z (m)"] <= bounds["height"] - 60
-                    ):
-                        return wall
-                elif bounds["axis"] == "y":
-                    if row["Position Y (m)"] >= 50 and (
-                        row["Position Z (m)"] >= 70
-                        and row["Position Z (m)"] <= bounds["height"] - 60
-                    ):
-                        return wall
+            for index, (wall, data) in enumerate(self.wallformat.items()):
+                if data['pos_x_range'][0] <= row["Position X (m)"] <= data['pos_x_range'][1] and \
+                    data['pos_y_range'][0] <= row["Position Y (m)"]  <= data['pos_y_range'][1] and \
+                    70 <= row["Position Z (m)"]  <= data['height']:
+                        orientation = self.determine_orientation(row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"], wall)
+                        return pd.Series([wall, orientation])
             if row["Position Z (m)"] <= 70:
                 walls = 5
-                return walls
-            elif row["Position Z (m)"] >= self.heighttotal-60 and row["Position Z (m)"] <= self.heighttotal:
+                return pd.Series([walls, ""])
+            elif (
+                row["Position Z (m)"] >= self.heighttotal - 60
+                and row["Position Z (m)"] <= self.heighttotal
+            ):
                 walls = 6
-                return walls
-        return row["Wall Number"]
+                return pd.Series([walls, ""])
+        return pd.Series([row["Wall Number"], ""])
+
+    def determine_orientation(self, posx, posy, posz, wallnum):
+        orientation = 0
+        for index, (wall, bounds) in enumerate(self.wallformat.items()):
+            if bounds["axis"] == "x" and index + 1 == wallnum:
+                if posx <= bounds["width"] / 2 and posz >= bounds["height"] / 2:
+                    orientation = 1
+                elif (
+                    posx >= bounds["width"] / 2
+                    and posz >= bounds["height"] / 2
+                    and posx <= bounds["width"]
+                    and posz <= bounds["height"]
+                ):
+                    orientation = 2
+                elif posx <= bounds["width"] / 2 and posz <= bounds["height"] / 2:
+                    orientation = 3
+                elif (
+                    posx >= bounds["width"] / 2
+                    and posz <= bounds["height"] / 2
+                    and posx <= bounds["width"]
+                ):
+                    orientation = 4
+            elif bounds["axis"] == "y" and index + 1 == wallnum:
+                if posy <= bounds["width"] / 2 and posz >= bounds["height"] / 2:
+                    orientation = 1
+                elif (
+                    posy >= bounds["width"] / 2
+                    and posz >= bounds["height"] / 2
+                    and posy <= bounds["width"]
+                    and posz <= bounds["height"]
+                ):
+                    orientation = 2
+                elif posy <= bounds["width"] / 2 and posz <= bounds["height"] / 2:
+                    orientation = 3
+                elif (
+                    posy >= bounds["width"] / 2
+                    and posz <= bounds["height"] / 2
+                    and posy <= bounds["width"]
+                ):
+                    orientation = 4
+        return orientation
 
     def setunwantedpos(self, row):
         name = row["Point number/name"]
@@ -202,9 +283,7 @@ class Exportexcelinfo(object):
                                                 for p in outer_curve.Points
                                                 if p.is_a("IFCCartesianPoint")
                                             ]
-                                            diameterspoint.extend(
-                                                diametersegmentpoints
-                                            )
+                                            diameterspoint.extend(diametersegmentpoints)
                                             if diameterspoint:
                                                 x_values = [
                                                     p[0] for p in diameterspoint
@@ -223,7 +302,7 @@ class Exportexcelinfo(object):
                                                         abs(
                                                             int(round(center_coords[2]))
                                                         ),
-                                                        round(diameter_x,1),
+                                                        round(diameter_x, 1),
                                                     ]
                                                 )
         elements = self.file.by_type("IfcRectangleProfileDef")
@@ -335,15 +414,11 @@ class Exportexcelinfo(object):
                     if rel.RelatingStructure and hasattr(rel.RelatingStructure, "Name"):
                         level_name = rel.RelatingStructure.Name
             if "CEILING" in level_name:
-                continue  
+                continue
             objects_data.append(
                 {
                     "Stage": "",
-                    "Marking type": (
-                        Element.get_type(object).Name
-                        if Element.get_type(object)
-                        else object.Name
-                    ),
+                    "Marking type": object.is_a(),
                     "Point number/name": name,
                     "Position X (m)": abs(int(x)),
                     "Position Y (m)": abs(int(y)),

@@ -140,6 +140,7 @@ class ProgressBarDialogIFC(QDialog):
                                 widths.append(int(round(dimensions[0])))
                     if len(widths) > 1 and len(widths) == 6:
                         top_two = sorted(widths, reverse=True)[:2] 
+                        top_two[0] = top_two[0] + 100 
                     elif len(widths) > 1 and len(widths) == 4:
                         top_two = sorted(widths, reverse=True)[:3] 
                         top_two[0] = top_two[0] + 50
