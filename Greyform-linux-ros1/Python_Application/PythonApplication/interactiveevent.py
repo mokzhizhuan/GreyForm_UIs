@@ -39,11 +39,10 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.reader = setcamerainteraction[8]
         self.cubeactor = setcamerainteraction[9]
         self.cameraactor = setcamerainteraction[10]
-        self.oldcamerapos = setcamerainteraction[11]
-        self.old_actor_position = setcamerainteraction[12]
-        self.collisionFilter = setcamerainteraction[13]
-        self.spaceseperation = setcamerainteraction[14]
-        self.center = setcamerainteraction[15]
+        self.displayoldpos = setcamerainteraction[11]
+        self.old_actor_position = setcamerainteraction[11]
+        self.spaceseperation = setcamerainteraction[13]
+        self.center = setcamerainteraction[14]
         camera = self.render.GetActiveCamera()
         self.actor_speed = 20
         self.threshold = 20

@@ -53,8 +53,6 @@ class dxfloader(object):
             if not self.meshsplot.is_all_triangles:
                 self.meshsplot = self.meshsplot.triangulate()
                 self.meshsplot.save(output_stl_path)
-                scale_factor = 1.5
-                self.resize_stl(output_stl_path, scale_factor, output_stl_path)
                 meshs = meshio.read(output_stl_path)
                 offset = []
                 cells = []

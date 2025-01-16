@@ -186,14 +186,9 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.Xlabel_2,
             self.mainwindow.Ylabel_2,
             self.mainwindow.Zlabel,
-            self.mainwindow.SequenceButton,
-            self.mainwindow.NextButton_Page_3,
             self.mainwindow.LocalizationButton,
             self.ros_node,
-            self.mainwindow.excelfilpathtext,
-            self.mainwindow.seqlabel_2,
             self.mainwindow.Stagelabel,
-            self.mainwindow.StageButton,
         ]
         fileselectionmesh.FileSelectionMesh(
             self.file_path, mainwindowforfileselection, self.mainwindow
@@ -209,6 +204,7 @@ class Ui_MainWindow(QMainWindow):
         )
         self.file_list_selected = True
         self.show_completion_message()
+        self.mainwindow.NextButton_Page_2.show()
 
     # main window layout
     def setStretch(self):
@@ -226,9 +222,11 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.page,
             self.mainwindow.page_2,
             self.mainwindow.horizontalLayoutWidgetpage2,
-            self.mainwindow.page_3,
             self.mainwindow.layoutWidgetpage2,
-            self.settingpageuipage,
+            self.mainwindow.page_3,
+            self.mainwindow.MarkingButton,
+            self.mainwindow.horizontalLayoutWidgetpage4,
+            self.mainwindow.CloseButton,
             self.mainwindow.mainconfiguration,
             self.mainwindow.SettingButton,
             self.mainwindow.settingpage,

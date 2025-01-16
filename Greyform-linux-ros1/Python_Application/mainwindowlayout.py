@@ -20,7 +20,9 @@ class Ui_MainWindow_layout(object):
         page2layout,
         page2frame,
         page3,
+        MarkingButton,
         page3layout,
+        CloseButton,
         stackedWidget_main,
         SettingButton,
         settingpage,
@@ -40,6 +42,8 @@ class Ui_MainWindow_layout(object):
         self.page2frame = page2frame
         self.page3 = page3
         self.page3Layout = page3layout
+        self.MarkingButton = MarkingButton
+        self.CloseButton = CloseButton
         self.settingpage = settingpage
         self.stackedWidget_main = stackedWidget_main
         self.SettingButton = SettingButton
@@ -81,13 +85,24 @@ class Ui_MainWindow_layout(object):
         self.mainlayoutpagebutton.setStretch(0, 1)
         self.mainlayoutpagebutton.setStretch(1, 1)
         self.mainmenu.setLayout(self.page1boxlayout)
-        self.page2boxLayout = QVBoxLayout()
-        self.page2boxLayout.addWidget(self.page2Layout)
+        self.page2boxLayout = QHBoxLayout()
+        self.page2boxLayout.addWidget(self.horizontalLayoutWidget)
+        self.page2boxLayout.addWidget(self.horizontalLayoutWidget2)
+        self.page2boxLayout.setStretch(0, 1)
         self.page2boxLayout.setStretch(1, 1)
-        self.page2.setLayout(self.page2boxLayout)
+        self.page.setLayout(self.page2boxLayout)
         self.page3boxLayout = QVBoxLayout()
-        self.page3boxLayout.addWidget(self.page3Layout)
         self.page3boxLayout.addWidget(self.page2frame)
-        self.page3boxLayout.setStretch(0, 2)
-        self.page3boxLayout.setStretch(1, 2)
-        self.page3.setLayout(self.page3boxLayout)
+        self.page3boxLayout.addWidget(self.page2Layout)
+        self.page3boxLayout.setStretch(0, 1)
+        self.page3boxLayout.setStretch(1, 1)
+        self.page2.setLayout(self.page3boxLayout)
+        self.page4boxLayout = QVBoxLayout()
+        self.page4boxLayout.addWidget(self.MarkingButton)
+        self.page4boxLayout.addWidget(self.page3Layout)
+        self.page4boxLayout.addWidget(self.CloseButton)
+        self.page4boxLayout.setStretch(0, 1)
+        self.page4boxLayout.setStretch(1, 1)
+        self.page4boxLayout.setStretch(2, 1)
+        self.page3.setLayout(self.page4boxLayout)
+

@@ -152,7 +152,7 @@ class ListenerNode:
                 self.selection_callback(msg)
         except Exception as e:
             message = f"Failed to publish selection message: {e}"
-            print(message)
+            print(message) 
 
     # process excel data for finalization
     def process_excel_data(self, excel_filepath):
@@ -160,7 +160,7 @@ class ListenerNode:
             self.excelitems = pd.read_excel(excel_filepath, sheet_name=None)
             processed_data = {}
             self.message += f"{self.spacing}Item Postion is marking : {self.picked_position}{self.spacing}"
-            for sheet_name, data in self.excelitems.items():
+            for stage, data in self.excelitems.items():
                 df = pd.DataFrame(data)
                 for index, row in df.iterrows():
                     original_x = df.at[index, "Position X (m)"]
@@ -179,20 +179,17 @@ class ListenerNode:
                             df.at[index, "Position Z (m)"],
                         ]
                     )
-                    distance = self.calculate_distance(
-                        self.picked_position, wall_position
-                    )
                     wallnumberreq = str(df.at[index, "Wall Number"])
-                    if distance == 0 and self.wallselection == wallnumberreq:
+                    if self.wallselection == wallnumberreq and self.typeselection == stage:
                         self.message += (
                             f"{self.spacing}Points in {self.picked_position} {row['Wall Number']} "
-                            f"on sheet {sheet_name} are marked."
+                            f"on sheet {stage} are marked."
                         )
                         df.at[index, "Status"] = "done"
                     df.at[index, "Position X (m)"] = original_x
                     df.at[index, "Position Y (m)"] = original_y
                     df.at[index, "Position Z (m)"] = original_z
-                processed_data[sheet_name] = df
+                processed_data[stage] = df
             with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
                 for sheet_name, df in processed_data.items():
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
@@ -210,10 +207,6 @@ class ListenerNode:
 
     def set_selection_callback(self, callback):
         self.selection_callback = callback
-
-    # distance calculation between two points
-    def calculate_distance(self, point1, point2):
-        return np.linalg.norm(point1 - point2)
 
     # show dialog
     def show_info_dialog(self):

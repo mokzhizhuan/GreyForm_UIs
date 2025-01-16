@@ -32,14 +32,9 @@ class dxfloader(object):
         self.Xlabel_before = mainwindowforfileselection[3]
         self.Ylabel_before = mainwindowforfileselection[4]
         self.Zlabel_before = mainwindowforfileselection[5]
-        self.seqButton = mainwindowforfileselection[6]
-        self.NextButton_Page_3 = mainwindowforfileselection[7]
-        self.localizebutton = mainwindowforfileselection[8]
-        self.rosnode = mainwindowforfileselection[9]
-        self.excelfiletext = mainwindowforfileselection[10]
-        self.seqlabel = mainwindowforfileselection[11]
-        self.Stagelabel = mainwindowforfileselection[12]
-        self.StageButton = mainwindowforfileselection[13]
+        self.localizebutton = mainwindowforfileselection[6]
+        self.rosnode = mainwindowforfileselection[7]
+        self.Stagelabel = mainwindowforfileselection[8]
         self.gdf = gdf
         self.loaddxftoframe()
 
@@ -58,8 +53,6 @@ class dxfloader(object):
             if not self.meshsplot.is_all_triangles:
                 self.meshsplot = self.meshsplot.triangulate()
                 self.meshsplot.save(output_stl_path)
-                scale_factor = 1.5
-                self.resize_stl(output_stl_path, scale_factor, output_stl_path)
                 meshs = meshio.read(output_stl_path)
                 offset = []
                 cells = []
@@ -96,16 +89,11 @@ class dxfloader(object):
                     self.Xlabel_before,
                     self.Ylabel_before,
                     self.Zlabel_before,
-                    self.seqButton,
-                    self.NextButton_Page_3,
                     self.localizebutton,
                     self.rosnode,
                     self.file_path,
-                    self.excelfiletext,
-                    self.seqlabel,
                     self.mainwindow,
                     self.Stagelabel,
-                    self.StageButton,
                 )
 
     # process geometry in geodata pandas

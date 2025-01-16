@@ -69,6 +69,7 @@ class mainwindowbuttonUI(object):
                 self.stackedWidget,
             )
         )
+        self.BackButton_Page_3.clicked.connect(self.startconfigure)
         self.ConfirmButton.clicked.connect(self.guibuttonconfig)
         self.MarkingButton.clicked.connect(self.guiconfigure)
         self.HomeButton.clicked.connect(self.homeui)

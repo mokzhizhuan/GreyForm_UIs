@@ -82,24 +82,14 @@ class TalkerNode:
 
     #talker selection message implementation
     def publish_selection_message(
-        self, wall_number, sectionnumber, picked_position, Stagelabel, cube_actor
-    ):
+        self, wall_number, sectionnumber, picked_position, Stagelabel
+    ):  
         try:
             msg = SelectionWall()
             msg.wallselection = str(wall_number)
-            msg.typeselection = f"{Stagelabel.text()}"
+            msg.typeselection = f"{Stagelabel}"
             msg.sectionselection = sectionnumber
-            picked_position = [
-                int(picked_position[0]),
-                int(picked_position[1]),
-                int(picked_position[2]),
-            ]
             msg.picked_position = picked_position
-            default_position = [
-                int(cube_actor.GetPosition()[0]),
-                int(cube_actor.GetPosition()[1]),
-                int(cube_actor.GetPosition()[2]),
-            ]
             self.selection_publisher_.publish(msg)
             self.message += (
                 f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"
