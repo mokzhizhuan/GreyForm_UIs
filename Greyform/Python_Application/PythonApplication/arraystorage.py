@@ -5,9 +5,8 @@ def stagecatergorize(ifc_file):
     data = {"Stage 1": [], "Stage 2": [], "Stage 3": []}
 
     def safe_get_name(element):
-        return getattr(
-            element, "Name", None
-        )  
+        return getattr(element, "Name", None)
+
     for element in ifc_file:
         name = safe_get_name(element)
         if element.is_a("IfcFlowSegment"):
@@ -28,7 +27,7 @@ def stagecatergorize(ifc_file):
             or element.is_a("IfcFurnishingElement")
             or element.is_a("IfcSlab")
             or element.is_a("IfcFlowTerminal")
-            or  element.is_a("IfcFlowFitting")
+            or element.is_a("IfcFlowFitting")
         ):
             if name:
                 if "Floor" in name or "Wall" in name:
@@ -103,7 +102,12 @@ def wall_format(wall):
                 "height": depth + height + 10,
             }
         heighttotal = depth + height + 10
-    return wall_format, heighttotal
+    return wall_format, heighttotal , height
+
+def wall_format_finishes(wall):
+    for index, (wall, dims) in enumerate(wall.items(), start=0):
+        height = dims.get("height", "Not available")
+    return height
 
 
 def wall_format4sides(wall):

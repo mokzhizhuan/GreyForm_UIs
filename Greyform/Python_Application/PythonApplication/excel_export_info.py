@@ -4,31 +4,56 @@ from ifcopenshell.util.placement import get_local_placement, get_axis2placement
 import PythonApplication.arraystorage as storingelement
 import ifcopenshell
 import numpy as np
+import math
 
 
 # export excel sheet
 class Exportexcelinfo(object):
-    def __init__(self, file, class_type, wall_dimensions, floor):
+    def __init__(
+        self,
+        file,
+        class_type,
+        wall_dimensions,
+        floor,
+        offset,
+        wall_finishes_dimensions,
+        floor_offset,
+        floor_height,
+        wall_finishes_offset,
+    ):
         # starting initialize
         super().__init__()
         self.file = file
         self.wall_dimensions = wall_dimensions
         self.floor = floor
+        self.floorheight = offset
+        self.flooroffset = floor_offset
+        self.floor_height = floor_height
+        self.wall_finishes_dimensions = wall_finishes_dimensions
+        self.wall_finishes_offset = wall_finishes_offset
         self.stagecategory = storingelement.stagecatergorize(self.file)
-        self.wallformat, self.heighttotal = storingelement.wall_format(
-            self.wall_dimensions
+        self.wallformat, self.heighttotal, self.wall_height = (
+            storingelement.wall_format(self.wall_dimensions)
         )
+        self.wall_finishes_height = storingelement.wall_format_finishes(
+            self.wall_finishes_dimensions
+        )
+        self.spacing = "\n"
         self.addranges()
-        self.floor[0] = self.floor[0]-100
+        self.meterline = 1000
+        self.wallformat = {
+            key + 1 if key < 6 else 1: value for key, value in self.wallformat.items()
+        }
+        self.wallformat = dict(sorted(self.wallformat.items()))
         try:
             data = self.get_objects_data_by_class(file, class_type)
             attributes = [
                 "Stage",
                 "Marking type",
                 "Point number/name",
-                "Position X (m)",
-                "Position Y (m)",
-                "Position Z (m)",
+                "Position X (mm)",
+                "Position Y (mm)",
+                "Position Z (mm)",
                 "Wall Number",
                 "Shape type",
                 "Status",
@@ -61,39 +86,55 @@ class Exportexcelinfo(object):
             dataframe["Unnamed : 9"] = dataframe.apply(self.setunwantedpos, axis=1)
             dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
             dataframe[
-                ["Position X (m)", "Position Y (m)", "Position Z (m)", "Diameter"]
+                ["Position X (mm)", "Position Y (mm)", "Position Z (mm)", "Diameter"]
             ] = dataframe.apply(self.determine_pipes_pos, axis=1)
+            dataframe[
+                [
+                    "Position X (mm)",
+                    "Position Y (mm)",
+                    "Position Z (mm)",
+                ]
+            ] = dataframe.apply(self.refreshwallfinishespoint, axis=1)
             dataframe["Wall Number"] = dataframe.apply(self.determine_walls, axis=1)
-            dataframe[["Wall Number", "Orientation"]] = dataframe.apply(
-                self.itemposition, axis=1
-            )
+            dataframe["Wall Number"] = dataframe.apply(self.itemposition, axis=1)
             dataframe[
                 [
                     "Width",
                     "Height",
-                    "Position X (m)",
-                    "Position Y (m)",
-                    "Position Z (m)",
+                    "Position X (mm)",
+                    "Position Y (mm)",
+                    "Position Z (mm)",
                 ]
             ] = dataframe.apply(self.determinewallbasedonwidthandheight, axis=1)
-            dataframe["Wall Number"] = dataframe.apply(self.wall_increment, axis=1)
-            dataframe["Stage"] = dataframe.apply(self.applystage, axis=1)
+            dataframe[
+                [
+                    "Position X (mm)",
+                    "Position Y (mm)",
+                    "Position Z (mm)",
+                ]
+            ] = dataframe.apply(self.applywallpoints, axis=1)
+            dataframe[["Stage", "Marking type"]] = dataframe.apply(
+                self.applystage, axis=1
+            )
             stages = sorted(
                 dataframe["Stage"].unique(), key=lambda x: (x == "Obstacles", x)
             )
-            unwanted_substrings = ["CP", "LP", "SP", "TMP", "Floor", "Ceiling"]
-            dataframe = dataframe[
-                (dataframe["Wall Number"] != 8)
-                | ~dataframe["Point number/name"].map(
-                    lambda x: any(sub in x for sub in unwanted_substrings)
-                )
-            ]
-            file_name = f"exporteddatasss.xlsx"
+            dataframe["Unnamed : 9"] = ""
+            if "Obstacles" not in stages:
+                stages.append("Obstacles")
+            dataframe = dataframe[(dataframe["Wall Number"] != 8)].sort_values(
+                by="Wall Number"
+            )
+            dataframe.loc[dataframe["Wall Number"] == 7, "Wall Number"] = "F"
+            file_name = f"exporteddatassss(draft(changes)).xlsx"
             print(self.wallformat)
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
                 for object_class in stages:
-                    df_class = dataframe[dataframe["Stage"] == object_class]
+                    if object_class in dataframe["Stage"].values:
+                        df_class = dataframe[dataframe["Stage"] == object_class]
+                    else:
+                        df_class = pd.DataFrame(columns=attributes)
                     df_class = df_class.drop(["Stage"], axis=1)
                     df_class.to_excel(writer, sheet_name=object_class)
                     worksheet = writer.sheets[object_class]
@@ -101,101 +142,229 @@ class Exportexcelinfo(object):
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
 
+    def refreshwallfinishespoint(self, row):
+        name = row["Point number/name"]
+        if "Basic Wall:BSS.20mm Wall Finishes (600x600mm)" in name:
+            for wall_name, dims in self.wall_finishes_offset.items():
+                if wall_name in name:
+                    width = dims.get("width", "Not available")
+                    depth = dims.get("depth", "Not available")
+                    height = dims.get("height", "Not available")
+                    return pd.Series([width, height, depth])
+        return pd.Series(
+            [row["Position X (mm)"], row["Position Y (mm)"], row["Position Z (mm)"]]
+        )
+
+    def applywallpoints(self, row):
+        wall_number = row["Wall Number"]
+        positionx = row["Position X (mm)"]
+        positiony = row["Position Y (mm)"]
+        positionz = row["Position Z (mm)"]
+        name = row["Point number/name"]
+        posy = 0
+        posx = 0
+        for wall_id, wall in self.wallformat.items():
+            if wall_number == wall_id:
+                if wall["axis"] == "y":
+                    internaldimensionx = self.floor[0]
+                    center_x = internaldimensionx / 2
+                    internaldimensiony = self.floor[1]
+                    posy = internaldimensiony / 2
+                    center_z = self.centerlinez()
+                    if center_x < positionx and internaldimensionx > positionx:
+                        startingrange = wall["pos_y_range"][0]
+                        endrange = wall["pos_y_range"][1]
+                        robotposy = (
+                            positiony - startingrange - ((endrange - startingrange) / 2)
+                        )
+                        print(name)
+                        print(f"Wall {wall} is a potential match.")
+                        print(startingrange)
+                        print(endrange)
+                        print(robotposy)
+                        return pd.Series(
+                            [
+                                positionx,
+                                robotposy,
+                                positionz - center_z + (self.floorheight),
+                            ]
+                        )
+                    else:
+                        if 0 < positiony - posy:
+                            return pd.Series(
+                                [
+                                    positionx,
+                                    -abs(positiony - posy),
+                                    positionz - center_z + (self.floorheight),
+                                ]
+                            )
+                        else:
+                            return pd.Series(
+                                [
+                                    positionx,
+                                    abs(positiony - posy),
+                                    positionz - center_z + (self.floorheight),
+                                ]
+                            )
+                else:
+                    center_z = self.centerlinez()
+                    internaldimensionx = self.floor[0]
+                    internaldimensiony = self.floor[1]
+                    posx = internaldimensionx / 2
+                    posy = internaldimensiony / 2
+                    if posy < positiony and internaldimensiony > positiony:
+                        return pd.Series(
+                            [
+                                positionx - posx,
+                                positiony,
+                                positionz - center_z + (self.floorheight),
+                            ]
+                        )
+                    else:
+                        if 0 < positionx - posx:
+                            return pd.Series(
+                                [
+                                    -abs(positionx - posx),
+                                    positiony,
+                                    positionz - center_z + (self.floorheight),
+                                ]
+                            )
+                        else:
+                            return pd.Series(
+                                [
+                                    abs(positionx - posx),
+                                    positiony,
+                                    positionz - center_z + (self.floorheight),
+                                ]
+                            )
+        if wall_number == 7:
+            internaldimensionx = self.floor[0]
+            wallcenterline_y = self.floor[1] - self.meterline
+            center_z = (self.floorheight - (self.flooroffset * 2)) + self.meterline
+            return pd.Series(
+                [
+                    positionx - (internaldimensionx / 2),
+                    positiony - wallcenterline_y,
+                    positionz,
+                ]
+            )
+        return pd.Series([positionx, positiony, positionz])
+
+    def centerlinez(self):
+        return (
+            self.floorheight - (self.flooroffset + (self.floor_height))
+        ) + self.meterline
+
     def addranges(self):
         current_y = 0
         current_x = 0
-        max_y = self.floor[1] # Maximum Y position based on the image
+        max_y = self.floor[1]  # Maximum Y position based on the image
         max_x = self.floor[0]  # Maximum X position based on the image
-
         for wall_id, wall in self.wallformat.items():
-            if 'pos_y_range' not in wall or wall['pos_y_range'] is None:
-                wall['pos_y_range'] = (0, 0)
-
-            if 'pos_x_range' not in wall or wall['pos_x_range'] is None:
-                wall['pos_x_range'] = (0, 0)
-            if wall['axis'] == 'y':  # Wall along the Y-axis
+            if "pos_y_range" not in wall or wall["pos_y_range"] is None:
+                wall["pos_y_range"] = (0, 0)
+            if "pos_x_range" not in wall or wall["pos_x_range"] is None:
+                wall["pos_x_range"] = (0, 0)
+            if wall["axis"] == "y":  # Wall along the Y-axis
                 # Y-axis walls increase current_y
                 if wall_id == 1:  # Specific for Wall 1
-                    wall['pos_x_range'] = (0, 50)
-                    wall['pos_y_range'] = (0, self.floor[0])
+                    wall["pos_x_range"] = (
+                        current_x,
+                        self.wall_finishes_height + (self.wall_height / 2),
+                    )
+                    wall["pos_y_range"] = (0, self.floor[0])
                 elif wall_id == 3:  # Specific for wall 3
-                    wall['pos_x_range'] = (self.floor[1]-50,self.floor[1])
-                    wall['pos_y_range'] = (self.floor[1]-self.wallformat[3]["width"], self.floor[1])
+                    wall["pos_x_range"] = (
+                        self.floor[1] - self.wall_height,
+                        self.floor[1],
+                    )
+                    wall["pos_y_range"] = (
+                        self.floor[1]
+                        - self.wallformat[wall_id]["width"]
+                        - (self.wall_height * 2)
+                        - (self.wall_finishes_height * 2),
+                        self.floor[1],
+                    )
                 elif wall_id == 5:  # Specific for wall 5
-                    wall['pos_x_range'] = (self.floor[0]-100, max_x)
-                    wall['pos_y_range'] = (0, max_y)
+                    wall["pos_x_range"] = (self.floor[0] - self.wall_height * 2, max_x)
+                    wall["pos_y_range"] = (
+                        0,
+                        max_y - self.wallformat[wall_id - 2]["width"],
+                    )
                 else:
-                    wall['pos_x_range'] = (0, max_x)
-                    wall['pos_y_range'] = (current_y, current_y + self.floor[0])
-            elif wall['axis'] == 'x':  # Wall along the X-axis
+                    wall["pos_x_range"] = (0, max_x)
+                    wall["pos_y_range"] = (current_y, current_y + self.floor[0])
+            elif wall["axis"] == "x":  # Wall along the X-axis
                 # X-axis walls increase current_x
                 if wall_id == 2:  # Specific for Wall 2
-                    wall['pos_x_range'] = (0, wall['width'])
-                    wall['pos_y_range'] = (max_y-self.wallformat[3]["width"]+50, max_y) 
+                    wall["pos_x_range"] = (0, wall["width"])
+                    wall["pos_y_range"] = (
+                        max_y
+                        - self.wallformat[wall_id + 1]["width"]
+                        + self.wall_height,
+                        max_y,
+                    )
                 elif wall_id == 4:  # Specific for Wall 4
-                    wall['pos_x_range'] = (self.floor[1], max_x)
-                    wall['pos_y_range'] = (max_y-50, max_y)
+                    wall["pos_x_range"] = (
+                        self.floor[1] - self.wall_height * 2,
+                        max_x - self.wall_height - (self.wall_finishes_height * 2),
+                    )
+                    wall["pos_y_range"] = (
+                        max_y
+                        - self.wallformat[wall_id - 1]["width"]
+                        - self.wall_height * 2
+                        - self.wall_finishes_height,
+                        max_y - self.wallformat[wall_id - 1]["width"],
+                    )
                 elif wall_id == 6:  # Wall 6
-                    wall['pos_x_range'] = (0, max_x)  # Corrected range
-                    wall['pos_y_range'] = (0, 50)
+                    wall["pos_x_range"] = (
+                        self.wall_finishes_height + self.wall_height,
+                        max_x,
+                    )  # Corrected range
+                    wall["pos_y_range"] = (current_y, self.wall_height)
                 else:
-                    wall['pos_x_range'] = (current_x, current_x + max_x)
-                    wall['pos_y_range'] = (0, max_y)
-            wall['pos_x_range'] = (max(0, wall['pos_x_range'][0]), min(max_x, wall['pos_x_range'][1]))
-            wall['pos_y_range'] = (max(0, wall['pos_y_range'][0]), min(max_y, wall['pos_y_range'][1]))
+                    wall["pos_x_range"] = (
+                        current_x,
+                        current_x
+                        + max_x
+                        - self.wall_finishes_height
+                        - self.wall_height,
+                    )
+                    wall["pos_y_range"] = (current_y, max_y)
+            wall["pos_x_range"] = (
+                max(current_x, wall["pos_x_range"][0]),
+                min(max_x, wall["pos_x_range"][1]),
+            )
+            wall["pos_y_range"] = (
+                max(0, wall["pos_y_range"][0]),
+                min(max_y, wall["pos_y_range"][1]),
+            )
 
     def itemposition(self, row):
         register = row["Unnamed : 9"]
+        name = row["Point number/name"]
         walls = 0
         if register != "Unregistered":
             for index, (wall, data) in enumerate(self.wallformat.items()):
-                if data['pos_x_range'][0] <= row["Position X (m)"] <= data['pos_x_range'][1] and \
-                    data['pos_y_range'][0] <= row["Position Y (m)"]  <= data['pos_y_range'][1] and \
-                    145 <= row["Position Z (m)"]  <= data['height']:
-                        orientation = self.determine_orientation(row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"], wall)
-                        return pd.Series([wall, orientation])
-            if row["Position Z (m)"] <= 145:
-                walls = 7
-                return pd.Series([walls, ""])
-            elif self.heighttotal - 60 <= row["Position Z (m)"]  <= self.heighttotal:
-                walls = 8
-                return pd.Series([walls, ""])
-        return pd.Series([row["Wall Number"], ""])
 
-    def determine_orientation(self, posx, posy, posz, wallnum):
-        combined_2_and_4_width = (
-            self.wallformat[2]["width"] + self.wallformat[4]["width"]
-        )
-        combined_3_and_5_width = (
-            self.wallformat[3]["width"] + self.wallformat[5]["width"]
-        )
-        total_height = self.wallformat[1]["height"]
-        orientation = 0
-        for index, (wall, bounds) in enumerate(self.wallformat.items()):
-            if wallnum == wall:
-                if wall in [2, 4, 6]:  # Walls facing the X-axis (compare X and Z)
-                    if posx > combined_2_and_4_width / 2:  # East
-                        if posz > total_height / 2:  # Upper
-                            orientation = 1  # Northeast (Upper)
-                        else:  # Lower
-                            orientation = 3  # Southeast (Lower)
-                    else:  # West
-                        if posz > total_height / 2:  # Upper
-                            orientation = 2  # Northwest (Upper)
-                        else:  # Lower
-                            orientation = 4  # Southwest (Lower)
-                elif wall  in [1, 3, 5]:  # Walls facing the Y-axis (compare Y and Z)
-                    if posy > combined_3_and_5_width / 2:  # North
-                        if posz > total_height / 2:  # Upper
-                            orientation = 1  # Northeast (Upper)
-                        else:  # Lower
-                            orientation = 3  # Southeast (Lower)
-                    else:  # South
-                        if posz > total_height / 2:  # Upper
-                            orientation = 2  # Northwest (Upper)
-                        else:  # Lower
-                            orientation = 4  # Southwest (Lower)
-        return orientation
+                transformed_x = row["Position X (mm)"] - (self.wall_height / 2)
+                transformed_y = row["Position Y (mm)"] - self.wall_height
+                transformed_z = row["Position Z (mm)"]
+
+                x_pass = data["pos_x_range"][0] < transformed_x < data["pos_x_range"][1]
+                y_pass = (
+                    data["pos_y_range"][0] <= transformed_y < data["pos_y_range"][1]
+                )
+                z_pass = transformed_z >= -abs(self.floorheight - self.wall_height)
+                if x_pass and y_pass and z_pass:
+                    return wall
+            if row["Position Z (mm)"] < -abs(self.floorheight - self.wall_height):
+                walls = 7
+                return walls
+            elif self.heighttotal - 60 <= row["Position Z (mm)"] <= self.heighttotal:
+                walls = 8
+                return walls
+        return row["Wall Number"]
 
     def setunwantedpos(self, row):
         name = row["Point number/name"]
@@ -214,6 +383,7 @@ class Exportexcelinfo(object):
     def applystage(self, row):
         stage = ""
         stagenum = ""
+        markingtypes = ["Pipes", "Tile", "Fitting"]
         name = row["Point number/name"]
         if self.wall_name in name:
             if self.indexwall < len(self.wall_600x600mm):
@@ -230,12 +400,24 @@ class Exportexcelinfo(object):
         for stage, names in self.stagecategory.items():
             for namesatge in names:
                 if name == namesatge:
-                    return stage
+                    markingtype = self.changemarkingtype(stage, markingtypes)
+                    return pd.Series([stage, markingtype])
         if stagenum:
             stage = f"Stage {stagenum}"
         else:
             stage = "Obstacles"
-        return stage
+        markingtype = self.changemarkingtype(stage, markingtypes)
+        return pd.Series([stage, markingtype])
+
+    def changemarkingtype(self, stage, markingtypes):
+        if stage == "Stage 1":
+            return markingtypes[0]
+        elif stage == "Stage 2":
+            return markingtypes[1]
+        elif stage == "Stage 3":
+            return markingtypes[2]
+        else:
+            return stage
 
     def stagenumber(self, name):
         if "CP" in name:
@@ -259,6 +441,7 @@ class Exportexcelinfo(object):
     def determine_pipes_pos(self, row):
         name = row["Point number/name"]
         pipes = self.file.by_type("IFCFlowSegment")
+        type = row["Marking type"]
         for pipe in pipes:
             if name in pipe:
                 if pipe.Representation:
@@ -373,9 +556,9 @@ class Exportexcelinfo(object):
                             )
         return pd.Series(
             [
-                row["Position X (m)"],
-                row["Position Y (m)"],
-                row["Position Z (m)"],
+                row["Position X (mm)"],
+                row["Position Y (mm)"],
+                row["Position Z (mm)"],
                 row["Diameter"],
             ]
         )
@@ -387,47 +570,29 @@ class Exportexcelinfo(object):
         return row["Wall Number"]
 
     def wall_increment(self, row):
+        name = row["Point number/name"]
         if row["Wall Number"] == 6:
-            return 1
+            if all(keyword not in name for keyword in ["CP", "LP", "SP", "TMP"]):
+                return 1
         elif row["Wall Number"] < 6:
-            return row["Wall Number"] + 1
+            if all(keyword not in name for keyword in ["CP", "LP", "SP", "TMP"]):
+                return row["Wall Number"] + 1
         return row["Wall Number"]
 
     # get wall height and width
     def determinewallbasedonwidthandheight(self, row):
         name = row["Point number/name"]
-        for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
+        for index, (wall, dims) in enumerate(self.wallformat.items(), start=0):
             if (index + 1) == row["Wall Number"]:
                 width = dims.get("width", "Not available")
-                depth = dims.get("depth", "Not available")
                 height = dims.get("height", "Not available")
-                if row["Wall Number"] in [2, 5]:
-                    return pd.Series(
-                        [
-                            width + height,
-                            depth + height + 10,
-                            row["Position X (m)"],
-                            row["Position Y (m)"],
-                            row["Position Z (m)"],
-                        ]
-                    )
-                if index + 1 == len(self.wall_dimensions):
-                    return pd.Series(
-                        [
-                            width + (height * 2),
-                            depth + height + 10,
-                            row["Position X (m)"],
-                            row["Position Y (m)"],
-                            row["Position Z (m)"],
-                        ]
-                    )
                 return pd.Series(
                     [
                         width,
-                        depth + height + 10,
-                        row["Position X (m)"],
-                        row["Position Y (m)"],
-                        row["Position Z (m)"],
+                        height,
+                        row["Position X (mm)"],
+                        row["Position Y (mm)"],
+                        row["Position Z (mm)"],
                     ]
                 )
             if row["Wall Number"] == 7:
@@ -435,98 +600,126 @@ class Exportexcelinfo(object):
                 if "Floor" in name:
                     return pd.Series(
                         [
-                            self.floor[0] + (height * 2),
+                            self.floor[0],
                             self.floor[1],
-                            (self.floor[0] + (height * 2)) / 2,
+                            (self.floor[0]) / 2,
                             self.floor[1] / 2,
                             0,
                         ]
                     )
                 return pd.Series(
                     [
-                        self.floor[0] + (height * 2),
+                        self.floor[0],
                         self.floor[1],
-                        row["Position X (m)"],
-                        row["Position Y (m)"],
-                        row["Position Z (m)"],
+                        row["Position X (mm)"],
+                        row["Position Y (mm)"],
+                        row["Position Z (mm)"],
                     ]
                 )
             elif row["Wall Number"] == 8:
                 height = dims.get("height", "Not available")
-                depth = dims.get("depth", "Not available")
                 if "Floor" in name:
                     return pd.Series(
                         [
-                            self.floor[0] + (height * 2),
+                            self.floor[0],
                             self.floor[1],
-                            (self.floor[0] + (height * 2)) / 2,
+                            (self.floor[0]) / 2,
                             self.floor[1] / 2,
-                            depth + height + 10,
+                            height,
                         ]
                     )
                 return pd.Series(
                     [
-                        self.floor[0] + (height * 2),
+                        self.floor[0],
                         self.floor[1],
-                        row["Position X (m)"],
-                        row["Position Y (m)"],
-                        row["Position Z (m)"],
+                        row["Position X (mm)"],
+                        row["Position Y (mm)"],
+                        row["Position Z (mm)"],
                     ]
                 )
         return pd.Series(
             [
                 0,
                 0,
-                row["Position X (m)"],
-                row["Position Y (m)"],
-                row["Position Z (m)"],
+                row["Position X (mm)"],
+                row["Position Y (mm)"],
+                row["Position Z (mm)"],
             ]
         )
 
     # get object data based on class using ifc
     def get_objects_data_by_class(self, file, class_type):
         objects_data = []
+        self.pset_attributes = set()
         objects = file.by_type(class_type)
         for object in objects:
-            wall_number = object.Tag if object.Tag else ""
-            name = object.Name if object.Name else ""
-            # Extract Vertices of Elements
-            x, y, z = (0, 0, 0)
-            if object.ObjectPlacement:
-                placement = object.ObjectPlacement.RelativePlacement
-                if placement and placement.Location:
-                    x, y, z = placement.Location.Coordinates
-            level_name = ""
-            if hasattr(object, "ContainedInStructure"):
+            storey = None
+            if object.is_a() != "IfcOpeningElement":
+                wall_number = object.Tag if object.Tag else ""
+                name = object.Name if object.Name else ""
+                psets = Element.get_psets(object, psets_only=True)
+                self.add_pset_attributes(psets)
+                qtos = Element.get_psets(object, qtos_only=True)
+                self.add_pset_attributes(qtos)
+                placement_matrix = get_local_placement(object.ObjectPlacement)
+                # Extract Vertices of Elements
+                x, y, z = (0, 0, 0)
+                scale_factor = 1000.0
+                scaled_grouped_verts = []
+                if object.Representation is not None:
+                    settings = ifcopenshell.geom.settings()
+                    shape = ifcopenshell.geom.create_shape(settings, object)
+                    verts = shape.geometry.verts
+                    grouped_verts = [
+                        [verts[i], verts[i + 1], verts[i + 2]]
+                        for i in range(0, len(verts), 3)
+                    ]
+                    scaled_grouped_verts = np.array(grouped_verts) * scale_factor
+                    scaled_grouped_verts = np.round(scaled_grouped_verts).astype(int)
+                if object.ObjectPlacement:
+                    placement = object.ObjectPlacement.RelativePlacement
+                    if placement and placement.Location:
+                        x, y, z = placement.Location.Coordinates
                 for rel in object.ContainedInStructure:
-                    if rel.RelatingStructure and hasattr(rel.RelatingStructure, "Name"):
-                        level_name = rel.RelatingStructure.Name
-            if "CEILING" in level_name:
-                continue
-            objects_data.append(
-                {
-                    "Stage": "",
-                    "Marking type": object.is_a(),
-                    "Point number/name": name,
-                    "Position X (m)": abs(int(x)),
-                    "Position Y (m)": abs(int(y)),
-                    "Position Z (m)": abs(int(z)),
-                    "Wall Number": str(wall_number),
-                    "Shape type": "",
-                    "Status": "blank",
-                    "Quadrant": 1,
-                    "Unnamed : 9": "",
-                    "Width": "",
-                    "Height": "",
-                    "Orientation": "",
-                    "Diameter": "",
-                }
-            )
+                    if rel.RelatingStructure.is_a("IfcBuildingStorey"):
+                        storey = rel.RelatingStructure
+                if storey and "Ceiling" in storey.Name:
+                    continue
+                if "CP" in name:
+                    z = abs(z)
+                objects_data.append(
+                    {
+                        "Stage": "",
+                        "Marking type": object.is_a(),
+                        "Point number/name": name,
+                        "Position X (mm)": int(round(x)),
+                        "Position Y (mm)": int(round(y)),
+                        "Position Z (mm)": int(round(z)),
+                        "Wall Number": str(wall_number),
+                        "Shape type": "",
+                        "Status": "blank",
+                        "Quadrant": 1,
+                        "Unnamed : 9": "",
+                        "Width": "",
+                        "Height": "",
+                        "Orientation": "",
+                        "Diameter": "",
+                    }
+                )
         return objects_data
+
+    def add_pset_attributes(self, psets):
+        for pset_name, pset_data in psets.items():
+            for property_name in pset_data.keys():
+                self.pset_attributes.add(f"{pset_name}.{property_name}")
 
     # error will send into the error log text
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
+            log_file.write(message + "\n")
+
+    def log_text(self, message):
+        with open("log.txt", "a") as log_file:
             log_file.write(message + "\n")
 
     # add marker and store it in the excel data

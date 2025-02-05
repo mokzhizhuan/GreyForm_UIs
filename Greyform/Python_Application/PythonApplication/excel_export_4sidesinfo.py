@@ -7,13 +7,23 @@ import numpy as np
 
 # export excel sheet
 class Exportexcelinfo(object):
-    def __init__(self, file, class_type, wall_dimensions, floor):
+    def __init__(
+        self,
+        file,
+        class_type,
+        wall_dimensions,
+        floor,
+        offset,
+        wall_finishes_dimensions,
+        floor_offset,
+        floor_height,
+        wall_finishes_offset,
+    ):
         # starting initialize
         super().__init__()
         self.file = file
         self.wall_dimensions = wall_dimensions
         self.floor = floor
-
         self.stagecategory = storingelement.stagecatergorize(self.file)
         self.wallformat, self.heighttotal = storingelement.wall_format4sides(
             self.wall_dimensions
@@ -76,7 +86,6 @@ class Exportexcelinfo(object):
             )
             dataframe = dataframe[dataframe["Wall Number"] != 6]
             file_name = f"exporteddatass4sides.xlsx"
-            print(self.wallformat)
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
                 for object_class in stages:
@@ -91,50 +100,70 @@ class Exportexcelinfo(object):
     def addranges(self):
         current_y = 0
         current_x = 0
-        max_y = self.floor[1] # Maximum Y position based on the image
+        max_y = self.floor[1]  # Maximum Y position based on the image
         max_x = self.floor[0]  # Maximum X position based on the image
 
         for wall_id, wall in self.wallformat.items():
-            if 'pos_y_range' not in wall or wall['pos_y_range'] is None:
-                wall['pos_y_range'] = (0, 0)
+            if "pos_y_range" not in wall or wall["pos_y_range"] is None:
+                wall["pos_y_range"] = (0, 0)
 
-            if 'pos_x_range' not in wall or wall['pos_x_range'] is None:
-                wall['pos_x_range'] = (0, 0)
-            if wall['axis'] == 'y':  # Wall along the Y-axis
+            if "pos_x_range" not in wall or wall["pos_x_range"] is None:
+                wall["pos_x_range"] = (0, 0)
+            if wall["axis"] == "y":  # Wall along the Y-axis
                 # Y-axis walls increase current_y
                 if wall_id == 1:  # Specific for Wall 1
-                    wall['pos_x_range'] = (0, 50)
-                    wall['pos_y_range'] = (0, max_y)
+                    wall["pos_x_range"] = (0, 50)
+                    wall["pos_y_range"] = (0, max_y)
                 elif wall_id == 3:  # Specific for wall 3
-                    wall['pos_x_range'] = (self.floor[1]-50,self.floor[1])
-                    wall['pos_y_range'] = (0, self.floor[1])
+                    wall["pos_x_range"] = (self.floor[1] - 50, self.floor[1])
+                    wall["pos_y_range"] = (0, self.floor[1])
                 else:
-                    wall['pos_x_range'] = (0, max_x)
-                    wall['pos_y_range'] = (current_y, current_y + self.floor[0])
-            elif wall['axis'] == 'x':  # Wall along the X-axis
+                    wall["pos_x_range"] = (0, max_x)
+                    wall["pos_y_range"] = (current_y, current_y + self.floor[0])
+            elif wall["axis"] == "x":  # Wall along the X-axis
                 # X-axis walls increase current_x
                 if wall_id == 2:  # Specific for Wall 2
-                    wall['pos_x_range'] = (0, wall['width'])
-                    wall['pos_y_range'] = (max_y-self.wallformat[3]["width"]+50, max_y) 
+                    wall["pos_x_range"] = (0, wall["width"])
+                    wall["pos_y_range"] = (
+                        max_y - self.wallformat[3]["width"] + 50,
+                        max_y,
+                    )
                 elif wall_id == 4:  # Specific for Wall 4
-                    wall['pos_x_range'] = (0, max_x)
-                    wall['pos_y_range'] = (max_y-50, max_y)
+                    wall["pos_x_range"] = (0, max_x)
+                    wall["pos_y_range"] = (max_y - 50, max_y)
                 else:
-                    wall['pos_x_range'] = (current_x, current_x + max_x)
-                    wall['pos_y_range'] = (0, max_y)
-            wall['pos_x_range'] = (max(0, wall['pos_x_range'][0]), min(max_x, wall['pos_x_range'][1]))
-            wall['pos_y_range'] = (max(0, wall['pos_y_range'][0]), min(max_y, wall['pos_y_range'][1]))
+                    wall["pos_x_range"] = (current_x, current_x + max_x)
+                    wall["pos_y_range"] = (0, max_y)
+            wall["pos_x_range"] = (
+                max(0, wall["pos_x_range"][0]),
+                min(max_x, wall["pos_x_range"][1]),
+            )
+            wall["pos_y_range"] = (
+                max(0, wall["pos_y_range"][0]),
+                min(max_y, wall["pos_y_range"][1]),
+            )
 
     def itemposition(self, row):
         register = row["Unnamed : 9"]
         walls = 0
         if register != "Unregistered":
             for index, (wall, data) in enumerate(self.wallformat.items()):
-                if data['pos_x_range'][0] <= row["Position X (m)"] <= data['pos_x_range'][1] and \
-                    data['pos_y_range'][0] <= row["Position Y (m)"]  <= data['pos_y_range'][1] and \
-                    70 <= row["Position Z (m)"]  <= data['height']:
-                        orientation = self.determine_orientation(row["Position X (m)"], row["Position Y (m)"], row["Position Z (m)"], wall)
-                        return pd.Series([wall, orientation])
+                if (
+                    data["pos_x_range"][0]
+                    <= row["Position X (m)"]
+                    <= data["pos_x_range"][1]
+                    and data["pos_y_range"][0]
+                    <= row["Position Y (m)"]
+                    <= data["pos_y_range"][1]
+                    and 70 <= row["Position Z (m)"] <= data["height"]
+                ):
+                    orientation = self.determine_orientation(
+                        row["Position X (m)"],
+                        row["Position Y (m)"],
+                        row["Position Z (m)"],
+                        wall,
+                    )
+                    return pd.Series([wall, orientation])
             if row["Position Z (m)"] <= 70:
                 walls = 5
                 return pd.Series([walls, ""])
