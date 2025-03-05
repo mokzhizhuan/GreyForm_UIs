@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def stagecatergorize(ifc_file):
@@ -141,3 +143,39 @@ def wall_format4sides(wall):
             }
         heighttotal = depth + height + 10
     return wall_format, heighttotal
+
+def wallmaker(wall):
+    x_values = [-925, 25, 1330, 1225, 625]  # Example X positions
+    z_values = [1050, 450, -150, -750, -975]  # Example Z positions
+    y_value = 50  # Constant Y position
+
+    # List to store generated coordinates
+    data = []
+
+    # Generate coordinates using nested loops
+    for z in z_values:  # Loop through Z-axis (height)
+        for x in x_values:  # Loop through X-axis
+            point_name = f"TMP1S2x{len(data) + 1}"  # Auto-generate name
+            data.append({"Point Name": point_name, "X (mm)": x, "Y (mm)": y_value, "Z (mm)": z})
+
+    # Convert to DataFrame
+    df = pd.DataFrame(data)
+
+    # Save to CSV for external use
+    df.to_csv("generated_coordinates.csv", index=False)
+
+    # Plotting the generated coordinates
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111, projection="3d")
+    ax.scatter(df["X (mm)"], df["Y (mm)"], df["Z (mm)"], c="red", marker="o")
+
+    # Label each point
+    for i in range(len(df)):
+        ax.text(df["X (mm)"][i], df["Y (mm)"][i], df["Z (mm)"][i], df["Point Name"][i])
+
+    ax.set_xlabel("X (mm)")
+    ax.set_ylabel("Y (mm)")
+    ax.set_zlabel("Z (mm)")
+    ax.set_title("Auto-generated TMP1S2 Coordinates")
+
+    # Show plot

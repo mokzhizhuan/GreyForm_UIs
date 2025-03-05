@@ -18,6 +18,7 @@ class Exportexcelinfo(object):
         floor_offset,
         floor_height,
         wall_finishes_offset,
+        wall_offset,
     ):
         # starting initialize
         super().__init__()
@@ -397,7 +398,9 @@ class Exportexcelinfo(object):
     def determine_walls(self, row):
         for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
             if "Basic Wall:BSS.50" in wall and wall == row["Point number/name"]:
-                return index + 1
+                if index == len(self.wall_dimensions)-1:
+                    return 1
+                return index + 2
         return row["Wall Number"]
 
     def wall_increment(self, row):

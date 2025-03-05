@@ -155,9 +155,9 @@ class ProgressBarDialogIFC(QDialog):
                                     "offset": int(round(offsets)),
                                 }
                                 wall_offset[wall.Name] = {
-                                    "width": int(round(wallcoordi[0])),
-                                    "height": int(round(wallcoordi[1])),
-                                    "depth": int(round(wallcoordi[2])),
+                                    "x": int(round(wallcoordi[0])),
+                                    "y": int(round(wallcoordi[1])),
+                                    "z": int(round(wallcoordi[2])),
                                 }
                             if dimensions[0]:
                                 widths.append(int(round(dimensions[0])))
@@ -214,6 +214,7 @@ class ProgressBarDialogIFC(QDialog):
                         floor_offset,
                         floor_height,
                         wall_finishes_offset,
+                        wall_offset,
                     )
                 else:
                     bim4sideinfo.Exportexcelinfo(
@@ -226,6 +227,7 @@ class ProgressBarDialogIFC(QDialog):
                         floor_offset,
                         floor_height,
                         wall_finishes_offset,
+                        wall_offset
                     )
                 try:
                     self.stlloader()
