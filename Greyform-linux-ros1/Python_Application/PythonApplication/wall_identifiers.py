@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 import PythonApplication.processlistenerrunner as ProcessListener
 import tkinter as tk
-import PythonApplication.exceldatalegend as datalegends
 import PythonApplication.exceldatavtk as vtk_data_excel
 from tkinter import ttk
 
@@ -41,11 +40,12 @@ class wall_Interaction(object):
         self.stagestorage = setcamerainteraction[22]
         self.currentindexstage = setcamerainteraction[23]
         self.Stagelabel = setcamerainteraction[24]
+        self.walls = setcamerainteraction[25]
+        self.wall_actors = setcamerainteraction[26]
         self.interaction_enabled = True
         self.ros_node = ros_node
         self.spacing = "\n"
         self.wallnumber = 0
-        # self.markingitems = incurdatamethod.returndata()
 
     # middle click interaction for storing
     def setwallinteractiondata(self, obj, event):
@@ -75,10 +75,6 @@ class wall_Interaction(object):
             self.wall_storing()
             self.localizebutton.show()
             self.localizebutton.clicked.connect(self.publish_message)
-        else:
-            self.show_error_message(
-                "Invalid Stage , please click the Stage 1, 2, 3 button."
-            )
 
     # publisher to listener and talker node runner
     def wall_storing(self):

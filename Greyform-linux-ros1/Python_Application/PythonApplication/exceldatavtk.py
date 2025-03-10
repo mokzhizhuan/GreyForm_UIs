@@ -67,6 +67,13 @@ def exceldataextractor():
             }
             if new_wall not in wall:
                 wall.append(new_wall)
+    wall_numbers_by_sheet = {
+        sheet_name: {
+            **details,
+            "wall_numbers": sorted(details["wall_numbers"])
+        }
+        for sheet_name, details in wall_numbers_by_sheet.items()
+    }
     return wall_numbers_by_sheet , wall , excel_file_path
 
 def wall_format(wall):

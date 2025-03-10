@@ -4,18 +4,24 @@ import vtk
 
 # excel extractor for vtk
 def exceldataextractor():
-    excel_file_path = "exporteddatass.xlsx"
+    excel_file_path = "exporteddatassss(with TMP)(draft).xlsx"
     all_sheets = pd.read_excel(excel_file_path, sheet_name=None)
     wall_numbers = []
     markingidentifiers = []
     wall_numbers_by_sheet = {}
+    unique_wall_numbers_by_sheet = {}
     wall = []
+    dfs = pd.ExcelFile(excel_file_path)
+    column_names = dfs.sheet_names
+    if "Obstacles" in column_names:
+        index = column_names.index("Obstacles")  # Find index
+        column_names.pop(index)  # Remove by index
     for sheet_name, df in all_sheets.items():
         wall_numbers = df["Wall Number"].tolist()
         markingidentifiers = df["Point number/name"].astype(str).tolist()
-        positionx = df["Position X (m)"].tolist()
-        positiony = df["Position Y (m)"].tolist()
-        positionz = df["Position Z (m)"].tolist()
+        positionx = df["Position X (mm)"].tolist()
+        positiony = df["Position Y (mm)"].tolist()
+        positionz = df["Position Z (mm)"].tolist()
         status = df["Status"].tolist()
         shapetype = df["Shape type"].tolist()
         width = df["Width"].tolist()
@@ -30,6 +36,15 @@ def exceldataextractor():
             "width" : width,
             "height" : height,
             "Status" : status,
+        }
+        unique_data = (
+            df.groupby("Wall Number")
+            .agg({"Status": lambda x: list(set(x))})  # Collect unique statuses for each wall number
+            .reset_index()
+        )
+        unique_wall_numbers_by_sheet[sheet_name] = {
+            "wall_numbers": unique_data["Wall Number"].tolist(),
+            "status": unique_data["Status"].tolist(),
         }
     wall_numberes = wall_numbers_by_sheet["Stage 2"]["wall_numbers"]
     markingidentifierswall = wall_numbers_by_sheet["Stage 2"][
@@ -67,14 +82,7 @@ def exceldataextractor():
             }
             if new_wall not in wall:
                 wall.append(new_wall)
-    wall_numbers_by_sheet = {
-        sheet_name: {
-            **details,
-            "wall_numbers": sorted(details["wall_numbers"])
-        }
-        for sheet_name, details in wall_numbers_by_sheet.items()
-    }
-    return wall_numbers_by_sheet , wall , excel_file_path
+    return wall_numbers_by_sheet , wall , excel_file_path , unique_wall_numbers_by_sheet , column_names
 
 def wall_format(wall):
     sorted_wall = sorted(wall, key=lambda x: x.get("Wall Number", float('inf')))
