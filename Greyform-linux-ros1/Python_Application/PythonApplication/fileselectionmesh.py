@@ -10,12 +10,13 @@ import geopandas as gpd
 
 # load pyvista in the frame
 class FileSelectionMesh():
-    def __init__(self, file_path, mainwindowforfileselection , mainwindow):
+    def __init__(self, file_path, mainwindowforfileselection , mainwindow, stackedWidget):
         # starting initialize
         super().__init__()
         self.file_path = file_path
         self.mainwindowforfileselection = mainwindowforfileselection
         self.mainwindow = mainwindow
+        self.stackedWidget = stackedWidget
         self.meshdata()
 
     # load meshdata from file
@@ -27,4 +28,4 @@ class FileSelectionMesh():
             progressbarprogram.exec_()
         elif ".dxf" in self.file_path:
             gdf = gpd.read_file(self.file_path, engine="fiona")
-            dxfload.dxfloader(self.file_path, self.mainwindowforfileselection, gdf , self.mainwindow)
+            dxfload.dxfloader(self.file_path, self.mainwindowforfileselection, gdf , self.mainwindow, self.stackedWidget)

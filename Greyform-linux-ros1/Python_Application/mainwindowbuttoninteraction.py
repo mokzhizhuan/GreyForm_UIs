@@ -18,11 +18,10 @@ class mainwindowbuttonUI(object):
         menuCloseButton,
         NextButton_Page_2,
         BacktoMenuButton,
-        BackButton_Page_3,
-        ConfirmButton,
-        HomeButton,
+        BackButton_Page_2,
+        ChooseButton,
+        sendmodelButton,
         CloseButton,
-        MarkingButton,
         ros_node,
     ):
         # starting initialize
@@ -33,11 +32,10 @@ class mainwindowbuttonUI(object):
         self.menuCloseButton = menuCloseButton
         self.NextButton_Page_2 = NextButton_Page_2
         self.BacktoMenuButton = BacktoMenuButton
-        self.BackButton_Page_3 = BackButton_Page_3
-        self.ConfirmButton = ConfirmButton
-        self.HomeButton = HomeButton
+        self.BackButton_Page_2 = BackButton_Page_2
+        self.ChooseButton = ChooseButton
         self.CloseButton = CloseButton
-        self.MarkingButton = MarkingButton
+        self.sendmodelButton = sendmodelButton
         self.ros_node = ros_node
         self.button_UI()
 
@@ -45,14 +43,8 @@ class mainwindowbuttonUI(object):
     def startconfigure(self):
         self.stackedWidget.setCurrentIndex(1)
 
-    def guiconfigure(self):
-        self.stackedWidget.setCurrentIndex(2)
-
-    def guibuttonconfig(self):
+    def confirmmodel(self):
         self.stackedWidget.setCurrentIndex(3)
-
-    def homeui(self):
-        self.stackedWidget.setCurrentIndex(0)
 
     # button interaction ui
     def button_UI(self):
@@ -62,17 +54,15 @@ class mainwindowbuttonUI(object):
                 self.mainwindow, self.ros_node
             )
         )
-        self.NextButton_Page_2.clicked.connect(self.guiconfigure)
+        self.NextButton_Page_2.clicked.connect(self.confirmmodel)
         self.BacktoMenuButton.clicked.connect(
             lambda: backtomenudialog.Ui_Dialog_Confirm.show_dialog_confirm(
                 self.mainwindow,
                 self.stackedWidget,
             )
         )
-        self.BackButton_Page_3.clicked.connect(self.startconfigure)
-        self.ConfirmButton.clicked.connect(self.guibuttonconfig)
-        self.MarkingButton.clicked.connect(self.guiconfigure)
-        self.HomeButton.clicked.connect(self.homeui)
+        self.ChooseButton.clicked.connect(self.startconfigure)
+        self.BackButton_Page_2.clicked.connect(self.startconfigure)
         self.CloseButton.clicked.connect(
             lambda: closewindow.Ui_Dialog_Close.show_dialog_close(
                 self.mainwindow, self.ros_node

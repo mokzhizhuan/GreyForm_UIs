@@ -12,6 +12,7 @@ from stl import mesh
 import PythonApplication.loadpyvista as loadingstl
 import meshio
 import PythonApplication.createmesh as Createmesh
+import PythonApplication.processlistenerrunner as process
 from stl import mesh
 import meshio
 import pyvista as pv
@@ -20,7 +21,7 @@ import numpy as np
 
 
 class dxfloader(object):
-    def __init__(self, file_path, mainwindowforfileselection, gdf , mainwindow):
+    def __init__(self, file_path, mainwindowforfileselection, gdf , mainwindow, stackedWidget):
         # starting initialize
         super().__init__()
         self.file_path = file_path
@@ -29,13 +30,32 @@ class dxfloader(object):
         self.loader = mainwindowforfileselection[0]
         self.renderer = mainwindowforfileselection[1]
         self.renderWindowInteractor = mainwindowforfileselection[2]
-        self.Xlabel_before = mainwindowforfileselection[3]
-        self.Ylabel_before = mainwindowforfileselection[4]
-        self.Zlabel_before = mainwindowforfileselection[5]
-        self.localizebutton = mainwindowforfileselection[6]
-        self.rosnode = mainwindowforfileselection[7]
-        self.Stagelabel = mainwindowforfileselection[8]
+        self.rosnode = mainwindowforfileselection[3]
+        self.Stagelabel = mainwindowforfileselection[6]
+        self.buttonlocalize = mainwindowforfileselection[5]
+        self.stagestoring = mainwindowforfileselection[7]
+        self.labelstatus = mainwindowforfileselection[8]
+        self.walllabel = mainwindowforfileselection[9]
+        self.markingitemsbasedonwallnumber = {}
+        self.stackedWidget = stackedWidget
         self.gdf = gdf
+        self.stagewallindex = 1
+        wallnumber = 1
+        self.Stagelabel.setText(f"Stage : {self.stagestoring[0]}")
+        self.exceldata = "exporteddatas.xlsx"
+        self.listenerdialog = process.ListenerNodeRunner(
+            self.rosnode,
+            self.file_path,
+            self.exceldata,
+            wallnumber,
+            self.markingitemsbasedonwallnumber,
+            self.stagestoring[0],
+            self.stagestoring,
+            self.stagewallindex,
+            self.Stagelabel,
+            self.labelstatus,
+            self.stackedWidget
+        )
         self.loaddxftoframe()
 
     def loaddxftoframe(self):
@@ -82,19 +102,22 @@ class dxfloader(object):
                     vtk_cells = cells[0]
                 self.meshsplot = pv.PolyData(meshs.points, vtk_cells)
                 loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
+                self.buttonlocalize.clicked.connect(lambda: self.scanpagers())          
                 Createmesh.createMesh(
                     self.renderer,
                     output_stl_path,
                     self.renderWindowInteractor,
-                    self.Xlabel_before,
-                    self.Ylabel_before,
-                    self.Zlabel_before,
-                    self.localizebutton,
                     self.rosnode,
                     self.file_path,
                     self.mainwindow,
                     self.Stagelabel,
+                    self.walllabel,
+                    self.stackedWidget
                 )
+
+    def scanpagers(self):
+        self.stackedWidget.setCurrentIndex(3)
+        self.listenerdialog.run_listener_node()
 
     # process geometry in geodata pandas
     def process_line_string(self, geometry, offset):

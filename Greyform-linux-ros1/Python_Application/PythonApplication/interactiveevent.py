@@ -1,12 +1,10 @@
 from PyQt5.QtCore import *
 from vtk import *
-import PythonApplication.leftbuttoninteractor as leftbuttoninteraction
-import PythonApplication.rightclickroominteraction as roominteraction
-import PythonApplication.storedisplay as displaystoring
-import PythonApplication.wall_identifiers as wallinteraction
 import tkinter as tk
 from tkinter import messagebox
-import time
+import time , re
+from PyQt5.QtWidgets import QProgressDialog, QApplication, QDialog, QPushButton, QVBoxLayout, QLabel
+from PyQt5.QtCore import QTimer , Qt
 
 # import rospy
 # from sensor_msgs.msg import LaserScan
@@ -21,231 +19,111 @@ import time
 # l key is to remove the actor in the room view and set the mesh to the original position
 class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     def __init__(
-        self, setcamerainteraction, wall_identifiers, localizebutton, ros_node
+        self, setcamerainteraction, wall_identifiers, parent=None
     ):
         # starting initialize
         super().__init__()
-        self.addactor = self.AddObserver(
-            "RightButtonPressEvent", self.RightButtonPressEvent
-        )
         self.render = setcamerainteraction[0]
         self.renderwindowinteractor = setcamerainteraction[1]
         self.meshbound = setcamerainteraction[2]
-        self.xlabelbefore = setcamerainteraction[3]
-        self.ylabelbefore = setcamerainteraction[4]
-        self.zlabelbefore = setcamerainteraction[5]
         self.mesh = setcamerainteraction[6]
         self.polys = setcamerainteraction[7]
         self.reader = setcamerainteraction[8]
-        self.cubeactor = setcamerainteraction[9]
-        self.cameraactor = setcamerainteraction[10]
-        self.displayoldpos = setcamerainteraction[11]
-        self.old_actor_position = setcamerainteraction[11]
-        self.spaceseperation = setcamerainteraction[13]
-        self.center = setcamerainteraction[14]
+        self.walls = setcamerainteraction[13]
+        self.wall_actors = setcamerainteraction[14]
+        self.wallname = setcamerainteraction[15] 
+        self.identifier = setcamerainteraction[16]
+        self.stacked_widget = setcamerainteraction[17]
+        match = re.search(r'\d+', self.wallname)
+        wall_number = int(match.group())
+        self.scan = self.identifier[wall_number]
+        self.wall_index = list(self.walls.keys()).index(self.wallname) if self.wallname in self.walls else None
         camera = self.render.GetActiveCamera()
-        self.actor_speed = 20
-        self.threshold = 20
-        self.defaultposition = [0, 0, 1]
-        self.leftbuttoninteraction = leftbuttoninteraction.LeftInteractorStyle(
-            self, setcamerainteraction
-        )
-        self.old_actor_position = [160, self.center[1], self.center[2]]
-        self.default_pos = [160, self.center[1], self.center[2]]
-        self.refresh()
         self._translate = QCoreApplication.translate
-        self.rightclickinteract = roominteraction.rightclickRoomInteract(
-            self,
-            setcamerainteraction,
-            self.default_pos,
-            wall_identifiers,
-            localizebutton,
-            ros_node,
+        self.parent = parent
+        self.totalsteps = 100  # Define total steps
+        self.scanning = self.AddObserver(
+            "RightButtonPressEvent", self.wallscanning
         )
-        self.locator = vtkStaticPointLocator()
-        self.locator.SetDataSet(self.reader)
-        self.locator.BuildLocator()
-        self.wallinteractor = wallinteraction.wall_Interaction(
-            self, setcamerainteraction, wall_identifiers, localizebutton, ros_node
-        )
-        self.displaystore = displaystoring.storage(
-            setcamerainteraction, wall_identifiers, localizebutton, ros_node
-        )
-        self.setkeypreventcontrols()
-        self.leftbuttoninteraction.displaytext(camera)
+    
+    def wallscanning(self, obj, event):
+        self.progress_dialog = QProgressDialog("Scanning...", "Cancel", 0, self.totalsteps, self.parent)
+        self.progress_dialog.setWindowTitle("Progress")
+        self.progress_dialog.setMinimumDuration(0)
+        self.progress_dialog.setAutoClose(True)
+        self.progress_dialog.setAutoReset(True)
+        self.progress_dialog.show()
 
-    # inside view
-    def RightButtonPressEvent(self, obj, event):
-        clickPos = self.GetInteractor().GetEventPosition()  # <<<-----<
-        camera = self.render.GetActiveCamera()
-        camera.SetPosition(self.old_actor_position)
-        self.cubeactor.SetPosition(self.old_actor_position)
-        self.camsetvieworientation(camera)
-        self.render.SetActiveCamera(camera)  # insert and replace a new camera
-        self.leftbuttoninteraction.displaytext(camera)
-        self.movement = self.AddObserver("KeyPressEvent", self.KeyPressed)
-        self.mousemovement = self.AddObserver(
-            "MouseMoveEvent", self.leftbuttoninteraction.mouse_move
-        )
-        self.revert_left_position = self.AddObserver(
-            "LeftButtonPressEvent", self.leftbuttoninteraction.leftButtonPressEvent
-        )
-        self.releasemouseclick = self.AddObserver(
-            "LeftButtonReleaseEvent", self.leftbuttoninteraction.left_button_release
-        )
-        self.mousezoomin = self.AddObserver(
-            "MouseWheelForwardEvent", self.leftbuttoninteraction.mouse_wheel_forward
-        )
-        self.mousezoomout = self.AddObserver(
-            "MouseWheelBackwardEvent", self.leftbuttoninteraction.mouse_wheel_backward
-        )
-        self.RemoveObserver(self.addactor)
-        self.interactionsroom = self.AddObserver(
-            "RightButtonPressEvent", self.rightclickinteract.click_event
-        )
-        self.walldatainteraction = self.AddObserver(
-            "MiddleButtonPressEvent", self.wallinteractor.setwallinteractiondata
-        )
-        self.refresh()
-        self.OnRightButtonDown()
+        self.current_step = 0
+        self.run_scan_step()  # Start the progress loop
 
-    # default prevent controls
-    def setkeypreventcontrols(self):
-        self.disable_up = False
-        self.disable_down = False
-        self.disable_left = False
-        self.disable_right = False
+    def run_scan_step(self):
+        if self.current_step >= self.totalsteps:
+            self.progress_dialog.setValue(self.totalsteps)
+            QTimer.singleShot(500, self.programexecute)  # Delay execution slightly
+            return
+        self.current_step += 1
+        self.progress_dialog.setValue(self.current_step)
 
-    # movement controls
-    def KeyPressed(self, obj, event):
-        self.SetMotionFactor(8)
-        key = self.GetInteractor().GetKeySym()
-        actor_position = []
-        delay = 1
-        camera = self.render.GetActiveCamera()
-        for i in range(3):
-            actor_position.append(self.cubeactor.GetPosition()[i])
-        if key == "l":  # reset movement and camera
-            camera = self.render.GetActiveCamera()
-            camera.SetPosition(0, -1, 0)
-            camera.SetFocalPoint(0, 0, 0)
-            camera.SetViewUp(0, 0, 1)
-            self.render.ResetCameraClippingRange()
-            self.render.ResetCamera()
-            self.RemoveObserver(self.movement)
-            self.RemoveObserver(self.mousemovement)
-            self.RemoveObserver(self.revert_left_position)
-            self.RemoveObserver(self.releasemouseclick)
-            self.RemoveObserver(self.mousezoomin)
-            self.RemoveObserver(self.mousezoomout)
-            self.RemoveObserver(self.interactionsroom)
-            self.addactor = self.AddObserver(
-                "RightButtonPressEvent", self.RightButtonPressEvent
-            )
-            self.refresh()
-            self.renderwindowinteractor.GetRenderWindow().Render()
-            return  # return to its original position
-        if key == "n":
-            self.leftbuttoninteraction.release()
-        elif key == "m":
-            self.leftbuttoninteraction.reset(self.default_pos)
-        if key == "Up" and self.disable_up is False:
-            # actor will not go beyond the inside are of the mesh
-            if actor_position[0] < (self.meshbound[1]):
-                # prevent shape max number
-                actor_position[0] += self.actor_speed
-                self.setkeypreventcontrols()
-                self.setcollision(actor_position, key, camera)
-            time.sleep(delay)
-        elif key == "Down" and self.disable_down is False:
-            if actor_position[0] > (self.meshbound[0]):
-                # prevent shape min number
-                actor_position[0] -= self.actor_speed
-                self.setkeypreventcontrols()
-                self.setcollision(actor_position, key, camera)
-            time.sleep(delay)
-        elif key == "Left" and self.disable_left is False:
-            if actor_position[1] < (self.meshbound[3]):
-                # prevent shape max number
-                actor_position[1] += self.actor_speed
-                self.setkeypreventcontrols()
-                self.setcollision(actor_position, key, camera)
-            time.sleep(delay)
-        elif key == "Right" and self.disable_right is False:
-            if actor_position[1] > (self.meshbound[2]):
-                # prevent shape min number
-                actor_position[1] -= self.actor_speed
-                self.setkeypreventcontrols()
-                self.setcollision(actor_position, key, camera)
-            time.sleep(delay)
-        self.displaystore.storedisplay()
-        self.leftbuttoninteraction.displaytext(camera)
+        if self.progress_dialog.wasCanceled():
+            return  # Stop execution if canceled
 
-    # set camera orientation
-    def camsetvieworientation(self, camera):
-        camera.SetViewUp(0, 0, 1)
+        QTimer.singleShot(50, self.run_scan_step)  # Recursive update every 50ms
 
-    #set avoidance(not confirmed)
-    def calculate_distance_to_mesh(self, actor_position):
-        min_distance = float("inf")
-        for i in range(self.reader.GetNumberOfPoints()):
-            point = [self.meshbound[1], self.meshbound[3], self.meshbound[5]]
-            self.reader.GetPoint(i, point)
-            distance = vtkMath.Distance2BetweenPoints(actor_position, point) ** 0.5
-            if distance < min_distance:
-                min_distance = distance
-        return min_distance
-
-    # refresher
-    def refresh(self):
-        self.render.ResetCameraClippingRange()
-        self.renderwindowinteractor.GetRenderWindow().Render()
-
-    # set cam for refresh
-    def setcameraactor(self):
-        self.cameraactor.SetPosition(
-            self.old_actor_position[0],
-            self.old_actor_position[1] - self.spaceseperation,
-            self.old_actor_position[2] - self.spaceseperation,
+    def programexecute(self):
+        dialog = QDialog(self.parent)
+        dialog.setWindowTitle("Execution Complete")
+        dialog.setFixedSize(400, 200)
+        layout = QVBoxLayout()
+        label = QLabel("The process has finished successfully!")
+        label.setStyleSheet("font-size: 18px;")
+        ok_button = QPushButton("OK")
+        ok_button.setStyleSheet(
+            """
+            QPushButton {
+                font-size: 20px;           
+                min-height: 50px;   
+                min-width: 150px;  
+                icon-size: 50px 50px;        
+            }
+            """
         )
+        ok_button.clicked.connect(dialog.accept)  # Close dialog when clicked
+        ok_button.clicked.connect(self.changewall)  # Close dialog when clicked
+        layout.addWidget(label)
+        layout.addWidget(ok_button)
+        layout.setAlignment(ok_button, Qt.AlignCenter)  
+        dialog.setLayout(layout)
+        dialog.exec_()  # Show the dialog
 
-    # set collision for the actor to prevent moving the mesh to the outside area
-    def setcollision(self, actor_position, key, camera):
-        distance_to_mesh = self.calculate_distance_to_mesh(actor_position)
-        if distance_to_mesh < 100:
-            message = f"Warning: Cube actor is within {distance_to_mesh:.2f}mm of a wall. Movement restricted."
-            self.show_error_message(message)
-            actor_position = self.old_actor_position
+    def changewall(self):
+        self.wall_actors[self.wallname].VisibilityOff() 
+        self.wall_index = self.wall_index + 1
+        wall_keys = list(self.walls.keys())
+        if self.wall_index < len(wall_keys):  # Check if walls remain
+            self.wallname = wall_keys[self.wall_index]
+            self.wall_actors[self.wallname].VisibilityOn()
+            match = re.search(r'\d+', self.wallname)
+            wall_number = int(match.group())
+            self.scan = self.identifier[wall_number]
+            print(self.scan)
         else:
-            self.cubeactor.SetPosition(actor_position)
-            self.setcameraactor()
-            camera.SetPosition(actor_position)
-            self.camsetvieworientation(camera)
-            self.collisionFilter.Update()
-            num_contacts = self.collisionFilter.GetNumberOfContacts()
-            if num_contacts == 0:
-                self.refresh()
-                self.old_actor_position = actor_position
-            else:
-                message = f"Collision detected. Moving back to previous position. Contact detected: {num_contacts}"
-                self.show_error_message(message)
-                if key == "Up":
-                    self.old_actor_position[0] -= self.actor_speed
-                    self.disable_up = True
-                elif key == "Down":
-                    self.old_actor_position[0] += self.actor_speed
-                    self.disable_down = True
-                elif key == "Left":
-                    self.old_actor_position[1] -= self.actor_speed
-                    self.disable_left = True
-                elif key == "Right":
-                    self.old_actor_position[1] += self.actor_speed
-                    self.disable_right = True
-                actor_position = self.old_actor_position
-        self.cubeactor.SetPosition(actor_position)
-        self.setcameraactor()
-        camera.SetPosition(actor_position)
-        self.refresh()
+            self.stacked_widget.setCurrentIndex(4)
+
+    def set_progress_bar(self, progress_bar):
+        """Attach a QProgressBar from the main UI."""
+        self.progress_bar = progress_bar
+
+    def update_progress(self):
+        value = self.progress_bar.value()
+        if value < 100:
+            self.progress_bar.setValue(value + 1)
+            # Update progress again after 100 milliseconds
+            QTimer.singleShot(100, self.update_progress)
+        else:
+            self.timer.stop()  # Stop the timer when progress reaches 100%
+            self.progress_bar.setValue(0)  # Reset progress to 0
+            self.timer.start(100)   
 
     # show an error message 
     def show_error_message(self, message):

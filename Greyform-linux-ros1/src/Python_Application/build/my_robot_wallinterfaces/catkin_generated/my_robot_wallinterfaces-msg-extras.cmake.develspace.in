@@ -1,2 +1,0 @@
-set(my_robot_wallinterfaces_MESSAGE_FILES "/root/catkin_ws/src/Python_Application/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg;/root/catkin_ws/src/Python_Application/src/my_robot_wallinterfaces/msg/SelectionWall.msg")
-set(my_robot_wallinterfaces_SERVICE_FILES "/root/catkin_ws/src/Python_Application/src/my_robot_wallinterfaces/srv/SetLed.srv")

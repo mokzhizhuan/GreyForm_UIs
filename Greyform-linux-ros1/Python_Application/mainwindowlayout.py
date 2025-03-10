@@ -13,19 +13,22 @@ class Ui_MainWindow_layout(object):
         mainlayoutwidget,
         mainlayoutpagebutton,
         mainmenu,
-        horizontalLayoutWidget,
-        horizontalLayoutWidget2,
-        page,
+        filedirectorylayout,
+        buttonfiledirectorylayout,
         page2,
-        page2layout,
-        page2frame,
-        page3,
-        MarkingButton,
+        itemlabel_page3,
         page3layout,
+        buttonpage3layout,
+        page3,
+        labelstatus,
+        scanpage,
+        page4layout,
+        page4frame,
+        page4,
+        sendmodelButton,
         CloseButton,
-        stackedWidget_main,
-        SettingButton,
-        settingpage,
+        ChooseButton,
+        page5,
     ):
         # starting initialize
         super().__init__()
@@ -34,38 +37,26 @@ class Ui_MainWindow_layout(object):
         self.mainlayoutwidget = mainlayoutwidget
         self.mainlayoutpagebutton = mainlayoutpagebutton
         self.mainmenu = mainmenu
-        self.horizontalLayoutWidget = horizontalLayoutWidget
-        self.horizontalLayoutWidget2 = horizontalLayoutWidget2
-        self.page = page
+        self.filedirectorylayout = filedirectorylayout
+        self.buttonfiledirrectorylayout = buttonfiledirectorylayout
         self.page2 = page2
-        self.page2Layout = page2layout
-        self.page2frame = page2frame
-        self.page3 = page3
+        self.itemlabel_page3 = itemlabel_page3
         self.page3Layout = page3layout
-        self.MarkingButton = MarkingButton
+        self.buttonpage3layout = buttonpage3layout
+        self.page3 = page3
+        self.labelstatus = labelstatus
+        self.scanpage = scanpage
+        self.page4Layout = page4layout
+        self.page4frame = page4frame
+        self.page4 = page4
+        self.page5 = page5
+        self.sendmodelButton = sendmodelButton
         self.CloseButton = CloseButton
-        self.settingpage = settingpage
-        self.stackedWidget_main = stackedWidget_main
-        self.SettingButton = SettingButton
+        self.ChooseButton = ChooseButton
         self.setStretch()
 
     #stretch layout
     def setStretch(self):
-        self.boxLayout = QVBoxLayout()
-        self.settingusermanuallayout = QHBoxLayout()
-        self.horizontalSpacer = QSpacerItem(
-            40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
-        )
-        self.settingusermanuallayout.addItem(self.horizontalSpacer)
-        self.settingusermanuallayout.addWidget(self.SettingButton)
-        self.settingusermanuallayout.setStretch(0, 1)
-        self.settingusermanuallayout.setStretch(1, 1)
-        self.settingusermanuallayout.setStretch(2, 1)
-        self.boxLayout.addLayout(self.settingusermanuallayout)
-        self.boxLayout.addWidget(self.stackedWidget)
-        self.boxLayout.setStretch(0, 1)
-        self.boxLayout.setStretch(1, 4)
-        self.stackedWidget_main.setLayout(self.boxLayout)
         self.page1boxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
             20, 400, QSizePolicy.Minimum, QSizePolicy.Expanding
@@ -85,24 +76,33 @@ class Ui_MainWindow_layout(object):
         self.mainlayoutpagebutton.setStretch(0, 1)
         self.mainlayoutpagebutton.setStretch(1, 1)
         self.mainmenu.setLayout(self.page1boxlayout)
-        self.page2boxLayout = QHBoxLayout()
-        self.page2boxLayout.addWidget(self.horizontalLayoutWidget)
-        self.page2boxLayout.addWidget(self.horizontalLayoutWidget2)
-        self.page2boxLayout.setStretch(0, 1)
+        self.page2boxLayout = QVBoxLayout()
+        self.page2boxLayout.addWidget(self.filedirectorylayout)
+        self.page2boxLayout.addWidget(self.buttonfiledirrectorylayout)
+        self.page2boxLayout.setStretch(0, 3)
         self.page2boxLayout.setStretch(1, 1)
-        self.page.setLayout(self.page2boxLayout)
+        self.page2.setLayout(self.page2boxLayout)
         self.page3boxLayout = QVBoxLayout()
-        self.page3boxLayout.addWidget(self.page2frame)
-        self.page3boxLayout.addWidget(self.page2Layout)
+        self.page3boxLayout.addWidget(self.itemlabel_page3)
+        self.page3boxLayout.addWidget(self.page3Layout)
+        self.page3boxLayout.addWidget(self.buttonpage3layout)
         self.page3boxLayout.setStretch(0, 1)
-        self.page3boxLayout.setStretch(1, 1)
-        self.page2.setLayout(self.page3boxLayout)
+        self.page3boxLayout.setStretch(1, 4)
+        self.page3boxLayout.setStretch(2, 1)
+        self.page3.setLayout(self.page3boxLayout)
+        self.scaningbox = QVBoxLayout()
+        self.scaningbox.addWidget(self.labelstatus)
+        self.scanpage.setLayout(self.scaningbox)
         self.page4boxLayout = QVBoxLayout()
-        self.page4boxLayout.addWidget(self.MarkingButton)
-        self.page4boxLayout.addWidget(self.page3Layout)
-        self.page4boxLayout.addWidget(self.CloseButton)
+        self.page4boxLayout.addWidget(self.page4Layout)
+        self.page4boxLayout.addWidget(self.page4frame)
         self.page4boxLayout.setStretch(0, 1)
         self.page4boxLayout.setStretch(1, 1)
-        self.page4boxLayout.setStretch(2, 1)
-        self.page3.setLayout(self.page4boxLayout)
+        self.page4.setLayout(self.page4boxLayout)
+        self.page5boxLayout = QVBoxLayout()
+        self.page5boxLayout.addWidget(self.sendmodelButton)
+        self.page5boxLayout.addWidget(self.ChooseButton)
+        self.page5boxLayout.addWidget(self.CloseButton) 
+        self.page5.setLayout(self.page5boxLayout)
+
 

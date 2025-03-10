@@ -1,7 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QDialog, QVBoxLayout, QLabel, QApplication
 from PyQt5.QtGui import QFont
-import appinit as initlizemenu
 import sys
 
 
@@ -51,6 +50,4 @@ class Ui_Dialog_Close(QMainWindow):
             app = QApplication(sys.argv)
         else:
             app = QApplication.instance()
-        #main_window_menu = initlizemenu.Ui_InitilizeWindow(ros_node)
-        #main_window_menu.show()
         self.close()
