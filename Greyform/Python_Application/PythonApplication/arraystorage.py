@@ -106,6 +106,40 @@ def wall_format(wall):
         heighttotal = depth + height + 10
     return wall_format, heighttotal , height
 
+def wall_formats_reversed(wall):
+    wall_format = {}
+    axis = ""
+    for index, (wall, dims) in enumerate(wall.items(), start=0):
+        width = dims.get("width", "Not available")
+        depth = dims.get("depth", "Not available")
+        height = dims.get("height", "Not available")
+        if index % 2 == 0:
+            axis = "x"
+        else:
+            axis = "y"
+        if index + 1 in [2, 5]:
+            wall_format[index + 1] = {
+                "axis": axis,
+                "width": width + height,
+                "height": depth + height + 10,
+            }
+        elif index + 1 in [1]:
+            wall_format[index + 1] = {
+                "axis": axis,
+                "width": width + (height * 2),
+                "height": depth + height + 10,
+            }
+        else:
+            wall_format[index + 1] = {
+                "axis": axis,
+                "width": width,
+                "height": depth + height + 10,
+            }
+        heighttotal = depth + height + 10
+    return wall_format, heighttotal , height
+
+
+
 def wall_format_finishes(wall):
     for index, (wall, dims) in enumerate(wall.items(), start=0):
         height = dims.get("height", "Not available")
