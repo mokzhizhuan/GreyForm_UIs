@@ -26,7 +26,8 @@ class createMesh(QMainWindow):
         mainwindow,
         Stagelabel,
         walllabel,
-        stacked_widget
+        stacked_widget,
+        listenerdialog
     ):
         # starting initialize
         super().__init__()
@@ -42,6 +43,7 @@ class createMesh(QMainWindow):
         self.filepath = file_path
         self.walllabel = walllabel
         self.stacked_widget = stacked_widget
+        self.listenerdialog = listenerdialog
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
@@ -173,8 +175,7 @@ class createMesh(QMainWindow):
                 "rotation": (0, 0, 0),
             },  # Yellow
         }
-        self.createactors, self.identifier, self.wall_actors, self.wallname = createactorvtk.setupactors(self.walls, self.stagetext, self.wall_identifiers, self.ren, self.walllabel)
-        print(self.identifier)
+        self.wall_actors , self.identifier , self.wallname = createactorvtk.setupactors(self.walls , self.stagetext , self.wall_identifiers , self.ren , self.walllabel)
         self.setupvtkframe()
 
     # setup vtk frame ui
@@ -197,7 +198,9 @@ class createMesh(QMainWindow):
             self.wall_actors,
             self.wallname,
             self.identifier,
-            self.stacked_widget
+            self.stacked_widget,
+            self.walllabel, 
+            self.listenerdialog
         ]
         camera = events.myInteractorStyle(
             setcamerainteraction,

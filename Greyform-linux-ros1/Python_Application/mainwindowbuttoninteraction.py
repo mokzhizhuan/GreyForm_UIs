@@ -1,6 +1,5 @@
 import menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
-import PythonApplication.menu_confirmack as confirmack
 from PyQt5 import QtCore, QtWidgets, QtGui, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -44,7 +43,7 @@ class mainwindowbuttonUI(object):
         self.stackedWidget.setCurrentIndex(1)
 
     def confirmmodel(self):
-        self.stackedWidget.setCurrentIndex(3)
+        self.stackedWidget.setCurrentIndex(2)
 
     # button interaction ui
     def button_UI(self):

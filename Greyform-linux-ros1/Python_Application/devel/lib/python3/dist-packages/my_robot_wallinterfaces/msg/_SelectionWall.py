@@ -8,16 +8,15 @@ import struct
 
 
 class SelectionWall(genpy.Message):
-  _md5sum = "64cb68372925c449ff91dd3a5f92a356"
+  _md5sum = "cec1748b8474fc5db64b113998095031"
   _type = "my_robot_wallinterfaces/SelectionWall"
   _has_header = False  # flag to mark the presence of a Header object
   _full_text = """string wallselection
 string typeselection
-int32 sectionselection
 int32[] picked_position
 """
-  __slots__ = ['wallselection','typeselection','sectionselection','picked_position']
-  _slot_types = ['string','string','int32','int32[]']
+  __slots__ = ['wallselection','typeselection','picked_position']
+  _slot_types = ['string','string','int32[]']
 
   def __init__(self, *args, **kwds):
     """
@@ -27,7 +26,7 @@ int32[] picked_position
     changes.  You cannot mix in-order arguments and keyword arguments.
 
     The available fields are:
-       wallselection,typeselection,sectionselection,picked_position
+       wallselection,typeselection,picked_position
 
     :param args: complete set of field values, in .msg order
     :param kwds: use keyword arguments corresponding to message field names
@@ -40,14 +39,11 @@ int32[] picked_position
         self.wallselection = ''
       if self.typeselection is None:
         self.typeselection = ''
-      if self.sectionselection is None:
-        self.sectionselection = 0
       if self.picked_position is None:
         self.picked_position = []
     else:
       self.wallselection = ''
       self.typeselection = ''
-      self.sectionselection = 0
       self.picked_position = []
 
   def _get_types(self):
@@ -74,8 +70,6 @@ int32[] picked_position
         _x = _x.encode('utf-8')
         length = len(_x)
       buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
-      _x = self.sectionselection
-      buff.write(_get_struct_i().pack(_x))
       length = len(self.picked_position)
       buff.write(_struct_I.pack(length))
       pattern = '<%si'%length
@@ -112,9 +106,6 @@ int32[] picked_position
         self.typeselection = str[start:end]
       start = end
       end += 4
-      (self.sectionselection,) = _get_struct_i().unpack(str[start:end])
-      start = end
-      end += 4
       (length,) = _struct_I.unpack(str[start:end])
       pattern = '<%si'%length
       start = end
@@ -145,8 +136,6 @@ int32[] picked_position
         _x = _x.encode('utf-8')
         length = len(_x)
       buff.write(struct.Struct('<I%ss'%length).pack(length, _x))
-      _x = self.sectionselection
-      buff.write(_get_struct_i().pack(_x))
       length = len(self.picked_position)
       buff.write(_struct_I.pack(length))
       pattern = '<%si'%length
@@ -184,9 +173,6 @@ int32[] picked_position
         self.typeselection = str[start:end]
       start = end
       end += 4
-      (self.sectionselection,) = _get_struct_i().unpack(str[start:end])
-      start = end
-      end += 4
       (length,) = _struct_I.unpack(str[start:end])
       pattern = '<%si'%length
       start = end
@@ -201,9 +187,3 @@ _struct_I = genpy.struct_I
 def _get_struct_I():
     global _struct_I
     return _struct_I
-_struct_i = None
-def _get_struct_i():
-    global _struct_i
-    if _struct_i is None:
-        _struct_i = struct.Struct("<i")
-    return _struct_i

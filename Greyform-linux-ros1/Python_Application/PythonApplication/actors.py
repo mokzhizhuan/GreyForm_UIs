@@ -16,68 +16,83 @@ import re
 def setupactors(walls, stagetext, wall_identifiers, ren, walllabel):
     identifier = {}
     wall_actors = {}
-    wall_found = False
+
     for wall, properties in walls.items():
-        if wall_found:  # Stop loop once a valid wall has been processed
-            break
-        match = re.search(r'\d+', wall)
-        wall_number = int(match.group()) if match else None
+        if wall == "Floor":
+            wall_number = "F"  # Special case for Floor
+        else:
+            match = re.search(r'\d+', wall)
+            wall_number = int(match.group()) if match else None
+
         if wall_number is not None and stagetext in wall_identifiers:
             sheet_data = wall_identifiers[stagetext]
-            if wall_number in sheet_data["wall_numbers"] and wall_number not in identifier:
-                idx = sheet_data["wall_numbers"].index(wall_number)  # First occurrence only
+            
+            if wall_number == "F":
+                indexes = [i for i, wn in enumerate(sheet_data["wall_numbers"]) if wn == "F"]
+            else:
+                indexes = [i for i, wn in enumerate(sheet_data["wall_numbers"]) if wn == wall_number]
+
+            for idx in indexes:  # Store all occurrences
                 if (
-                        0 <= idx < len(sheet_data["markingidentifiers"]) and
-                        0 <= idx < len(sheet_data["Position X (m)"]) and
-                        0 <= idx < len(sheet_data["Position Y (m)"]) and
-                        0 <= idx < len(sheet_data["Position Z (m)"]) and
-                        0 <= idx < len(sheet_data["Shape type"]) and
-                        0 <= idx < len(sheet_data["width"]) and
-                        0 <= idx < len(sheet_data["height"]) and
-                        0 <= idx < len(sheet_data["Status"])
-                    ):
-                        identifier[wall_number] = {
-                            "sheet_name": stagetext,
-                            "markingidentifiers": sheet_data["markingidentifiers"][idx],
-                            "Position X (m)": sheet_data["Position X (m)"][idx],
-                            "Position Y (m)": sheet_data["Position Y (m)"][idx],
-                            "Position Z (m)": sheet_data["Position Z (m)"][idx],
-                            "Shape type": sheet_data["Shape type"][idx],
-                            "width": sheet_data["width"][idx],
-                            "height": sheet_data["height"][idx],
-                            "Status": sheet_data["Status"][idx],
-                        }
-            if wall not in wall_actors:
-                if wall != "Floor":
-                    actor = create_wall_actor(
-                            name=wall,
-                            position=properties["position"],
-                            size=properties["size"],
-                            color=properties["color"],
-                            rotation=properties["rotation"]
-                        )
-                else:
-                    actor = create_floor_actor(
-                            name=wall,
-                            position=properties["position"],
-                            points_list=properties["points"],
-                            color=properties["color"],
-                            rotation=properties["rotation"]
-                        )
-                wall_actors[wall] = actor
-                ren.AddActor(actor)
-        if identifier:
-            first_wall_number = min(identifier.keys())  # Get the first (smallest) wall number
-            for wall_name in wall_actors:
-                match = re.search(r'\d+', wall_name)
-                wall_number = int(match.group()) if match else None
-                if wall_number == first_wall_number:
-                    wall_actors[wall_name].VisibilityOn() 
-                    wallname = wall_name
-                    walllabel.setText(f"Wall : {wallname}") 
-                else:
-                    wall_actors[wall_name].VisibilityOff()  
-        return wall_actors, identifier , wall_actors, wallname
+                    0 <= idx < len(sheet_data["markingidentifiers"]) and
+                    0 <= idx < len(sheet_data["Position X (mm)"]) and
+                    0 <= idx < len(sheet_data["Position Y (mm)"]) and
+                    0 <= idx < len(sheet_data["Position Z (mm)"]) and
+                    0 <= idx < len(sheet_data["Shape type"]) and
+                    0 <= idx < len(sheet_data["width"]) and
+                    0 <= idx < len(sheet_data["height"]) and
+                    0 <= idx < len(sheet_data["Status"])
+                ):
+                    if wall_number not in identifier:
+                        identifier[wall_number] = []
+
+                    identifier[wall_number].append({
+                        "sheet_name": stagetext,
+                        "markingidentifiers": sheet_data["markingidentifiers"][idx],
+                        "Position X (mm)": sheet_data["Position X (mm)"][idx],
+                        "Position Y (mm)": sheet_data["Position Y (mm)"][idx],
+                        "Position Z (mm)": sheet_data["Position Z (mm)"][idx],
+                        "Shape type": sheet_data["Shape type"][idx],
+                        "width": sheet_data["width"][idx],
+                        "height": sheet_data["height"][idx],
+                        "Status": sheet_data["Status"][idx],
+                    })
+        if wall not in wall_actors:
+            if wall != "Floor":
+                actor = create_wall_actor(
+                    name=wall,
+                    position=properties["position"],
+                    size=properties["size"],
+                    color=properties["color"],
+                    rotation=properties["rotation"]
+                )
+            else:
+                actor = create_floor_actor(
+                    name=wall,
+                    position=properties["position"],
+                    points_list=properties["points"],
+                    color=properties["color"],
+                    rotation=properties["rotation"]
+                )
+
+            wall_actors[wall] = actor
+            ren.AddActor(actor)
+
+    # Setting visibility logic (after all walls are processed)
+    if identifier:
+        first_wall_number = min(identifier.keys(), key=lambda x: (x == "F", x))  # Numeric walls first, "F" last
+        for wall_name in wall_actors:
+            match = re.search(r'\d+', wall_name)
+            wall_number = int(match.group()) if match else "F" if wall_name == "Floor" else None
+
+            if wall_number == first_wall_number:
+                wall_actors[wall_name].VisibilityOn()
+                wallname = wall_name
+                walllabel.setText(f"Wall : {wallname}") 
+            else:
+                wall_actors[wall_name].VisibilityOff()
+
+    return wall_actors, identifier, wallname
 
 def create_wall_actor(name, position, size, color, rotation):
     """Creates a wall (rectangular plane) at a given position, size, and color."""

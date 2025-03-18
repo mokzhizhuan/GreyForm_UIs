@@ -21,6 +21,7 @@ class Ui_MainWindow_layout(object):
         buttonpage3layout,
         page3,
         labelstatus,
+        scanprogressBar,
         scanpage,
         page4layout,
         page4frame,
@@ -45,6 +46,7 @@ class Ui_MainWindow_layout(object):
         self.buttonpage3layout = buttonpage3layout
         self.page3 = page3
         self.labelstatus = labelstatus
+        self.scanprogressBar = scanprogressBar
         self.scanpage = scanpage
         self.page4Layout = page4layout
         self.page4frame = page4frame
@@ -91,7 +93,20 @@ class Ui_MainWindow_layout(object):
         self.page3boxLayout.setStretch(2, 1)
         self.page3.setLayout(self.page3boxLayout)
         self.scaningbox = QVBoxLayout()
+        self.verticalSpacer_3 = QSpacerItem(
+            20, 400, QSizePolicy.Minimum, QSizePolicy.Expanding
+        )
+        self.verticalSpacer_4 = QSpacerItem(
+            20, 220, QSizePolicy.Minimum, QSizePolicy.Expanding
+        )
+        self.scaningbox.addItem(self.verticalSpacer_3)
         self.scaningbox.addWidget(self.labelstatus)
+        self.scaningbox.addWidget(self.scanprogressBar)
+        self.scaningbox.addItem(self.verticalSpacer_4)
+        self.scaningbox.setStretch(0, 3)
+        self.scaningbox.setStretch(1, 1)
+        self.scaningbox.setStretch(2, 1)
+        self.scaningbox.setStretch(3, 3)
         self.scanpage.setLayout(self.scaningbox)
         self.page4boxLayout = QVBoxLayout()
         self.page4boxLayout.addWidget(self.page4Layout)
@@ -103,6 +118,9 @@ class Ui_MainWindow_layout(object):
         self.page5boxLayout.addWidget(self.sendmodelButton)
         self.page5boxLayout.addWidget(self.ChooseButton)
         self.page5boxLayout.addWidget(self.CloseButton) 
+        self.page5boxLayout.setStretch(0, 1)
+        self.page5boxLayout.setStretch(1, 1)
+        self.page5boxLayout.setStretch(2, 1)
         self.page5.setLayout(self.page5boxLayout)
 
 

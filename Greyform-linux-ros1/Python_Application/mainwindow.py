@@ -152,6 +152,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.Stagelabel,
             self.stagestoring,
             self.mainwindow.labelstatus,
+            self.mainwindow.scanprogressBar,
             self.mainwindow.walllabel
         ]
         self.mainwindow.Itemlabel.setText(f"Model Product : {file}")
@@ -181,6 +182,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.horizontalLayoutWidgetbuttonpage3,
             self.mainwindow.page_2,
             self.mainwindow.labelstatus,
+            self.mainwindow.scanprogressBar,
             self.mainwindow.scanpage,
             self.mainwindow.layoutWidgetpage4,
             self.mainwindow.horizontalLayoutWidgetpage4,

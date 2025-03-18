@@ -82,19 +82,17 @@ class TalkerNode:
 
     #talker selection message implementation
     def publish_selection_message(
-        self, wall_number, sectionnumber, picked_position, Stagelabel
+        self, wall_number, picked_position, Stagelabel
     ):  
         try:
             msg = SelectionWall()
             msg.wallselection = str(wall_number)
             msg.typeselection = f"{Stagelabel}"
-            msg.sectionselection = sectionnumber
             msg.picked_position = picked_position
             self.selection_publisher_.publish(msg)
             self.message += (
                 f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"
                 f"{self.spacing}typeselection={msg.typeselection},"
-                f"{self.spacing}sectionselection={msg.sectionselection}"
                 f"{self.spacing}{list(msg.picked_position)}{self.spacing}"
             )
         except Exception as e:

@@ -29,9 +29,9 @@ def exceldataextractor():
         wall_numbers_by_sheet[sheet_name] = {
             "markingidentifiers": markingidentifiers,
             "wall_numbers": wall_numbers,
-            "Position X (m)": positionx,
-            "Position Y (m)": positiony,
-            "Position Z (m)": positionz,
+            "Position X (mm)": positionx,
+            "Position Y (mm)": positiony,
+            "Position Z (mm)": positionz,
             "Shape type": shapetype,
             "width" : width,
             "height" : height,
@@ -51,9 +51,9 @@ def exceldataextractor():
         "markingidentifiers"
     ]
     shapetypes = wall_numbers_by_sheet["Stage 2"]["Shape type"]
-    PositionX = wall_numbers_by_sheet["Stage 2"]["Position X (m)"]
-    PositionY = wall_numbers_by_sheet["Stage 2"]["Position Y (m)"]
-    PositionZ = wall_numbers_by_sheet["Stage 2"]["Position Z (m)"]
+    PositionX = wall_numbers_by_sheet["Stage 2"]["Position X (mm)"]
+    PositionY = wall_numbers_by_sheet["Stage 2"]["Position Y (mm)"]
+    PositionZ = wall_numbers_by_sheet["Stage 2"]["Position Z (mm)"]
     widths = wall_numbers_by_sheet["Stage 2"]["width"]
     heights = wall_numbers_by_sheet["Stage 2"]["height"]
     for rowidx, (name, wall_num, posx, posy, posz, shapetype, length, breath) in enumerate(
@@ -73,9 +73,9 @@ def exceldataextractor():
             new_wall = {
                 "Point number/name": name,
                 "Wall Number": wall_num,
-                "Position X (m)": posx,
-                "Position Y (m)": posy,
-                "Position Z (m)": posz,
+                "Position X (mm)": posx,
+                "Position Y (mm)": posy,
+                "Position Z (mm)": posz,
                 "Shape type": shapetype,
                 "width": length,
                 "height": breath,

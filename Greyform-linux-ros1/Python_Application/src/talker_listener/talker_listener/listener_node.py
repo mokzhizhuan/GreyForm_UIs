@@ -1,80 +1,63 @@
 #!/usr/bin/env python3
 import rospy
+import threading
+import sys
 from my_robot_wallinterfaces.msg import FileExtractionMessage, SelectionWall
-from my_robot_wallinterfaces.srv import SetLed
-from std_msgs.msg import String
 from stl import mesh
 import pandas as pd
 import numpy as np
-import tkinter as tk
-from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT, X, ttk
+from PyQt5.QtWidgets import QApplication, QDialog, QTextEdit, QVBoxLayout, QPushButton
+from PyQt5.QtCore import pyqtSignal, QThread
 
+class ROSNotifier(QDialog):
+    """ A PyQt5 dialog that accumulates ROS messages in a log window """
 
-# extra
-class SingletonDialog:
-    _instance = None
+    log_signal = pyqtSignal(str)  # Signal to update log
+    show_signal = pyqtSignal()    # Signal to show the dialog
 
-    @classmethod
-    def show_info_dialog(cls, message, root, title="Information"):
-        if cls._instance is None:
-            cls._instance = ScrollableDialog(root, title, message)
-            cls._instance.mainloop()
-
-    @classmethod
-    def clear(cls):
-        if cls._instance:
-            cls._instance.destroy()
-            cls._instance = None
-
-
-# listener node dialogwhen showing message
-class ScrollableDialog(Toplevel):
-    def __init__(self, root, title, message, listener):
-        # starting initialize
-        super().__init__(root)
-        self.root = root
-        self.title(title)
-        self.geometry("1000x600")
-        style = ttk.Style()
-        self.listener = listener
-        self.message = message
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=0)
-        self.text_widget = tk.Text(self, wrap="word", font=("Helvetica", 20))
-        self.text_widget.grid(row=0, column=0, sticky="nsew")
-        scrollbar = Scrollbar(self, command=self.text_widget.yview)
-        scrollbar.grid(row=0, column=1, sticky="ns")
-        self.text_widget.config(yscrollcommand=scrollbar.set)
-        self.text_widget.insert(END, self.message)
-        self.text_widget.config(state=tk.DISABLED)
-        style.configure("TButton", font=("Helvetica", 20))
-        ok_button = ttk.Button(self, text="OK", command=self.closemessage)
-        ok_button.grid(row=1, column=0, pady=5, sticky="ew")
-        clear_button = ttk.Button(self, text="Clear", command=self.clear_text)
-        clear_button.grid(row=2, column=0, pady=5, sticky="ew")
-
-    # close message and clear
-    def closemessage(self):
-        self.listener.message = ""
-        self.text_widget.config(state=tk.NORMAL)
-        self.text_widget.delete(1.0, tk.END)
-        self.text_widget.config(state=tk.DISABLED)
-        self.destroy()
-
-    # clear text in dialog
-    def clear_text(self):
-        self.listener.message = ""
-        self.text_widget.config(state=tk.NORMAL)
-        self.text_widget.delete(1.0, tk.END)
-        self.text_widget.config(state=tk.DISABLED)
-
-
-# listenerNode
-class ListenerNode:
-    def __init__(self, root):
-        # starting initialize
+    def __init__(self):
         super().__init__()
+        self.setWindowTitle("ROS Log Messages")
+        self.setGeometry(100, 100, 600, 400)
+
+        # Layout and widgets
+        layout = QVBoxLayout()
+        self.text_edit = QTextEdit(self)
+        self.text_edit.setReadOnly(True)  # Make log read-only
+        layout.addWidget(self.text_edit)
+
+        # Close button
+        self.close_button = QPushButton("Close", self)
+        self.close_button.clicked.connect(self.hide)  # Hide instead of closing
+        layout.addWidget(self.close_button)
+
+        self.setLayout(layout)
+
+        # Connect signals to functions
+        self.log_signal.connect(self.update_log)
+        self.show_signal.connect(self.show_window)
+
+    def closeEvent(self, event):
+        """ Override close event to hide instead of destroying window """
+        self.hide()
+        event.ignore()  # Prevent actual closing
+
+    def update_log(self, message):
+        """ Update the log window with new messages """
+        self.text_edit.append(message)
+
+    def show_window(self):
+        """ Show the window only when `process_excel_data()` is called """
+        self.showNormal()
+        self.raise_()
+
+class ListenerNode:
+    """ A single instance of ListenerNode that uses one persistent log window """
+
+    def __init__(self, notifier):
+        self.notifier = notifier  # Use the same notifier instance
+        rospy.init_node("listener_node", anonymous=True)  # ✅ Initialize ROS in the main thread
+
         self.file_subscription_ = rospy.Subscriber(
             "file_extraction_topic",
             FileExtractionMessage,
@@ -87,147 +70,89 @@ class ListenerNode:
             self.selection_listener_callback,
             queue_size=10,
         )
-        self.root = root
-        self.file_callback = None
-        self.selection_callback = None
-        self.wallselection = None
-        self.typeselection = None
-        self.sectionselection = None
-        self.picked_position = []
-        self.message = ""
-        self.spacing = "\n"
-        self.title = "Listener Node"
-        self.active_dialog = None
-        self.setup_tk_ui()
 
-    # setup listener node dialog ui
-    def setup_tk_ui(self):
-        self.label = tk.Label(self.root, text="ROS Node Initialized")
-        self.label.pack()
-        self.show_message_button = tk.Button(
-            self.root, text="Show Message", command=self.show_info_dialog
-        )
-        self.show_message_button.pack()
+        # Store logs but do not show them until `process_excel_data()`
+        self.log_buffer = []  # 🛑 Logs are buffered here until Excel processing
 
-        # Adding a close button
-        self.close_button = tk.Button(
-            self.root,
-            text="Close",
-            command=self.root.destroy,  # This will close the Tkinter window
-        )
-        self.close_button.pack()
-        # message = "Point that are not maked: row[Position X (m)],row[Position Y (m)],row[Position Z (m)],"
-        # message = "The point that the robot marks is not on reach , Please move the robot"
-
-    # file listener callback implementation
     def file_listener_callback(self, msg):
+        """ Process STL and Excel file messages but DO NOT show logs yet """
         try:
-            stl_data = bytes(msg.stl_data)
-            self.message += (
-                f"{self.spacing}STL file received and processed: {msg.stl_data[:10]}"
-            )
-            with open("/tmp/temp_stl_file.stl", "wb") as f:
-                f.write(stl_data)
-            stl_mesh = mesh.Mesh.from_file("/tmp/temp_stl_file.stl")
-            self.message += f"{self.spacing}Excel file path: {msg.excelfile}"
-            self.process_excel_data(msg.excelfile)
-            if self.file_callback:
-                self.file_callback(stl_mesh)
-        except Exception as e:
-            message = f"Failed to process received STL file: {e}"
-            print(message)
+            self.log_buffer.append(f"📥 STL file received: {msg.stl_data[:10]}")
+            self.log_buffer.append(f"📁 Excel file path: {msg.excelfile}")
 
-    # selection listener callback implementation
+            # Process the Excel file
+            self.process_excel_data(msg.excelfile)  # ✅ Show logs only after this step
+        except Exception as e:
+            self.log_buffer.append(f"❌ Error processing STL file: {e}")
+
     def selection_listener_callback(self, msg):
+        """ Process selection messages but DO NOT show logs yet """
         try:
-            self.message += (
-                f"{self.spacing}Selection message received:{self.spacing} wallselections={msg.wallselection}, "
-                f"{self.spacing}typeselection={msg.typeselection},{self.spacing} sectionselection={msg.sectionselection}"
-            )
+            self.log_buffer.append(f"✅ Selection received: Wall={msg.wallselection}, Type={msg.typeselection}, Position={msg.picked_position}")
             self.wallselection = msg.wallselection
             self.typeselection = msg.typeselection
-            self.sectionselection = msg.sectionselection
             self.picked_position = msg.picked_position
-            if self.selection_callback:
-                self.selection_callback(msg)
         except Exception as e:
-            message = f"Failed to publish selection message: {e}"
-            print(message) 
+            self.log_buffer.append(f"❌ Failed to process selection: {e}")
 
-    # process excel data for finalization
     def process_excel_data(self, excel_filepath):
+        """ Process Excel data and update logs (only now, the log window will appear) """
         try:
+            self.log_buffer.append(f"Processing Excel file: {excel_filepath}")
+
             self.excelitems = pd.read_excel(excel_filepath, sheet_name=None)
             processed_data = {}
-            self.message += f"{self.spacing}Item Postion is marking : {self.picked_position}{self.spacing}"
+
             for stage, data in self.excelitems.items():
                 df = pd.DataFrame(data)
                 for index, row in df.iterrows():
-                    original_x = df.at[index, "Position X (m)"]
-                    original_y = df.at[index, "Position Y (m)"]
-                    original_z = df.at[index, "Position Z (m)"]
-                    if original_x < 0:
-                        df.at[index, "Position X (m)"] = 0
-                    if original_y < 0:
-                        df.at[index, "Position Y (m)"] = 0
-                    if original_z < 0:
-                        df.at[index, "Position Z (m)"] = 0
-                    wall_position = np.array(
-                        [
-                            df.at[index, "Position X (m)"],
-                            df.at[index, "Position Y (m)"],
-                            df.at[index, "Position Z (m)"],
-                        ]
-                    )
+                    df.at[index, "Position X (mm)"] = df.at[index, "Position X (mm)"]
+                    df.at[index, "Position Y (mm)"] = df.at[index, "Position Y (mm)"]
+                    df.at[index, "Position Z (mm)"] = df.at[index, "Position Z (mm)"]
+
                     wallnumberreq = str(df.at[index, "Wall Number"])
                     if self.wallselection == wallnumberreq and self.typeselection == stage:
-                        self.message += (
-                            f"{self.spacing}Points in {self.picked_position} {row['Wall Number']} "
-                            f"on sheet {stage} are marked."
-                        )
+                        self.log_buffer.append(f"Marking positions in {self.picked_position} on sheet {stage}")
                         df.at[index, "Status"] = "done"
-                    df.at[index, "Position X (m)"] = original_x
-                    df.at[index, "Position Y (m)"] = original_y
-                    df.at[index, "Position Z (m)"] = original_z
+
                 processed_data[stage] = df
+
             with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
                 for sheet_name, df in processed_data.items():
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
-                self.message += f"{self.spacing}Excel data processed successfully."
+        
+            self.log_buffer.append("✅ Excel data processed successfully.")
+
         except FileNotFoundError as e:
-            message = f"Excel file not found: {e}"
-            print(message)
+            self.log_buffer.append(f"❌ Excel file not found: {e}")
         except Exception as e:
-            message = f"Failed to process Excel file: {e}"
-            print(message)
+            self.log_buffer.append(f"❌ Failed to process Excel file: {e}")
 
-    # set callback for listener and talker
-    def set_file_callback(self, callback):
-        self.file_callback = callback
+        # ✅ Now send all logs to ROSNotifier and SHOW the dialog
+        for log in self.log_buffer:
+            rospy.loginfo(log) if "❌" not in log else rospy.logerr(log)
+            self.notifier.log_signal.emit(log)  # Update PyQt5 UI
+        
+        self.log_buffer.clear()  # ✅ Clear buffer after displaying logs
+        self.notifier.show_signal.emit()  # ✅ Now show the log window
 
-    def set_selection_callback(self, callback):
-        self.selection_callback = callback
+def run_ros(listener):
+    """ Run rospy.spin() in a separate thread to handle callbacks """
+    rospy.spin()
 
-    # show dialog
-    def show_info_dialog(self):
-        if self.active_dialog:
-            self.active_dialog.destroy()
-            self.active_dialog = None
-        if self.message != "":
-            self.active_dialog = ScrollableDialog(
-                self.root, "Listener Node", self.message, self
-            )
-            self.active_dialog.mainloop()
+def main():
+    """ Main function to run PyQt5 and ROS together """
+    app = QApplication(sys.argv)  # ✅ PyQt5 must run in the main thread
+    notifier = ROSNotifier()  # ✅ Create log window
 
+    # ✅ Initialize ROS in the main thread
+    listener = ListenerNode(notifier)
 
-# implement listener init
-def main(args=None):
-    root = tk.Tk()
-    rospy.init_node("listener_node", anonymous=True)
-    listenerNode = ListenerNode(root)
-    root.mainloop()
-    rospy.signal_shutdown("Shutting down ROS node")
+    # ✅ Run rospy.spin() in a separate thread
+    ros_thread = threading.Thread(target=run_ros, args=(listener,), daemon=True)
+    ros_thread.start()
 
+    sys.exit(app.exec_())  # ✅ Start the PyQt5 event loop in the main thread
 
 if __name__ == "__main__":
     main()

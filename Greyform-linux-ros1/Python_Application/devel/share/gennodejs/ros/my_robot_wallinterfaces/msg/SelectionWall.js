@@ -20,7 +20,6 @@ class SelectionWall {
       // initObj === null is a special case for deserialization where we don't initialize fields
       this.wallselection = null;
       this.typeselection = null;
-      this.sectionselection = null;
       this.picked_position = null;
     }
     else {
@@ -35,12 +34,6 @@ class SelectionWall {
       }
       else {
         this.typeselection = '';
-      }
-      if (initObj.hasOwnProperty('sectionselection')) {
-        this.sectionselection = initObj.sectionselection
-      }
-      else {
-        this.sectionselection = 0;
       }
       if (initObj.hasOwnProperty('picked_position')) {
         this.picked_position = initObj.picked_position
@@ -57,8 +50,6 @@ class SelectionWall {
     bufferOffset = _serializer.string(obj.wallselection, buffer, bufferOffset);
     // Serialize message field [typeselection]
     bufferOffset = _serializer.string(obj.typeselection, buffer, bufferOffset);
-    // Serialize message field [sectionselection]
-    bufferOffset = _serializer.int32(obj.sectionselection, buffer, bufferOffset);
     // Serialize message field [picked_position]
     bufferOffset = _arraySerializer.int32(obj.picked_position, buffer, bufferOffset, null);
     return bufferOffset;
@@ -72,8 +63,6 @@ class SelectionWall {
     data.wallselection = _deserializer.string(buffer, bufferOffset);
     // Deserialize message field [typeselection]
     data.typeselection = _deserializer.string(buffer, bufferOffset);
-    // Deserialize message field [sectionselection]
-    data.sectionselection = _deserializer.int32(buffer, bufferOffset);
     // Deserialize message field [picked_position]
     data.picked_position = _arrayDeserializer.int32(buffer, bufferOffset, null)
     return data;
@@ -84,7 +73,7 @@ class SelectionWall {
     length += _getByteLength(object.wallselection);
     length += _getByteLength(object.typeselection);
     length += 4 * object.picked_position.length;
-    return length + 16;
+    return length + 12;
   }
 
   static datatype() {
@@ -94,7 +83,7 @@ class SelectionWall {
 
   static md5sum() {
     //Returns md5sum for a message object
-    return '64cb68372925c449ff91dd3a5f92a356';
+    return 'cec1748b8474fc5db64b113998095031';
   }
 
   static messageDefinition() {
@@ -102,7 +91,6 @@ class SelectionWall {
     return `
     string wallselection
     string typeselection
-    int32 sectionselection
     int32[] picked_position
     
     `;
@@ -126,13 +114,6 @@ class SelectionWall {
     }
     else {
       resolved.typeselection = ''
-    }
-
-    if (msg.sectionselection !== undefined) {
-      resolved.sectionselection = msg.sectionselection;
-    }
-    else {
-      resolved.sectionselection = 0
     }
 
     if (msg.picked_position !== undefined) {

@@ -5,18 +5,8 @@ from tkinter import messagebox
 import time , re
 from PyQt5.QtWidgets import QProgressDialog, QApplication, QDialog, QPushButton, QVBoxLayout, QLabel
 from PyQt5.QtCore import QTimer , Qt
+import PythonApplication.actors as createactorvtk
 
-# import rospy
-# from sensor_msgs.msg import LaserScan
-# this scan import is for scanning the robot , I will implement it tomorrow .
-# It is not avaiable to implement for now, Dont uncomment it first
-# rospy.init_node('scan_values')
-# sub = rospy.Subscriber('/kobuki/laser/scan', LaserScan, callback)
-# rospy.spin()
-
-# insert interactive event for the stl mesh , left click is for moving the stl ,
-# right click is to insert the actor in the room view , right click for room interact shower and toilet
-# l key is to remove the actor in the room view and set the mesh to the original position
 class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     def __init__(
         self, setcamerainteraction, wall_identifiers, parent=None
@@ -26,14 +16,19 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.render = setcamerainteraction[0]
         self.renderwindowinteractor = setcamerainteraction[1]
         self.meshbound = setcamerainteraction[2]
-        self.mesh = setcamerainteraction[6]
-        self.polys = setcamerainteraction[7]
-        self.reader = setcamerainteraction[8]
+        self.excelfiletext = setcamerainteraction[4]
+        self.stagetext = setcamerainteraction[6]
+        self.wall_identifiers = setcamerainteraction[9]
+        self.stagestorage = setcamerainteraction[10]
+        self.currentindexstage = setcamerainteraction[11]
+        self.Stagelabel = setcamerainteraction[12]
         self.walls = setcamerainteraction[13]
         self.wall_actors = setcamerainteraction[14]
         self.wallname = setcamerainteraction[15] 
         self.identifier = setcamerainteraction[16]
         self.stacked_widget = setcamerainteraction[17]
+        self.walllabel = setcamerainteraction[18]
+        self.listenerdialog = setcamerainteraction[19]
         match = re.search(r'\d+', self.wallname)
         wall_number = int(match.group())
         self.scan = self.identifier[wall_number]
@@ -42,9 +37,12 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self._translate = QCoreApplication.translate
         self.parent = parent
         self.totalsteps = 100  # Define total steps
+        self.stage_completed = False 
+        self.remaining_walls_to_scan = set()
         self.scanning = self.AddObserver(
             "RightButtonPressEvent", self.wallscanning
         )
+        
     
     def wallscanning(self, obj, event):
         self.progress_dialog = QProgressDialog("Scanning...", "Cancel", 0, self.totalsteps, self.parent)
@@ -95,20 +93,93 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         layout.setAlignment(ok_button, Qt.AlignCenter)  
         dialog.setLayout(layout)
         dialog.exec_()  # Show the dialog
+    
+    def initialize_wall_tracking(self):
+        """Initialize tracking of walls to ensure all are scanned before moving to the next stage."""
+        self.stagetext = self.stagestorage[self.currentindexstage]  # Get current stage
+        self.remaining_walls_to_scan = set(self.identifier.keys())  # Get all wall numbers in current stage
+        self.stage_completed = False  # Ensure we track when a stage is finished
+        self.show_message(f"Initializing tracking for {self.stagetext}. Walls to scan: {self.remaining_walls_to_scan}")
+
+    def find_next_valid_wall(self, wall_keys):
+        """Find the next valid unscanned wall or fallback to 'Floor'."""
+        while self.wall_index < len(wall_keys) - 1:
+            self.wall_index += 1
+            self.wallname = wall_keys[self.wall_index]
+            match = re.search(r'\d+', str(self.wallname))
+            wall_number = int(match.group()) if match else None
+
+            if wall_number in self.identifier and wall_number in self.remaining_walls_to_scan:
+                return wall_number
+        if "F" in self.remaining_walls_to_scan:
+            self.wallname = "Floor"
+            return "F"
+
+        return None  # No valid wall or fallback found
 
     def changewall(self):
-        self.wall_actors[self.wallname].VisibilityOff() 
-        self.wall_index = self.wall_index + 1
-        wall_keys = list(self.walls.keys())
-        if self.wall_index < len(wall_keys):  # Check if walls remain
-            self.wallname = wall_keys[self.wall_index]
+        self.wall_actors[self.wallname].VisibilityOff()
+        if self.stage_completed and self.stagetext == "Stage 2":
+            self.show_message("✅ User pressed again. Moving to Stage 3...")
+            self.goto_next_stage_or_page()
+            return
+        if not self.remaining_walls_to_scan and self.stagetext == "Stage 3" and not self.stage_completed:
+            self.show_message("✅ All walls and Floor in Stage 3 scanned. Moving to the next page...")
+            self.stacked_widget.setCurrentIndex(5)
+            return
+        # Initialize tracking if not already set
+        if not hasattr(self, "remaining_walls_to_scan") or not self.remaining_walls_to_scan:
+            self.initialize_wall_tracking()
+
+        wall_keys = sorted(self.walls.keys())
+        wall_number = self.find_next_valid_wall(wall_keys)
+        
+
+        if wall_number:
+            self.wallname = "Floor" if wall_number == "F" else self.wallname
             self.wall_actors[self.wallname].VisibilityOn()
-            match = re.search(r'\d+', self.wallname)
-            wall_number = int(match.group())
-            self.scan = self.identifier[wall_number]
-            print(self.scan)
-        else:
-            self.stacked_widget.setCurrentIndex(4)
+
+            # Remove scanned wall
+            if wall_number in self.identifier:
+                self.scan = self.identifier[wall_number]
+                self.listenerdialog.run_execution(self.scan, wall_number, self.stagetext, self.excelfiletext)
+                self.remaining_walls_to_scan.discard(wall_number)
+
+            self.walllabel.setText(f"Wall : {self.wallname}")
+            self.refresh()
+
+        # ✅ Move to Stage 3 automatically after scanning all walls in Stage 2
+        if not self.remaining_walls_to_scan and self.stagetext == "Stage 2" and not self.stage_completed:
+            self.stage_completed = True
+            self.show_message("✅ Stage 2 complete (including Floor). Press again to move to Stage 3.")
+            return  # Wait for user input
+
+
+    def goto_next_stage_or_page(self):
+        # ✅ Otherwise, move to the next stage (Stage 2 → Stage 3)
+        self.currentindexstage += 1
+        self.wall_index = 0
+        self.stagetext = self.stagestorage[self.currentindexstage]
+        self.Stagelabel.setText(f"Stage : {self.stagetext}")
+
+        # Reset tracking for new stage
+        self.wall_actors, self.identifier, self.wallname = createactorvtk.setupactors(
+            self.walls, self.stagetext, self.wall_identifiers, self.render, self.walllabel
+        )
+        self.initialize_wall_tracking()
+
+        # Start scanning first wall in the new stage
+        self.changewall()
+
+    def refresh(self):
+        self.render.ResetCameraClippingRange()
+        self.renderwindowinteractor.GetRenderWindow().Render()
+
+    def show_message(self, message):
+        root = tk.Tk()
+        root.withdraw()
+        tk.messagebox.showinfo("Message", message)
+        root.destroy()
 
     def set_progress_bar(self, progress_bar):
         """Attach a QProgressBar from the main UI."""

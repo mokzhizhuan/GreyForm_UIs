@@ -18,6 +18,28 @@ import meshio
 import pyvista as pv
 import pandas as pd
 import numpy as np
+from PyQt5.QtWidgets import QApplication, QMainWindow, QProgressBar, QLabel, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtCore import Qt, QThread, pyqtSignal
+import time  # Simulate work
+
+class WorkerThread(QThread):
+    update_progress = pyqtSignal(int)  # Signal to update the progress bar
+    update_status = pyqtSignal(str)  # Signal to update the status label
+
+    def __init__(self, listenerdialog ,stackedWidget):
+        super().__init__() 
+        self.listenerdialog = listenerdialog
+        self.stackedWidget = stackedWidget
+
+    def run(self):
+        for i in range(101):  # Simulate a task progressing from 0% to 100%
+            time.sleep(0.05)  # Simulating a task delay
+            self.update_progress.emit(i)  # Emit progress value
+            self.update_status.emit(f"Scanning...%")  # Emit status text
+        self.update_status.emit(self.scancompleted()) # Final status update
+
+    def scancompleted(self):
+        self.listenerdialog.run_listener_node()
 
 
 class dxfloader(object):
@@ -35,24 +57,18 @@ class dxfloader(object):
         self.buttonlocalize = mainwindowforfileselection[5]
         self.stagestoring = mainwindowforfileselection[7]
         self.labelstatus = mainwindowforfileselection[8]
-        self.walllabel = mainwindowforfileselection[9]
+        self.scanprogressBar = mainwindowforfileselection[9]
+        self.walllabel = mainwindowforfileselection[10]
         self.markingitemsbasedonwallnumber = {}
         self.stackedWidget = stackedWidget
         self.gdf = gdf
         self.stagewallindex = 1
         wallnumber = 1
         self.Stagelabel.setText(f"Stage : {self.stagestoring[0]}")
-        self.exceldata = "exporteddatas.xlsx"
+        self.exceldata = "exporteddatassss(with TMP)(draft).xlsx"
         self.listenerdialog = process.ListenerNodeRunner(
             self.rosnode,
             self.file_path,
-            self.exceldata,
-            wallnumber,
-            self.markingitemsbasedonwallnumber,
-            self.stagestoring[0],
-            self.stagestoring,
-            self.stagewallindex,
-            self.Stagelabel,
             self.labelstatus,
             self.stackedWidget
         )
@@ -112,12 +128,16 @@ class dxfloader(object):
                     self.mainwindow,
                     self.Stagelabel,
                     self.walllabel,
-                    self.stackedWidget
+                    self.stackedWidget,
+                    self.listenerdialog,
                 )
 
     def scanpagers(self):
         self.stackedWidget.setCurrentIndex(3)
-        self.listenerdialog.run_listener_node()
+        self.worker = WorkerThread(self.listenerdialog , self.stackedWidget)
+        self.worker.update_progress.connect(self.scanprogressBar.setValue)
+        self.worker.update_status.connect(self.labelstatus.setText)
+        self.worker.start()
 
     # process geometry in geodata pandas
     def process_line_string(self, geometry, offset):
