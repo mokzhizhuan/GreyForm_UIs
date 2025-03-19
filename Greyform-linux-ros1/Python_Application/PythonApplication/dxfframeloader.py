@@ -63,7 +63,6 @@ class dxfloader(object):
         self.stackedWidget = stackedWidget
         self.gdf = gdf
         self.stagewallindex = 1
-        wallnumber = 1
         self.Stagelabel.setText(f"Stage : {self.stagestoring[0]}")
         self.exceldata = "exporteddatassss(with TMP)(draft).xlsx"
         self.listenerdialog = process.ListenerNodeRunner(
