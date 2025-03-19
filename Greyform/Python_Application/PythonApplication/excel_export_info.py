@@ -360,15 +360,17 @@ class Exportexcelinfo(object):
                             endrange = wall["pos_y_range"][1]
                             if self.wallformat[6]["width"] == endrange:
                                 endrange = (
-                                    self.wallformat[5]["width"] -
-                                    self.wall_finishes_height - self.wall_height
+                                    self.wallformat[5]["width"]
+                                    - self.wall_finishes_height
+                                    - self.wall_height
                                 )
                             if self.wallformat[2]["width"] != (
                                 endrange - startingrange
                             ):
                                 startingrange = (
-                                    self.wallformat[2]["width"] -
-                                    self.wall_finishes_height - self.wall_height
+                                    self.wallformat[2]["width"]
+                                    - self.wall_finishes_height
+                                    - self.wall_height
                                 )
                             robotposy = (
                                 positiony
@@ -378,7 +380,9 @@ class Exportexcelinfo(object):
                             if robotposy > 0:
                                 return pd.Series(
                                     [
-                                        positionx-self.wall_height-self.wall_finishes_height,
+                                        positionx
+                                        - self.wall_height
+                                        - self.wall_finishes_height,
                                         -abs(robotposy),
                                         pos_z,
                                     ]
@@ -386,7 +390,9 @@ class Exportexcelinfo(object):
                             else:
                                 return pd.Series(
                                     [
-                                        positionx-self.wall_height-self.wall_finishes_height,
+                                        positionx
+                                        - self.wall_height
+                                        - self.wall_finishes_height,
                                         abs(robotposy),
                                         pos_z,
                                     ]
@@ -396,7 +402,9 @@ class Exportexcelinfo(object):
                             if robotposy > 0:
                                 return pd.Series(
                                     [
-                                        positionx-self.wall_height-self.wall_finishes_height,
+                                        positionx
+                                        - self.wall_height
+                                        - self.wall_finishes_height,
                                         -abs(robotposy),
                                         pos_z,
                                     ]
@@ -404,7 +412,9 @@ class Exportexcelinfo(object):
                             else:
                                 return pd.Series(
                                     [
-                                        positionx-self.wall_height-self.wall_finishes_height,
+                                        positionx
+                                        - self.wall_height
+                                        - self.wall_finishes_height,
                                         abs(robotposy),
                                         pos_z,
                                     ]
@@ -429,7 +439,9 @@ class Exportexcelinfo(object):
                             return pd.Series(
                                 [
                                     robotposx,
-                                    positiony-self.wall_height-self.wall_finishes_height,
+                                    positiony
+                                    - self.wall_height
+                                    - self.wall_finishes_height,
                                     pos_z,
                                 ]
                             )
@@ -438,11 +450,19 @@ class Exportexcelinfo(object):
                             return pd.Series(
                                 [
                                     robotposx,
-                                    positiony-self.wall_height-self.wall_finishes_height,
+                                    positiony
+                                    - self.wall_height
+                                    - self.wall_finishes_height,
                                     pos_z,
                                 ]
                             )
-        return pd.Series([positionx, positiony, positionz])
+        return pd.Series(
+            [
+                positionx - self.wall_height - self.wall_finishes_height,
+                positiony - self.wall_height - self.wall_finishes_height,
+                positionz,
+            ]
+        )
 
     def centerlinez(self):
         return (self.floorheight - (self.flooroffset)) + self.meterline
@@ -554,8 +574,7 @@ class Exportexcelinfo(object):
                             + self.wall_finishes_height,
                         )
                         wall["pos_y_range"] = (
-                            self.floor[1]
-                            - self.wallformat[wall_id]["width"],
+                            self.floor[1] - self.wallformat[wall_id]["width"],
                             self.floor[1],
                         )
                     elif wall_id == 2:  # Wall 5
@@ -867,6 +886,25 @@ class Exportexcelinfo(object):
             if (index + 1) == row["Wall Number"]:
                 width = dims.get("width", "Not available")
                 height = dims.get("height", "Not available")
+                if index + 1 == 4 & row["Wall Number"] == 4:
+                    return pd.Series(
+                        [
+                            (
+                                (
+                                    self.wallformat[5]["width"]
+                                    - (
+                                        (self.wall_height + self.wall_finishes_height)
+                                        * 2
+                                    )
+                                )
+                                / 3
+                            ),
+                            height,
+                            row["Position X (mm)"],
+                            row["Position Y (mm)"],
+                            row["Position Z (mm)"],
+                        ]
+                    )
                 return pd.Series(
                     [
                         width,
