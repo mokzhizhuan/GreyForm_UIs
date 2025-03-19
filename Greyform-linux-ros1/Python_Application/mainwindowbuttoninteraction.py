@@ -1,5 +1,6 @@
 import menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
+import menu_sendmodel as sendmodel
 from PyQt5 import QtCore, QtWidgets, QtGui, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -64,6 +65,11 @@ class mainwindowbuttonUI(object):
         self.BackButton_Page_2.clicked.connect(self.startconfigure)
         self.CloseButton.clicked.connect(
             lambda: closewindow.Ui_Dialog_Close.show_dialog_close(
+                self.mainwindow, self.ros_node
+            )
+        )
+        self.sendmodelButton.clicked.connect(
+            lambda: sendmodel.Ui_Dialog_Confirm.show_dialog_confirm(
                 self.mainwindow, self.ros_node
             )
         )
