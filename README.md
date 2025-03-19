@@ -18,207 +18,206 @@ pip install tzlocal <br>
 pip install psutil <br>
 pip install geopandas <br>
 pip install fiona / pip install fiona=1.9 <br>
-Package                              Version
------------------------------------- --------------------
-actionlib                            1.14.0
-angles                               1.9.13
-argcomplete                          1.8.1
-atomicwrites                         1.1.5
-attrs                                19.3.0
-backports.zoneinfo                   0.2.1
-bcrypt                               3.1.7
-beautifulsoup4                       4.8.2
-catkin                               0.8.10
-catkin-pkg                           1.0.0
-catkin-pkg-modules                   1.0.0
-certifi                              2024.8.30
-chardet                              3.0.4
-charset-normalizer                   3.3.2
-click                                8.1.7
-click-plugins                        1.1.1
-cligj                                0.7.2
-colcon-argcomplete                   0.3.3
-colcon-bash                          0.5.0
-colcon-cd                            0.2.1
-colcon-cmake                         0.2.28
-colcon-common-extensions             0.3.0
-colcon-core                          0.18.1
-colcon-defaults                      0.2.8
-colcon-devtools                      0.3.0
-colcon-installed-package-information 0.2.1
-colcon-library-path                  0.2.1
-colcon-metadata                      0.2.5
-colcon-notification                  0.3.0
-colcon-output                        0.2.13
-colcon-override-check                0.0.1
-colcon-package-information           0.4.0
-colcon-package-selection             0.2.10
-colcon-parallel-executor             0.3.0
-colcon-pkg-config                    0.1.0
-colcon-powershell                    0.4.0
-colcon-python-setup-py               0.2.9
-colcon-recursive-crawl               0.2.3
-colcon-ros                           0.5.0
-colcon-test-result                   0.3.8
-colcon-zsh                           0.5.0
-contourpy                            1.1.1
-controller-manager-msgs              0.20.0
-cov-core                             1.15.0
-coverage                             4.5.2
-cryptography                         2.8
-cv-bridge                            1.16.2
-cycler                               0.12.1
-dbus-python                          1.2.16
-decorator                            4.4.2
-defusedxml                           0.6.0
-diagnostic-updater                   1.11.0
-dill                                 0.3.9
-distlib                              0.3.0
-distro                               1.4.0
-distro-info                          0.23+ubuntu1.1
-docutils                             0.16
-dynamic-reconfigure                  1.7.3
-empy                                 3.3.2
-et-xmlfile                           1.1.0
-ezdxf                                1.1.4
-Fiona                                1.9.0
-fonttools                            4.54.1
-future                               1.0.0
-gencpp                               0.7.0
-geneus                               3.0.0
-genlisp                              0.4.18
-genmsg                               0.6.0
-gennodejs                            2.0.2
-genpy                                0.6.15
-geopandas                            0.13.2
-html5lib                             1.0.1
-idna                                 3.10
-importlib-metadata                   1.5.0
-importlib_resources                  6.4.5
-interactive-markers                  1.12.0
-iso8601                              2.1.0
-kiwisolver                           1.4.7
-laser_geometry                       1.6.7
-lxml                                 4.5.0
-markdown-it-py                       3.0.0
-matplotlib                           3.7.5
-mdurl                                0.1.2
-meshio                               5.3.5
-message-filters                      1.17.0
-more-itertools                       4.2.0
-moveit-commander                     1.1.16
-moveit-core                          1.1.16
-moveit-ros-planning-interface        1.1.16
-moveit-ros-visualization             1.1.16
-multiprocess                         0.70.16
-munch                                4.0.0
-netifaces                            0.10.4
-nose                                 1.3.7
-nose2                                0.9.1
-notify2                              0.3
-numpy                                1.24.4
-numpy-stl                            3.1.2
-olefile                              0.46
-openpyxl                             3.1.5
-packaging                            20.3
-pandas                               2.0.3
-paramiko                             2.6.0
-pillow                               10.4.0
-pip                                  25.0.1
-platformdirs                         4.3.6
-pluggy                               0.13.0
-pooch                                1.8.2
-psutil                               6.0.0
-py                                   1.8.1
-pyassimp                             4.1.4
-pycryptodomex                        3.6.1
-Pygments                             2.18.0
-PyGObject                            3.36.0
-PyNaCl                               1.3.0
-PyOpenGL                             3.1.7
-PyOpenGL-accelerate                  3.1.7
-pyparsing                            2.4.6
-pyproj                               3.5.0
-PyQt5                                5.15.11
-PyQt5-Qt5                            5.15.15
-PyQt5_sip                            12.15.0
-pyqtgraph                            0.13.3
-PyQtWebEngine                        5.15.7
-PyQtWebEngine-Qt5                    5.15.16
-pytest                               4.6.9
-pytest-cov                           2.8.1
-python-apt                           2.0.1+ubuntu0.20.4.1
-python-dateutil                      2.9.0.post0
-python-gnupg                         0.4.5
-python-qt-binding                    0.4.4
-python-utils                         3.8.2
-pytz                                 2024.2
-pyvista                              0.44.1
-pyvistaqt                            0.11.1
-PyYAML                               5.3.1
-QtPy                                 2.4.1
-requests                             2.32.3
-requests-unixsocket                  0.2.0
-resource_retriever                   1.12.7
-rich                                 13.8.1
-roman                                2.0.0
-rosbag                               1.17.0
-rosboost-cfg                         1.15.8
-rosclean                             1.15.8
-roscreate                            1.15.8
-rosdep                               0.25.1
-rosdep-modules                       0.25.1
-rosdistro-modules                    1.0.0
-rosgraph                             1.17.0
-rosinstall-generator                 0.1.23
-roslaunch                            1.17.0
-roslib                               1.15.8
-roslz4                               1.17.0
-rosmake                              1.15.8
-rosmaster                            1.17.0
-rosmsg                               1.17.0
-rosnode                              1.17.0
-rosparam                             1.17.0
-rospkg                               1.5.1
-rospkg-modules                       1.5.1
-rospy                                1.17.0
-rosservice                           1.17.0
-rostest                              1.17.0
-rostopic                             1.17.0
-rosunit                              1.15.8
-roswtf                               1.17.0
-rviz                                 1.14.25
-scipy                                1.3.3
-scooby                               0.10.0
-sensor-msgs                          1.13.1
-serial                               0.0.97
-setuptools                           75.1.0
-shapely                              2.0.6
-sip                                  4.19.21
-six                                  1.14.0
-smclib                               1.8.6
-soupsieve                            1.9.5
-srdfdom                              0.6.4
-tf                                   1.13.2
-tf2-geometry-msgs                    0.7.7
-tf2-kdl                              0.7.7
-tf2-py                               0.7.7
-tf2-ros                              0.7.7
-toml                                 0.10.0
-topic-tools                          1.17.0
-typing_extensions                    4.12.2
-tzdata                               2024.2
-tzlocal                              5.2
-unattended-upgrades                  0.1
-urdfdom-py                           0.4.6
-urllib3                              2.2.3
-vcstool                              0.3.0
-vtk                                  9.3.1
-wcwidth                              0.1.8
-webencodings                         0.5.1
-wheel                                0.44.0
-xacro                                1.14.18
-zipp                                 3.20.2
+Package                              Version <br>
+------------------------------------ -------------------- <br>
+actionlib                            1.14.0 <br>
+angles                               1.9.13 <br>
+argcomplete                          1.8.1 <br>
+atomicwrites                         1.1.5 <br>
+attrs                                19.3.0 <br>
+backports.zoneinfo                   0.2.1 <br>
+bcrypt                               3.1.7 <br>
+beautifulsoup4                       4.8.2 <br>
+catkin                               0.8.10 <br>
+catkin-pkg                           1.0.0 <br>
+catkin-pkg-modules                   1.0.0 <br>
+certifi                              2024.8.30 <br>
+chardet                              3.0.4 <br>
+charset-normalizer                   3.3.2 <br>
+click                                8.1.7 <br>
+click-plugins                        1.1.1 <br>
+cligj                                0.7.2 <br>
+colcon-argcomplete                   0.3.3 <br>
+colcon-bash                          0.5.0 <br>
+colcon-cd                            0.2.1 <br>
+colcon-cmake                         0.2.28 <br>
+colcon-common-extensions             0.3.0 <br>
+colcon-core                          0.18.1 <br>
+colcon-defaults                      0.2.8 <br>
+colcon-devtools                      0.3.0 <br>
+colcon-installed-package-information 0.2.1 <br>
+colcon-library-path                  0.2.1 <br>
+colcon-metadata                      0.2.5 <br>
+colcon-notification                  0.3.0 <br>
+colcon-output                        0.2.13 <br>
+colcon-override-check                0.0.1 <br>
+colcon-package-information           0.4.0 <br>
+colcon-package-selection             0.2.10 <br>
+colcon-parallel-executor             0.3.0 <br>
+colcon-pkg-config                    0.1.0 <br>
+colcon-powershell                    0.4.0 <br>
+colcon-python-setup-py               0.2.9 <br>
+colcon-recursive-crawl               0.2.3 <br>
+colcon-ros                           0.5.0 <br>
+colcon-test-result                   0.3.8 <br>
+colcon-zsh                           0.5.0 <br>
+contourpy                            1.1.1 <br>
+controller-manager-msgs              0.20.0 <br>
+cov-core                             1.15.0 <br>
+coverage                             4.5.2 <br>
+cryptography                         2.8 <br>
+cv-bridge                            1.16.2 <br>
+cycler                               0.12.1 <br>
+dbus-python                          1.2.16 <br>
+decorator                            4.4.2 <br>
+defusedxml                           0.6.0 <br>
+diagnostic-updater                   1.11.0 <br>
+dill                                 0.3.9  <br>
+distlib                              0.3.0 <br>
+distro                               1.4.0 <br>
+distro-info                          0.23+ubuntu1.1 <br>
+docutils                             0.16 <br>
+dynamic-reconfigure                  1.7.3 <br>
+empy                                 3.3.2 <br>
+et-xmlfile                           1.1.0 <br>
+ezdxf                                1.1.4 <br>
+Fiona                                1.9.0 <br>
+fonttools                            4.54.1 <br>
+future                               1.0.0 <br>
+gencpp                               0.7.0 <br>
+geneus                               3.0.0 <br>
+genlisp                              0.4.18 <br>
+genmsg                               0.6.0 <br>
+gennodejs                            2.0.2 <br>
+genpy                                0.6.15 <br>
+geopandas                            0.13.2 <br>
+html5lib                             1.0.1 <br>
+idna                                 3.10 <br>
+importlib-metadata                   1.5.0 <br>
+importlib_resources                  6.4.5 <br>
+interactive-markers                  1.12.0 <br>
+iso8601                              2.1.0 <br>
+kiwisolver                           1.4.7 <br>
+laser_geometry                       1.6.7 <br>
+lxml                                 4.5.0 <br>
+markdown-it-py                       3.0.0 <br>
+matplotlib                           3.7.5 <br>
+mdurl                                0.1.2 <br>
+meshio                               5.3.5 <br>
+message-filters                      1.17.0 <br>
+more-itertools                       4.2.0 <br>
+moveit-commander                     1.1.16 <br>
+moveit-core                          1.1.16 <br>
+moveit-ros-planning-interface        1.1.16 <br>
+moveit-ros-visualization             1.1.16 <br>
+multiprocess                         0.70.16 <br>
+munch                                4.0.0  <br>
+netifaces                            0.10.4 <br>
+nose                                 1.3.7 <br>
+nose2                                0.9.1 <br>
+notify2                              0.3 <br>
+numpy                                1.24.4 <br>
+numpy-stl                            3.1.2 <br>
+olefile                              0.46 <br>
+openpyxl                             3.1.5 <br>
+packaging                            20.3 <br>
+pandas                               2.0.3 <br>
+paramiko                             2.6.0 <br>
+pillow                               10.4.0 <br>
+pip                                  25.0.1 <br>
+platformdirs                         4.3.6 <br>
+pluggy                               0.13.0 <br>
+pooch                                1.8.2 <br>
+psutil                               6.0.0 <br>
+py                                   1.8.1 <br>
+pyassimp                             4.1.4 <br>
+pycryptodomex                        3.6.1 <br>
+Pygments                             2.18.0 <br>
+PyGObject                            3.36.0 <br>
+PyNaCl                               1.3.0 <br>
+PyOpenGL                             3.1.7 <br>
+PyOpenGL-accelerate                  3.1.7 <br>
+pyparsing                            2.4.6 <br>
+pyproj                               3.5.0 <br>
+PyQt5                                5.15.11 <br>
+PyQt5-Qt5                            5.15.15 <br>
+PyQt5_sip                            12.15.0 <br> 
+pyqtgraph                            0.13.3 <br>
+PyQtWebEngine                        5.15.7 <br>
+PyQtWebEngine-Qt5                    5.15.16 <br>
+pytest                               4.6.9 <br>
+pytest-cov                           2.8.1 <br>
+python-apt                           2.0.1+ubuntu0.20.4.1 <br>
+python-dateutil                      2.9.0.post0 <br>
+python-gnupg                         0.4.5 <br>
+python-qt-binding                    0.4.4 <br>
+python-utils                         3.8.2 <br>
+pytz                                 2024.2 <br>
+pyvista                              0.44.1 <br>
+pyvistaqt                            0.11.1 <br>
+PyYAML                               5.3.1 <br>
+QtPy                                 2.4.1 <br>
+requests                             2.32.3 <br>
+requests-unixsocket                  0.2.0 <br>
+resource_retriever                   1.12.7 <br>
+rich                                 13.8.1 <br>
+roman                                2.0.0 <br>
+rosbag                               1.17.0 <br>
+rosboost-cfg                         1.15.8 <br>
+rosclean                             1.15.8 <br>
+roscreate                            1.15.8 <br>
+rosdep                               0.25.1 <br>
+rosdep-modules                       0.25.1 <br>
+rosdistro-modules                    1.0.0 <br>
+rosgraph                             1.17.0 <br>
+rosinstall-generator                 0.1.23 <br>
+roslaunch                            1.17.0 <br>
+roslib                               1.15.8 <br>
+roslz4                               1.17.0 <br>
+rosmake                              1.15.8 <br>
+rosmaster                            1.17.0 <br>
+rosmsg                               1.17.0 <br>
+rosnode                              1.17.0 <br>
+rosparam                             1.17.0 <br>
+rospkg                               1.5.1 <br>
+rospkg-modules                       1.5.1 <br>
+rospy                                1.17.0 <br>
+rosservice                           1.17.0 <br>
+rostest                              1.17.0 <br>
+rostopic                             1.17.0 <br>
+rosunit                              1.15.8 <br>
+roswtf                               1.17.0 <br>
+rviz                                 1.14.25 <br>
+scipy                                1.3.3 <br>
+scooby                               0.10.0 <br>
+sensor-msgs                          1.13.1 <br>
+serial                               0.0.97 <br>
+setuptools                           75.1.0 <br>
+sip                                  4.19.21 <br>
+six                                  1.14.0 <br>
+smclib                               1.8.6 <br>
+soupsieve                            1.9.5 <br>
+srdfdom                              0.6.4 <br>
+tf                                   1.13.2 <br>
+tf2-geometry-msgs                    0.7.7 <br>
+tf2-kdl                              0.7.7 <br>
+tf2-py                               0.7.7 <br>
+tf2-ros                              0.7.7 <br>
+toml                                 0.10.0 <br>
+topic-tools                          1.17.0 <br>
+typing_extensions                    4.12.2 <br>
+tzdata                               2024.2 <br>
+tzlocal                              5.2 <br>
+unattended-upgrades                  0.1 <br>
+urdfdom-py                           0.4.6 <br>
+urllib3                              2.2.3 <br>
+vcstool                              0.3.0 <br>
+vtk                                  9.3.1 <br>
+wcwidth                              0.1.8 <br>
+webencodings                         0.5.1 <br>
+wheel                                0.44.0 <br>
+xacro                                1.14.18 <br>
+zipp                                 3.20.2 <br>
 or use the script sh file(linux): <br>
 sudo chmod +x installpip.sh/installpip3.sh <br>
 execute the script using sudo sh/bash installpip3.sh <br>
