@@ -39,6 +39,8 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.totalsteps = 100  # Define total steps
         self.stage_completed = False 
         self.remaining_walls_to_scan = set()
+        if not hasattr(self, "remaining_walls_to_scan") or not self.remaining_walls_to_scan:
+            self.initialize_wall_tracking()
         self.scanning = self.AddObserver(
             "RightButtonPressEvent", self.wallscanning
         )
@@ -58,7 +60,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     def run_scan_step(self):
         if self.current_step >= self.totalsteps:
             self.progress_dialog.setValue(self.totalsteps)
-            QTimer.singleShot(500, self.programexecute)  # Delay execution slightly
+            QTimer.singleShot(500, self.changewall)  # Delay execution slightly
             return
         self.current_step += 1
         self.progress_dialog.setValue(self.current_step)
@@ -99,7 +101,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.stagetext = self.stagestorage[self.currentindexstage]  # Get current stage
         self.remaining_walls_to_scan = set(self.identifier.keys())  # Get all wall numbers in current stage
         self.stage_completed = False  # Ensure we track when a stage is finished
-        self.show_message(f"Initializing tracking for {self.stagetext}. Walls to scan: {self.remaining_walls_to_scan}")
+
 
     def find_next_valid_wall(self, wall_keys):
         """Find the next valid unscanned wall or fallback to 'Floor'."""
@@ -111,26 +113,31 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
 
             if wall_number in self.identifier and wall_number in self.remaining_walls_to_scan:
                 return wall_number
-        if "F" in self.remaining_walls_to_scan:
-            self.wallname = "Floor"
-            return "F"
+        if self.wallname == "Wall 6":  # ✅ After Wall 6, prioritize Floor
+            if "F" in self.remaining_walls_to_scan:
+                self.wallname = "Floor"
+                return "F"
 
         return None  # No valid wall or fallback found
 
     def changewall(self):
         self.wall_actors[self.wallname].VisibilityOff()
+        if not self.remaining_walls_to_scan and self.stagetext == "Stage 2" and not self.stage_completed:
+            self.stage_completed = True
+            print("✅ Stage 2 complete. Scanning Floor next...")
+            self.wallname = "Floor"
+            self.wall_actors[self.wallname].VisibilityOn()
+            self.remaining_walls_to_scan.discard("F")
+            return  # ✅ Wait for next click to process Stage 3
         if self.stage_completed and self.stagetext == "Stage 2":
-            self.show_message("✅ User pressed again. Moving to Stage 3...")
+            print("✅ Moving to Stage 3...")
             self.goto_next_stage_or_page()
-            return
+            return  # ✅ Move to next stage
         if not self.remaining_walls_to_scan and self.stagetext == "Stage 3" and not self.stage_completed:
             self.show_message("✅ All walls and Floor in Stage 3 scanned. Moving to the next page...")
             self.stacked_widget.setCurrentIndex(5)
             return
-        # Initialize tracking if not already set
-        if not hasattr(self, "remaining_walls_to_scan") or not self.remaining_walls_to_scan:
-            self.initialize_wall_tracking()
-
+        
         wall_keys = sorted(self.walls.keys())
         wall_number = self.find_next_valid_wall(wall_keys)
         
@@ -147,13 +154,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
 
             self.walllabel.setText(f"Wall : {self.wallname}")
             self.refresh()
-
-        # ✅ Move to Stage 3 automatically after scanning all walls in Stage 2
-        if not self.remaining_walls_to_scan and self.stagetext == "Stage 2" and not self.stage_completed:
-            self.stage_completed = True
-            self.show_message("✅ Stage 2 complete (including Floor). Press again to move to Stage 3.")
-            return  # Wait for user input
-
 
     def goto_next_stage_or_page(self):
         # ✅ Otherwise, move to the next stage (Stage 2 → Stage 3)

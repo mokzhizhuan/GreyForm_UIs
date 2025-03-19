@@ -62,6 +62,15 @@ class TalkerNode:
                 cube_actor,
             )
 
+     # show dialog
+    def showdialog(self):
+        if self.message != "":
+            self.show_info_dialog(self.message)
+            self.message = ""
+        else:
+            self.show_error_dialog(self.errormessage)
+            self.errormessage = ""
+
     #talker file message implementation
     def publish_file_message(self, file_path, excel_filepath):
         try:
@@ -71,14 +80,10 @@ class TalkerNode:
             msg.stl_data = list(stl_data)  # Convert bytes to a list of uint8
             msg.excelfile = excel_filepath
             self.file_publisher_.publish(msg)
-            self.message += (
-                f"STL file published:{self.spacing} {stl_data[:100]}"
-                f"{self.spacing}Excel file path: {excel_filepath}"
-            )
-        except FileNotFoundError as e:
-            self.errormessage += f"File is not found: {e}"
         except Exception as e:
-            self.errormessage += f"Failed to read and publish STL file: {e}"
+            self.errormessage += (
+                f"{self.spacing}Failed to publish file message: {e}"
+            )
 
     #talker selection message implementation
     def publish_selection_message(
@@ -90,22 +95,12 @@ class TalkerNode:
             msg.typeselection = f"{Stagelabel}"
             msg.picked_position = picked_position
             self.selection_publisher_.publish(msg)
-            self.message += (
-                f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"
-                f"{self.spacing}typeselection={msg.typeselection},"
-                f"{self.spacing}{list(msg.picked_position)}{self.spacing}"
-            )
+            self.message = "The process has finished successfully!"
         except Exception as e:
-            self.errormessage += f"{self.spacing}Failed to publish selection message: {e}"
+            self.errormessage += (
+                f"{self.spacing}Failed to publish selection message: {e}"
+            )
             
-    #show as info or error
-    def showdialog(self):
-        if self.message != "":
-            self.show_info_dialog(self.message)
-            self.message = ""
-        else:
-            self.show_error_dialog(self.errormessage)
-            self.errormessage= ""
 
     #test callback
     def timer_callback(self, event):
@@ -115,7 +110,6 @@ class TalkerNode:
         self.count += 1
         rospy.loginfo(f"Publishing {msg.data}")
 
-    #info dialog implementation
     def show_info_dialog(self, message):
         if self.active_dialog:
             self.active_dialog.close()
@@ -125,7 +119,7 @@ class TalkerNode:
         self.active_dialog.close()
         self.active_dialog = None
 
-    #error dialog implementation
+    # error dialog implementation
     def show_error_dialog(self, message):
         if self.active_dialog:
             self.active_dialog.close()
@@ -134,6 +128,7 @@ class TalkerNode:
         self.active_dialog.exec_()
         self.active_dialog.close()
         self.active_dialog = None
+
 
 #implement talker init
 def main(args=None):

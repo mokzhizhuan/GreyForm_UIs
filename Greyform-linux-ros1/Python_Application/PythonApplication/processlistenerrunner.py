@@ -54,7 +54,6 @@ class ListenerNodeRunner():
         env["ROS_MASTER_URI"] = "http://localhost:11311"
         env["ROS_IP"] = "172.17.0.3"
         env["ROS_HOSTNAME"] = "localhost"
-        print("Environment Variables:", env)
         command = "source /opt/ros/noetic/setup.bash && source /root/catkin_ws/src/Python_Application/devel/setup.bash && rosrun talker_listener listener_node.py"
         try:
             process = subprocess.Popen(
@@ -66,8 +65,6 @@ class ListenerNodeRunner():
             self.signals.page_change_signal.emit(4)  
             stdout, stderr = process.communicate()
             # Debugging: Print output
-            print("STDOUT:", stdout.decode("utf-8"))
-            print("STDERR:", stderr.decode("utf-8"))
             if process.returncode == 0:
                 self.signals.status_signal.emit("Node started successfully.")
                 self.signals.status_signal.emit(stdout.decode("utf-8"))
@@ -76,7 +73,6 @@ class ListenerNodeRunner():
                 self.signals.status_signal.emit(stderr.decode("utf-8"))
             self.process_finished()
         except Exception as e:
-            print(f"Error: {e}")
             self.signals.status_signal.emit(f"Process failed: {str(e)}")
 
     def process_finished(self):
