@@ -256,16 +256,20 @@ class Exportexcelinfo(object):
                             if robotposy > 0:
                                 return pd.Series(
                                     [
-                                        positionx,
                                         -abs(robotposy),
+                                        positionx
+                                        - self.wall_finishes_height
+                                        - self.wall_height,
                                         pos_z,
                                     ]
                                 )
                             else:
                                 return pd.Series(
                                     [
-                                        positionx,
                                         abs(robotposy),
+                                        positionx
+                                        - self.wall_finishes_height
+                                        - self.wall_height,
                                         pos_z,
                                     ]
                                 )
@@ -274,16 +278,20 @@ class Exportexcelinfo(object):
                             if robotposy > 0:
                                 return pd.Series(
                                     [
-                                        positionx,
                                         -abs(robotposy),
+                                        positionx
+                                        - self.wall_finishes_height
+                                        - self.wall_height,
                                         pos_z,
                                     ]
                                 )
                             else:
                                 return pd.Series(
                                     [
-                                        positionx,
                                         abs(robotposy),
+                                        positionx
+                                        - self.wall_finishes_height
+                                        - self.wall_height,
                                         pos_z,
                                     ]
                                 )
@@ -310,7 +318,9 @@ class Exportexcelinfo(object):
                                 return pd.Series(
                                     [
                                         -abs(robotposx),
-                                        positiony,
+                                        positiony
+                                        - self.wall_finishes_height
+                                        - self.wall_height,
                                         pos_z,
                                     ]
                                 )
@@ -318,7 +328,9 @@ class Exportexcelinfo(object):
                                 return pd.Series(
                                     [
                                         abs(robotposx),
-                                        positiony,
+                                        positiony
+                                        - self.wall_finishes_height
+                                        - self.wall_height,
                                         pos_z,
                                     ]
                                 )
@@ -328,7 +340,9 @@ class Exportexcelinfo(object):
                                 return pd.Series(
                                     [
                                         -abs(robotposx),
-                                        positiony,
+                                        positiony
+                                        - self.wall_finishes_height
+                                        - self.wall_height,
                                         pos_z,
                                     ]
                                 )
@@ -336,7 +350,9 @@ class Exportexcelinfo(object):
                                 return pd.Series(
                                     [
                                         abs(robotposx),
-                                        positiony,
+                                        positiony
+                                        - self.wall_finishes_height
+                                        - self.wall_height,
                                         pos_z,
                                     ]
                                 )
@@ -380,20 +396,20 @@ class Exportexcelinfo(object):
                             if robotposy > 0:
                                 return pd.Series(
                                     [
+                                        -abs(robotposy),
                                         positionx
                                         - self.wall_height
                                         - self.wall_finishes_height,
-                                        -abs(robotposy),
                                         pos_z,
                                     ]
                                 )
                             else:
                                 return pd.Series(
                                     [
+                                        abs(robotposy),
                                         positionx
                                         - self.wall_height
                                         - self.wall_finishes_height,
-                                        abs(robotposy),
                                         pos_z,
                                     ]
                                 )
@@ -402,24 +418,24 @@ class Exportexcelinfo(object):
                             if robotposy > 0:
                                 return pd.Series(
                                     [
+                                        -abs(robotposy),
                                         positionx
                                         - self.wall_height
                                         - self.wall_finishes_height,
-                                        -abs(robotposy),
                                         pos_z,
                                     ]
                                 )
                             else:
                                 return pd.Series(
                                     [
+                                        abs(robotposy),
                                         positionx
                                         - self.wall_height
                                         - self.wall_finishes_height,
-                                        abs(robotposy),
                                         pos_z,
                                     ]
                                 )
-                    if wall["axis"] == "x":
+                    elif wall["axis"] == "x":
                         internaldimensionx = self.floor[0]
                         internaldimensiony = self.floor[1]
                         posx = internaldimensionx / 2
@@ -436,15 +452,26 @@ class Exportexcelinfo(object):
                                 - startingrange
                                 - ((endrange - startingrange) / 2)
                             )
-                            return pd.Series(
-                                [
-                                    robotposx,
-                                    positiony
-                                    - self.wall_height
-                                    - self.wall_finishes_height,
-                                    pos_z,
-                                ]
-                            )
+                            if robotposx > 0:
+                                return pd.Series(
+                                    [
+                                        -abs(robotposx),
+                                        positiony
+                                        - self.wall_height
+                                        - self.wall_finishes_height,
+                                        pos_z,
+                                    ]
+                                )
+                            else:
+                                return pd.Series(
+                                    [
+                                        abs(robotposx),
+                                        positiony
+                                        - self.wall_height
+                                        - self.wall_finishes_height,
+                                        pos_z,
+                                    ]
+                                )
                         else:
                             robotposx = positionx - posx
                             return pd.Series(

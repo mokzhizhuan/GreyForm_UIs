@@ -1,0 +1,6 @@
+Failed to load stlfile in the frame: 'IfcBuildingElementProxy'
+Failed to load stlfile in the frame: 'IfcBuildingElementProxy'
+Failed to load stlfile in the frame: 'IfcBuildingElementProxy'
+Failed to write Excel file: 'Exportexcelinfo' object has no attribute 'wall_finishes_heightt'
+Failed to load stlfile in the frame: 'IfcBuildingElementProxy'
+Failed to load stlfile in the frame: 'IfcBuildingElementProxy'
