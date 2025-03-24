@@ -3,93 +3,100 @@ import vtk
 
 
 # excel extractor for vtk
-def exceldataextractor(excel_file_path):
+def exceldataextractor():
+    excel_file_path = f"exporteddatassss(with TMP)(draft)(tetra).xlsx"
     all_sheets = pd.read_excel(excel_file_path, sheet_name=None)
     wall_numbers = []
     markingidentifiers = []
     wall_numbers_by_sheet = {}
+    unique_wall_numbers_by_sheet = {}
+    wall = []
+    dfs = pd.ExcelFile(excel_file_path)
+    column_names = dfs.sheet_names
+    if "Obstacles" in column_names:
+        index = column_names.index("Obstacles")  # Find index
+        column_names.pop(index)  # Remove by index
     for sheet_name, df in all_sheets.items():
         wall_numbers = df["Wall Number"].tolist()
-        markingidentifiers = df["Point number/name"].tolist()
-        positionx = df["Position X (m)"].tolist()
-        positiony = df["Position Y (m)"].tolist()
-        positionz = df["Position Z (m)"].tolist()
+        markingidentifiers = df["Point number/name"].astype(str).tolist()
+        positionx = df["Position X (mm)"].tolist()
+        positiony = df["Position Y (mm)"].tolist()
+        positionz = df["Position Z (mm)"].tolist()
+        status = df["Status"].tolist()
         shapetype = df["Shape type"].tolist()
+        width = df["Width"].tolist()
+        height = df["Height"].tolist()
         wall_numbers_by_sheet[sheet_name] = {
             "markingidentifiers": markingidentifiers,
             "wall_numbers": wall_numbers,
-            "Position X (m)": positionx,
-            "Position Y (m)": positiony,
-            "Position Z (m)": positionz,
+            "Position X (mm)": positionx,
+            "Position Y (mm)": positiony,
+            "Position Z (mm)": positionz,
             "Shape type": shapetype,
+            "width" : width,
+            "height" : height,
+            "Status" : status,
         }
-    wall_identifiers = []
-    wall_numbers = wall_numbers_by_sheet["BuildingElementProxy"]["wall_numbers"]
-    markingidentifiers = wall_numbers_by_sheet["BuildingElementProxy"][
+        unique_data = (
+            df.groupby("Wall Number")
+            .agg({"Status": lambda x: list(set(x))})  # Collect unique statuses for each wall number
+            .reset_index()
+        )
+        unique_wall_numbers_by_sheet[sheet_name] = {
+            "wall_numbers": unique_data["Wall Number"].tolist(),
+            "status": unique_data["Status"].tolist(),
+        }
+    wall_numberes = wall_numbers_by_sheet["Stage 2"]["wall_numbers"]
+    markingidentifierswall = wall_numbers_by_sheet["Stage 2"][
         "markingidentifiers"
     ]
-    shapetypes = wall_numbers_by_sheet["BuildingElementProxy"]["Shape type"]
-    PositionX = wall_numbers_by_sheet["BuildingElementProxy"]["Position X (m)"]
-    PositionY = wall_numbers_by_sheet["BuildingElementProxy"]["Position Y (m)"]
-    PositionZ = wall_numbers_by_sheet["BuildingElementProxy"]["Position Z (m)"]
-    for rowidx, (name, wall_num, posx, posy, posz, shapetype) in enumerate(
+    shapetypes = wall_numbers_by_sheet["Stage 2"]["Shape type"]
+    PositionX = wall_numbers_by_sheet["Stage 2"]["Position X (mm)"]
+    PositionY = wall_numbers_by_sheet["Stage 2"]["Position Y (mm)"]
+    PositionZ = wall_numbers_by_sheet["Stage 2"]["Position Z (mm)"]
+    widths = wall_numbers_by_sheet["Stage 2"]["width"]
+    heights = wall_numbers_by_sheet["Stage 2"]["height"]
+    for rowidx, (name, wall_num, posx, posy, posz, shapetype, length, breath) in enumerate(
         zip(
-            markingidentifiers,
-            wall_numbers,
+            markingidentifierswall,
+            wall_numberes,
             PositionX,
             PositionY,
             PositionZ,
             shapetypes,
+            widths,
+            heights,
         ),
-        start=1,
+        start=0,
     ):
-        if "CP" in name or "LP" in name or "SP" in name or "TMP" in name:
-            if posz < 0:
-                posz = 0
-            wall_identifiers.append(
-                {
-                    "Point number/name": name.split(":")[0],
-                    "Wall Number": wall_num,
-                    "Position X (m)": posx,
-                    "Position Y (m)": posy,
-                    "Position Z (m)": posz,
-                    "Shape type": shapetype,
-                    "Point ID": None,
-                }
-            )
-    return wall_identifiers
+        if "Basic Wall:BSS.50" in name:
+            new_wall = {
+                "Point number/name": name,
+                "Wall Number": wall_num,
+                "Position X (mm)": posx,
+                "Position Y (mm)": posy,
+                "Position Z (mm)": posz,
+                "Shape type": shapetype,
+                "width": length,
+                "height": breath,
+            }
+            if new_wall not in wall:
+                wall.append(new_wall)
+    return wall_numbers_by_sheet , wall , excel_file_path , unique_wall_numbers_by_sheet , column_names
+
+def wall_format(wall):
+    sorted_wall = sorted(wall, key=lambda x: x.get("Wall Number", float('inf')))
+    wall_format = {}
+    axis = ""
+    for index, (dims) in enumerate(sorted_wall, start=0):
+        Wallnum = dims.get("Wall Number", "Not available")
+        width = dims.get("width", "Not available")
+        height = dims.get("height", "Not available")
+        if Wallnum % 2 == 0:
+            axis = "y"
+        else:
+            axis = "x"
+        wall_format[Wallnum] = {"axis": axis, "width": width , "height": height}
+    return wall_format 
 
 
-def exceldataextractorelement(excel_file_path):
-    all_sheets = pd.read_excel(excel_file_path, sheet_name=None)
-    wall_numbers = []
-    markingidentifiers = []
-    wall_numbers_by_sheet = {}
-    for sheet_name, df in all_sheets.items():
-        wall_numbers = df["Wall Number"].tolist()
-        markingidentifiers = df["Point number/name"].tolist()
-        positionx = [0 if x < 0 else x for x in df["Position X (m)"].tolist()]
-        positiony = [0 if y < 0 else y for y in df["Position Y (m)"].tolist()]
-        positionz = [0 if z < 0 else z for z in df["Position Z (m)"].tolist()]
-        shapetype = df["Shape type"].tolist()
-        categories = []
-        for identifier in markingidentifiers:
-            identifier = str(identifier) if not pd.isna(identifier) else ""
-            if "pipe" in identifier.lower():
-                categories.append("Piping")
-            elif "floor" in identifier.lower():
-                categories.append("Tiling/Floor")
-            elif any(kw in identifier.lower() for kw in ["door", "wall", "light"]):
-                categories.append("Fitting")
-            else:
-                categories.append(sheet_name)
-        wall_numbers_by_sheet[sheet_name] = {
-            "markingidentifiers": markingidentifiers,
-            "wall_numbers": wall_numbers,
-            "Position X (m)": positionx,
-            "Position Y (m)": positiony,
-            "Position Z (m)": positionz,
-            "Shape type": shapetype,
-            "Categories": categories,
-        }
-    return wall_numbers_by_sheet

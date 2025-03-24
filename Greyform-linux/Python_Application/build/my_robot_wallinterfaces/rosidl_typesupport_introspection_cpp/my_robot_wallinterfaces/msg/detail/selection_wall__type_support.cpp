@@ -82,7 +82,7 @@ void resize_function__SelectionWall__picked_position(void * untyped_member, size
   member->resize(size);
 }
 
-static const ::rosidl_typesupport_introspection_cpp::MessageMember SelectionWall_message_member_array[4] = {
+static const ::rosidl_typesupport_introspection_cpp::MessageMember SelectionWall_message_member_array[3] = {
   {
     "wallselection",  // name
     ::rosidl_typesupport_introspection_cpp::ROS_TYPE_STRING,  // type
@@ -118,23 +118,6 @@ static const ::rosidl_typesupport_introspection_cpp::MessageMember SelectionWall
     nullptr  // resize(index) function pointer
   },
   {
-    "sectionselection",  // name
-    ::rosidl_typesupport_introspection_cpp::ROS_TYPE_INT32,  // type
-    0,  // upper bound of string
-    nullptr,  // members of sub message
-    false,  // is array
-    0,  // array size
-    false,  // is upper bound
-    offsetof(my_robot_wallinterfaces::msg::SelectionWall, sectionselection),  // bytes offset in struct
-    nullptr,  // default value
-    nullptr,  // size() function pointer
-    nullptr,  // get_const(index) function pointer
-    nullptr,  // get(index) function pointer
-    nullptr,  // fetch(index, &value) function pointer
-    nullptr,  // assign(index, value) function pointer
-    nullptr  // resize(index) function pointer
-  },
-  {
     "picked_position",  // name
     ::rosidl_typesupport_introspection_cpp::ROS_TYPE_INT32,  // type
     0,  // upper bound of string
@@ -156,7 +139,7 @@ static const ::rosidl_typesupport_introspection_cpp::MessageMember SelectionWall
 static const ::rosidl_typesupport_introspection_cpp::MessageMembers SelectionWall_message_members = {
   "my_robot_wallinterfaces::msg",  // message namespace
   "SelectionWall",  // message name
-  4,  // number of fields
+  3,  // number of fields
   sizeof(my_robot_wallinterfaces::msg::SelectionWall),
   SelectionWall_message_member_array,  // message members
   SelectionWall_init_function,  // function to initialize message memory (memory has to be allocated)

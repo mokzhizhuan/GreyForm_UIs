@@ -39,13 +39,6 @@ inline void to_flow_style_yaml(
     out << ", ";
   }
 
-  // member: sectionselection
-  {
-    out << "sectionselection: ";
-    rosidl_generator_traits::value_to_yaml(msg.sectionselection, out);
-    out << ", ";
-  }
-
   // member: picked_position
   {
     if (msg.picked_position.size() == 0) {
@@ -86,16 +79,6 @@ inline void to_block_style_yaml(
     }
     out << "typeselection: ";
     rosidl_generator_traits::value_to_yaml(msg.typeselection, out);
-    out << "\n";
-  }
-
-  // member: sectionselection
-  {
-    if (indentation > 0) {
-      out << std::string(indentation, ' ');
-    }
-    out << "sectionselection: ";
-    rosidl_generator_traits::value_to_yaml(msg.sectionselection, out);
     out << "\n";
   }
 

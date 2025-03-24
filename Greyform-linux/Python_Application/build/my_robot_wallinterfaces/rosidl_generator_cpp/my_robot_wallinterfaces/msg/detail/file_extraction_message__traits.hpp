@@ -25,13 +25,6 @@ inline void to_flow_style_yaml(
   std::ostream & out)
 {
   out << "{";
-  // member: excelfile
-  {
-    out << "excelfile: ";
-    rosidl_generator_traits::value_to_yaml(msg.excelfile, out);
-    out << ", ";
-  }
-
   // member: stl_data
   {
     if (msg.stl_data.size() == 0) {
@@ -50,10 +43,10 @@ inline void to_flow_style_yaml(
     out << ", ";
   }
 
-  // member: status
+  // member: excelfile
   {
-    out << "status: ";
-    rosidl_generator_traits::value_to_yaml(msg.status, out);
+    out << "excelfile: ";
+    rosidl_generator_traits::value_to_yaml(msg.excelfile, out);
   }
   out << "}";
 }  // NOLINT(readability/fn_size)
@@ -62,16 +55,6 @@ inline void to_block_style_yaml(
   const FileExtractionMessage & msg,
   std::ostream & out, size_t indentation = 0)
 {
-  // member: excelfile
-  {
-    if (indentation > 0) {
-      out << std::string(indentation, ' ');
-    }
-    out << "excelfile: ";
-    rosidl_generator_traits::value_to_yaml(msg.excelfile, out);
-    out << "\n";
-  }
-
   // member: stl_data
   {
     if (indentation > 0) {
@@ -92,13 +75,13 @@ inline void to_block_style_yaml(
     }
   }
 
-  // member: status
+  // member: excelfile
   {
     if (indentation > 0) {
       out << std::string(indentation, ' ');
     }
-    out << "status: ";
-    rosidl_generator_traits::value_to_yaml(msg.status, out);
+    out << "excelfile: ";
+    rosidl_generator_traits::value_to_yaml(msg.excelfile, out);
     out << "\n";
   }
 }  // NOLINT(readability/fn_size)

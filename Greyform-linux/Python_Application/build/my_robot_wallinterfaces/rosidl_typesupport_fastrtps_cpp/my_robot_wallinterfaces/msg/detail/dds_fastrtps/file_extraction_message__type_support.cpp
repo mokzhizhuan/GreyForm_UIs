@@ -32,14 +32,12 @@ cdr_serialize(
   const my_robot_wallinterfaces::msg::FileExtractionMessage & ros_message,
   eprosima::fastcdr::Cdr & cdr)
 {
-  // Member: excelfile
-  cdr << ros_message.excelfile;
   // Member: stl_data
   {
     cdr << ros_message.stl_data;
   }
-  // Member: status
-  cdr << ros_message.status;
+  // Member: excelfile
+  cdr << ros_message.excelfile;
   return true;
 }
 
@@ -49,16 +47,13 @@ cdr_deserialize(
   eprosima::fastcdr::Cdr & cdr,
   my_robot_wallinterfaces::msg::FileExtractionMessage & ros_message)
 {
-  // Member: excelfile
-  cdr >> ros_message.excelfile;
-
   // Member: stl_data
   {
     cdr >> ros_message.stl_data;
   }
 
-  // Member: status
-  cdr >> ros_message.status;
+  // Member: excelfile
+  cdr >> ros_message.excelfile;
 
   return true;
 }
@@ -76,10 +71,6 @@ get_serialized_size(
   (void)padding;
   (void)wchar_size;
 
-  // Member: excelfile
-  current_alignment += padding +
-    eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
-    (ros_message.excelfile.size() + 1);
   // Member: stl_data
   {
     size_t array_size = ros_message.stl_data.size();
@@ -90,10 +81,10 @@ get_serialized_size(
     current_alignment += array_size * item_size +
       eprosima::fastcdr::Cdr::alignment(current_alignment, item_size);
   }
-  // Member: status
+  // Member: excelfile
   current_alignment += padding +
     eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
-    (ros_message.status.size() + 1);
+    (ros_message.excelfile.size() + 1);
 
   return current_alignment - initial_alignment;
 }
@@ -118,19 +109,6 @@ max_serialized_size_FileExtractionMessage(
   is_plain = true;
 
 
-  // Member: excelfile
-  {
-    size_t array_size = 1;
-
-    full_bounded = false;
-    is_plain = false;
-    for (size_t index = 0; index < array_size; ++index) {
-      current_alignment += padding +
-        eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
-        1;
-    }
-  }
-
   // Member: stl_data
   {
     size_t array_size = 0;
@@ -143,7 +121,7 @@ max_serialized_size_FileExtractionMessage(
     current_alignment += array_size * sizeof(uint8_t);
   }
 
-  // Member: status
+  // Member: excelfile
   {
     size_t array_size = 1;
 
@@ -164,7 +142,7 @@ max_serialized_size_FileExtractionMessage(
     using DataType = my_robot_wallinterfaces::msg::FileExtractionMessage;
     is_plain =
       (
-      offsetof(DataType, status) +
+      offsetof(DataType, excelfile) +
       last_member_size
       ) == ret_val;
   }

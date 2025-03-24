@@ -30,56 +30,6 @@ class TalkerNode(Node):
         self.title = "Publisher Node"
         self.active_dialog = None
 
-    # talker file message implementation
-    def publish_file_message(self, file_path, excel_filepath):
-        try:
-            with open(file_path, "rb") as f:
-                stl_data = f.read()
-            msg = FileExtractionMessage()
-            msg.stl_data = list(stl_data)  # Convert bytes to a list of uint8
-            msg.excelfile = excel_filepath
-            self.file_publisher_.publish(msg)
-            self.message += (
-                f"STL file published:{self.spacing} {stl_data[:100]}"
-                f"{self.spacing}Excel file path: {excel_filepath}"
-            )
-        except FileNotFoundError as e:
-            self.errormessage += f"File is not found: {e}"
-        except Exception as e:
-            self.errormessage += f"Failed to read and publish STL file: {e}"
-
-    # talker selection message implementation
-    def publish_selection_message(
-        self, wall_number, sectionnumber, picked_position, Stagelabel, cube_actor
-    ):
-        try:
-            msg = SelectionWall()
-            msg.wallselection = str(wall_number)
-            msg.typeselection = f"{Stagelabel.text()}"
-            msg.sectionselection = sectionnumber
-            picked_position = [
-                int(picked_position[0]),
-                int(picked_position[1]),
-                int(picked_position[2]),
-            ]
-            msg.picked_position = picked_position
-            default_position = [
-                int(cube_actor.GetPosition()[0]),
-                int(cube_actor.GetPosition()[1]),
-                int(cube_actor.GetPosition()[2]),
-            ]
-            self.selection_publisher_.publish(msg)
-            self.message += (
-                f"{self.spacing}Selection message published:{self.spacing}wallselections={msg.wallselection},"
-                f"{self.spacing}typeselection={msg.typeselection},"
-                f"{self.spacing}sectionselection={msg.sectionselection}"
-                f"{self.spacing}{list(msg.picked_position)}{self.spacing}"
-            )
-        except Exception as e:
-            self.errormessage += (
-                f"{self.spacing}Failed to publish selection message: {e}"
-            )
-
     # show dialog
     def showdialog(self):
         if self.message != "":
@@ -88,6 +38,68 @@ class TalkerNode(Node):
         else:
             self.show_error_dialog(self.errormessage)
             self.errormessage = ""
+
+    #talker file message implementation
+    def publish_file_message(self, file_path, excel_filepath):
+        try:
+            with open(file_path, "rb") as f:
+                stl_data = f.read()
+            msg = FileExtractionMessage()
+            msg.stl_data = list(stl_data)  # Convert bytes to a list of uint8
+            msg.excelfile = excel_filepath
+            self.file_publisher_.publish(msg)
+        except Exception as e:
+            self.errormessage += (
+                f"{self.spacing}Failed to publish file message: {e}"
+            )
+
+    #talker selection message implementation
+    def publish_selection_message(
+        self, wall_number, picked_position, Stagelabel, next_wall_number
+    ):  
+        try:
+            msg = SelectionWall()
+            msg.wallselection = str(wall_number)
+            msg.typeselection = f"{Stagelabel}"
+            msg.picked_position = picked_position
+            self.selection_publisher_.publish(msg)
+            if next_wall_number is not None:
+                self.message = f"The process has finished successfully! Please move in to Wall: {next_wall_number}"
+            else:
+                self.message = ""
+        except Exception as e:
+            self.errormessage += (
+                f"{self.spacing}Failed to publish selection message: {e}"
+            )
+            
+
+    #test callback
+    def timer_callback(self, event):
+        msg = String()
+        msg.data = f"Hello everyone {self.count}"
+        self.publisher_.publish(msg)
+        self.count += 1
+        rclpy.loginfo(f"Publishing {msg.data}")
+
+    def show_info_dialog(self, message):
+        if self.active_dialog:
+            self.active_dialog.close()
+            self.active_dialog = None
+        self.active_dialog = logs.LogDialog(message, self.title, log_type="info")
+        self.active_dialog.exec_()
+        self.active_dialog.close()
+        self.active_dialog = None
+
+    # error dialog implementation
+    def show_error_dialog(self, message):
+        if self.active_dialog:
+            self.active_dialog.close()
+            self.active_dialog = None
+        self.active_dialog = logs.LogDialog(message, self.title, log_type="error")
+        self.active_dialog.exec_()
+        self.active_dialog.close()
+        self.active_dialog = None
+
 
     # run normally with no dialog
     def run_listernernode(
@@ -121,33 +133,6 @@ class TalkerNode(Node):
                 cube_actor,
             )
 
-    # test callback
-    def timer_callback(self):
-        msg = String()
-        msg.data = f"Hello everyone {self.count}"
-        self.publisher_.publish(msg)
-        self.count += 1
-        self.get_logger().info(f"Publishing {msg.data}")
-
-    # info dialog implementation
-    def show_info_dialog(self, message):
-        if self.active_dialog:
-            self.active_dialog.close()
-            self.active_dialog = None
-        self.active_dialog = logs.LogDialog(message, self.title, log_type="info")
-        self.active_dialog.exec_()
-        self.active_dialog.close()
-        self.active_dialog = None
-
-    # error dialog implementation
-    def show_error_dialog(self, message):
-        if self.active_dialog:
-            self.active_dialog.close()
-            self.active_dialog = None
-        self.active_dialog = logs.LogDialog(message, self.title, log_type="error")
-        self.active_dialog.exec_()
-        self.active_dialog.close()
-        self.active_dialog = None
 
 
 # main runner for listener node

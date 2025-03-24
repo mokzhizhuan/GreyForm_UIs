@@ -93,7 +93,7 @@ bool my_robot_wallinterfaces__msg__SelectionWall__rosidl_typesupport_introspecti
   return rosidl_runtime_c__int32__Sequence__init(member, size);
 }
 
-static rosidl_typesupport_introspection_c__MessageMember my_robot_wallinterfaces__msg__SelectionWall__rosidl_typesupport_introspection_c__SelectionWall_message_member_array[4] = {
+static rosidl_typesupport_introspection_c__MessageMember my_robot_wallinterfaces__msg__SelectionWall__rosidl_typesupport_introspection_c__SelectionWall_message_member_array[3] = {
   {
     "wallselection",  // name
     rosidl_typesupport_introspection_c__ROS_TYPE_STRING,  // type
@@ -129,23 +129,6 @@ static rosidl_typesupport_introspection_c__MessageMember my_robot_wallinterfaces
     NULL  // resize(index) function pointer
   },
   {
-    "sectionselection",  // name
-    rosidl_typesupport_introspection_c__ROS_TYPE_INT32,  // type
-    0,  // upper bound of string
-    NULL,  // members of sub message
-    false,  // is array
-    0,  // array size
-    false,  // is upper bound
-    offsetof(my_robot_wallinterfaces__msg__SelectionWall, sectionselection),  // bytes offset in struct
-    NULL,  // default value
-    NULL,  // size() function pointer
-    NULL,  // get_const(index) function pointer
-    NULL,  // get(index) function pointer
-    NULL,  // fetch(index, &value) function pointer
-    NULL,  // assign(index, value) function pointer
-    NULL  // resize(index) function pointer
-  },
-  {
     "picked_position",  // name
     rosidl_typesupport_introspection_c__ROS_TYPE_INT32,  // type
     0,  // upper bound of string
@@ -167,7 +150,7 @@ static rosidl_typesupport_introspection_c__MessageMember my_robot_wallinterfaces
 static const rosidl_typesupport_introspection_c__MessageMembers my_robot_wallinterfaces__msg__SelectionWall__rosidl_typesupport_introspection_c__SelectionWall_message_members = {
   "my_robot_wallinterfaces__msg",  // message namespace
   "SelectionWall",  // message name
-  4,  // number of fields
+  3,  // number of fields
   sizeof(my_robot_wallinterfaces__msg__SelectionWall),
   my_robot_wallinterfaces__msg__SelectionWall__rosidl_typesupport_introspection_c__SelectionWall_message_member_array,  // message members
   my_robot_wallinterfaces__msg__SelectionWall__rosidl_typesupport_introspection_c__SelectionWall_init_function,  // function to initialize message memory (memory has to be allocated)

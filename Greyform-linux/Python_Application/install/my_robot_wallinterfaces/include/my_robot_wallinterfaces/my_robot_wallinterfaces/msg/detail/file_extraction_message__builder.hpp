@@ -21,15 +21,15 @@ namespace msg
 namespace builder
 {
 
-class Init_FileExtractionMessage_status
+class Init_FileExtractionMessage_excelfile
 {
 public:
-  explicit Init_FileExtractionMessage_status(::my_robot_wallinterfaces::msg::FileExtractionMessage & msg)
+  explicit Init_FileExtractionMessage_excelfile(::my_robot_wallinterfaces::msg::FileExtractionMessage & msg)
   : msg_(msg)
   {}
-  ::my_robot_wallinterfaces::msg::FileExtractionMessage status(::my_robot_wallinterfaces::msg::FileExtractionMessage::_status_type arg)
+  ::my_robot_wallinterfaces::msg::FileExtractionMessage excelfile(::my_robot_wallinterfaces::msg::FileExtractionMessage::_excelfile_type arg)
   {
-    msg_.status = std::move(arg);
+    msg_.excelfile = std::move(arg);
     return std::move(msg_);
   }
 
@@ -40,29 +40,13 @@ private:
 class Init_FileExtractionMessage_stl_data
 {
 public:
-  explicit Init_FileExtractionMessage_stl_data(::my_robot_wallinterfaces::msg::FileExtractionMessage & msg)
-  : msg_(msg)
-  {}
-  Init_FileExtractionMessage_status stl_data(::my_robot_wallinterfaces::msg::FileExtractionMessage::_stl_data_type arg)
-  {
-    msg_.stl_data = std::move(arg);
-    return Init_FileExtractionMessage_status(msg_);
-  }
-
-private:
-  ::my_robot_wallinterfaces::msg::FileExtractionMessage msg_;
-};
-
-class Init_FileExtractionMessage_excelfile
-{
-public:
-  Init_FileExtractionMessage_excelfile()
+  Init_FileExtractionMessage_stl_data()
   : msg_(::rosidl_runtime_cpp::MessageInitialization::SKIP)
   {}
-  Init_FileExtractionMessage_stl_data excelfile(::my_robot_wallinterfaces::msg::FileExtractionMessage::_excelfile_type arg)
+  Init_FileExtractionMessage_excelfile stl_data(::my_robot_wallinterfaces::msg::FileExtractionMessage::_stl_data_type arg)
   {
-    msg_.excelfile = std::move(arg);
-    return Init_FileExtractionMessage_stl_data(msg_);
+    msg_.stl_data = std::move(arg);
+    return Init_FileExtractionMessage_excelfile(msg_);
   }
 
 private:
@@ -80,7 +64,7 @@ template<>
 inline
 auto build<::my_robot_wallinterfaces::msg::FileExtractionMessage>()
 {
-  return my_robot_wallinterfaces::msg::builder::Init_FileExtractionMessage_excelfile();
+  return my_robot_wallinterfaces::msg::builder::Init_FileExtractionMessage_stl_data();
 }
 
 }  // namespace my_robot_wallinterfaces

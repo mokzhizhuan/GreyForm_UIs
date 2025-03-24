@@ -16,11 +16,11 @@
 #include "my_robot_wallinterfaces/msg/detail/file_extraction_message__struct.h"
 #include "my_robot_wallinterfaces/msg/detail/file_extraction_message__functions.h"
 
-#include "rosidl_runtime_c/string.h"
-#include "rosidl_runtime_c/string_functions.h"
-
 #include "rosidl_runtime_c/primitives_sequence.h"
 #include "rosidl_runtime_c/primitives_sequence_functions.h"
+
+#include "rosidl_runtime_c/string.h"
+#include "rosidl_runtime_c/string_functions.h"
 
 
 ROSIDL_GENERATOR_C_EXPORT
@@ -56,21 +56,6 @@ bool my_robot_wallinterfaces__msg__file_extraction_message__convert_from_py(PyOb
     assert(strncmp("my_robot_wallinterfaces.msg._file_extraction_message.FileExtractionMessage", full_classname_dest, 74) == 0);
   }
   my_robot_wallinterfaces__msg__FileExtractionMessage * ros_message = _ros_message;
-  {  // excelfile
-    PyObject * field = PyObject_GetAttrString(_pymsg, "excelfile");
-    if (!field) {
-      return false;
-    }
-    assert(PyUnicode_Check(field));
-    PyObject * encoded_field = PyUnicode_AsUTF8String(field);
-    if (!encoded_field) {
-      Py_DECREF(field);
-      return false;
-    }
-    rosidl_runtime_c__String__assign(&ros_message->excelfile, PyBytes_AS_STRING(encoded_field));
-    Py_DECREF(encoded_field);
-    Py_DECREF(field);
-  }
   {  // stl_data
     PyObject * field = PyObject_GetAttrString(_pymsg, "stl_data");
     if (!field) {
@@ -134,8 +119,8 @@ bool my_robot_wallinterfaces__msg__file_extraction_message__convert_from_py(PyOb
     }
     Py_DECREF(field);
   }
-  {  // status
-    PyObject * field = PyObject_GetAttrString(_pymsg, "status");
+  {  // excelfile
+    PyObject * field = PyObject_GetAttrString(_pymsg, "excelfile");
     if (!field) {
       return false;
     }
@@ -145,7 +130,7 @@ bool my_robot_wallinterfaces__msg__file_extraction_message__convert_from_py(PyOb
       Py_DECREF(field);
       return false;
     }
-    rosidl_runtime_c__String__assign(&ros_message->status, PyBytes_AS_STRING(encoded_field));
+    rosidl_runtime_c__String__assign(&ros_message->excelfile, PyBytes_AS_STRING(encoded_field));
     Py_DECREF(encoded_field);
     Py_DECREF(field);
   }
@@ -171,23 +156,6 @@ PyObject * my_robot_wallinterfaces__msg__file_extraction_message__convert_to_py(
     }
   }
   my_robot_wallinterfaces__msg__FileExtractionMessage * ros_message = (my_robot_wallinterfaces__msg__FileExtractionMessage *)raw_ros_message;
-  {  // excelfile
-    PyObject * field = NULL;
-    field = PyUnicode_DecodeUTF8(
-      ros_message->excelfile.data,
-      strlen(ros_message->excelfile.data),
-      "replace");
-    if (!field) {
-      return NULL;
-    }
-    {
-      int rc = PyObject_SetAttrString(_pymessage, "excelfile", field);
-      Py_DECREF(field);
-      if (rc) {
-        return NULL;
-      }
-    }
-  }
   {  // stl_data
     PyObject * field = NULL;
     field = PyObject_GetAttrString(_pymessage, "stl_data");
@@ -245,17 +213,17 @@ PyObject * my_robot_wallinterfaces__msg__file_extraction_message__convert_to_py(
     }
     Py_DECREF(field);
   }
-  {  // status
+  {  // excelfile
     PyObject * field = NULL;
     field = PyUnicode_DecodeUTF8(
-      ros_message->status.data,
-      strlen(ros_message->status.data),
+      ros_message->excelfile.data,
+      strlen(ros_message->excelfile.data),
       "replace");
     if (!field) {
       return NULL;
     }
     {
-      int rc = PyObject_SetAttrString(_pymessage, "status", field);
+      int rc = PyObject_SetAttrString(_pymessage, "excelfile", field);
       Py_DECREF(field);
       if (rc) {
         return NULL;

@@ -82,24 +82,7 @@ void resize_function__FileExtractionMessage__stl_data(void * untyped_member, siz
   member->resize(size);
 }
 
-static const ::rosidl_typesupport_introspection_cpp::MessageMember FileExtractionMessage_message_member_array[3] = {
-  {
-    "excelfile",  // name
-    ::rosidl_typesupport_introspection_cpp::ROS_TYPE_STRING,  // type
-    0,  // upper bound of string
-    nullptr,  // members of sub message
-    false,  // is array
-    0,  // array size
-    false,  // is upper bound
-    offsetof(my_robot_wallinterfaces::msg::FileExtractionMessage, excelfile),  // bytes offset in struct
-    nullptr,  // default value
-    nullptr,  // size() function pointer
-    nullptr,  // get_const(index) function pointer
-    nullptr,  // get(index) function pointer
-    nullptr,  // fetch(index, &value) function pointer
-    nullptr,  // assign(index, value) function pointer
-    nullptr  // resize(index) function pointer
-  },
+static const ::rosidl_typesupport_introspection_cpp::MessageMember FileExtractionMessage_message_member_array[2] = {
   {
     "stl_data",  // name
     ::rosidl_typesupport_introspection_cpp::ROS_TYPE_UINT8,  // type
@@ -118,14 +101,14 @@ static const ::rosidl_typesupport_introspection_cpp::MessageMember FileExtractio
     resize_function__FileExtractionMessage__stl_data  // resize(index) function pointer
   },
   {
-    "status",  // name
+    "excelfile",  // name
     ::rosidl_typesupport_introspection_cpp::ROS_TYPE_STRING,  // type
     0,  // upper bound of string
     nullptr,  // members of sub message
     false,  // is array
     0,  // array size
     false,  // is upper bound
-    offsetof(my_robot_wallinterfaces::msg::FileExtractionMessage, status),  // bytes offset in struct
+    offsetof(my_robot_wallinterfaces::msg::FileExtractionMessage, excelfile),  // bytes offset in struct
     nullptr,  // default value
     nullptr,  // size() function pointer
     nullptr,  // get_const(index) function pointer
@@ -139,7 +122,7 @@ static const ::rosidl_typesupport_introspection_cpp::MessageMember FileExtractio
 static const ::rosidl_typesupport_introspection_cpp::MessageMembers FileExtractionMessage_message_members = {
   "my_robot_wallinterfaces::msg",  // message namespace
   "FileExtractionMessage",  // message name
-  3,  // number of fields
+  2,  // number of fields
   sizeof(my_robot_wallinterfaces::msg::FileExtractionMessage),
   FileExtractionMessage_message_member_array,  // message members
   FileExtractionMessage_init_function,  // function to initialize message memory (memory has to be allocated)

@@ -81,11 +81,6 @@ static bool _SelectionWall__cdr_serialize(
     cdr << str->data;
   }
 
-  // Field name: sectionselection
-  {
-    cdr << ros_message->sectionselection;
-  }
-
   // Field name: picked_position
   {
     size_t size = ros_message->picked_position.size;
@@ -138,11 +133,6 @@ static bool _SelectionWall__cdr_deserialize(
     }
   }
 
-  // Field name: sectionselection
-  {
-    cdr >> ros_message->sectionselection;
-  }
-
   // Field name: picked_position
   {
     uint32_t cdrSize;
@@ -184,12 +174,6 @@ size_t get_serialized_size_my_robot_wallinterfaces__msg__SelectionWall(
   current_alignment += padding +
     eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
     (ros_message->typeselection.size + 1);
-  // field.name sectionselection
-  {
-    size_t item_size = sizeof(ros_message->sectionselection);
-    current_alignment += item_size +
-      eprosima::fastcdr::Cdr::alignment(current_alignment, item_size);
-  }
   // field.name picked_position
   {
     size_t array_size = ros_message->picked_position.size;
@@ -253,14 +237,6 @@ size_t max_serialized_size_my_robot_wallinterfaces__msg__SelectionWall(
         eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
         1;
     }
-  }
-  // member: sectionselection
-  {
-    size_t array_size = 1;
-
-    last_member_size = array_size * sizeof(uint32_t);
-    current_alignment += array_size * sizeof(uint32_t) +
-      eprosima::fastcdr::Cdr::alignment(current_alignment, sizeof(uint32_t));
   }
   // member: picked_position
   {

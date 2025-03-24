@@ -9,12 +9,9 @@ import PythonApplication.fileselectionmesh as fileselectionmesh
 from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
-import PythonApplication.usermanual as userHelper
-import PythonApplication.setting as setting
-import jsonimport as jsonfileopener
-import mainthheme as mainthemebuilder
 import vtk
 import os
+import pyvista as pv
 import talker_listener.talker_node as RosPublisher
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
@@ -29,83 +26,33 @@ class Ui_MainWindow(QMainWindow):
         super(Ui_MainWindow, self).__init__()
         self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
         self.mainwindow.setMouseTracking(False)
-        jsonfile = "settings.json"
-        (
-            font,
-            self.theme,
-            self.themecolor,
-            self.texttheme,
-            self.text_labelothercolor,
-            self.buttontheme,
-            self.buttonthemeothercolor,
-            self.buttontexttheme,
-            self.buttontextothercolor,
-            self.password,
-            self.selected_time_zone,
-            self.width,
-            self.height,
-        ) = jsonfileopener.jsopen(jsonfile)
-        self.font_size = int(font)
-        self.font = QFont()
-        self.font.setPointSize(self.font_size)
+        self.selected_files = []
         self.filepaths = os.getcwd()
         self.file = None
         self.file_path = None
         self.ros_node = ros_node
-        self.default_settings = {
-            "theme": str(self.theme),
-            "themeothercolor": str(self.themecolor),
-            "text_label": self.texttheme,
-            "text_labelothercolor": self.text_labelothercolor,
-            "buttontheme": self.buttontheme,
-            "buttonthemeothercolor": self.buttonthemeothercolor,
-            "buttontext": self.buttontexttheme,
-            "buttontextothercolor": self.buttontextothercolor,
-            "font_size": self.font_size,
-            "resolution": f"{self.width} x {self.height}",
-            "timezone": self.selected_time_zone,
-            "password": str(self.password),
-        }
-        if self.width == 1920 and self.height == 1080:
-            self.mainwindow.showMaximized()
-        else:
-            self.mainwindow.showNormal()
-            self.mainwindow.resize(self.width, self.height)
+        self.mainwindow.showMaximized()
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
-        self.apply_font_to_widgets(self.mainwindow, self.font)
-        self.excelfilepath = None
-        self.excel_file_selected = False
-        self.file_list_selected = False
-        self.config = {
-            'maincolor': self.theme,
-            'themecolor': self.themecolor,
-            'maincolortext': self.texttheme,
-            'text_labelothercolor': self.text_labelothercolor,
-            'buttoncolor': self.buttontheme,
-            'buttonthemeothercolor': self.buttonthemeothercolor,
-            'buttontextcolor': self.buttontexttheme,
-            'buttontextothercolor': self.buttontextothercolor
-        }
-        self.themebuilder = mainthemebuilder.themechange(
-            self.config,
-            self.mainwindow.centralwidget,
-            self.mainwindow,
-        )
-        self.setupUi()
+        self.stagestoring = ["Stage 1", "Stage 2" , "Stage 3", "Obstacles"]
+        # Find the promoted QWebEngineView from the UI
+        """self.webview = QWebEngineView()
+        self.setCentralWidget(self.webview)
 
-    # apply font
-    def apply_font_to_widgets(self, parent, font):
-        if hasattr(parent, "setFont"):
-            parent.setFont(font)
-        if hasattr(parent, "children"):
-            for child in parent.children():
-                self.apply_font_to_widgets(child, font)
+        # Setup WebChannel for communication
+        self.channel = QWebChannel()
+        self.bridge = Bridge()
+        self.channel.registerObject("bridge", self.bridge)
+        self.webview.page().setWebChannel(self.channel)
+
+        # Load ReactJS index.html from the build folder
+        react_app_path = os.path.abspath("my-react-app/build/index.html")
+        self.webview.load(QUrl.fromLocalFile(react_app_path))"""
+
+        self.setupUi()
 
     # setup UI
     def setupUi(self):
-        self.mainwindow.NextButton_Page_2.hide()
-        self.mainwindow.NextButton_Page_3.hide()
         self.plotterloader = QtInteractor(
             self.mainwindow.pyvistaframe,
             line_smoothing=True,
@@ -114,50 +61,48 @@ class Ui_MainWindow(QMainWindow):
             multi_samples=8,
         )
         self.plotterloader.enable()
-        self.plotterloader_2 = QtInteractor(
-            self.mainwindow.pyvistaframe_2,
-            line_smoothing=True,
-            point_smoothing=True,
-            polygon_smoothing=True,
-            multi_samples=8,
-        )
-        self.plotterloader_2.enable()
         self.renderWindowInteractor = (
             QVTKRenderWindowInteractor.QVTKRenderWindowInteractor(
                 self.mainwindow.vtkframe
             )
         )
-        self.SettingButton.clicked.connect(self.directtosettingpage)
-        self.mainwindow.horizontalLayout_2.addWidget(self.plotterloader.interactor)
-        self.mainwindow.horizontalLayout_4.addWidget(self.plotterloader_2.interactor)
-        self.mainwindow.verticalLayout.addWidget(self.renderWindowInteractor)
-        self.retranslateUi()
+        self.model = QFileSystemModel()
+        self.model.setRootPath("")  # Show entire system
+        self.model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot)  # Show only folders
+        self.mainwindow.Selectivefiledirectoryview.setModel(self.model)
+        root_index = self.model.index("/")  # Set root to '/' for Linux
+        self.mainwindow.Selectivefiledirectoryview.setRootIndex(root_index)  # Now safe to set
+        # Model for displaying only files
+        self.file_model = QFileSystemModel()
+        self.file_model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)  
+        self.file_model.setRootPath("/")  # Initialize root
+        # Attach model to file view
+        self.mainwindow.Selectivefilelistview.setModel(self.file_model)
+        self.mainwindow.Selectivefiledirectoryview.clicked.connect(self.on_folder_selected)
+        self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
+        self.mainwindow.horizontalLayout_16.addWidget(self.plotterloader.interactor)
+        self.mainwindow.verticalLayoutframe.addWidget(self.renderWindowInteractor)
         self.button_UI()
-        self.settingpageuipage = setting.Setting(
-            self.mainwindow.stackedWidget,
-            self.mainwindow,
-            self.mainwindow.centralwidget,
-            self.width,
-            self.height,
-            self.default_settings,
-            self.mainwindow.stackedWidget_main,
-            self.config
-        )   # insert setting 
-        self.usermanualinstruct = userHelper.Usermanual(
-            self.font,
-            self.mainwindow.stackedWidget_main,
-            self.mainwindow.usermanualpage,
-        ) 
-        self.mainwindow.LocalizationButton.hide()
         self.setStretch()
+
+    def on_folder_selected(self, index):
+        selected_folder = self.model.filePath(index)  # Get folder path
+        # Ensure the model is set before calling setRootIndex()
+        self.file_model.setRootPath(selected_folder)
+        self.mainwindow.Selectivefilelistview.setRootIndex(self.file_model.index(selected_folder))
+    
+    def on_file_selected(self, index):
+        if not index.isValid():
+            return
+        selected_path = self.file_model.filePath(index)  # Get clicked item path
+        if self.file_model.isDir(index):  
+            self.file_model.setRootPath(selected_path)
+            self.mainwindow.Selectivefilelistview.setRootIndex(self.file_model.index(selected_path))
+        else:
+            self.on_selection_changed(index)
 
     # button interaction
     def button_UI(self):
-        self.mainwindow.Selectivefilelistview.clicked.connect(self.on_selection_changed)
-        self.mainwindow.FilePathButton.clicked.connect(self.browsefilesdirectory)
-        self.mainwindow.SettingButton.clicked.connect(self.directtosettingpage)
-        self.mainwindow.usermanualButton.clicked.connect(self.directtousermanualpage)
-        self.mainwindow.excelFilePathButton.clicked.connect(self.excelfilesdirectory)
         self.buttonui = mainwindowbuttonUIinteraction.mainwindowbuttonUI(
             self.mainwindow,
             self.mainwindow.stackedWidget,
@@ -166,99 +111,46 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.NextButton_Page_2,
             self.mainwindow.BacktoMenuButton,
             self.mainwindow.BackButton_Page_2,
-            self.mainwindow.BackButton_2,
-            self.mainwindow.NextButton_Page_3,
-            self.mainwindow.ConfirmButton,
-            self.mainwindow.HomeButton,
+            self.mainwindow.ChooseButton,
+            self.mainwindow.sendmodelButton,
             self.mainwindow.CloseButton,
-            self.mainwindow.MarkingButton,
             self.ros_node,
         )
-
-    # main ui page interaction
-    def directtosettingpage(self):
-        self.mainwindow.stackedWidget_main.setCurrentIndex(1)
-
-    def directtousermanualpage(self):
-        self.mainwindow.stackedWidget_main.setCurrentIndex(2)
-
-    # file directory for 3d obj loader
-    def browsefilesdirectory(self):
-        self.filepaths = QFileDialog.getExistingDirectory(
-            None, "Choose Directory", self.filepaths
-        )
-        model = QFileSystemModel()
-        model.setRootPath(self.filepaths)
-        model.setFilter(QDir.NoDotAndDotDot | QDir.Files)
-        model.setNameFilters(["*.dxf", "*.stl", "*.ifc"])
-        model.setNameFilterDisables(False)
-        self.mainwindow.Selectivefilelistview.setModel(model)
-        self.mainwindow.Selectivefilelistview.setRootIndex(model.index(self.filepaths))
-        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)
-
-    # excel file directory for excel sheet only
-    def excelfilesdirectory(self):
-        self.excelfilepath, _ = QFileDialog.getOpenFileName(
-            self, "Choose Excel File", "", "Excel Files (*.xlsx *.xls)"
-        )
-        if self.excelfilepath:
-            self.mainwindow.excelfilpathtext.setText(self.excelfilepath)
-        self.excel_file_selected = True
-        self.check_if_both_selected()
 
     # file selection when clicked
     def on_selection_changed(self, index):
         model = self.mainwindow.Selectivefilelistview.model()
         self.file_path = model.filePath(index)
+        if self.file_path in self.selected_files:
+            self.selected_files.remove(self.file_path) 
+        else:
+            self.selected_files.append(self.file_path)
         file = self.mainwindow.Selectivefilelistview.model().itemData(index)[0]
         mainwindowforfileselection = [
             self.plotterloader,
-            self.plotterloader_2,
             self.renderer,
             self.renderWindowInteractor,
-            self.mainwindow.Ylabel,
-            self.mainwindow.Xlabel,
-            self.mainwindow.Xlabel_2,
-            self.mainwindow.Ylabel_2,
-            self.mainwindow.Zlabel,
-            self.mainwindow.SequenceButton,
-            self.mainwindow.NextButton_Page_3,
-            self.mainwindow.LocalizationButton,
             self.ros_node,
-            self.mainwindow.excelfilpathtext,
-            self.mainwindow.seqlabel_2,
+            self.selected_files,
+            self.mainwindow.NextButton_Page_3,
             self.mainwindow.Stagelabel,
-            self.mainwindow.StageButton,
+            self.stagestoring,
+            self.mainwindow.labelstatus,
+            self.mainwindow.scanprogressBar,
+            self.mainwindow.walllabel
         ]
-        fileselectionmesh.FileSelectionMesh(self.file_path, mainwindowforfileselection, self.mainwindow)
-        if ".stl" in file:
-            self.file = file.replace(".stl", "")
-        elif ".ifc" in file:
-            self.file = file.replace(".ifc", "")
-        elif ".dxf" in file:
-            self.file = file.replace(".dxf", "")
-        self.mainwindow.NextButton_Page_2.show()
-        self.mainwindow.Itemlabel.setText(
-            self._translate("MainWindow", "Product : " + str(self.file))
+        self.mainwindow.Itemlabel.setText(f"Model Product : {file}")
+        fileselectionmesh.FileSelectionMesh(
+            file, mainwindowforfileselection, self.mainwindow , self.mainwindow.stackedWidget
         )
-        self.mainwindow.Itemlabel_2.setText(
-            self._translate("MainWindow", "Product: " + str(self.file))
-        )
-        self.file_list_selected = True
         self.show_completion_message()
-        self.check_if_both_selected()
+        self.file_list_selected = True
 
-    # button show when 2 files are insertef in the loader
-    def check_if_both_selected(self):
-        if self.excel_file_selected == True and self.file_list_selected == True:
-            self.mainwindow.NextButton_Page_2.show()
-        else:
-            self.mainwindow.NextButton_Page_2.hide()
 
-    # layout for main window
+    # main window layout
     def setStretch(self):
         self.boxLayout = QVBoxLayout()
-        self.boxLayout.addWidget(self.mainwindow.stackedWidget_main)
+        self.boxLayout.addWidget(self.mainwindow.stackedWidget)
         self.mainwindow.centralwidget.setLayout(self.boxLayout)
         mainwindowuilayout.Ui_MainWindow_layout(
             self.mainwindow.stackedWidget,
@@ -266,22 +158,23 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.layoutWidget,
             self.mainwindow.horizontalLayout,
             self.mainwindow.mainmenu,
-            self.mainwindow.horizontalLayoutWidget,
             self.mainwindow.horizontalLayoutWidgetPage2,
+            self.mainwindow.buttonpage2layoutWidget,
             self.mainwindow.page,
             self.mainwindow.Itemlabel,
             self.mainwindow.layoutWidgetpage3,
+            self.mainwindow.horizontalLayoutWidgetbuttonpage3,
             self.mainwindow.page_2,
-            self.mainwindow.layoutWidgetpage4,
+            self.mainwindow.labelstatus,
+            self.mainwindow.scanprogressBar,
+            self.mainwindow.scanpage,
+            self.mainwindow.verticalLayoutWidgetpage4frame,
             self.mainwindow.horizontalLayoutWidgetpage4,
             self.mainwindow.page_3,
-            self.mainwindow.layoutWidgetpage5,
+            self.mainwindow.sendmodelButton,
+            self.mainwindow.CloseButton,
+            self.mainwindow.ChooseButton,
             self.mainwindow.page_4,
-            self.settingpageuipage,
-            self.mainwindow.mainconfiguration,
-            self.mainwindow.usermanualButton,
-            self.mainwindow.SettingButton,
-            self.mainwindow.settingpage,
         )
 
     # clean layout
@@ -305,6 +198,7 @@ class Ui_MainWindow(QMainWindow):
         self.renderWindowInteractor.GetRenderWindow().GetInteractor().TerminateApp()
         event.accept()
 
+
     def show_completion_message(self):
         msg_box = QMessageBox()
         msg_box.setStyleSheet(
@@ -326,21 +220,6 @@ class Ui_MainWindow(QMainWindow):
         msg_box.setText("3d Objects file initialize is completed.")
         msg_box.setStandardButtons(QMessageBox.Ok)
         msg_box.exec_()
-
-    # text loader
-    def retranslateUi(self):
-        self.mainwindow.displaybeforelabel.setText(
-            self._translate("MainWindow", "Mesh Camera Dimensions")
-        )
-        self.mainwindow.label_2.setText(
-            self._translate("MainWindow", "Click Position", None)
-        )
-        self.mainwindow.FilePathButton.setToolTip(
-            "Please insert File path, for stl , ifc , dxf , etc."
-        )
-        self.mainwindow.excelFilePathButton.setToolTip("Please insert excel file")
-        self.mainwindow.LocalizationButton.setToolTip("Run the listener and talker node")
-
 
 # ros executor
 def ros_spin(node):

@@ -86,15 +86,6 @@ bool my_robot_wallinterfaces__msg__selection_wall__convert_from_py(PyObject * _p
     Py_DECREF(encoded_field);
     Py_DECREF(field);
   }
-  {  // sectionselection
-    PyObject * field = PyObject_GetAttrString(_pymsg, "sectionselection");
-    if (!field) {
-      return false;
-    }
-    assert(PyLong_Check(field));
-    ros_message->sectionselection = (int32_t)PyLong_AsLong(field);
-    Py_DECREF(field);
-  }
   {  // picked_position
     PyObject * field = PyObject_GetAttrString(_pymsg, "picked_position");
     if (!field) {
@@ -207,17 +198,6 @@ PyObject * my_robot_wallinterfaces__msg__selection_wall__convert_to_py(void * ra
     }
     {
       int rc = PyObject_SetAttrString(_pymessage, "typeselection", field);
-      Py_DECREF(field);
-      if (rc) {
-        return NULL;
-      }
-    }
-  }
-  {  // sectionselection
-    PyObject * field = NULL;
-    field = PyLong_FromLong(ros_message->sectionselection);
-    {
-      int rc = PyObject_SetAttrString(_pymessage, "sectionselection", field);
       Py_DECREF(field);
       if (rc) {
         return NULL;

@@ -13,22 +13,23 @@ class Ui_MainWindow_layout(object):
         mainlayoutwidget,
         mainlayoutpagebutton,
         mainmenu,
-        excelfilelayout,
-        page2layout,
+        filedirectorylayout,
+        buttonfiledirectorylayout,
         page2,
         itemlabel_page3,
         page3layout,
+        buttonpage3layout,
         page3,
+        labelstatus,
+        scanprogressBar,
+        scanpage,
         page4layout,
         page4frame,
         page4,
-        page5layout,
+        sendmodelButton,
+        CloseButton,
+        ChooseButton,
         page5,
-        settinguipage,
-        stackedWidget_main,
-        usermanualButton,
-        SettingButton,
-        settingpage,
     ):
         # starting initialize
         super().__init__()
@@ -37,42 +38,27 @@ class Ui_MainWindow_layout(object):
         self.mainlayoutwidget = mainlayoutwidget
         self.mainlayoutpagebutton = mainlayoutpagebutton
         self.mainmenu = mainmenu
-        self.page2Layout = page2layout
+        self.filedirectorylayout = filedirectorylayout
+        self.buttonfiledirrectorylayout = buttonfiledirectorylayout
         self.page2 = page2
         self.itemlabel_page3 = itemlabel_page3
         self.page3Layout = page3layout
+        self.buttonpage3layout = buttonpage3layout
         self.page3 = page3
+        self.labelstatus = labelstatus
+        self.scanprogressBar = scanprogressBar
+        self.scanpage = scanpage
         self.page4Layout = page4layout
         self.page4frame = page4frame
         self.page4 = page4
-        self.page5Layout = page5layout
         self.page5 = page5
-        self.settinguipage = settinguipage
-        self.settingpage = settingpage
-        self.stackedWidget_main = stackedWidget_main
-        self.SettingButton = SettingButton
-        self.usermanualButton = usermanualButton
-        self.excelfilelayout = excelfilelayout
+        self.sendmodelButton = sendmodelButton
+        self.CloseButton = CloseButton
+        self.ChooseButton = ChooseButton
         self.setStretch()
 
     #stretch layout
     def setStretch(self):
-        self.boxLayout = QVBoxLayout()
-        self.settingusermanuallayout = QHBoxLayout()
-        self.horizontalSpacer = QSpacerItem(
-            40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum
-        )
-        self.settingusermanuallayout.addWidget(self.usermanualButton)
-        self.settingusermanuallayout.addItem(self.horizontalSpacer)
-        self.settingusermanuallayout.addWidget(self.SettingButton)
-        self.settingusermanuallayout.setStretch(0, 1)
-        self.settingusermanuallayout.setStretch(1, 1)
-        self.settingusermanuallayout.setStretch(2, 1)
-        self.boxLayout.addLayout(self.settingusermanuallayout)
-        self.boxLayout.addWidget(self.stackedWidget)
-        self.boxLayout.setStretch(0, 1)
-        self.boxLayout.setStretch(1, 4)
-        self.stackedWidget_main.setLayout(self.boxLayout)
         self.page1boxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
             20, 400, QSizePolicy.Minimum, QSizePolicy.Expanding
@@ -93,25 +79,48 @@ class Ui_MainWindow_layout(object):
         self.mainlayoutpagebutton.setStretch(1, 1)
         self.mainmenu.setLayout(self.page1boxlayout)
         self.page2boxLayout = QVBoxLayout()
-        self.page2boxLayout.addWidget(self.excelfilelayout)
-        self.page2boxLayout.addWidget(self.page2Layout)
+        self.page2boxLayout.addWidget(self.filedirectorylayout)
+        self.page2boxLayout.addWidget(self.buttonfiledirrectorylayout)
+        self.page2boxLayout.setStretch(0, 3)
         self.page2boxLayout.setStretch(1, 1)
-        self.page2boxLayout.setStretch(1, 3)
         self.page2.setLayout(self.page2boxLayout)
         self.page3boxLayout = QVBoxLayout()
         self.page3boxLayout.addWidget(self.itemlabel_page3)
         self.page3boxLayout.addWidget(self.page3Layout)
-        self.page3boxLayout.setStretch(1, 1)
+        self.page3boxLayout.addWidget(self.buttonpage3layout)
+        self.page3boxLayout.setStretch(0, 1)
+        self.page3boxLayout.setStretch(1, 4)
+        self.page3boxLayout.setStretch(2, 1)
         self.page3.setLayout(self.page3boxLayout)
+        self.scaningbox = QVBoxLayout()
+        self.verticalSpacer_3 = QSpacerItem(
+            20, 400, QSizePolicy.Minimum, QSizePolicy.Expanding
+        )
+        self.verticalSpacer_4 = QSpacerItem(
+            20, 220, QSizePolicy.Minimum, QSizePolicy.Expanding
+        )
+        self.scaningbox.addItem(self.verticalSpacer_3)
+        self.scaningbox.addWidget(self.labelstatus)
+        self.scaningbox.addWidget(self.scanprogressBar)
+        self.scaningbox.addItem(self.verticalSpacer_4)
+        self.scaningbox.setStretch(0, 3)
+        self.scaningbox.setStretch(1, 1)
+        self.scaningbox.setStretch(2, 1)
+        self.scaningbox.setStretch(3, 3)
+        self.scanpage.setLayout(self.scaningbox)
         self.page4boxLayout = QVBoxLayout()
         self.page4boxLayout.addWidget(self.page4Layout)
         self.page4boxLayout.addWidget(self.page4frame)
-        self.page4boxLayout.setStretch(0, 2)
-        self.page4boxLayout.setStretch(1, 2)
+        self.page4boxLayout.setStretch(0, 1)
+        self.page4boxLayout.setStretch(1, 1)
         self.page4.setLayout(self.page4boxLayout)
         self.page5boxLayout = QVBoxLayout()
-        self.page5boxLayout.addWidget(self.page5Layout)
+        self.page5boxLayout.addWidget(self.sendmodelButton)
+        self.page5boxLayout.addWidget(self.ChooseButton)
+        self.page5boxLayout.addWidget(self.CloseButton) 
+        self.page5boxLayout.setStretch(0, 1)
+        self.page5boxLayout.setStretch(1, 1)
+        self.page5boxLayout.setStretch(2, 1)
         self.page5.setLayout(self.page5boxLayout)
-        self.page6boxLayout = QVBoxLayout()
-        self.page6boxLayout.addWidget(self.settinguipage)
-        self.settingpage.setLayout(self.page6boxLayout)
+
+

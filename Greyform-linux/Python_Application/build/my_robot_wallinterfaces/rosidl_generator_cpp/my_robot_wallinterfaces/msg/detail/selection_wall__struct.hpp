@@ -40,7 +40,6 @@ struct SelectionWall_
     {
       this->wallselection = "";
       this->typeselection = "";
-      this->sectionselection = 0l;
     }
   }
 
@@ -53,7 +52,6 @@ struct SelectionWall_
     {
       this->wallselection = "";
       this->typeselection = "";
-      this->sectionselection = 0l;
     }
   }
 
@@ -64,9 +62,6 @@ struct SelectionWall_
   using _typeselection_type =
     std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>;
   _typeselection_type typeselection;
-  using _sectionselection_type =
-    int32_t;
-  _sectionselection_type sectionselection;
   using _picked_position_type =
     std::vector<int32_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<int32_t>>;
   _picked_position_type picked_position;
@@ -82,12 +77,6 @@ struct SelectionWall_
     const std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> & _arg)
   {
     this->typeselection = _arg;
-    return *this;
-  }
-  Type & set__sectionselection(
-    const int32_t & _arg)
-  {
-    this->sectionselection = _arg;
     return *this;
   }
   Type & set__picked_position(
@@ -143,9 +132,6 @@ struct SelectionWall_
       return false;
     }
     if (this->typeselection != other.typeselection) {
-      return false;
-    }
-    if (this->sectionselection != other.sectionselection) {
       return false;
     }
     if (this->picked_position != other.picked_position) {

@@ -7,5 +7,6 @@
 #include "my_robot_wallinterfaces/srv/detail/set_led__struct.hpp"
 #include "my_robot_wallinterfaces/srv/detail/set_led__builder.hpp"
 #include "my_robot_wallinterfaces/srv/detail/set_led__traits.hpp"
+#include "my_robot_wallinterfaces/srv/detail/set_led__type_support.hpp"
 
 #endif  // MY_ROBOT_WALLINTERFACES__SRV__SET_LED_HPP_

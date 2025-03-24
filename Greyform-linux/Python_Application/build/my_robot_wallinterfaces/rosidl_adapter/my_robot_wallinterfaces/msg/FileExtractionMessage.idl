@@ -6,11 +6,9 @@
 module my_robot_wallinterfaces {
   module msg {
     struct FileExtractionMessage {
-      string excelfile;
-
       sequence<uint8> stl_data;
 
-      string status;
+      string excelfile;
     };
   };
 };

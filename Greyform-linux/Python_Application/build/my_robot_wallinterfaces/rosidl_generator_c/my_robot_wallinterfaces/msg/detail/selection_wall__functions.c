@@ -34,7 +34,6 @@ my_robot_wallinterfaces__msg__SelectionWall__init(my_robot_wallinterfaces__msg__
     my_robot_wallinterfaces__msg__SelectionWall__fini(msg);
     return false;
   }
-  // sectionselection
   // picked_position
   if (!rosidl_runtime_c__int32__Sequence__init(&msg->picked_position, 0)) {
     my_robot_wallinterfaces__msg__SelectionWall__fini(msg);
@@ -53,7 +52,6 @@ my_robot_wallinterfaces__msg__SelectionWall__fini(my_robot_wallinterfaces__msg__
   rosidl_runtime_c__String__fini(&msg->wallselection);
   // typeselection
   rosidl_runtime_c__String__fini(&msg->typeselection);
-  // sectionselection
   // picked_position
   rosidl_runtime_c__int32__Sequence__fini(&msg->picked_position);
 }
@@ -74,10 +72,6 @@ my_robot_wallinterfaces__msg__SelectionWall__are_equal(const my_robot_wallinterf
   if (!rosidl_runtime_c__String__are_equal(
       &(lhs->typeselection), &(rhs->typeselection)))
   {
-    return false;
-  }
-  // sectionselection
-  if (lhs->sectionselection != rhs->sectionselection) {
     return false;
   }
   // picked_position
@@ -109,8 +103,6 @@ my_robot_wallinterfaces__msg__SelectionWall__copy(
   {
     return false;
   }
-  // sectionselection
-  output->sectionselection = input->sectionselection;
   // picked_position
   if (!rosidl_runtime_c__int32__Sequence__copy(
       &(input->picked_position), &(output->picked_position)))

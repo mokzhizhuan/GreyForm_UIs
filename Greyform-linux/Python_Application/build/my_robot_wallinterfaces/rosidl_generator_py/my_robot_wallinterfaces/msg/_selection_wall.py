@@ -60,21 +60,18 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
     __slots__ = [
         '_wallselection',
         '_typeselection',
-        '_sectionselection',
         '_picked_position',
     ]
 
     _fields_and_field_types = {
         'wallselection': 'string',
         'typeselection': 'string',
-        'sectionselection': 'int32',
         'picked_position': 'sequence<int32>',
     }
 
     SLOT_TYPES = (
         rosidl_parser.definition.UnboundedString(),  # noqa: E501
         rosidl_parser.definition.UnboundedString(),  # noqa: E501
-        rosidl_parser.definition.BasicType('int32'),  # noqa: E501
         rosidl_parser.definition.UnboundedSequence(rosidl_parser.definition.BasicType('int32')),  # noqa: E501
     )
 
@@ -84,7 +81,6 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
             ', '.join(sorted(k for k in kwargs.keys() if '_' + k not in self.__slots__))
         self.wallselection = kwargs.get('wallselection', str())
         self.typeselection = kwargs.get('typeselection', str())
-        self.sectionselection = kwargs.get('sectionselection', int())
         self.picked_position = array.array('i', kwargs.get('picked_position', []))
 
     def __repr__(self):
@@ -120,8 +116,6 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
             return False
         if self.typeselection != other.typeselection:
             return False
-        if self.sectionselection != other.sectionselection:
-            return False
         if self.picked_position != other.picked_position:
             return False
         return True
@@ -156,21 +150,6 @@ class SelectionWall(metaclass=Metaclass_SelectionWall):
                 isinstance(value, str), \
                 "The 'typeselection' field must be of type 'str'"
         self._typeselection = value
-
-    @builtins.property
-    def sectionselection(self):
-        """Message field 'sectionselection'."""
-        return self._sectionselection
-
-    @sectionselection.setter
-    def sectionselection(self, value):
-        if __debug__:
-            assert \
-                isinstance(value, int), \
-                "The 'sectionselection' field must be of type 'int'"
-            assert value >= -2147483648 and value < 2147483648, \
-                "The 'sectionselection' field must be an integer in [-2147483648, 2147483647]"
-        self._sectionselection = value
 
     @builtins.property
     def picked_position(self):

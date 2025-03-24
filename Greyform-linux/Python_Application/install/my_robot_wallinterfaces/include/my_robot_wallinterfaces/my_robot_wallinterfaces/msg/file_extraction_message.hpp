@@ -7,5 +7,6 @@
 #include "my_robot_wallinterfaces/msg/detail/file_extraction_message__struct.hpp"
 #include "my_robot_wallinterfaces/msg/detail/file_extraction_message__builder.hpp"
 #include "my_robot_wallinterfaces/msg/detail/file_extraction_message__traits.hpp"
+#include "my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support.hpp"
 
 #endif  // MY_ROBOT_WALLINTERFACES__MSG__FILE_EXTRACTION_MESSAGE_HPP_

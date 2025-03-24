@@ -1,0 +1,25 @@
+[2.857s] Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/talker_listener': PYTHONPATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/talker_listener build --build-base /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build install --record /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log --single-version-externally-managed install_data
+[4.745s] running egg_info
+[4.750s] writing ../build/talker_listener/talker_listener.egg-info/PKG-INFO
+[4.751s] writing dependency_links to ../build/talker_listener/talker_listener.egg-info/dependency_links.txt
+[4.753s] writing entry points to ../build/talker_listener/talker_listener.egg-info/entry_points.txt
+[4.754s] writing requirements to ../build/talker_listener/talker_listener.egg-info/requires.txt
+[4.759s] writing top-level names to ../build/talker_listener/talker_listener.egg-info/top_level.txt
+[4.780s] reading manifest file '../build/talker_listener/talker_listener.egg-info/SOURCES.txt'
+[4.785s] writing manifest file '../build/talker_listener/talker_listener.egg-info/SOURCES.txt'
+[4.788s] running build
+[4.788s] running build_py
+[4.797s] copying talker_listener/talker_node.py -> /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener
+[4.805s] running install
+[4.809s] running install_lib
+[4.817s] copying /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build/lib/talker_listener/talker_node.py -> /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener
+[4.821s] byte-compiling /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener/talker_node.py to talker_node.cpython-310.pyc
+[4.830s] running install_data
+[4.832s] running install_egg_info
+[4.846s] removing '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener-0.0.0-py3.10.egg-info' (and everything under it)
+[4.846s] Copying ../build/talker_listener/talker_listener.egg-info to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener-0.0.0-py3.10.egg-info
+[4.854s] running install_scripts
+[4.986s] Installing listenerNode script to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener
+[4.991s] Installing talkerNode script to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener
+[4.996s] writing list of installed files to '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log'
+[5.115s] Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/talker_listener' returned '0': PYTHONPATH=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../build/talker_listener build --build-base /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build install --record /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log --single-version-externally-managed install_data

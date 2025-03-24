@@ -58,19 +58,16 @@ class FileExtractionMessage(metaclass=Metaclass_FileExtractionMessage):
     """Message class 'FileExtractionMessage'."""
 
     __slots__ = [
-        '_excelfile',
         '_stl_data',
-        '_status',
+        '_excelfile',
     ]
 
     _fields_and_field_types = {
-        'excelfile': 'string',
         'stl_data': 'sequence<uint8>',
-        'status': 'string',
+        'excelfile': 'string',
     }
 
     SLOT_TYPES = (
-        rosidl_parser.definition.UnboundedString(),  # noqa: E501
         rosidl_parser.definition.UnboundedSequence(rosidl_parser.definition.BasicType('uint8')),  # noqa: E501
         rosidl_parser.definition.UnboundedString(),  # noqa: E501
     )
@@ -79,9 +76,8 @@ class FileExtractionMessage(metaclass=Metaclass_FileExtractionMessage):
         assert all('_' + key in self.__slots__ for key in kwargs.keys()), \
             'Invalid arguments passed to constructor: %s' % \
             ', '.join(sorted(k for k in kwargs.keys() if '_' + k not in self.__slots__))
-        self.excelfile = kwargs.get('excelfile', str())
         self.stl_data = array.array('B', kwargs.get('stl_data', []))
-        self.status = kwargs.get('status', str())
+        self.excelfile = kwargs.get('excelfile', str())
 
     def __repr__(self):
         typename = self.__class__.__module__.split('.')
@@ -112,11 +108,9 @@ class FileExtractionMessage(metaclass=Metaclass_FileExtractionMessage):
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return False
-        if self.excelfile != other.excelfile:
-            return False
         if self.stl_data != other.stl_data:
             return False
-        if self.status != other.status:
+        if self.excelfile != other.excelfile:
             return False
         return True
 
@@ -124,19 +118,6 @@ class FileExtractionMessage(metaclass=Metaclass_FileExtractionMessage):
     def get_fields_and_field_types(cls):
         from copy import copy
         return copy(cls._fields_and_field_types)
-
-    @builtins.property
-    def excelfile(self):
-        """Message field 'excelfile'."""
-        return self._excelfile
-
-    @excelfile.setter
-    def excelfile(self, value):
-        if __debug__:
-            assert \
-                isinstance(value, str), \
-                "The 'excelfile' field must be of type 'str'"
-        self._excelfile = value
 
     @builtins.property
     def stl_data(self):
@@ -167,14 +148,14 @@ class FileExtractionMessage(metaclass=Metaclass_FileExtractionMessage):
         self._stl_data = array.array('B', value)
 
     @builtins.property
-    def status(self):
-        """Message field 'status'."""
-        return self._status
+    def excelfile(self):
+        """Message field 'excelfile'."""
+        return self._excelfile
 
-    @status.setter
-    def status(self, value):
+    @excelfile.setter
+    def excelfile(self, value):
         if __debug__:
             assert \
                 isinstance(value, str), \
-                "The 'status' field must be of type 'str'"
-        self._status = value
+                "The 'excelfile' field must be of type 'str'"
+        self._excelfile = value

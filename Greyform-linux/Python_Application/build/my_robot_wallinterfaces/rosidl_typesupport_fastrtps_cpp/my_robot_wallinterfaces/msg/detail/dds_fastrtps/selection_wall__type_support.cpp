@@ -36,8 +36,6 @@ cdr_serialize(
   cdr << ros_message.wallselection;
   // Member: typeselection
   cdr << ros_message.typeselection;
-  // Member: sectionselection
-  cdr << ros_message.sectionselection;
   // Member: picked_position
   {
     cdr << ros_message.picked_position;
@@ -56,9 +54,6 @@ cdr_deserialize(
 
   // Member: typeselection
   cdr >> ros_message.typeselection;
-
-  // Member: sectionselection
-  cdr >> ros_message.sectionselection;
 
   // Member: picked_position
   {
@@ -89,12 +84,6 @@ get_serialized_size(
   current_alignment += padding +
     eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
     (ros_message.typeselection.size() + 1);
-  // Member: sectionselection
-  {
-    size_t item_size = sizeof(ros_message.sectionselection);
-    current_alignment += item_size +
-      eprosima::fastcdr::Cdr::alignment(current_alignment, item_size);
-  }
   // Member: picked_position
   {
     size_t array_size = ros_message.picked_position.size();
@@ -153,15 +142,6 @@ max_serialized_size_SelectionWall(
         eprosima::fastcdr::Cdr::alignment(current_alignment, padding) +
         1;
     }
-  }
-
-  // Member: sectionselection
-  {
-    size_t array_size = 1;
-
-    last_member_size = array_size * sizeof(uint32_t);
-    current_alignment += array_size * sizeof(uint32_t) +
-      eprosima::fastcdr::Cdr::alignment(current_alignment, sizeof(uint32_t));
   }
 
   // Member: picked_position

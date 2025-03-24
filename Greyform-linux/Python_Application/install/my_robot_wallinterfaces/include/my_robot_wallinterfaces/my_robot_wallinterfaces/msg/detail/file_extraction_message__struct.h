@@ -18,18 +18,16 @@ extern "C"
 // Constants defined in the message
 
 // Include directives for member types
-// Member 'excelfile'
-// Member 'status'
-#include "rosidl_runtime_c/string.h"
 // Member 'stl_data'
 #include "rosidl_runtime_c/primitives_sequence.h"
+// Member 'excelfile'
+#include "rosidl_runtime_c/string.h"
 
 /// Struct defined in msg/FileExtractionMessage in the package my_robot_wallinterfaces.
 typedef struct my_robot_wallinterfaces__msg__FileExtractionMessage
 {
-  rosidl_runtime_c__String excelfile;
   rosidl_runtime_c__uint8__Sequence stl_data;
-  rosidl_runtime_c__String status;
+  rosidl_runtime_c__String excelfile;
 } my_robot_wallinterfaces__msg__FileExtractionMessage;
 
 // Struct for a sequence of my_robot_wallinterfaces__msg__FileExtractionMessage.

@@ -37,32 +37,16 @@ private:
   ::my_robot_wallinterfaces::msg::SelectionWall msg_;
 };
 
-class Init_SelectionWall_sectionselection
-{
-public:
-  explicit Init_SelectionWall_sectionselection(::my_robot_wallinterfaces::msg::SelectionWall & msg)
-  : msg_(msg)
-  {}
-  Init_SelectionWall_picked_position sectionselection(::my_robot_wallinterfaces::msg::SelectionWall::_sectionselection_type arg)
-  {
-    msg_.sectionselection = std::move(arg);
-    return Init_SelectionWall_picked_position(msg_);
-  }
-
-private:
-  ::my_robot_wallinterfaces::msg::SelectionWall msg_;
-};
-
 class Init_SelectionWall_typeselection
 {
 public:
   explicit Init_SelectionWall_typeselection(::my_robot_wallinterfaces::msg::SelectionWall & msg)
   : msg_(msg)
   {}
-  Init_SelectionWall_sectionselection typeselection(::my_robot_wallinterfaces::msg::SelectionWall::_typeselection_type arg)
+  Init_SelectionWall_picked_position typeselection(::my_robot_wallinterfaces::msg::SelectionWall::_typeselection_type arg)
   {
     msg_.typeselection = std::move(arg);
-    return Init_SelectionWall_sectionselection(msg_);
+    return Init_SelectionWall_picked_position(msg_);
   }
 
 private:

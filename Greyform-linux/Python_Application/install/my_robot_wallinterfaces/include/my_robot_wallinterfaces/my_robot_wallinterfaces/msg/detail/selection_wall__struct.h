@@ -29,7 +29,6 @@ typedef struct my_robot_wallinterfaces__msg__SelectionWall
 {
   rosidl_runtime_c__String wallselection;
   rosidl_runtime_c__String typeselection;
-  int32_t sectionselection;
   rosidl_runtime_c__int32__Sequence picked_position;
 } my_robot_wallinterfaces__msg__SelectionWall;
 
