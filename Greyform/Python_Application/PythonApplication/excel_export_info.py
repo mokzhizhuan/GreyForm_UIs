@@ -230,14 +230,14 @@ class Exportexcelinfo(object):
         posy = 0
         posx = 0
         center_z = self.centerlinez()
+        internaldimensionx = self.floor[0]
+        internaldimensiony = self.wallformat[5]["width"]
         pos_z = positionz - center_z + (self.floorheight) - (self.wall_height / 2)
         if self.is_descending is not True:
             for wall_id, wall in self.wallformat.items():
                 if wall_number == wall_id:
                     if wall["axis"] == "y":
-                        internaldimensionx = self.floor[0]
                         center_x = internaldimensionx / 2
-                        internaldimensiony = self.floor[1]
                         posy = internaldimensiony / 2
                         if wall_id == len(self.wallformat):
                             pos_z = positionz - center_z + (self.floorheight)
@@ -296,8 +296,6 @@ class Exportexcelinfo(object):
                                     ]
                                 )
                     else:
-                        internaldimensionx = self.floor[0]
-                        internaldimensiony = self.floor[1]
                         posx = internaldimensionx / 2
                         posy = internaldimensiony / 2
                         if posy < positiony and internaldimensiony > positiony:
@@ -360,10 +358,8 @@ class Exportexcelinfo(object):
             for wall_id, wall in self.wallformat.items():
                 if wall_number == wall_id:
                     if wall["axis"] == "y":
-                        internaldimensionx = self.floor[0]
                         center_x = self.min_widthx
-                        internaldimensiony = self.floor[1]
-                        if self.wallformat[3]["width"] != internaldimensiony:
+                        if self.wallformat[5]["width"] != internaldimensiony:
                             internaldimensiony = self.wallformat[5]["width"]
                         posy = internaldimensiony / 2
                         pos_x = internaldimensionx - (
@@ -419,21 +415,10 @@ class Exportexcelinfo(object):
                                 ]
                             )
                     elif wall["axis"] == "x":
-                        internaldimensionx = self.floor[0]
-                        internaldimensiony = self.floor[1]
-                        if self.wallformat[3]["width"] != internaldimensiony:
+                        if self.wallformat[5]["width"] != internaldimensiony:
                             internaldimensiony = self.wallformat[5]["width"]
                         posx = internaldimensionx / 2
                         posy = internaldimensiony / 2
-                        pos_y = internaldimensiony - (
-                            (self.wall_finishes_height + self.wall_height) * 2
-                        )
-                        robotposy = (
-                            positiony
-                            - pos_y
-                            - self.wall_finishes_height
-                            - self.wall_height
-                        )
                         if posy < positiony and internaldimensiony > positiony:
                             startingrange = (
                                 wall["pos_x_range"][0]
@@ -441,10 +426,28 @@ class Exportexcelinfo(object):
                                 - self.wall_height
                             )
                             endrange = wall["pos_x_range"][1]
+                            endrangey = wall["pos_y_range"][1]
+                            if (
+                                self.wallformat[2]["width"]
+                                != endrangey
+                            ):
+                                endrangey = self.wallformat[5]["width"]
                             robotposx = (
                                 positionx
                                 - startingrange
                                 - ((endrange - startingrange) / 2)
+                            )
+                            if endrangey != internaldimensiony:
+                                pos_y = endrangey - ((self.wall_finishes_height + self.wall_height) * 2)
+                            else:
+                                pos_y = internaldimensiony - (
+                                    (self.wall_finishes_height + self.wall_height) * 2
+                                )
+                            robotposy = (
+                                positiony
+                                - pos_y
+                                - self.wall_finishes_height
+                                - self.wall_height
                             )
                             return pd.Series(
                                 [
@@ -458,7 +461,9 @@ class Exportexcelinfo(object):
                             if robotposx > 0:
                                 return pd.Series(
                                     [
-                                        robotposy,
+                                        positiony
+                                        - self.wall_finishes_height
+                                        - self.wall_height,
                                         -abs(robotposx),
                                         pos_z,
                                     ]
@@ -466,13 +471,13 @@ class Exportexcelinfo(object):
                             else:
                                 return pd.Series(
                                     [
-                                        robotposy,
+                                        positiony
+                                        - self.wall_finishes_height
+                                        - self.wall_height,
                                         abs(robotposx),
                                         pos_z,
                                     ]
                                 )
-        internaldimensionx = self.floor[0] / 2
-        internaldimensiony = self.floor[1] / 2
         return pd.Series(
             [
                 positionx - self.wall_height - self.wall_finishes_height,

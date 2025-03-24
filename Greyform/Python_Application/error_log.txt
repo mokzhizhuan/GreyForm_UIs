@@ -1,4 +1,1 @@
 
-Failed to load stlfile in the frame: 'IfcBuildingElementProxy'
-Failed to load stlfile in the frame: 'IfcBuildingElementProxy'
-Failed to load stlfile in the frame: 'IfcBuildingElementProxy'
