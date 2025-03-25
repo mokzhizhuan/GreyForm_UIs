@@ -107,6 +107,11 @@ class Ui_MainWindow(QMainWindow):
         self.proxy_model = FileFilterProxyModel()
         self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefilelistview.setModel(self.file_model)
+        self.mainwindow.Selectivefilelistview.setViewMode(QListView.IconMode)  # Change to Icon Mode
+        self.mainwindow.Selectivefilelistview.setSpacing(10)  # Space between items
+        self.mainwindow.Selectivefilelistview.setResizeMode(QListView.Adjust)  # Dynamic resizing
+        self.mainwindow.Selectivefilelistview.setMovement(QListView.Static)  # Keeps icons fixed
+        self.mainwindow.Selectivefilelistview.setUniformItemSizes(True)
         self.mainwindow.Selectivefiledirectoryview.clicked.connect(self.on_folder_selected)
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
         self.mainwindow.horizontalLayout_16.addWidget(self.plotterloader.interactor)
