@@ -184,54 +184,6 @@ class createMesh(QMainWindow):
         )
         self.setupvtkframe()
 
-    def addHiddenCamera(self, wall_name):
-        """
-        Adds a camera facing a specific wall without rendering the camera as an actor.
-        :param wall_name: The name of the wall in self.walls dictionary
-        """
-        if wall_name not in self.walls:
-            print(f"Wall {wall_name} not found!")
-            return
-
-        # Get wall position and normal direction
-        wall_data = self.walls[wall_name]
-        wall_position = wall_data["position"]
-
-        # Determine an appropriate distance to place the camera
-        offset = 1000  # Adjust distance from the wall
-
-        # Compute camera position based on wall orientation
-        rotation = wall_data["rotation"]
-        if rotation == (90, 0, 90):  # Wall facing along X-axis
-            camera_position = (
-                wall_position[0] - (offset/2),
-                wall_position[1] - offset,
-                wall_position[2] + offset,
-            )
-        elif rotation == (0, 90, 90):  # Wall facing along Y-axis
-            camera_position = (
-                wall_position[0] - (offset/2),
-                wall_position[1] - offset,
-                wall_position[2] + offset,
-            )
-        else:  # Default fallback
-            camera_position = (
-                wall_position[0],
-                wall_position[1],
-                wall_position[2] + offset,
-            )
-
-        # Create a new hidden camera
-        hidden_camera = vtk.vtkCamera()
-        hidden_camera.SetPosition(*camera_position)
-        hidden_camera.SetFocalPoint(*wall_position)  # Camera looks at the wall
-        hidden_camera.SetViewUp(0, 0, 1)  # Maintain an upright orientation
-
-        # Set the hidden camera as the active camera without adding an actor
-        self.ren.SetActiveCamera(hidden_camera)
-        self.ren.ResetCameraClippingRange()
-        self.renderwindowinteractor.GetRenderWindow().Render()
-
     # setup vtk frame ui
     def setupvtkframe(self):
         setcamerainteraction = [
@@ -274,7 +226,6 @@ class createMesh(QMainWindow):
         renderWindow.AddRenderer(self.ren)
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
-        self.addHiddenCamera(self.wallname)
 
     # fixed x y and z pos
     def fixedposition(self):

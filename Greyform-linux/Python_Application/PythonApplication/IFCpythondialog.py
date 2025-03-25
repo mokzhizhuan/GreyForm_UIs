@@ -19,8 +19,7 @@ import PythonApplication.excel_export_4sidesinfo as bim4sideinfo
 import PythonApplication.processloader as Thread
 import PythonApplication.processlistenerrunner as process
 import numpy as np
-import os
-
+import traceback
 
 # ifc loader
 class ProgressBarDialogIFC(QDialog):
@@ -45,9 +44,6 @@ class ProgressBarDialogIFC(QDialog):
         self.labelstatus = mainwindowforfileselection[8]
         self.scanprogressBar = mainwindowforfileselection[9]
         self.walllabel = mainwindowforfileselection[10]
-        self.listenerdialog = process.ListenerNodeRunner(
-            self.rosnode, self.ifc_file, self.labelstatus, self.stackedWidget
-        )
         self.spacing = "\n"
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFont(QFont("Arial", 30))
@@ -206,6 +202,9 @@ class ProgressBarDialogIFC(QDialog):
                 except Exception as e:
                     self.log_error(f"Error while processing IFC shapes: {e}")
                 self.convertStl(stl_data)
+                self.listenerdialog = process.ListenerNodeRunner(
+                    self.rosnode, self.stl_file, self.labelstatus, self.stackedWidget
+                )
                 self.buttonlocalize.clicked.connect(lambda: self.start_scan())
         except Exception as e:
             self.log_error(
@@ -238,7 +237,9 @@ class ProgressBarDialogIFC(QDialog):
                 self.loadexcel4sides()
             self.stlloader()
         except Exception as e:
-            self.log_error(f"Failed to load stlfile in the frame: {e}")
+            error_message = f"Failed to load stlfile in the vtkframe: {e}"
+            self.log_error(error_message)
+            print(traceback.format_exc())
 
 
     def get_wall_dimensions(self, wall):
@@ -296,7 +297,8 @@ class ProgressBarDialogIFC(QDialog):
             self.meshsplot = pv.read(self.stl_file)
             loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
         except Exception as e:
-            self.log_error(f"Failed to write STL file: {e}")
+            error_message = f"Failed to load stlfile in the frame: {e}"
+            self.log_error(error_message)
 
     def loadexcel(self):
         biminfo.Exportexcelinfo(
@@ -333,10 +335,12 @@ class ProgressBarDialogIFC(QDialog):
             self.stl_file,
             self.renderWindowInteractor,
             self.rosnode,
-            self.stl_file,
+            self.stl_file, 
             self.mainwindow,
             self.Stagelabel,
             self.walllabel,
             self.stackedWidget,
             self.listenerdialog,
         )
+    
+    

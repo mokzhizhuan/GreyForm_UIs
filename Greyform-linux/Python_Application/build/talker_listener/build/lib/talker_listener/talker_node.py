@@ -11,7 +11,7 @@ import numpy as np
 import sys
 import subprocess
 import PythonApplication.dialoglogger as logs
-
+from pathlib import Path
 
 # talker node
 class TalkerNode(Node):
@@ -42,13 +42,18 @@ class TalkerNode(Node):
     #talker file message implementation
     def publish_file_message(self, file_path, excel_filepath):
         try:
+            if isinstance(file_path, Path):
+                file_path = str(file_path)
             with open(file_path, "rb") as f:
                 stl_data = f.read()
             msg = FileExtractionMessage()
-            msg.stl_data = list(stl_data)  # Convert bytes to a list of uint8
+            msg.stl_data = list(stl_data)  
+            if isinstance(excel_filepath, Path):
+                excel_filepath = str(excel_filepath)
             msg.excelfile = excel_filepath
             self.file_publisher_.publish(msg)
         except Exception as e:
+            print(f"Error: {e}")
             self.errormessage += (
                 f"{self.spacing}Failed to publish file message: {e}"
             )
@@ -60,8 +65,8 @@ class TalkerNode(Node):
         try:
             msg = SelectionWall()
             msg.wallselection = str(wall_number)
-            msg.typeselection = f"{Stagelabel}"
-            msg.picked_position = picked_position
+            msg.typeselection = f"{str(Stagelabel)}"
+            msg.picked_position = list(picked_position) 
             self.selection_publisher_.publish(msg)
             if next_wall_number is not None:
                 self.message = f"The process has finished successfully! Please move in to Wall: {next_wall_number}"

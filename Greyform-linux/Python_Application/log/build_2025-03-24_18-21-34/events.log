@@ -1,0 +1,750 @@
+[0.000000] (-) TimerEvent: {}
+[0.013654] (my-test-package) JobQueued: {'identifier': 'my-test-package', 'dependencies': OrderedDict()}
+[0.013849] (my_package) JobQueued: {'identifier': 'my_package', 'dependencies': OrderedDict()}
+[0.013963] (my_robot_wallinterfaces) JobQueued: {'identifier': 'my_robot_wallinterfaces', 'dependencies': OrderedDict()}
+[0.014056] (talker_listener) JobQueued: {'identifier': 'talker_listener', 'dependencies': OrderedDict([('my_robot_wallinterfaces', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces')])}
+[0.029084] (my_robot_wallinterfaces) JobStarted: {'identifier': 'my_robot_wallinterfaces'}
+[0.103124] (-) TimerEvent: {}
+[0.219032] (-) TimerEvent: {}
+[0.240393] (my-test-package) JobStarted: {'identifier': 'my-test-package'}
+[0.319425] (-) TimerEvent: {}
+[0.335948] (my_package) JobStarted: {'identifier': 'my_package'}
+[0.425875] (-) TimerEvent: {}
+[0.470776] (my_robot_wallinterfaces) JobProgress: {'identifier': 'my_robot_wallinterfaces', 'progress': 'cmake'}
+[0.509555] (my_robot_wallinterfaces) JobProgress: {'identifier': 'my_robot_wallinterfaces', 'progress': 'build'}
+[0.519465] (my_robot_wallinterfaces) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces', '--', '-j8', '-l8'], 'cwd': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'ubuntu'), ('LC_TIME', 'id_ID.UTF-8'), ('FONTCONFIG_PATH', '/etc/fonts'), ('GIO_MODULE_DIR', '/home/ubuntu/snap/code/common/.cache/gio-modules'), ('XDG_SESSION_TYPE', 'wayland'), ('GIT_ASKPASS', '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('GTK_EXE_PREFIX_VSCODE_SNAP_ORIG', ''), ('GDK_BACKEND_VSCODE_SNAP_ORIG', ''), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/ubuntu'), ('CHROME_DESKTOP', 'code.desktop'), ('LOCPATH_VSCODE_SNAP_ORIG', ''), ('TERM_PROGRAM_VERSION', '1.98.0'), ('DESKTOP_SESSION', 'ubuntu'), ('GTK_PATH', '/snap/code/185/usr/lib/x86_64-linux-gnu/gtk-3.0'), ('XDG_DATA_HOME_VSCODE_SNAP_ORIG', ''), ('GTK_IM_MODULE_FILE', '/home/ubuntu/snap/code/common/.cache/immodules/immodules.cache'), ('GIO_LAUNCHED_DESKTOP_FILE', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('GSETTINGS_SCHEMA_DIR_VSCODE_SNAP_ORIG', ''), ('VSCODE_GIT_ASKPASS_MAIN', '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'id_ID.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/snap/code/185/usr/share/code/code'), ('MANAGERPID', '1609'), ('PYDEVD_DISABLE_FILE_VALIDATION', '1'), ('SYSTEMD_EXEC_PID', '2905'), ('BUNDLED_DEBUGPY_PATH', '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/libs/debugpy'), ('IM_CONFIG_CHECK_ENV', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '4196'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'ubuntu'), ('JOURNAL_STREAM', '8:30076'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_CONFIG_DIRS_VSCODE_SNAP_ORIG', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_SESSION_CLASS', 'user'), ('XDG_DATA_DIRS_VSCODE_SNAP_ORIG', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('USERNAME', 'ubuntu'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', ':/opt/ros/humble/share/turtlebot3_gazebo/models:/opt/ros/humble/share/turtlebot3_gazebo/models'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/ubuntu/.local/bin:/opt/ros/humble/bin:/home/ubuntu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/scripts/noConfigScripts'), ('SESSION_MANAGER', 'local/ubuntu-virtual-machine:@/tmp/.ICE-unix/2840,unix/ubuntu-virtual-machine:/tmp/.ICE-unix/2840'), ('GTK_EXE_PREFIX', '/snap/code/185/usr'), ('INVOCATION_ID', '29d817a46da94747a0c0986e74007192'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'id_ID.UTF-8'), ('BAMF_DESKTOP_FILE_HINT', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LOCPATH', '/snap/code/185/usr/lib/locale'), ('VSCODE_DEBUGPY_ADAPTER_ENDPOINTS', '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-5c4e4c73dc4993ee.txt'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'id_ID.UTF-8'), ('GIO_MODULE_DIR_VSCODE_SNAP_ORIG', ''), ('XDG_DATA_HOME', '/home/ubuntu/snap/code/185/.local/share'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.Y8FC42'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-93ae0fd6cc.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/ubuntu/snap/code/185/.local/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'id_ID.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GTK_PATH_VSCODE_SNAP_ORIG', ''), ('FONTCONFIG_FILE', '/etc/fonts/fonts.conf'), ('GTK_IM_MODULE_FILE_VSCODE_SNAP_ORIG', ''), ('LC_MEASUREMENT', 'id_ID.UTF-8'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('LC_IDENTIFICATION', 'id_ID.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces'), ('QT_QPA_PLATFORM', 'xcb'), ('TURTLEBOT3_MODEL', 'waffle'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/home/ubuntu/snap/code/185/.local/share:/home/ubuntu/snap/code/185:/snap/code/185/usr/share:/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application'), ('LC_NUMERIC', 'id_ID.UTF-8'), ('LC_PAPER', 'id_ID.UTF-8'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.572467] (-) TimerEvent: {}
+[0.681961] (-) TimerEvent: {}
+[0.799802] (-) TimerEvent: {}
+[0.903354] (-) TimerEvent: {}
+[1.004584] (-) TimerEvent: {}
+[1.110733] (-) TimerEvent: {}
+[1.211886] (-) TimerEvent: {}
+[1.318836] (-) TimerEvent: {}
+[1.421432] (-) TimerEvent: {}
+[1.531339] (-) TimerEvent: {}
+[1.639534] (-) TimerEvent: {}
+[1.750377] (-) TimerEvent: {}
+[1.854866] (-) TimerEvent: {}
+[1.958669] (-) TimerEvent: {}
+[2.067215] (-) TimerEvent: {}
+[2.175381] (-) TimerEvent: {}
+[2.279051] (-) TimerEvent: {}
+[2.391368] (-) TimerEvent: {}
+[2.506019] (-) TimerEvent: {}
+[2.612532] (-) TimerEvent: {}
+[2.716216] (-) TimerEvent: {}
+[2.817913] (-) TimerEvent: {}
+[2.920599] (-) TimerEvent: {}
+[3.024084] (-) TimerEvent: {}
+[3.128424] (-) TimerEvent: {}
+[3.233451] (-) TimerEvent: {}
+[3.334075] (-) TimerEvent: {}
+[3.435423] (-) TimerEvent: {}
+[3.543564] (-) TimerEvent: {}
+[3.646123] (-) TimerEvent: {}
+[3.747225] (-) TimerEvent: {}
+[3.855576] (-) TimerEvent: {}
+[3.959714] (-) TimerEvent: {}
+[4.060408] (-) TimerEvent: {}
+[4.161124] (-) TimerEvent: {}
+[4.266644] (-) TimerEvent: {}
+[4.373044] (-) TimerEvent: {}
+[4.475405] (-) TimerEvent: {}
+[4.581465] (-) TimerEvent: {}
+[4.684357] (-) TimerEvent: {}
+[4.785153] (-) TimerEvent: {}
+[4.893170] (-) TimerEvent: {}
+[4.995353] (-) TimerEvent: {}
+[5.096742] (-) TimerEvent: {}
+[5.199368] (-) TimerEvent: {}
+[5.305076] (-) TimerEvent: {}
+[5.435431] (-) TimerEvent: {}
+[5.552156] (-) TimerEvent: {}
+[5.653549] (-) TimerEvent: {}
+[5.754326] (-) TimerEvent: {}
+[5.855035] (-) TimerEvent: {}
+[5.958190] (-) TimerEvent: {}
+[6.067764] (-) TimerEvent: {}
+[6.173464] (-) TimerEvent: {}
+[6.278192] (-) TimerEvent: {}
+[6.379047] (-) TimerEvent: {}
+[6.482348] (-) TimerEvent: {}
+[6.583128] (-) TimerEvent: {}
+[6.684052] (-) TimerEvent: {}
+[6.787695] (-) TimerEvent: {}
+[6.889154] (-) TimerEvent: {}
+[6.990393] (-) TimerEvent: {}
+[7.094711] (-) TimerEvent: {}
+[7.199398] (-) TimerEvent: {}
+[7.300036] (-) TimerEvent: {}
+[7.402448] (-) TimerEvent: {}
+[7.411574] (my_robot_wallinterfaces) StdoutLine: {'line': b'[  2%] Built target my_robot_wallinterfaces__cpp\n'}
+[7.412603] (my_robot_wallinterfaces) StdoutLine: {'line': b'[  2%] Built target ament_cmake_python_copy_my_robot_wallinterfaces\n'}
+[7.413010] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 12%] Built target my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cpp\n'}
+[7.424990] (my_package) JobProgress: {'identifier': 'my_package', 'progress': 'cmake'}
+[7.447418] (my_package) JobProgress: {'identifier': 'my_package', 'progress': 'build'}
+[7.447660] (my_package) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package', '--', '-j8', '-l8'], 'cwd': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'ubuntu'), ('LC_TIME', 'id_ID.UTF-8'), ('FONTCONFIG_PATH', '/etc/fonts'), ('GIO_MODULE_DIR', '/home/ubuntu/snap/code/common/.cache/gio-modules'), ('XDG_SESSION_TYPE', 'wayland'), ('GIT_ASKPASS', '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('GTK_EXE_PREFIX_VSCODE_SNAP_ORIG', ''), ('GDK_BACKEND_VSCODE_SNAP_ORIG', ''), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/ubuntu'), ('CHROME_DESKTOP', 'code.desktop'), ('LOCPATH_VSCODE_SNAP_ORIG', ''), ('TERM_PROGRAM_VERSION', '1.98.0'), ('DESKTOP_SESSION', 'ubuntu'), ('GTK_PATH', '/snap/code/185/usr/lib/x86_64-linux-gnu/gtk-3.0'), ('XDG_DATA_HOME_VSCODE_SNAP_ORIG', ''), ('GTK_IM_MODULE_FILE', '/home/ubuntu/snap/code/common/.cache/immodules/immodules.cache'), ('GIO_LAUNCHED_DESKTOP_FILE', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('GSETTINGS_SCHEMA_DIR_VSCODE_SNAP_ORIG', ''), ('VSCODE_GIT_ASKPASS_MAIN', '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'id_ID.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/snap/code/185/usr/share/code/code'), ('MANAGERPID', '1609'), ('PYDEVD_DISABLE_FILE_VALIDATION', '1'), ('SYSTEMD_EXEC_PID', '2905'), ('BUNDLED_DEBUGPY_PATH', '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/libs/debugpy'), ('IM_CONFIG_CHECK_ENV', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '4196'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'ubuntu'), ('JOURNAL_STREAM', '8:30076'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_CONFIG_DIRS_VSCODE_SNAP_ORIG', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_SESSION_CLASS', 'user'), ('XDG_DATA_DIRS_VSCODE_SNAP_ORIG', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('USERNAME', 'ubuntu'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', ':/opt/ros/humble/share/turtlebot3_gazebo/models:/opt/ros/humble/share/turtlebot3_gazebo/models'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/ubuntu/.local/bin:/opt/ros/humble/bin:/home/ubuntu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/scripts/noConfigScripts'), ('SESSION_MANAGER', 'local/ubuntu-virtual-machine:@/tmp/.ICE-unix/2840,unix/ubuntu-virtual-machine:/tmp/.ICE-unix/2840'), ('GTK_EXE_PREFIX', '/snap/code/185/usr'), ('INVOCATION_ID', '29d817a46da94747a0c0986e74007192'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'id_ID.UTF-8'), ('BAMF_DESKTOP_FILE_HINT', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LOCPATH', '/snap/code/185/usr/lib/locale'), ('VSCODE_DEBUGPY_ADAPTER_ENDPOINTS', '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-5c4e4c73dc4993ee.txt'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'id_ID.UTF-8'), ('GIO_MODULE_DIR_VSCODE_SNAP_ORIG', ''), ('XDG_DATA_HOME', '/home/ubuntu/snap/code/185/.local/share'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.Y8FC42'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-93ae0fd6cc.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/ubuntu/snap/code/185/.local/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'id_ID.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GTK_PATH_VSCODE_SNAP_ORIG', ''), ('FONTCONFIG_FILE', '/etc/fonts/fonts.conf'), ('GTK_IM_MODULE_FILE_VSCODE_SNAP_ORIG', ''), ('LC_MEASUREMENT', 'id_ID.UTF-8'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('LC_IDENTIFICATION', 'id_ID.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package'), ('QT_QPA_PLATFORM', 'xcb'), ('TURTLEBOT3_MODEL', 'waffle'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/home/ubuntu/snap/code/185/.local/share:/home/ubuntu/snap/code/185:/snap/code/185/usr/share:/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application'), ('LC_NUMERIC', 'id_ID.UTF-8'), ('LC_PAPER', 'id_ID.UTF-8'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[7.506307] (-) TimerEvent: {}
+[7.610478] (-) TimerEvent: {}
+[7.715960] (-) TimerEvent: {}
+[7.819077] (-) TimerEvent: {}
+[7.925531] (-) TimerEvent: {}
+[8.028078] (-) TimerEvent: {}
+[8.137823] (-) TimerEvent: {}
+[8.242388] (-) TimerEvent: {}
+[8.347390] (-) TimerEvent: {}
+[8.448130] (-) TimerEvent: {}
+[8.550419] (-) TimerEvent: {}
+[8.658099] (-) TimerEvent: {}
+[8.704568] (my_package) CommandEnded: {'returncode': 0}
+[8.771681] (-) TimerEvent: {}
+[8.874880] (-) TimerEvent: {}
+[8.981673] (-) TimerEvent: {}
+[9.082666] (-) TimerEvent: {}
+[9.127911] (my_package) JobProgress: {'identifier': 'my_package', 'progress': 'install'}
+[9.213849] (-) TimerEvent: {}
+[9.249612] (my_package) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package'], 'cwd': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'ubuntu'), ('LC_TIME', 'id_ID.UTF-8'), ('FONTCONFIG_PATH', '/etc/fonts'), ('GIO_MODULE_DIR', '/home/ubuntu/snap/code/common/.cache/gio-modules'), ('XDG_SESSION_TYPE', 'wayland'), ('GIT_ASKPASS', '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('GTK_EXE_PREFIX_VSCODE_SNAP_ORIG', ''), ('GDK_BACKEND_VSCODE_SNAP_ORIG', ''), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/ubuntu'), ('CHROME_DESKTOP', 'code.desktop'), ('LOCPATH_VSCODE_SNAP_ORIG', ''), ('TERM_PROGRAM_VERSION', '1.98.0'), ('DESKTOP_SESSION', 'ubuntu'), ('GTK_PATH', '/snap/code/185/usr/lib/x86_64-linux-gnu/gtk-3.0'), ('XDG_DATA_HOME_VSCODE_SNAP_ORIG', ''), ('GTK_IM_MODULE_FILE', '/home/ubuntu/snap/code/common/.cache/immodules/immodules.cache'), ('GIO_LAUNCHED_DESKTOP_FILE', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('GSETTINGS_SCHEMA_DIR_VSCODE_SNAP_ORIG', ''), ('VSCODE_GIT_ASKPASS_MAIN', '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'id_ID.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/snap/code/185/usr/share/code/code'), ('MANAGERPID', '1609'), ('PYDEVD_DISABLE_FILE_VALIDATION', '1'), ('SYSTEMD_EXEC_PID', '2905'), ('BUNDLED_DEBUGPY_PATH', '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/libs/debugpy'), ('IM_CONFIG_CHECK_ENV', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '4196'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'ubuntu'), ('JOURNAL_STREAM', '8:30076'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_CONFIG_DIRS_VSCODE_SNAP_ORIG', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_SESSION_CLASS', 'user'), ('XDG_DATA_DIRS_VSCODE_SNAP_ORIG', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('USERNAME', 'ubuntu'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', ':/opt/ros/humble/share/turtlebot3_gazebo/models:/opt/ros/humble/share/turtlebot3_gazebo/models'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/ubuntu/.local/bin:/opt/ros/humble/bin:/home/ubuntu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/scripts/noConfigScripts'), ('SESSION_MANAGER', 'local/ubuntu-virtual-machine:@/tmp/.ICE-unix/2840,unix/ubuntu-virtual-machine:/tmp/.ICE-unix/2840'), ('GTK_EXE_PREFIX', '/snap/code/185/usr'), ('INVOCATION_ID', '29d817a46da94747a0c0986e74007192'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'id_ID.UTF-8'), ('BAMF_DESKTOP_FILE_HINT', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LOCPATH', '/snap/code/185/usr/lib/locale'), ('VSCODE_DEBUGPY_ADAPTER_ENDPOINTS', '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-5c4e4c73dc4993ee.txt'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'id_ID.UTF-8'), ('GIO_MODULE_DIR_VSCODE_SNAP_ORIG', ''), ('XDG_DATA_HOME', '/home/ubuntu/snap/code/185/.local/share'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.Y8FC42'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-93ae0fd6cc.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/ubuntu/snap/code/185/.local/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'id_ID.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GTK_PATH_VSCODE_SNAP_ORIG', ''), ('FONTCONFIG_FILE', '/etc/fonts/fonts.conf'), ('GTK_IM_MODULE_FILE_VSCODE_SNAP_ORIG', ''), ('LC_MEASUREMENT', 'id_ID.UTF-8'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('LC_IDENTIFICATION', 'id_ID.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package'), ('QT_QPA_PLATFORM', 'xcb'), ('TURTLEBOT3_MODEL', 'waffle'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/home/ubuntu/snap/code/185/.local/share:/home/ubuntu/snap/code/185:/snap/code/185/usr/share:/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application'), ('LC_NUMERIC', 'id_ID.UTF-8'), ('LC_PAPER', 'id_ID.UTF-8'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[9.314040] (-) TimerEvent: {}
+[9.426147] (-) TimerEvent: {}
+[9.499920] (my_package) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[9.506160] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/ament_index/resource_index/package_run_dependencies/my_package\n'}
+[9.507154] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/ament_index/resource_index/parent_prefix_path/my_package\n'}
+[9.515615] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/ament_prefix_path.sh\n'}
+[9.516131] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/ament_prefix_path.dsv\n'}
+[9.516493] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/path.sh\n'}
+[9.516839] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/path.dsv\n'}
+[9.517120] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.bash\n'}
+[9.529946] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.sh\n'}
+[9.530494] (-) TimerEvent: {}
+[9.530881] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.zsh\n'}
+[9.531155] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.dsv\n'}
+[9.531457] (my_package) StdoutLine: {'line': b'-- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.dsv\n'}
+[9.555802] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/ament_index/resource_index/packages/my_package\n'}
+[9.556221] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/cmake/my_packageConfig.cmake\n'}
+[9.556514] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/cmake/my_packageConfig-version.cmake\n'}
+[9.556815] (my_package) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.xml\n'}
+[9.576613] (my_package) CommandEnded: {'returncode': 0}
+[9.626463] (my_robot_wallinterfaces) StdoutLine: {'line': b'running egg_info\n'}
+[9.635661] (-) TimerEvent: {}
+[9.640665] (my_robot_wallinterfaces) StdoutLine: {'line': b'writing my_robot_wallinterfaces.egg-info/PKG-INFO\n'}
+[9.644718] (my_robot_wallinterfaces) StdoutLine: {'line': b'writing dependency_links to my_robot_wallinterfaces.egg-info/dependency_links.txt\n'}
+[9.658796] (my_robot_wallinterfaces) StdoutLine: {'line': b'writing top-level names to my_robot_wallinterfaces.egg-info/top_level.txt\n'}
+[9.700471] (my_robot_wallinterfaces) StdoutLine: {'line': b"reading manifest file 'my_robot_wallinterfaces.egg-info/SOURCES.txt'\n"}
+[9.747647] (my_robot_wallinterfaces) StdoutLine: {'line': b"writing manifest file 'my_robot_wallinterfaces.egg-info/SOURCES.txt'\n"}
+[9.748046] (-) TimerEvent: {}
+[9.853320] (-) TimerEvent: {}
+[9.954044] (-) TimerEvent: {}
+[10.055584] (-) TimerEvent: {}
+[10.173067] (-) TimerEvent: {}
+[10.274338] (-) TimerEvent: {}
+[10.375641] (-) TimerEvent: {}
+[10.476530] (-) TimerEvent: {}
+[10.584389] (-) TimerEvent: {}
+[10.638849] (my_package) JobEnded: {'identifier': 'my_package', 'rc': 0}
+[10.697790] (-) TimerEvent: {}
+[10.737455] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 12%] Built target ament_cmake_python_build_my_robot_wallinterfaces_egg\n'}
+[10.797974] (-) TimerEvent: {}
+[10.901160] (-) TimerEvent: {}
+[11.009512] (-) TimerEvent: {}
+[11.112089] (-) TimerEvent: {}
+[11.213721] (-) TimerEvent: {}
+[11.317475] (-) TimerEvent: {}
+[11.418593] (-) TimerEvent: {}
+[11.479797] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 23%] Built target my_robot_wallinterfaces__rosidl_typesupport_cpp\n'}
+[11.519718] (-) TimerEvent: {}
+[11.624999] (-) TimerEvent: {}
+[11.748560] (-) TimerEvent: {}
+[11.860594] (-) TimerEvent: {}
+[11.961543] (-) TimerEvent: {}
+[12.065133] (-) TimerEvent: {}
+[12.095876] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 34%] Built target my_robot_wallinterfaces__rosidl_typesupport_introspection_cpp\n'}
+[12.168391] (-) TimerEvent: {}
+[12.272596] (-) TimerEvent: {}
+[12.379174] (-) TimerEvent: {}
+[12.431438] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 44%] Built target my_robot_wallinterfaces__rosidl_generator_c\n'}
+[12.479727] (-) TimerEvent: {}
+[12.585174] (-) TimerEvent: {}
+[12.691877] (-) TimerEvent: {}
+[12.792685] (-) TimerEvent: {}
+[12.889358] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 55%] Built target my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c\n'}
+[12.894002] (-) TimerEvent: {}
+[12.999771] (-) TimerEvent: {}
+[13.105383] (-) TimerEvent: {}
+[13.214405] (-) TimerEvent: {}
+[13.319876] (-) TimerEvent: {}
+[13.424382] (-) TimerEvent: {}
+[13.488482] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 65%] Built target my_robot_wallinterfaces__rosidl_typesupport_c\n'}
+[13.532355] (-) TimerEvent: {}
+[13.640163] (-) TimerEvent: {}
+[13.740842] (-) TimerEvent: {}
+[13.843666] (-) TimerEvent: {}
+[13.947100] (-) TimerEvent: {}
+[14.050746] (-) TimerEvent: {}
+[14.157493] (-) TimerEvent: {}
+[14.172156] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 76%] Built target my_robot_wallinterfaces__rosidl_typesupport_introspection_c\n'}
+[14.259404] (-) TimerEvent: {}
+[14.361643] (-) TimerEvent: {}
+[14.471191] (-) TimerEvent: {}
+[14.574406] (-) TimerEvent: {}
+[14.670962] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 76%] Built target my_robot_wallinterfaces\n'}
+[14.674816] (-) TimerEvent: {}
+[14.779354] (-) TimerEvent: {}
+[14.879986] (-) TimerEvent: {}
+[14.988481] (-) TimerEvent: {}
+[15.092657] (-) TimerEvent: {}
+[15.197208] (-) TimerEvent: {}
+[15.269463] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 78%] Built target my_robot_wallinterfaces__py\n'}
+[15.297351] (-) TimerEvent: {}
+[15.399661] (-) TimerEvent: {}
+[15.504439] (-) TimerEvent: {}
+[15.612378] (-) TimerEvent: {}
+[15.715767] (-) TimerEvent: {}
+[15.778979] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 87%] Built target my_robot_wallinterfaces__rosidl_generator_py\n'}
+[15.815942] (-) TimerEvent: {}
+[15.945408] (-) TimerEvent: {}
+[16.051386] (-) TimerEvent: {}
+[16.159863] (-) TimerEvent: {}
+[16.226396] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 91%] Built target my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c__pyext\n'}
+[16.261067] (-) TimerEvent: {}
+[16.373375] (-) TimerEvent: {}
+[16.474445] (-) TimerEvent: {}
+[16.579361] (-) TimerEvent: {}
+[16.626985] (my-test-package) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'egg_info', '--egg-base', '../../../../../../../../build/my-test-package', 'build', '--build-base', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/build', 'install', '--record', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/install.log', '--single-version-externally-managed'], 'cwd': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/env/lib/python3.10/site-packages/pkg_resources/tests/data/my-test-package-source', 'env': {'GJS_DEBUG_TOPICS': 'JS ERROR;JS LOG', 'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'ubuntu', 'LC_TIME': 'id_ID.UTF-8', 'FONTCONFIG_PATH': '/etc/fonts', 'GIO_MODULE_DIR': '/home/ubuntu/snap/code/common/.cache/gio-modules', 'XDG_SESSION_TYPE': 'wayland', 'GIT_ASKPASS': '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass.sh', 'GTK_EXE_PREFIX_VSCODE_SNAP_ORIG': '', 'GDK_BACKEND_VSCODE_SNAP_ORIG': '', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib', 'HOME': '/home/ubuntu', 'CHROME_DESKTOP': 'code.desktop', 'LOCPATH_VSCODE_SNAP_ORIG': '', 'TERM_PROGRAM_VERSION': '1.98.0', 'DESKTOP_SESSION': 'ubuntu', 'GTK_PATH': '/snap/code/185/usr/lib/x86_64-linux-gnu/gtk-3.0', 'XDG_DATA_HOME_VSCODE_SNAP_ORIG': '', 'GTK_IM_MODULE_FILE': '/home/ubuntu/snap/code/common/.cache/immodules/immodules.cache', 'GIO_LAUNCHED_DESKTOP_FILE': '/var/lib/snapd/desktop/applications/code_code.desktop', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'GSETTINGS_SCHEMA_DIR_VSCODE_SNAP_ORIG': '', 'VSCODE_GIT_ASKPASS_MAIN': '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass-main.js', 'LC_MONETARY': 'id_ID.UTF-8', 'VSCODE_GIT_ASKPASS_NODE': '/snap/code/185/usr/share/code/code', 'MANAGERPID': '1609', 'PYDEVD_DISABLE_FILE_VALIDATION': '1', 'SYSTEMD_EXEC_PID': '2905', 'BUNDLED_DEBUGPY_PATH': '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/libs/debugpy', 'IM_CONFIG_CHECK_ENV': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'COLORTERM': 'truecolor', 'GIO_LAUNCHED_DESKTOP_FILE_PID': '4196', 'IM_CONFIG_PHASE': '1', 'WAYLAND_DISPLAY': 'wayland-0', 'ROS_DISTRO': 'humble', 'LOGNAME': 'ubuntu', 'JOURNAL_STREAM': '8:30076', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'XDG_CONFIG_DIRS_VSCODE_SNAP_ORIG': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_SESSION_CLASS': 'user', 'XDG_DATA_DIRS_VSCODE_SNAP_ORIG': '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'USERNAME': 'ubuntu', 'TERM': 'xterm-256color', 'GAZEBO_MODEL_PATH': ':/opt/ros/humble/share/turtlebot3_gazebo/models:/opt/ros/humble/share/turtlebot3_gazebo/models', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_LOCALHOST_ONLY': '0', 'PATH': '/home/ubuntu/.local/bin:/opt/ros/humble/bin:/home/ubuntu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/scripts/noConfigScripts', 'SESSION_MANAGER': 'local/ubuntu-virtual-machine:@/tmp/.ICE-unix/2840,unix/ubuntu-virtual-machine:/tmp/.ICE-unix/2840', 'GTK_EXE_PREFIX': '/snap/code/185/usr', 'INVOCATION_ID': '29d817a46da94747a0c0986e74007192', 'XDG_MENU_PREFIX': 'gnome-', 'LC_ADDRESS': 'id_ID.UTF-8', 'BAMF_DESKTOP_FILE_HINT': '/var/lib/snapd/desktop/applications/code_code.desktop', 'GNOME_SETUP_DISPLAY': ':1', 'XDG_RUNTIME_DIR': '/run/user/1000', 'GDK_BACKEND': 'x11', 'DISPLAY': ':0', 'LOCPATH': '/snap/code/185/usr/lib/locale', 'VSCODE_DEBUGPY_ADAPTER_ENDPOINTS': '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-5c4e4c73dc4993ee.txt', 'LANG': 'en_US.UTF-8', 'XDG_CURRENT_DESKTOP': 'Unity', 'LC_TELEPHONE': 'id_ID.UTF-8', 'GIO_MODULE_DIR_VSCODE_SNAP_ORIG': '', 'XDG_DATA_HOME': '/home/ubuntu/snap/code/185/.local/share', 'XMODIFIERS': '@im=ibus', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XAUTHORITY': '/run/user/1000/.mutter-Xwaylandauth.Y8FC42', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:', 'VSCODE_GIT_IPC_HANDLE': '/run/user/1000/vscode-git-93ae0fd6cc.sock', 'TERM_PROGRAM': 'vscode', 'SSH_AGENT_LAUNCHER': 'gnome-keyring', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'GSETTINGS_SCHEMA_DIR': '/home/ubuntu/snap/code/185/.local/share/glib-2.0/schemas', 'AMENT_PREFIX_PATH': '/opt/ros/humble', 'ORIGINAL_XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'SHELL': '/bin/bash', 'LC_NAME': 'id_ID.UTF-8', 'QT_ACCESSIBILITY': '1', 'GDMSESSION': 'ubuntu', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'GTK_PATH_VSCODE_SNAP_ORIG': '', 'FONTCONFIG_FILE': '/etc/fonts/fonts.conf', 'GTK_IM_MODULE_FILE_VSCODE_SNAP_ORIG': '', 'LC_MEASUREMENT': 'id_ID.UTF-8', 'GJS_DEBUG_OUTPUT': 'stderr', 'LC_IDENTIFICATION': 'id_ID.UTF-8', 'VSCODE_GIT_ASKPASS_EXTRA_ARGS': '', 'QT_IM_MODULE': 'ibus', 'PWD': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package', 'QT_QPA_PLATFORM': 'xcb', 'TURTLEBOT3_MODEL': 'waffle', 'LC_ALL': 'en_US.UTF-8', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/home/ubuntu/snap/code/185/.local/share:/home/ubuntu/snap/code/185:/snap/code/185/usr/share:/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application', 'LC_NUMERIC': 'id_ID.UTF-8', 'LC_PAPER': 'id_ID.UTF-8', 'COLCON': '1'}, 'shell': False}
+[16.688020] (-) TimerEvent: {}
+[16.795677] (-) TimerEvent: {}
+[16.914199] (-) TimerEvent: {}
+[17.015612] (-) TimerEvent: {}
+[17.018525] (my_robot_wallinterfaces) StdoutLine: {'line': b'[ 95%] Built target my_robot_wallinterfaces__rosidl_typesupport_c__pyext\n'}
+[17.116949] (-) TimerEvent: {}
+[17.218424] (-) TimerEvent: {}
+[17.323380] (-) TimerEvent: {}
+[17.426386] (-) TimerEvent: {}
+[17.522006] (my_robot_wallinterfaces) StdoutLine: {'line': b'[100%] Built target my_robot_wallinterfaces__rosidl_typesupport_introspection_c__pyext\n'}
+[17.526762] (-) TimerEvent: {}
+[17.640166] (-) TimerEvent: {}
+[17.743997] (-) TimerEvent: {}
+[17.849383] (-) TimerEvent: {}
+[17.950445] (my_robot_wallinterfaces) CommandEnded: {'returncode': 0}
+[17.952148] (-) TimerEvent: {}
+[18.055470] (-) TimerEvent: {}
+[18.156576] (-) TimerEvent: {}
+[18.258068] (-) TimerEvent: {}
+[18.362600] (-) TimerEvent: {}
+[18.466559] (-) TimerEvent: {}
+[18.567501] (-) TimerEvent: {}
+[18.674024] (-) TimerEvent: {}
+[18.777755] (-) TimerEvent: {}
+[18.878488] (-) TimerEvent: {}
+[18.985006] (-) TimerEvent: {}
+[19.091148] (-) TimerEvent: {}
+[19.195355] (-) TimerEvent: {}
+[19.298358] (-) TimerEvent: {}
+[19.399713] (-) TimerEvent: {}
+[19.505061] (-) TimerEvent: {}
+[19.605844] (-) TimerEvent: {}
+[19.710589] (-) TimerEvent: {}
+[19.811619] (-) TimerEvent: {}
+[19.918872] (-) TimerEvent: {}
+[20.025581] (-) TimerEvent: {}
+[20.128972] (-) TimerEvent: {}
+[20.229706] (-) TimerEvent: {}
+[20.335022] (-) TimerEvent: {}
+[20.443132] (-) TimerEvent: {}
+[20.549812] (-) TimerEvent: {}
+[20.652594] (-) TimerEvent: {}
+[20.778896] (-) TimerEvent: {}
+[20.882689] (-) TimerEvent: {}
+[20.987048] (-) TimerEvent: {}
+[21.094740] (my_robot_wallinterfaces) JobProgress: {'identifier': 'my_robot_wallinterfaces', 'progress': 'install'}
+[21.095014] (-) TimerEvent: {}
+[21.115125] (my_robot_wallinterfaces) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces'], 'cwd': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces', 'env': OrderedDict([('GJS_DEBUG_TOPICS', 'JS ERROR;JS LOG'), ('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'ubuntu'), ('LC_TIME', 'id_ID.UTF-8'), ('FONTCONFIG_PATH', '/etc/fonts'), ('GIO_MODULE_DIR', '/home/ubuntu/snap/code/common/.cache/gio-modules'), ('XDG_SESSION_TYPE', 'wayland'), ('GIT_ASKPASS', '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('GTK_EXE_PREFIX_VSCODE_SNAP_ORIG', ''), ('GDK_BACKEND_VSCODE_SNAP_ORIG', ''), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/home/ubuntu'), ('CHROME_DESKTOP', 'code.desktop'), ('LOCPATH_VSCODE_SNAP_ORIG', ''), ('TERM_PROGRAM_VERSION', '1.98.0'), ('DESKTOP_SESSION', 'ubuntu'), ('GTK_PATH', '/snap/code/185/usr/lib/x86_64-linux-gnu/gtk-3.0'), ('XDG_DATA_HOME_VSCODE_SNAP_ORIG', ''), ('GTK_IM_MODULE_FILE', '/home/ubuntu/snap/code/common/.cache/immodules/immodules.cache'), ('GIO_LAUNCHED_DESKTOP_FILE', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('GSETTINGS_SCHEMA_DIR_VSCODE_SNAP_ORIG', ''), ('VSCODE_GIT_ASKPASS_MAIN', '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('LC_MONETARY', 'id_ID.UTF-8'), ('VSCODE_GIT_ASKPASS_NODE', '/snap/code/185/usr/share/code/code'), ('MANAGERPID', '1609'), ('PYDEVD_DISABLE_FILE_VALIDATION', '1'), ('SYSTEMD_EXEC_PID', '2905'), ('BUNDLED_DEBUGPY_PATH', '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/libs/debugpy'), ('IM_CONFIG_CHECK_ENV', '1'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('GIO_LAUNCHED_DESKTOP_FILE_PID', '4196'), ('IM_CONFIG_PHASE', '1'), ('WAYLAND_DISPLAY', 'wayland-0'), ('ROS_DISTRO', 'humble'), ('LOGNAME', 'ubuntu'), ('JOURNAL_STREAM', '8:30076'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_CONFIG_DIRS_VSCODE_SNAP_ORIG', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_SESSION_CLASS', 'user'), ('XDG_DATA_DIRS_VSCODE_SNAP_ORIG', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('USERNAME', 'ubuntu'), ('TERM', 'xterm-256color'), ('GAZEBO_MODEL_PATH', ':/opt/ros/humble/share/turtlebot3_gazebo/models:/opt/ros/humble/share/turtlebot3_gazebo/models'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('PATH', '/home/ubuntu/.local/bin:/opt/ros/humble/bin:/home/ubuntu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/scripts/noConfigScripts'), ('SESSION_MANAGER', 'local/ubuntu-virtual-machine:@/tmp/.ICE-unix/2840,unix/ubuntu-virtual-machine:/tmp/.ICE-unix/2840'), ('GTK_EXE_PREFIX', '/snap/code/185/usr'), ('INVOCATION_ID', '29d817a46da94747a0c0986e74007192'), ('XDG_MENU_PREFIX', 'gnome-'), ('LC_ADDRESS', 'id_ID.UTF-8'), ('BAMF_DESKTOP_FILE_HINT', '/var/lib/snapd/desktop/applications/code_code.desktop'), ('GNOME_SETUP_DISPLAY', ':1'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LOCPATH', '/snap/code/185/usr/lib/locale'), ('VSCODE_DEBUGPY_ADAPTER_ENDPOINTS', '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-5c4e4c73dc4993ee.txt'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('LC_TELEPHONE', 'id_ID.UTF-8'), ('GIO_MODULE_DIR_VSCODE_SNAP_ORIG', ''), ('XDG_DATA_HOME', '/home/ubuntu/snap/code/185/.local/share'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/.mutter-Xwaylandauth.Y8FC42'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-93ae0fd6cc.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AGENT_LAUNCHER', 'gnome-keyring'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/ubuntu/snap/code/185/.local/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('LC_NAME', 'id_ID.UTF-8'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GTK_PATH_VSCODE_SNAP_ORIG', ''), ('FONTCONFIG_FILE', '/etc/fonts/fonts.conf'), ('GTK_IM_MODULE_FILE_VSCODE_SNAP_ORIG', ''), ('LC_MEASUREMENT', 'id_ID.UTF-8'), ('GJS_DEBUG_OUTPUT', 'stderr'), ('LC_IDENTIFICATION', 'id_ID.UTF-8'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces'), ('QT_QPA_PLATFORM', 'xcb'), ('TURTLEBOT3_MODEL', 'waffle'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/home/ubuntu/snap/code/185/.local/share:/home/ubuntu/snap/code/185:/snap/code/185/usr/share:/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application'), ('LC_NUMERIC', 'id_ID.UTF-8'), ('LC_PAPER', 'id_ID.UTF-8'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[21.175740] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[21.176321] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/ament_index/resource_index/rosidl_interfaces/my_robot_wallinterfaces\n'}
+[21.178577] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces\n'}
+[21.191109] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv\n'}
+[21.195384] (-) TimerEvent: {}
+[21.200518] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail\n'}
+[21.201534] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__type_support.h\n'}
+[21.202137] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__struct.h\n'}
+[21.218820] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__functions.c\n'}
+[21.219284] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__functions.h\n'}
+[21.219592] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/set_led.h\n'}
+[21.220028] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg\n'}
+[21.220368] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail\n'}
+[21.220623] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__functions.h\n'}
+[21.220894] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support.h\n'}
+[21.221751] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__struct.h\n'}
+[21.233413] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__functions.c\n'}
+[21.235041] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__functions.h\n'}
+[21.235480] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__type_support.h\n'}
+[21.236088] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__functions.c\n'}
+[21.249833] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__struct.h\n'}
+[21.250336] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/file_extraction_message.h\n'}
+[21.250735] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/rosidl_generator_c__visibility_control.h\n'}
+[21.251096] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/selection_wall.h\n'}
+[21.251920] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/library_path.sh\n'}
+[21.260490] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/library_path.dsv\n'}
+[21.266629] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_generator_c.so\n'}
+[21.267303] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces\n'}
+[21.267843] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv\n'}
+[21.276744] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail\n'}
+[21.277177] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__rosidl_typesupport_fastrtps_c.h\n'}
+[21.277564] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg\n'}
+[21.278060] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail\n'}
+[21.278418] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__rosidl_typesupport_fastrtps_c.h\n'}
+[21.278713] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__rosidl_typesupport_fastrtps_c.h\n'}
+[21.279005] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/rosidl_typesupport_fastrtps_c__visibility_control.h\n'}
+[21.279313] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_fastrtps_c.so\n'}
+[21.279970] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces\n'}
+[21.299863] (-) TimerEvent: {}
+[21.300570] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv\n'}
+[21.301020] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail\n'}
+[21.301438] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__rosidl_typesupport_introspection_c.h\n'}
+[21.301918] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__type_support.c\n'}
+[21.302213] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg\n'}
+[21.302998] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail\n'}
+[21.318678] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__rosidl_typesupport_introspection_c.h\n'}
+[21.319002] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__rosidl_typesupport_introspection_c.h\n'}
+[21.320175] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support.c\n'}
+[21.326173] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__type_support.c\n'}
+[21.334468] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/rosidl_typesupport_introspection_c__visibility_control.h\n'}
+[21.334716] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_introspection_c.so\n'}
+[21.334922] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_c.so\n'}
+[21.335157] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces\n'}
+[21.335394] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv\n'}
+[21.335596] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail\n'}
+[21.349002] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__builder.hpp\n'}
+[21.349460] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__struct.hpp\n'}
+[21.349770] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__type_support.hpp\n'}
+[21.356904] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__traits.hpp\n'}
+[21.357322] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/set_led.hpp\n'}
+[21.357638] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg\n'}
+[21.358013] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/rosidl_generator_cpp__visibility_control.hpp\n'}
+[21.363364] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/file_extraction_message.hpp\n'}
+[21.363714] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail\n'}
+[21.363966] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__builder.hpp\n'}
+[21.364629] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__struct.hpp\n'}
+[21.364935] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__struct.hpp\n'}
+[21.365444] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__traits.hpp\n'}
+[21.365940] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__builder.hpp\n'}
+[21.376182] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support.hpp\n'}
+[21.376583] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__traits.hpp\n'}
+[21.376863] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__type_support.hpp\n'}
+[21.377540] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/selection_wall.hpp\n'}
+[21.378265] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces\n'}
+[21.378847] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv\n'}
+[21.384821] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail\n'}
+[21.385314] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/dds_fastrtps\n'}
+[21.385734] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[21.386295] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg\n'}
+[21.386596] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail\n'}
+[21.386846] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[21.387098] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/dds_fastrtps\n'}
+[21.387374] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[21.387659] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h\n'}
+[21.387891] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_fastrtps_cpp.so\n'}
+[21.388220] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces\n'}
+[21.408161] (-) TimerEvent: {}
+[21.414264] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv\n'}
+[21.419940] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail\n'}
+[21.434394] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__type_support.cpp\n'}
+[21.435069] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__rosidl_typesupport_introspection_cpp.hpp\n'}
+[21.435744] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg\n'}
+[21.436329] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail\n'}
+[21.436868] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__rosidl_typesupport_introspection_cpp.hpp\n'}
+[21.455802] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support.cpp\n'}
+[21.456990] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__type_support.cpp\n'}
+[21.457389] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__rosidl_typesupport_introspection_cpp.hpp\n'}
+[21.457718] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_introspection_cpp.so\n'}
+[21.458187] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_cpp.so\n'}
+[21.458536] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/pythonpath.sh\n'}
+[21.458864] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/pythonpath.dsv\n'}
+[21.459205] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces-0.0.0-py3.10.egg-info\n'}
+[21.479851] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces-0.0.0-py3.10.egg-info/dependency_links.txt\n'}
+[21.480162] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces-0.0.0-py3.10.egg-info/SOURCES.txt\n'}
+[21.480545] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces-0.0.0-py3.10.egg-info/PKG-INFO\n'}
+[21.480922] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces-0.0.0-py3.10.egg-info/top_level.txt\n'}
+[21.481183] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces\n'}
+[21.481574] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/__init__.py\n'}
+[21.481803] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[21.482050] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/libmy_robot_wallinterfaces__rosidl_generator_py.so\n'}
+[21.505815] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[21.520819] (-) TimerEvent: {}
+[21.524712] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/srv\n'}
+[21.525414] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/srv/__init__.py\n'}
+[21.525941] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/srv/_set_led.py\n'}
+[21.564621] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/srv/_set_led_s.c\n'}
+[21.566751] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_fastrtps_c.c\n'}
+[21.570042] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[21.570616] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg\n'}
+[21.570952] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg/__init__.py\n'}
+[21.599861] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg/_selection_wall.py\n'}
+[21.600545] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg/_selection_wall_s.c\n'}
+[21.622774] (-) TimerEvent: {}
+[21.623222] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg/_file_extraction_message_s.c\n'}
+[21.624507] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg/_file_extraction_message.py\n'}
+[21.634657] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_introspection_c.c\n'}
+[21.634974] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_c.c\n'}
+[21.727212] (-) TimerEvent: {}
+[21.834957] (-) TimerEvent: {}
+[21.943395] (-) TimerEvent: {}
+[22.052456] (-) TimerEvent: {}
+[22.160548] (-) TimerEvent: {}
+[22.263386] (-) TimerEvent: {}
+[22.353634] (my_robot_wallinterfaces) StdoutLine: {'line': b"Listing '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces'...\n"}
+[22.354282] (my_robot_wallinterfaces) StdoutLine: {'line': b"Listing '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg'...\n"}
+[22.354659] (my_robot_wallinterfaces) StdoutLine: {'line': b"Listing '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/srv'...\n"}
+[22.367159] (-) TimerEvent: {}
+[22.423762] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[22.424595] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[22.424957] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[22.425887] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_generator_py.so\n'}
+[22.432050] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/msg/FileExtractionMessage.idl\n'}
+[22.434470] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/msg/SelectionWall.idl\n'}
+[22.435618] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/srv/SetLed.idl\n'}
+[22.436182] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/msg/FileExtractionMessage.msg\n'}
+[22.436746] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/msg/SelectionWall.msg\n'}
+[22.441687] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/srv/SetLed.srv\n'}
+[22.443926] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/srv/SetLed_Request.msg\n'}
+[22.450098] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/srv/SetLed_Response.msg\n'}
+[22.450564] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/ament_index/resource_index/package_run_dependencies/my_robot_wallinterfaces\n'}
+[22.450851] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/ament_index/resource_index/parent_prefix_path/my_robot_wallinterfaces\n'}
+[22.451203] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/ament_prefix_path.sh\n'}
+[22.451751] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/ament_prefix_path.dsv\n'}
+[22.452066] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/path.sh\n'}
+[22.452666] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/path.dsv\n'}
+[22.452912] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/local_setup.bash\n'}
+[22.453522] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/local_setup.sh\n'}
+[22.454207] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/local_setup.zsh\n'}
+[22.454605] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/local_setup.dsv\n'}
+[22.454909] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.dsv\n'}
+[22.455291] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/ament_index/resource_index/packages/my_robot_wallinterfaces\n'}
+[22.456812] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_generator_cExport.cmake\n'}
+[22.462785] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_generator_cExport-noconfig.cmake\n'}
+[22.466543] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cExport.cmake\n'}
+[22.467387] (-) TimerEvent: {}
+[22.469797] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cExport-noconfig.cmake\n'}
+[22.470907] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_introspection_cExport.cmake\n'}
+[22.473729] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_introspection_cExport-noconfig.cmake\n'}
+[22.474391] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_cExport.cmake\n'}
+[22.474796] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_cExport-noconfig.cmake\n'}
+[22.475914] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_generator_cppExport.cmake\n'}
+[22.482844] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cppExport.cmake\n'}
+[22.483373] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake\n'}
+[22.492368] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_introspection_cppExport.cmake\n'}
+[22.492910] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_introspection_cppExport-noconfig.cmake\n'}
+[22.498932] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_cppExport.cmake\n'}
+[22.500227] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_cppExport-noconfig.cmake\n'}
+[22.506718] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_generator_pyExport.cmake\n'}
+[22.507856] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_generator_pyExport-noconfig.cmake\n'}
+[22.533101] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/rosidl_cmake-extras.cmake\n'}
+[22.533886] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[22.534158] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[22.534798] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[22.535474] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[22.545045] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake\n'}
+[22.554343] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake\n'}
+[22.554619] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfacesConfig.cmake\n'}
+[22.554862] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfacesConfig-version.cmake\n'}
+[22.555054] (my_robot_wallinterfaces) StdoutLine: {'line': b'-- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.xml\n'}
+[22.555324] (my_robot_wallinterfaces) CommandEnded: {'returncode': 0}
+[22.613202] (-) TimerEvent: {}
+[22.715636] (-) TimerEvent: {}
+[22.825522] (-) TimerEvent: {}
+[22.927478] (-) TimerEvent: {}
+[23.030665] (-) TimerEvent: {}
+[23.135380] (-) TimerEvent: {}
+[23.235984] (-) TimerEvent: {}
+[23.348743] (-) TimerEvent: {}
+[23.449887] (-) TimerEvent: {}
+[23.550866] (-) TimerEvent: {}
+[23.693936] (-) TimerEvent: {}
+[23.750950] (my-test-package) StdoutLine: {'line': b'running egg_info\n'}
+[23.780752] (my-test-package) StdoutLine: {'line': b'writing ../../../../../../../../build/my-test-package/my_test_package.egg-info/PKG-INFO\n'}
+[23.784412] (my-test-package) StdoutLine: {'line': b'writing dependency_links to ../../../../../../../../build/my-test-package/my_test_package.egg-info/dependency_links.txt\n'}
+[23.809936] (my-test-package) StdoutLine: {'line': b'writing top-level names to ../../../../../../../../build/my-test-package/my_test_package.egg-info/top_level.txt\n'}
+[23.810385] (-) TimerEvent: {}
+[23.852478] (my-test-package) StdoutLine: {'line': b"reading manifest file '../../../../../../../../build/my-test-package/my_test_package.egg-info/SOURCES.txt'\n"}
+[23.914968] (my-test-package) StdoutLine: {'line': b"writing manifest file '../../../../../../../../build/my-test-package/my_test_package.egg-info/SOURCES.txt'\n"}
+[23.915755] (-) TimerEvent: {}
+[23.920283] (my-test-package) StdoutLine: {'line': b'running build\n'}
+[23.920733] (my-test-package) StdoutLine: {'line': b'running install\n'}
+[23.927578] (my-test-package) StdoutLine: {'line': b'running install_egg_info\n'}
+[24.021444] (-) TimerEvent: {}
+[24.048124] (my-test-package) StdoutLine: {'line': b"removing '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages/my_test_package-1.0-py3.10.egg-info' (and everything under it)\n"}
+[24.071308] (my-test-package) StdoutLine: {'line': b'Copying ../../../../../../../../build/my-test-package/my_test_package.egg-info to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my-test-package/lib/python3.10/site-packages/my_test_package-1.0-py3.10.egg-info\n'}
+[24.091432] (my-test-package) StdoutLine: {'line': b'running install_scripts\n'}
+[24.123422] (-) TimerEvent: {}
+[24.228399] (-) TimerEvent: {}
+[24.336158] (-) TimerEvent: {}
+[24.438412] (-) TimerEvent: {}
+[24.541528] (-) TimerEvent: {}
+[24.646667] (-) TimerEvent: {}
+[24.751360] (-) TimerEvent: {}
+[24.853739] (-) TimerEvent: {}
+[24.957410] (-) TimerEvent: {}
+[25.013430] (my-test-package) StdoutLine: {'line': b"writing list of installed files to '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my-test-package/install.log'\n"}
+[25.057689] (-) TimerEvent: {}
+[25.158594] (-) TimerEvent: {}
+[25.262790] (-) TimerEvent: {}
+[25.306675] (my-test-package) CommandEnded: {'returncode': 0}
+[25.363950] (-) TimerEvent: {}
+[25.459815] (my-test-package) JobEnded: {'identifier': 'my-test-package', 'rc': 0}
+[25.465572] (-) TimerEvent: {}
+[25.573942] (-) TimerEvent: {}
+[25.692342] (-) TimerEvent: {}
+[25.793121] (-) TimerEvent: {}
+[25.897460] (-) TimerEvent: {}
+[25.998097] (-) TimerEvent: {}
+[26.102171] (-) TimerEvent: {}
+[26.207828] (-) TimerEvent: {}
+[26.312627] (-) TimerEvent: {}
+[26.415217] (-) TimerEvent: {}
+[26.529397] (-) TimerEvent: {}
+[26.616999] (my_robot_wallinterfaces) JobEnded: {'identifier': 'my_robot_wallinterfaces', 'rc': 0}
+[26.620625] (talker_listener) JobStarted: {'identifier': 'talker_listener'}
+[26.647779] (-) TimerEvent: {}
+[26.764033] (-) TimerEvent: {}
+[26.866353] (-) TimerEvent: {}
+[26.969911] (-) TimerEvent: {}
+[27.072724] (-) TimerEvent: {}
+[27.177717] (-) TimerEvent: {}
+[27.285930] (-) TimerEvent: {}
+[27.394397] (-) TimerEvent: {}
+[27.498278] (-) TimerEvent: {}
+[27.601941] (-) TimerEvent: {}
+[27.702947] (-) TimerEvent: {}
+[27.808551] (-) TimerEvent: {}
+[27.911737] (-) TimerEvent: {}
+[28.013491] (-) TimerEvent: {}
+[28.123098] (-) TimerEvent: {}
+[28.233309] (-) TimerEvent: {}
+[28.343729] (-) TimerEvent: {}
+[28.449830] (-) TimerEvent: {}
+[28.594752] (-) TimerEvent: {}
+[28.708019] (-) TimerEvent: {}
+[28.808899] (-) TimerEvent: {}
+[28.912763] (-) TimerEvent: {}
+[29.013613] (-) TimerEvent: {}
+[29.116133] (-) TimerEvent: {}
+[29.221569] (-) TimerEvent: {}
+[29.322461] (-) TimerEvent: {}
+[29.433419] (-) TimerEvent: {}
+[29.534672] (-) TimerEvent: {}
+[29.636810] (-) TimerEvent: {}
+[29.741042] (-) TimerEvent: {}
+[29.847699] (-) TimerEvent: {}
+[29.955134] (-) TimerEvent: {}
+[30.058636] (-) TimerEvent: {}
+[30.159476] (-) TimerEvent: {}
+[30.260927] (-) TimerEvent: {}
+[30.366738] (-) TimerEvent: {}
+[30.481466] (-) TimerEvent: {}
+[30.588379] (-) TimerEvent: {}
+[30.691038] (-) TimerEvent: {}
+[30.799014] (-) TimerEvent: {}
+[30.910994] (-) TimerEvent: {}
+[31.025629] (-) TimerEvent: {}
+[31.139971] (-) TimerEvent: {}
+[31.266802] (-) TimerEvent: {}
+[31.388380] (-) TimerEvent: {}
+[31.497597] (-) TimerEvent: {}
+[31.598427] (-) TimerEvent: {}
+[31.705646] (-) TimerEvent: {}
+[31.830130] (-) TimerEvent: {}
+[31.936365] (-) TimerEvent: {}
+[32.044353] (-) TimerEvent: {}
+[32.150476] (-) TimerEvent: {}
+[32.255390] (-) TimerEvent: {}
+[32.375521] (-) TimerEvent: {}
+[32.478391] (-) TimerEvent: {}
+[32.580723] (-) TimerEvent: {}
+[32.681377] (-) TimerEvent: {}
+[32.785460] (-) TimerEvent: {}
+[32.900549] (-) TimerEvent: {}
+[33.003390] (-) TimerEvent: {}
+[33.104393] (-) TimerEvent: {}
+[33.210366] (-) TimerEvent: {}
+[33.313417] (-) TimerEvent: {}
+[33.414492] (-) TimerEvent: {}
+[33.516058] (-) TimerEvent: {}
+[33.621221] (-) TimerEvent: {}
+[33.721956] (-) TimerEvent: {}
+[33.824477] (-) TimerEvent: {}
+[33.925535] (-) TimerEvent: {}
+[34.027114] (-) TimerEvent: {}
+[34.127981] (-) TimerEvent: {}
+[34.236983] (-) TimerEvent: {}
+[34.345625] (-) TimerEvent: {}
+[34.447102] (-) TimerEvent: {}
+[34.549566] (-) TimerEvent: {}
+[34.655204] (-) TimerEvent: {}
+[34.762092] (-) TimerEvent: {}
+[34.862766] (-) TimerEvent: {}
+[34.964572] (-) TimerEvent: {}
+[35.065531] (-) TimerEvent: {}
+[35.168427] (-) TimerEvent: {}
+[35.269044] (-) TimerEvent: {}
+[35.369797] (-) TimerEvent: {}
+[35.476839] (-) TimerEvent: {}
+[35.577680] (-) TimerEvent: {}
+[35.681441] (-) TimerEvent: {}
+[35.782928] (-) TimerEvent: {}
+[35.887781] (-) TimerEvent: {}
+[35.993419] (-) TimerEvent: {}
+[36.112355] (-) TimerEvent: {}
+[36.213678] (-) TimerEvent: {}
+[36.314434] (-) TimerEvent: {}
+[36.415975] (-) TimerEvent: {}
+[36.517336] (-) TimerEvent: {}
+[36.622157] (-) TimerEvent: {}
+[36.726564] (-) TimerEvent: {}
+[36.832778] (-) TimerEvent: {}
+[36.937491] (-) TimerEvent: {}
+[37.045163] (-) TimerEvent: {}
+[37.167947] (-) TimerEvent: {}
+[37.271866] (-) TimerEvent: {}
+[37.391026] (-) TimerEvent: {}
+[37.492315] (-) TimerEvent: {}
+[37.597156] (-) TimerEvent: {}
+[37.698771] (-) TimerEvent: {}
+[37.803417] (-) TimerEvent: {}
+[37.904776] (-) TimerEvent: {}
+[38.006691] (-) TimerEvent: {}
+[38.109887] (-) TimerEvent: {}
+[38.212017] (-) TimerEvent: {}
+[38.317367] (-) TimerEvent: {}
+[38.419100] (-) TimerEvent: {}
+[38.539745] (-) TimerEvent: {}
+[38.655336] (-) TimerEvent: {}
+[38.761857] (-) TimerEvent: {}
+[38.890082] (-) TimerEvent: {}
+[38.991488] (-) TimerEvent: {}
+[39.094526] (-) TimerEvent: {}
+[39.208312] (-) TimerEvent: {}
+[39.314591] (-) TimerEvent: {}
+[39.416422] (-) TimerEvent: {}
+[39.517612] (-) TimerEvent: {}
+[39.618842] (-) TimerEvent: {}
+[39.726782] (-) TimerEvent: {}
+[39.827645] (-) TimerEvent: {}
+[39.931897] (-) TimerEvent: {}
+[40.037324] (-) TimerEvent: {}
+[40.142226] (-) TimerEvent: {}
+[40.251610] (-) TimerEvent: {}
+[40.353206] (-) TimerEvent: {}
+[40.459640] (-) TimerEvent: {}
+[40.567211] (-) TimerEvent: {}
+[40.669734] (-) TimerEvent: {}
+[40.774090] (-) TimerEvent: {}
+[40.876429] (-) TimerEvent: {}
+[40.983943] (-) TimerEvent: {}
+[41.096839] (-) TimerEvent: {}
+[41.201640] (-) TimerEvent: {}
+[41.311801] (-) TimerEvent: {}
+[41.413657] (-) TimerEvent: {}
+[41.538804] (-) TimerEvent: {}
+[41.641946] (-) TimerEvent: {}
+[41.746392] (-) TimerEvent: {}
+[41.854755] (-) TimerEvent: {}
+[41.971867] (-) TimerEvent: {}
+[42.074087] (-) TimerEvent: {}
+[42.177410] (-) TimerEvent: {}
+[42.279508] (-) TimerEvent: {}
+[42.381448] (-) TimerEvent: {}
+[42.489446] (-) TimerEvent: {}
+[42.597361] (-) TimerEvent: {}
+[42.699188] (-) TimerEvent: {}
+[42.812205] (-) TimerEvent: {}
+[42.913230] (-) TimerEvent: {}
+[43.018495] (-) TimerEvent: {}
+[43.120390] (-) TimerEvent: {}
+[43.222564] (-) TimerEvent: {}
+[43.323963] (-) TimerEvent: {}
+[43.424986] (-) TimerEvent: {}
+[43.474488] (talker_listener) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'egg_info', '--egg-base', '../build/talker_listener', 'build', '--build-base', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/build', 'install', '--record', '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log', '--single-version-externally-managed', 'install_data'], 'cwd': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/talker_listener', 'env': {'GJS_DEBUG_TOPICS': 'JS ERROR;JS LOG', 'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'ubuntu', 'LC_TIME': 'id_ID.UTF-8', 'FONTCONFIG_PATH': '/etc/fonts', 'GIO_MODULE_DIR': '/home/ubuntu/snap/code/common/.cache/gio-modules', 'XDG_SESSION_TYPE': 'wayland', 'GIT_ASKPASS': '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass.sh', 'GTK_EXE_PREFIX_VSCODE_SNAP_ORIG': '', 'GDK_BACKEND_VSCODE_SNAP_ORIG': '', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib', 'HOME': '/home/ubuntu', 'CHROME_DESKTOP': 'code.desktop', 'LOCPATH_VSCODE_SNAP_ORIG': '', 'TERM_PROGRAM_VERSION': '1.98.0', 'DESKTOP_SESSION': 'ubuntu', 'GTK_PATH': '/snap/code/185/usr/lib/x86_64-linux-gnu/gtk-3.0', 'XDG_DATA_HOME_VSCODE_SNAP_ORIG': '', 'GTK_IM_MODULE_FILE': '/home/ubuntu/snap/code/common/.cache/immodules/immodules.cache', 'GIO_LAUNCHED_DESKTOP_FILE': '/var/lib/snapd/desktop/applications/code_code.desktop', 'ROS_PYTHON_VERSION': '3', 'GNOME_SHELL_SESSION_MODE': 'ubuntu', 'GTK_MODULES': 'gail:atk-bridge', 'GSETTINGS_SCHEMA_DIR_VSCODE_SNAP_ORIG': '', 'VSCODE_GIT_ASKPASS_MAIN': '/snap/code/185/usr/share/code/resources/app/extensions/git/dist/askpass-main.js', 'LC_MONETARY': 'id_ID.UTF-8', 'VSCODE_GIT_ASKPASS_NODE': '/snap/code/185/usr/share/code/code', 'MANAGERPID': '1609', 'PYDEVD_DISABLE_FILE_VALIDATION': '1', 'SYSTEMD_EXEC_PID': '2905', 'BUNDLED_DEBUGPY_PATH': '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/libs/debugpy', 'IM_CONFIG_CHECK_ENV': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'COLORTERM': 'truecolor', 'GIO_LAUNCHED_DESKTOP_FILE_PID': '4196', 'IM_CONFIG_PHASE': '1', 'WAYLAND_DISPLAY': 'wayland-0', 'ROS_DISTRO': 'humble', 'LOGNAME': 'ubuntu', 'JOURNAL_STREAM': '8:30076', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'XDG_CONFIG_DIRS_VSCODE_SNAP_ORIG': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_SESSION_CLASS': 'user', 'XDG_DATA_DIRS_VSCODE_SNAP_ORIG': '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'USERNAME': 'ubuntu', 'TERM': 'xterm-256color', 'GAZEBO_MODEL_PATH': ':/opt/ros/humble/share/turtlebot3_gazebo/models:/opt/ros/humble/share/turtlebot3_gazebo/models', 'GNOME_DESKTOP_SESSION_ID': 'this-is-deprecated', 'ROS_LOCALHOST_ONLY': '0', 'PATH': '/home/ubuntu/.local/bin:/opt/ros/humble/bin:/home/ubuntu/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/bundled/scripts/noConfigScripts', 'SESSION_MANAGER': 'local/ubuntu-virtual-machine:@/tmp/.ICE-unix/2840,unix/ubuntu-virtual-machine:/tmp/.ICE-unix/2840', 'GTK_EXE_PREFIX': '/snap/code/185/usr', 'INVOCATION_ID': '29d817a46da94747a0c0986e74007192', 'XDG_MENU_PREFIX': 'gnome-', 'LC_ADDRESS': 'id_ID.UTF-8', 'BAMF_DESKTOP_FILE_HINT': '/var/lib/snapd/desktop/applications/code_code.desktop', 'GNOME_SETUP_DISPLAY': ':1', 'XDG_RUNTIME_DIR': '/run/user/1000', 'GDK_BACKEND': 'x11', 'DISPLAY': ':0', 'LOCPATH': '/snap/code/185/usr/lib/locale', 'VSCODE_DEBUGPY_ADAPTER_ENDPOINTS': '/home/ubuntu/.vscode/extensions/ms-python.debugpy-2025.4.1-linux-x64/.noConfigDebugAdapterEndpoints/endpoint-5c4e4c73dc4993ee.txt', 'LANG': 'en_US.UTF-8', 'XDG_CURRENT_DESKTOP': 'Unity', 'LC_TELEPHONE': 'id_ID.UTF-8', 'GIO_MODULE_DIR_VSCODE_SNAP_ORIG': '', 'XDG_DATA_HOME': '/home/ubuntu/snap/code/185/.local/share', 'XMODIFIERS': '@im=ibus', 'XDG_SESSION_DESKTOP': 'ubuntu', 'XAUTHORITY': '/run/user/1000/.mutter-Xwaylandauth.Y8FC42', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:', 'VSCODE_GIT_IPC_HANDLE': '/run/user/1000/vscode-git-93ae0fd6cc.sock', 'TERM_PROGRAM': 'vscode', 'SSH_AGENT_LAUNCHER': 'gnome-keyring', 'SSH_AUTH_SOCK': '/run/user/1000/keyring/ssh', 'GSETTINGS_SCHEMA_DIR': '/home/ubuntu/snap/code/185/.local/share/glib-2.0/schemas', 'AMENT_PREFIX_PATH': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces:/opt/ros/humble', 'ORIGINAL_XDG_CURRENT_DESKTOP': 'ubuntu:GNOME', 'SHELL': '/bin/bash', 'LC_NAME': 'id_ID.UTF-8', 'QT_ACCESSIBILITY': '1', 'GDMSESSION': 'ubuntu', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'GTK_PATH_VSCODE_SNAP_ORIG': '', 'FONTCONFIG_FILE': '/etc/fonts/fonts.conf', 'GTK_IM_MODULE_FILE_VSCODE_SNAP_ORIG': '', 'LC_MEASUREMENT': 'id_ID.UTF-8', 'GJS_DEBUG_OUTPUT': 'stderr', 'LC_IDENTIFICATION': 'id_ID.UTF-8', 'VSCODE_GIT_ASKPASS_EXTRA_ARGS': '', 'QT_IM_MODULE': 'ibus', 'PWD': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener', 'QT_QPA_PLATFORM': 'xcb', 'TURTLEBOT3_MODEL': 'waffle', 'LC_ALL': 'en_US.UTF-8', 'XDG_CONFIG_DIRS': '/etc/xdg/xdg-ubuntu:/etc/xdg', 'XDG_DATA_DIRS': '/home/ubuntu/snap/code/185/.local/share:/home/ubuntu/snap/code/185:/snap/code/185/usr/share:/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop', 'PYTHONPATH': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application', 'LC_NUMERIC': 'id_ID.UTF-8', 'LC_PAPER': 'id_ID.UTF-8', 'COLCON': '1', 'CMAKE_PREFIX_PATH': '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces'}, 'shell': False}
+[43.527540] (-) TimerEvent: {}
+[43.633558] (-) TimerEvent: {}
+[43.736520] (-) TimerEvent: {}
+[43.845852] (-) TimerEvent: {}
+[43.947989] (-) TimerEvent: {}
+[44.053850] (-) TimerEvent: {}
+[44.165105] (-) TimerEvent: {}
+[44.267118] (-) TimerEvent: {}
+[44.369671] (-) TimerEvent: {}
+[44.474157] (-) TimerEvent: {}
+[44.580438] (-) TimerEvent: {}
+[44.681577] (-) TimerEvent: {}
+[44.782156] (-) TimerEvent: {}
+[44.886406] (-) TimerEvent: {}
+[44.997020] (-) TimerEvent: {}
+[45.099584] (-) TimerEvent: {}
+[45.209881] (-) TimerEvent: {}
+[45.327797] (-) TimerEvent: {}
+[45.429029] (-) TimerEvent: {}
+[45.538761] (-) TimerEvent: {}
+[45.640608] (-) TimerEvent: {}
+[45.746521] (-) TimerEvent: {}
+[45.857137] (-) TimerEvent: {}
+[45.959589] (-) TimerEvent: {}
+[46.066643] (-) TimerEvent: {}
+[46.167494] (-) TimerEvent: {}
+[46.268191] (-) TimerEvent: {}
+[46.373627] (-) TimerEvent: {}
+[46.474693] (-) TimerEvent: {}
+[46.578465] (-) TimerEvent: {}
+[46.679120] (-) TimerEvent: {}
+[46.779926] (-) TimerEvent: {}
+[46.896707] (-) TimerEvent: {}
+[47.004833] (-) TimerEvent: {}
+[47.111103] (-) TimerEvent: {}
+[47.215472] (-) TimerEvent: {}
+[47.316512] (-) TimerEvent: {}
+[47.417732] (-) TimerEvent: {}
+[47.527912] (-) TimerEvent: {}
+[47.630048] (-) TimerEvent: {}
+[47.736456] (-) TimerEvent: {}
+[47.837057] (-) TimerEvent: {}
+[47.939570] (-) TimerEvent: {}
+[48.040380] (-) TimerEvent: {}
+[48.147583] (-) TimerEvent: {}
+[48.249993] (-) TimerEvent: {}
+[48.357565] (-) TimerEvent: {}
+[48.474192] (-) TimerEvent: {}
+[48.583384] (-) TimerEvent: {}
+[48.690875] (-) TimerEvent: {}
+[48.792461] (-) TimerEvent: {}
+[48.907401] (-) TimerEvent: {}
+[48.920568] (talker_listener) StdoutLine: {'line': b'running egg_info\n'}
+[48.930487] (talker_listener) StdoutLine: {'line': b'writing ../build/talker_listener/talker_listener.egg-info/PKG-INFO\n'}
+[48.937944] (talker_listener) StdoutLine: {'line': b'writing dependency_links to ../build/talker_listener/talker_listener.egg-info/dependency_links.txt\n'}
+[48.957396] (talker_listener) StdoutLine: {'line': b'writing entry points to ../build/talker_listener/talker_listener.egg-info/entry_points.txt\n'}
+[48.958022] (talker_listener) StdoutLine: {'line': b'writing requirements to ../build/talker_listener/talker_listener.egg-info/requires.txt\n'}
+[48.958341] (talker_listener) StdoutLine: {'line': b'writing top-level names to ../build/talker_listener/talker_listener.egg-info/top_level.txt\n'}
+[48.964751] (talker_listener) StdoutLine: {'line': b"reading manifest file '../build/talker_listener/talker_listener.egg-info/SOURCES.txt'\n"}
+[48.981880] (talker_listener) StdoutLine: {'line': b"writing manifest file '../build/talker_listener/talker_listener.egg-info/SOURCES.txt'\n"}
+[48.992931] (talker_listener) StdoutLine: {'line': b'running build\n'}
+[48.993478] (talker_listener) StdoutLine: {'line': b'running build_py\n'}
+[49.008544] (talker_listener) StdoutLine: {'line': b'running install\n'}
+[49.009126] (-) TimerEvent: {}
+[49.013545] (talker_listener) StdoutLine: {'line': b'running install_lib\n'}
+[49.014167] (talker_listener) StdoutLine: {'line': b'running install_data\n'}
+[49.014595] (talker_listener) StdoutLine: {'line': b'running install_egg_info\n'}
+[49.046410] (talker_listener) StdoutLine: {'line': b"removing '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener-0.0.0-py3.10.egg-info' (and everything under it)\n"}
+[49.046909] (talker_listener) StdoutLine: {'line': b'Copying ../build/talker_listener/talker_listener.egg-info to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/python3.10/site-packages/talker_listener-0.0.0-py3.10.egg-info\n'}
+[49.047372] (talker_listener) StdoutLine: {'line': b'running install_scripts\n'}
+[49.116507] (-) TimerEvent: {}
+[49.217116] (-) TimerEvent: {}
+[49.318596] (-) TimerEvent: {}
+[49.419342] (-) TimerEvent: {}
+[49.454698] (talker_listener) StdoutLine: {'line': b'Installing listenerNode script to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener\n'}
+[49.455687] (talker_listener) StdoutLine: {'line': b'Installing talkerNode script to /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener/lib/talker_listener\n'}
+[49.456282] (talker_listener) StdoutLine: {'line': b"writing list of installed files to '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/talker_listener/install.log'\n"}
+[49.541400] (-) TimerEvent: {}
+[49.644418] (-) TimerEvent: {}
+[49.706398] (talker_listener) CommandEnded: {'returncode': 0}
+[49.753790] (-) TimerEvent: {}
+[49.849444] (talker_listener) JobEnded: {'identifier': 'talker_listener', 'rc': 0}
+[49.860763] (-) TimerEvent: {}
+[49.864346] (-) EventReactorShutdown: {}
