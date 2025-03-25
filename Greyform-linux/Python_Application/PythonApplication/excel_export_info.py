@@ -7,6 +7,7 @@ import numpy as np
 import math
 import openpyxl
 
+
 # export excel sheet
 class Exportexcelinfo(object):
     def __init__(
@@ -384,6 +385,7 @@ class Exportexcelinfo(object):
                                     - self.wall_finishes_height
                                     - self.wall_height
                                 )
+                                robotposx = pos_x + robotposx
                             if self.wallformat[2]["width"] != (
                                 endrange - startingrange
                             ):
@@ -405,10 +407,17 @@ class Exportexcelinfo(object):
                                 ]
                             )
                         else:
+                            if wall_id == len(self.wallformat):
+                                robotposx = (
+                                    positionx
+                                    - (internaldimensionx - self.wallformat[5]["width"])
+                                    - self.wall_finishes_height
+                                    - self.wall_height
+                                )
                             robotposy = positiony - posy
                             return pd.Series(
                                 [
-                                    robotposx,
+                                    -abs(robotposx),
                                     robotposy,
                                     pos_z,
                                 ]
@@ -419,9 +428,7 @@ class Exportexcelinfo(object):
                         posx = internaldimensionx / 2
                         posy = internaldimensiony / 2
                         robotposy = (
-                            positiony
-                            - self.wall_finishes_height
-                            - self.wall_height
+                            positiony - self.wall_finishes_height - self.wall_height
                         )
                         if posy < positiony and internaldimensiony > positiony:
                             startingrange = (
@@ -431,16 +438,21 @@ class Exportexcelinfo(object):
                             )
                             endrange = wall["pos_x_range"][1]
                             endrangey = wall["pos_y_range"][1]
-                            if (
-                                self.wallformat[2]["width"]
-                                != endrangey
-                            ):
+                            if self.wallformat[2]["width"] != endrangey:
                                 endrangey = self.wallformat[5]["width"]
                             robotposx = (
                                 positionx
                                 - startingrange
                                 - ((endrange - startingrange) / 2)
                             )
+                            if wall_id == (len(self.wallformat) - 1):
+                                robotposy = robotposy - (
+                                    self.wallformat[2]["width"]
+                                    - (
+                                        (self.wall_finishes_height + self.wall_height)
+                                        * 2
+                                    )
+                                )
                             return pd.Series(
                                 [
                                     robotposy,
@@ -1093,7 +1105,6 @@ class Exportexcelinfo(object):
                 elif marker == "6":
                     marker = 6
                     worksheet.write(row_idx, marker_col_index + 1, marker)
-
 
     # get attribute value for excel data
     def get_attribute_value(self, object_data, attribute):

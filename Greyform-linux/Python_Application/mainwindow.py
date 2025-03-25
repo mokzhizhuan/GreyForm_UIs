@@ -17,6 +17,22 @@ import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from threading import Thread
 
+class FileFilterProxyModel(QSortFilterProxyModel):
+    def __init__(self, parent=None):
+        super(FileFilterProxyModel, self).__init__(parent)
+        self.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.setFilterKeyColumn(0)
+
+    def filterAcceptsRow(self, source_row, source_parent):
+        index = self.sourceModel().index(source_row, 0, source_parent)
+        if not index.isValid():
+            return False
+        file_name = self.sourceModel().fileName(index)
+        file_info = self.sourceModel().fileInfo(index)
+        if file_info.isDir():
+            return True
+        allowed_extensions = {".dxf", ".ifc", ".stl"}
+        return any(file_name.lower().endswith(ext) for ext in allowed_extensions)
 
 # load the mainwindow application
 class Ui_MainWindow(QMainWindow):
@@ -72,11 +88,11 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.Selectivefiledirectoryview.setModel(self.model)
         root_index = self.model.index("/")  # Set root to '/' for Linux
         self.mainwindow.Selectivefiledirectoryview.setRootIndex(root_index)  # Now safe to set
-        # Model for displaying only files
         self.file_model = QFileSystemModel()
         self.file_model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)  
         self.file_model.setRootPath("/")  # Initialize root
-        # Attach model to file view
+        self.proxy_model = FileFilterProxyModel()
+        self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefilelistview.setModel(self.file_model)
         self.mainwindow.Selectivefiledirectoryview.clicked.connect(self.on_folder_selected)
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
@@ -86,18 +102,25 @@ class Ui_MainWindow(QMainWindow):
         self.setStretch()
 
     def on_folder_selected(self, index):
-        selected_folder = self.model.filePath(index)  # Get folder path
-        # Ensure the model is set before calling setRootIndex()
-        self.file_model.setRootPath(selected_folder)
-        self.mainwindow.Selectivefilelistview.setRootIndex(self.file_model.index(selected_folder))
+        folder_path = self.model.filePath(index)
+        self.file_model.setRootPath(folder_path)
+        if self.mainwindow.Selectivefilelistview.model() != self.proxy_model:
+            self.mainwindow.Selectivefilelistview.setModel(self.proxy_model)
+        if self.proxy_model.sourceModel() != self.file_model:
+            self.proxy_model.setSourceModel(self.file_model)
+        source_index = self.file_model.index(folder_path)
+        proxy_index = self.proxy_model.mapFromSource(source_index)
+        if proxy_index.isValid():
+            self.mainwindow.Selectivefilelistview.setRootIndex(proxy_index)
+
     
     def on_file_selected(self, index):
-        if not index.isValid():
-            return
-        selected_path = self.file_model.filePath(index)  # Get clicked item path
-        if self.file_model.isDir(index):  
-            self.file_model.setRootPath(selected_path)
-            self.mainwindow.Selectivefilelistview.setRootIndex(self.file_model.index(selected_path))
+        selected_path = self.file_model.filePath(self.proxy_model.mapToSource(index))
+        if self.file_model.isDir(self.proxy_model.mapToSource(index)):  
+            new_source_index = self.file_model.index(selected_path)
+            new_proxy_index = self.proxy_model.mapFromSource(new_source_index)
+            if new_proxy_index.isValid():
+                self.mainwindow.Selectivefilelistview.setRootIndex(new_proxy_index)
         else:
             self.on_selection_changed(index)
 
@@ -119,8 +142,9 @@ class Ui_MainWindow(QMainWindow):
 
     # file selection when clicked
     def on_selection_changed(self, index):
-        model = self.mainwindow.Selectivefilelistview.model()
-        self.file_path = model.filePath(index)
+        source_index = self.proxy_model.mapToSource(index)
+        file_path = self.file_model.filePath(source_index)
+        self.file_path = file_path
         if self.file_path in self.selected_files:
             self.selected_files.remove(self.file_path) 
         else:
