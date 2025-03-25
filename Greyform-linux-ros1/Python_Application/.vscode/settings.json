@@ -19,7 +19,7 @@
         "diffEditor.ignoreTrimWhitespace": false,
         "editor.formatOnType": true,
         "editor.formatOnSave": true,
-        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.defaultFormatter": "Auto-formatter.techkitFormatters",
         "editor.wordBasedSuggestions": "allDocuments",
         "editor.codeActionsOnSave" : {
             "source.organizeImports": "explicit"

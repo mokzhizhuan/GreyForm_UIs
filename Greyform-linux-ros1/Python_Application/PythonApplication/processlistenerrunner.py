@@ -35,7 +35,7 @@ class ListenerNodeRunner():
             except Exception as e:
                 self.signals.status_signal.emit(f"Status: Error - {str(e)}")
 
-    def run_execution(self , markingitemsbasedonwallnumber , wall_number, Stagetext, excel_data):
+    def run_execution(self , markingitemsbasedonwallnumber , wall_number, Stagetext, excel_data, next_wall_number):
         if self.listener_started:
             for data in markingitemsbasedonwallnumber:
                 picked_position = [
@@ -45,7 +45,7 @@ class ListenerNodeRunner():
                 ]
                 self.talker_node.publish_file_message(self.file, excel_data)
                 self.talker_node.publish_selection_message(
-                    wall_number, picked_position, Stagetext
+                    wall_number, picked_position, Stagetext , next_wall_number
                 )
             self.talker_node.showdialog()
 

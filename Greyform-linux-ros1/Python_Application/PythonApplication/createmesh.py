@@ -27,7 +27,7 @@ class createMesh(QMainWindow):
         Stagelabel,
         walllabel,
         stacked_widget,
-        listenerdialog
+        listenerdialog,
     ):
         # starting initialize
         super().__init__()
@@ -50,9 +50,13 @@ class createMesh(QMainWindow):
         self.mainwindow = mainwindow
         self.currentindexstage = 0
         self.Stagelabel = Stagelabel
-        self.wall_identifiers, self.wall, self.excelfiletext , self.stagewallnum , self.stagestorage = (
-            vtk_data_excel.exceldataextractor()
-        )
+        (
+            self.wall_identifiers,
+            self.wall,
+            self.excelfiletext,
+            self.stagewallnum,
+            self.stagestorage,
+        ) = vtk_data_excel.exceldataextractor()
         self.stagetext = self.stagestorage[self.currentindexstage]
         Stagelabel.setText(f"Stage : {self.stagetext}")
         self.wallaxis = vtk_data_excel.wall_format(self.wall)
@@ -175,7 +179,9 @@ class createMesh(QMainWindow):
                 "rotation": (0, 0, 0),
             },  # Yellow
         }
-        self.wall_actors , self.identifier , self.wallname = createactorvtk.setupactors(self.walls , self.stagetext , self.wall_identifiers , self.ren , self.walllabel)
+        self.wall_actors, self.identifier, self.wallname = createactorvtk.setupactors(
+            self.walls, self.stagetext, self.wall_identifiers, self.ren, self.walllabel
+        )
         self.setupvtkframe()
 
     # setup vtk frame ui
@@ -199,8 +205,8 @@ class createMesh(QMainWindow):
             self.wallname,
             self.identifier,
             self.stacked_widget,
-            self.walllabel, 
-            self.listenerdialog
+            self.walllabel,
+            self.listenerdialog,
         ]
         camera = events.myInteractorStyle(
             setcamerainteraction,
@@ -213,7 +219,9 @@ class createMesh(QMainWindow):
         self.ren.ResetCameraClippingRange()
         self.ren.ResetCamera()
         self.renderwindowinteractor.GetRenderWindow().Render()
-        self.renderwindowinteractor.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.renderwindowinteractor.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Expanding
+        )
         renderWindow = self.renderwindowinteractor.GetRenderWindow()
         renderWindow.AddRenderer(self.ren)
         self.renderwindowinteractor.Initialize()

@@ -18,32 +18,46 @@ import meshio
 import pyvista as pv
 import pandas as pd
 import numpy as np
-from PyQt5.QtWidgets import QApplication, QMainWindow, QProgressBar, QLabel, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QProgressBar,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 import time  # Simulate work
 
-class WorkerThread(QThread):
-    update_progress = pyqtSignal(int)  # Signal to update the progress bar
-    update_status = pyqtSignal(str)  # Signal to update the status label
 
-    def __init__(self, listenerdialog ,stackedWidget):
-        super().__init__() 
+class WorkerThread(QThread):
+    update_progress = pyqtSignal(int)
+    update_status = pyqtSignal(str)
+    render_mesh = pyqtSignal()  # New signal to trigger mesh rendering
+
+    def __init__(self, listenerdialog, stackedWidget):
+        super().__init__()
         self.listenerdialog = listenerdialog
         self.stackedWidget = stackedWidget
 
     def run(self):
         for i in range(101):  # Simulate a task progressing from 0% to 100%
-            time.sleep(0.05)  # Simulating a task delay
-            self.update_progress.emit(i)  # Emit progress value
-            self.update_status.emit(f"Scanning...%")  # Emit status text
-        self.update_status.emit(self.scancompleted()) # Final status update
+            time.sleep(0.05)
+            self.update_progress.emit(i)
+            self.update_status.emit(f"Scanning...")
+        
+        self.scancompleted()  # Run completion function
 
     def scancompleted(self):
         self.listenerdialog.run_listener_node()
+        self.render_mesh.emit()  # Emit signal to update U
 
 
 class dxfloader(object):
-    def __init__(self, file_path, mainwindowforfileselection, gdf , mainwindow, stackedWidget):
+    def __init__(
+        self, file_path, mainwindowforfileselection, gdf, mainwindow, stackedWidget
+    ):
         # starting initialize
         super().__init__()
         self.file_path = file_path
@@ -66,10 +80,7 @@ class dxfloader(object):
         self.Stagelabel.setText(f"Stage : {self.stagestoring[0]}")
         self.exceldata = "exporteddatassss(with TMP)(draft).xlsx"
         self.listenerdialog = process.ListenerNodeRunner(
-            self.rosnode,
-            self.file_path,
-            self.labelstatus,
-            self.stackedWidget
+            self.rosnode, self.file_path, self.labelstatus, self.stackedWidget
         )
         self.loaddxftoframe()
 
@@ -84,11 +95,11 @@ class dxfloader(object):
             all_vertices = np.vstack(self.all_vertices)
             all_faces = np.hstack(self.all_faces)
             self.meshsplot = pv.PolyData(all_vertices, all_faces)
-            output_stl_path = "output.stl"
+            self.output_stl_path = "output.stl"
             if not self.meshsplot.is_all_triangles:
                 self.meshsplot = self.meshsplot.triangulate()
-                self.meshsplot.save(output_stl_path)
-                meshs = meshio.read(output_stl_path)
+                self.meshsplot.save(self.output_stl_path)
+                meshs = meshio.read(self.output_stl_path)
                 offset = []
                 cells = []
                 cell_types = []
@@ -117,26 +128,39 @@ class dxfloader(object):
                     vtk_cells = cells[0]
                 self.meshsplot = pv.PolyData(meshs.points, vtk_cells)
                 loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
-                self.buttonlocalize.clicked.connect(lambda: self.scanpagers())          
-                Createmesh.createMesh(
-                    self.renderer,
-                    output_stl_path,
-                    self.renderWindowInteractor,
-                    self.rosnode,
-                    self.file_path,
-                    self.mainwindow,
-                    self.Stagelabel,
-                    self.walllabel,
-                    self.stackedWidget,
-                    self.listenerdialog,
-                )
+                self.buttonlocalize.clicked.connect(lambda: self.start_scan())
 
-    def scanpagers(self):
+    def start_scan(self):
         self.stackedWidget.setCurrentIndex(3)
-        self.worker = WorkerThread(self.listenerdialog , self.stackedWidget)
-        self.worker.update_progress.connect(self.scanprogressBar.setValue)
-        self.worker.update_status.connect(self.labelstatus.setText)
-        self.worker.start()
+        self.worker = WorkerThread(self.listenerdialog, self.stackedWidget)
+        self.worker.update_progress.connect(self.update_progress_bar)
+        self.worker.update_status.connect(self.update_status_label)
+        self.worker.render_mesh.connect(self.create_mesh)  # Connect new signal
+        self.worker.start()  # Start the worker thread
+
+    def update_progress_bar(self, value):
+        """Update the progress bar with the current value."""
+        self.scanprogressBar.setValue(value)  # Ensure progressBar is properly defined in your UI
+
+    def update_status_label(self, text):
+        """Update the status label with progress text."""
+        self.labelstatus.setText(text)
+    
+    def create_mesh(self):
+        # Call the createMesh function in the main thread
+        Createmesh.createMesh(
+            self.renderer,
+            self.output_stl_path,
+            self.renderWindowInteractor,
+            self.rosnode,
+            self.file_path,
+            self.mainwindow,
+            self.Stagelabel,
+            self.walllabel,
+            self.stackedWidget,
+            self.listenerdialog,
+        )
+        self.renderWindowInteractor.GetRenderWindow().Render()  # Force UI update
 
     # process geometry in geodata pandas
     def process_line_string(self, geometry, offset):

@@ -30,8 +30,9 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.walllabel = setcamerainteraction[18]
         self.listenerdialog = setcamerainteraction[19]
         match = re.search(r'\d+', self.wallname)
-        wall_number = int(match.group())
-        self.scan = self.identifier[wall_number]
+        self.wall_number = int(match.group())
+        self.scan = self.identifier[self.wall_number]
+        self.show_message(f"Scanning Completed. Please move your machine to wall {self.wall_number}")
         self.wall_index = list(self.walls.keys()).index(self.wallname) if self.wallname in self.walls else None
         camera = self.render.GetActiveCamera()
         self._translate = QCoreApplication.translate
@@ -110,7 +111,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.wallname = wall_keys[self.wall_index]
             match = re.search(r'\d+', str(self.wallname))
             wall_number = int(match.group()) if match else None
-
             if wall_number in self.identifier and wall_number in self.remaining_walls_to_scan:
                 return wall_number
         if self.wallname == "Wall 6":  # ✅ After Wall 6, prioritize Floor
@@ -122,37 +122,26 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
 
     def changewall(self):
         self.wall_actors[self.wallname].VisibilityOff()
-        if not self.remaining_walls_to_scan and self.stagetext == "Stage 2" and not self.stage_completed:
-            self.stage_completed = True
-            print("✅ Stage 2 complete. Scanning Floor next...")
-            self.wallname = "Floor"
-            self.wall_actors[self.wallname].VisibilityOn()
-            self.remaining_walls_to_scan.discard("F")
-            return  # ✅ Wait for next click to process Stage 3
-        if self.stage_completed and self.stagetext == "Stage 2":
-            print("✅ Moving to Stage 3...")
-            self.goto_next_stage_or_page()
-            return  # ✅ Move to next stage
-        if not self.remaining_walls_to_scan and self.stagetext == "Stage 3" and not self.stage_completed:
-            self.show_message("✅ All walls and Floor in Stage 3 scanned. Moving to the next page...")
-            self.stacked_widget.setCurrentIndex(5)
-            return
-        
-        wall_keys = sorted(self.walls.keys())
-        wall_number = self.find_next_valid_wall(wall_keys)
-        
-
-        if wall_number:
-            self.wallname = "Floor" if wall_number == "F" else self.wallname
-            self.wall_actors[self.wallname].VisibilityOn()
-
+        if self.wall_number:
             # Remove scanned wall
-            if wall_number in self.identifier:
-                self.scan = self.identifier[wall_number]
-                self.listenerdialog.run_execution(self.scan, wall_number, self.stagetext, self.excelfiletext)
-                self.remaining_walls_to_scan.discard(wall_number)
-
+            if self.wall_number in self.identifier:
+                self.scan = self.identifier[self.wall_number]
+                self.remaining_walls_to_scan.discard(self.wall_number)
+                wall_keys = sorted(self.walls.keys())
+                next_wall_number = self.find_next_valid_wall(wall_keys)
+                self.listenerdialog.run_execution(self.scan, self.wall_number, self.stagetext, self.excelfiletext, next_wall_number)
+                self.wall_number = next_wall_number
+                if next_wall_number is not None:
+                    self.wallname = "Floor" if next_wall_number == "F" else self.wallname
+                    self.wall_actors[self.wallname].VisibilityOn()
             self.walllabel.setText(f"Wall : {self.wallname}")
+            if not self.remaining_walls_to_scan and self.stagetext == "Stage 2" and next_wall_number is None:
+                self.stage_completed = True
+                self.goto_next_stage_or_page()
+            if not self.remaining_walls_to_scan and self.stagetext == "Stage 3" and not self.stage_completed:
+                self.show_message("✅ All walls and Floor in Stage 3 scanned. Moving to the next page...")
+                self.stacked_widget.setCurrentIndex(5)
+                return
             self.refresh()
 
     def goto_next_stage_or_page(self):
@@ -161,15 +150,16 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.wall_index = 0
         self.stagetext = self.stagestorage[self.currentindexstage]
         self.Stagelabel.setText(f"Stage : {self.stagetext}")
-
         # Reset tracking for new stage
         self.wall_actors, self.identifier, self.wallname = createactorvtk.setupactors(
             self.walls, self.stagetext, self.wall_identifiers, self.render, self.walllabel
         )
+        self.show_message(f"Please Move in to {self.wallname} for Stage 3 process")
+        self.wall_actors[self.wallname].VisibilityOn()
+        match = re.search(r'\d+', self.wallname)
+        self.wall_number = int(match.group())
+        self.stage_completed = False
         self.initialize_wall_tracking()
-
-        # Start scanning first wall in the new stage
-        self.changewall()
 
     def refresh(self):
         self.render.ResetCameraClippingRange()

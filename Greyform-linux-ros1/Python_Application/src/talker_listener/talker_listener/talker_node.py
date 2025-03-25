@@ -87,7 +87,7 @@ class TalkerNode:
 
     #talker selection message implementation
     def publish_selection_message(
-        self, wall_number, picked_position, Stagelabel
+        self, wall_number, picked_position, Stagelabel, next_wall_number
     ):  
         try:
             msg = SelectionWall()
@@ -95,7 +95,10 @@ class TalkerNode:
             msg.typeselection = f"{Stagelabel}"
             msg.picked_position = picked_position
             self.selection_publisher_.publish(msg)
-            self.message = "The process has finished successfully!"
+            if next_wall_number is not None:
+                self.message = f"The process has finished successfully! Please move in to Wall: {next_wall_number}"
+            else:
+                self.message = ""
         except Exception as e:
             self.errormessage += (
                 f"{self.spacing}Failed to publish selection message: {e}"

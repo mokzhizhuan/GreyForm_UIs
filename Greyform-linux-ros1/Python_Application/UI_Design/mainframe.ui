@@ -373,16 +373,16 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="layoutWidgetpage4">
+     <widget class="QWidget" name="verticalLayoutWidgetpage4frame">
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>20</y>
-        <width>781</width>
-        <height>311</height>
+        <y>40</y>
+        <width>771</width>
+        <height>281</height>
        </rect>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="0">
+      <layout class="QVBoxLayout" name="verticalLayoutframe">
        <item>
         <widget class="QFrame" name="vtkframe">
          <property name="sizePolicy">
