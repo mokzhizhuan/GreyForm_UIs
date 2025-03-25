@@ -35,7 +35,7 @@ class TalkerNode(Node):
         if self.message != "":
             self.show_info_dialog(self.message)
             self.message = ""
-        else:
+        elif self.errormessage != "":
             self.show_error_dialog(self.errormessage)
             self.errormessage = ""
 

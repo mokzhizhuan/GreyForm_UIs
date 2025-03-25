@@ -139,7 +139,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 self.stage_completed = True
                 self.goto_next_stage_or_page()
             if not self.remaining_walls_to_scan and self.stagetext == "Stage 3" and not self.stage_completed:
-                self.show_message("✅ All walls and Floor in Stage 3 scanned. Moving to the next page...")
+                self.show_message("✅ All walls and Floor in Stage 2 & 3 are completed. Moving to the finalization page..")
                 self.stacked_widget.setCurrentIndex(5)
                 return
             self.refresh()
@@ -154,7 +154,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.wall_actors, self.identifier, self.wallname = createactorvtk.setupactors(
             self.walls, self.stagetext, self.wall_identifiers, self.render, self.walllabel
         )
-        self.show_message(f"Please Move in to {self.wallname} for Stage 3 process")
+        self.show_message(f"Stage 2 is completed. Please Move in to {self.wallname} for Stage 3 process")
         self.wall_actors[self.wallname].VisibilityOn()
         match = re.search(r'\d+', self.wallname)
         self.wall_number = int(match.group())
