@@ -342,6 +342,16 @@ class Exportexcelinfo(object):
                                     - self.wall_finishes_height
                                     - self.wall_height
                                 )
+                                if robotposy < ((endrangey-startingrangey)*5):
+                                    remainingposy = ((endrangey-startingrangey)*5)-robotposy
+                                    robotposy = robotposy + remainingposy
+                                return pd.Series(
+                                    [
+                                        -abs(robotposy),
+                                        robotposx,
+                                        pos_z,
+                                    ]
+                                )
                                 return pd.Series(
                                     [
                                         -abs(robotposy),
