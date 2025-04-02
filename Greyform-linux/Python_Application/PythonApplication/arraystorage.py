@@ -42,7 +42,7 @@ def stagecatergorize(ifc_file):
 
 
 def add_legends():
-    dataframe_Legend = pd.read_excel("Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2, engine="openpyxl")
+    dataframe_Legend = pd.read_excel("Pin Allocation BOM for PBU_T1a.xlsx", engine='openpyxl', skiprows=2)
     pen_column = dataframe_Legend.columns[3]
     pin_id_column = dataframe_Legend.columns[9]
     dataframe_Legend = dataframe_Legend[[pen_column, pin_id_column]]
@@ -74,76 +74,62 @@ def add_legends():
     return wall_legend, pen_column, pin_id_column, wall_600x600mm, wall_name, indexwall
 
 
-def wall_format(wall):
+def wall_format(wall, floor, label_map):
     wall_format = {}
     axis = ""
-    for index, (wall, dims) in enumerate(wall.items(), start=0):
-        width = dims.get("width", "Not available")
-        depth = dims.get("depth", "Not available")
-        height = dims.get("height", "Not available")
+    direction_groups = {}
+
+    for label, wall_data, direction, axiss in label_map:
+        wall_name = wall_data["name"]
+        wall_width = wall[wall_name]["width"]
+        direction_groups.setdefault(direction, []).append(wall_width)
+    direction_max_width = {d: max(wlist) for d, wlist in direction_groups.items()}
+    direction_totals = {d: sum(wlist) for d, wlist in direction_groups.items()}
+    for index, (label, wall_data, direction, axiss) in enumerate(label_map, start=1):
+        wall_name = wall_data["name"]
+        wall_info = wall[wall_name]
+        raw_width = wall_info["width"]
+        height = wall_info["height"]
+        depth = wall_info["depth"]
         if index % 2 == 0:
             axis = "y"
         else:
             axis = "x"
-        if index + 1 in [2, 5]:
-            wall_format[index + 1] = {
-                "axis": axis,
-                "width": width + height,
-                "height": depth + height + 10,
-            }
-        elif index + 1 in [6]:
-            wall_format[index + 1] = {
-                "axis": axis,
-                "width": width + (height * 2),
-                "height": depth + height + 10,
-            }
+        if index == 1:
+            final_width = raw_width + 2 * height
+        elif raw_width == direction_max_width[direction]:
+            if direction_totals[direction] in floor:
+                final_width = raw_width  # keep it
+            else:
+                final_width = raw_width + height  # adjust
         else:
-            wall_format[index + 1] = {
-                "axis": axis,
-                "width": width,
-                "height": depth + height + 10,
-            }
-        heighttotal = depth + height + 10
-    return wall_format, heighttotal , height
+            final_width = raw_width  # not largest → no change
 
-def wall_formats_reversed(wall):
-    wall_format = {}
-    axis = ""
-    for index, (wall, dims) in enumerate(wall.items(), start=0):
-        width = dims.get("width", "Not available")
-        depth = dims.get("depth", "Not available")
-        height = dims.get("height", "Not available")
-        if index % 2 == 0:
-            axis = "x"
-        else:
-            axis = "y"
-        if index + 1 in [2, 5]:
-            wall_format[index + 1] = {
-                "axis": axis,
-                "width": width + height,
-                "height": depth + height + 10,
-            }
-        elif index + 1 in [1]:
-            wall_format[index + 1] = {
-                "axis": axis,
-                "width": width + (height * 2),
-                "height": depth + height + 10,
-            }
-        else:
-            wall_format[index + 1] = {
-                "axis": axis,
-                "width": width,
-                "height": depth + height + 10,
-            }
+        wall_format[index] = {
+            "axis": axis,
+            "width": final_width,
+            "height": depth + height + 10,
+        }
         heighttotal = depth + height + 10
-    return wall_format, heighttotal , height
-
+    return wall_format, heighttotal, height
 
 
 def wall_format_finishes(wall):
+    heights = []
+
+    # Iterate through the walls to collect heights
     for index, (wall, dims) in enumerate(wall.items(), start=0):
-        height = dims.get("height", "Not available")
-    return height
+        height = dims.get("height", None)
+        if height is not None:
+            heights.append(height)
+
+    # Calculate max and min height if heights are collected
+    if heights:
+        max_height = max(heights)
+        min_height = min(heights)
+    else:
+        max_height = min_height = "Not available"
+    return max_height, min_height
 
 
 def wall_format4sides(wall):
@@ -177,4 +163,3 @@ def wall_format4sides(wall):
             }
         heighttotal = depth + height + 10
     return wall_format, heighttotal
-

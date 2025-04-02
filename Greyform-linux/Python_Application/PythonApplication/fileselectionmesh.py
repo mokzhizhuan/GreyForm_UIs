@@ -40,3 +40,9 @@ class FileSelectionMesh():
                     30000, ifc_file, self.mainwindowforfileselection , self.mainwindow ,self.stackedWidget
                 )
                 progressbarprogram.exec_()
+
+    
+    #error message implement for converting to text file
+    def log_error(self, message):
+        with open("error_log.txt", "a") as log_file:
+            log_file.write(message + "\n")
