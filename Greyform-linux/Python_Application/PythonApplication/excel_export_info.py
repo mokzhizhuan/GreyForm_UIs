@@ -473,8 +473,6 @@ class Exportexcelinfo(object):
         ):
             wall_width = self.wallformat[index]["width"]
             mesh = wall_data["mesh"]
-            x_len = mesh.bounds[1] - mesh.bounds[0]
-            y_len = mesh.bounds[3] - mesh.bounds[2]
             if (
                 direction not in direction_widths
                 or wall_width > direction_widths[direction]
