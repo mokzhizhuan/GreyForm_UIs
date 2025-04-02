@@ -255,8 +255,6 @@ class Exportexcelinfo(object):
             if wall["axis"] == "y"
         ]
         x_max = max(x_max_values)
-        x_min = min(x_min_values)
-        x_diff = x_max - x_min
         y_has_small_thickness = False
         for y_min, y_max in zip(y_min_values, y_max_values):
             for small_thickness in small_thickness_range:
