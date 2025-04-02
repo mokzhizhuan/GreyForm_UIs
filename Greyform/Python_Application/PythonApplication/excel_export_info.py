@@ -257,7 +257,6 @@ class Exportexcelinfo(object):
         x_max = max(x_max_values)
         y_has_small_thickness = False
         for y_min, y_max in zip(y_min_values, y_max_values):
-            # Check different combinations that may indicate small thickness
             for small_thickness in small_thickness_range:
                 if (
                     abs((y_max - y_min) - small_thickness) <= 10 or

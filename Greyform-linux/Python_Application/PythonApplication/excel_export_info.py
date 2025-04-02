@@ -468,7 +468,6 @@ class Exportexcelinfo(object):
         direction_widths = {}
         direction_axes = {}
         self.axis_widths = {"x": [], "y": []}
-        # Step 1: Compute max width and axis per direction
         for index, (label, wall_data, direction, axis) in enumerate(
             self.label_map, start=1
         ):
@@ -488,23 +487,16 @@ class Exportexcelinfo(object):
         interior_x, interior_y = None, None
         direction_stack = []
         for index, (start, end, direction) in enumerate(self.directional_axes_axis):
-            # Push current direction to the stack
             direction_stack.append(direction)
-
-            # Check if the stack has at least two occurrences of -Y or +Y
             count_minus_y = direction_stack.count("-Y")
             count_plus_y = direction_stack.count("+Y")
             if count_plus_y >= 2:
-                # If there are at least two +Y
                 interior_x = (x_max - (x_max - x_min), x_max)
                 interior_y = (y_max - y_min, y_max)
-                # Clear the stack after detection to start fresh
                 direction_stack.clear()
             elif count_minus_y >= 2:
-                # If there are at least two -Y
                 interior_x = (x_max - x_min, x_max)
                 interior_y = (y_max - y_min, y_max)
-        # Clear the stack after detection to start fresh
         direction_stack.clear()
         directional_signs = {
             label: sign for label, _, sign in self.directional_axes_axis
