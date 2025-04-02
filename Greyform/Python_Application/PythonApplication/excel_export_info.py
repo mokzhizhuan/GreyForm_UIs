@@ -8,6 +8,7 @@ import math
 import openpyxl
 
 
+# fixing this so that It will show based on rotation since I already rotated the wall based on the pdf
 # export excel sheet
 class Exportexcelinfo(object):
     def __init__(
@@ -22,6 +23,8 @@ class Exportexcelinfo(object):
         floor_height,
         wall_finishes_offset,
         wall_offset,
+        label_map,
+        directional_axes_axis,
     ):
         # starting initialize
         super().__init__()
@@ -34,32 +37,25 @@ class Exportexcelinfo(object):
         self.floor_height = int(self.floor_height)
         self.floor_height = self.floor_height * 2
         self.wall_finishes_dimensions = wall_finishes_dimensions
+        print(self.wall_finishes_dimensions)
         self.wall_finishes_offset = wall_finishes_offset
         self.wall_offset = wall_offset
+        self.label_map = label_map
+        self.directional_axes_axis = directional_axes_axis
         self.stagecategory = storingelement.stagecatergorize(self.file)
         self.wallformat, self.heighttotal, self.wall_height = (
-            storingelement.wall_format(self.wall_dimensions)
+            storingelement.wall_format(self.wall_dimensions, self.floor, self.label_map)
         )
-        self.wall_finishes_height = storingelement.wall_format_finishes(
-            self.wall_finishes_dimensions
+        self.wall_finishes_height, self.small_wall_height = (
+            storingelement.wall_format_finishes(self.wall_finishes_dimensions)
         )
         self.spacing = "\n"
-        all_walls = {**self.wall_offset}
-        x_values = [all_walls[key]["x"] for key in all_walls]
-        self.is_descending = all(
-            x_values[i] >= x_values[i + 1] for i in range(len(x_values) - 2)
-        )
         x_axis_walls = [
             wall for wall in self.wallformat.values() if wall.get("axis") == "x"
         ]
         y_axis_walls = [
             wall for wall in self.wallformat.values() if wall.get("axis") == "y"
         ]
-        if self.is_descending is True:
-            self.wall_dimensions = dict(reversed(self.wall_dimensions.items()))
-            self.wallformat, self.heighttotal, self.wall_height = (
-                storingelement.wall_formats_reversed(self.wall_dimensions)
-            )
         if x_axis_walls:
             self.min_widthx = min(
                 wall.get("width", float("inf")) for wall in x_axis_walls
@@ -76,11 +72,6 @@ class Exportexcelinfo(object):
         self.floor[1] = self.max_widthy
         self.addranges()
         self.meterline = 1000
-        if self.is_descending is False:
-            self.wallformat = {
-                key + 1 if key < 6 else 1: value
-                for key, value in self.wallformat.items()
-            }
         self.wallformat = dict(sorted(self.wallformat.items()))
         try:
             data = self.get_objects_data_by_class(file, class_type)
@@ -154,9 +145,7 @@ class Exportexcelinfo(object):
                 self.applystage, axis=1
             )
             dataframe = dataframe[dataframe["Stage"] != "Stage 1"]
-            startingwall = -abs(
-                self.meterline + (self.wall_height / 2)
-            )
+            startingwall = -abs(self.meterline + (self.wall_height / 2))
             endingwall = -abs(self.centerlinez() + (self.wall_height / 2))
             dataframe = dataframe[
                 (dataframe["Position Z (mm)"] >= startingwall)
@@ -198,9 +187,7 @@ class Exportexcelinfo(object):
                 )
             ]
             dataframe = dataframe[
-                ~dataframe["Point number/name"].str.contains(
-                    "LP", case=False, na=False
-                )
+                ~dataframe["Point number/name"].str.contains("LP", case=False, na=False)
             ]
             stages = sorted(
                 dataframe["Stage"].unique(), key=lambda x: (x == "Obstacles", x)
@@ -213,7 +200,7 @@ class Exportexcelinfo(object):
             )
             dataframe.loc[dataframe["Wall Number"] == 7, "Wall Number"] = "F"
             print(self.wallformat)
-            file_name = f"exporteddatassss(with TMP)(draft).xlsx"
+            file_name = f"exporteddatassss(with TMP)(draft1)(tetra).xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
                 for object_class in stages:
@@ -228,6 +215,12 @@ class Exportexcelinfo(object):
         except Exception as e:
             self.log_error(f"Failed to write Excel file: {e}")
 
+    def determine_walls(self, row):
+        for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
+            if "Basic Wall:BSS.50" in wall and wall == row["Point number/name"]:
+                return index + 1
+        return row["Wall Number"]
+
     def refreshwallfinishespoint(self, row):
         name = row["Point number/name"]
         if "Basic Wall:BSS.20mm Wall Finishes (600x600mm)" in name:
@@ -240,6 +233,86 @@ class Exportexcelinfo(object):
         return pd.Series(
             [row["Position X (mm)"], row["Position Y (mm)"], row["Position Z (mm)"]]
         )
+    
+    def calculate_internaldimensionx(self):
+        # Calculate the thickness and small thickness
+        thickness = self.wall_finishes_height + self.wall_height
+        small_thickness = self.small_wall_height + self.wall_height
+        small_thickness_range = range(self.small_wall_height + self.wall_height, 
+                                  self.wall_finishes_height + self.wall_height)
+        # Extract x_max and x_min dynamically from wallformat
+        x_max_values = [
+            wall["pos_x_range"][1]
+            for wall in self.wallformat.values()
+            if wall["axis"] == "x"
+        ]
+        x_min_values = [
+            wall["pos_x_range"][0]
+            for wall in self.wallformat.values()
+            if wall["axis"] == "x"
+        ]
+        y_max_values = [
+            wall["pos_y_range"][1]
+            for wall in self.wallformat.values()
+            if wall["axis"] == "y"
+        ]
+        y_min_values = [
+            wall["pos_y_range"][0]
+            for wall in self.wallformat.values()
+            if wall["axis"] == "y"
+        ]
+
+        # Find the maximum and minimum x values
+        try:
+            x_max = max(x_max_values)
+            x_min = min(x_min_values)
+        except ValueError:
+            print("Error: x_max_values or x_min_values is empty.")
+            return 0
+
+        x_diff = x_max - x_min
+
+        # Check if y-axis has small thickness (more robust condition)
+        y_has_small_thickness = False
+        for y_min, y_max in zip(y_min_values, y_max_values):
+            # Check different combinations that may indicate small thickness
+            for small_thickness in small_thickness_range:
+                if (
+                    abs((y_max - y_min) - small_thickness) <= 10 or
+                    abs((y_min + small_thickness) - y_max) <= 10 or
+                    abs((y_max - small_thickness) - y_min) <= 10 or
+                    abs((y_max - small_thickness) - (y_min + thickness)) <= 10 or
+                    abs((y_max - thickness) - (y_min + small_thickness)) <= 10 or
+                    abs((y_max - small_thickness) - (y_min + small_thickness)) <= 10
+                ):
+                    y_has_small_thickness = True
+                    break
+            if y_has_small_thickness:
+                break
+
+
+        # Dynamically calculate the internal dimension x
+        if y_has_small_thickness:
+            calculated_dimension1 = x_max - (thickness * 2)
+            calculated_dimension2 = x_max - (thickness * 2)
+        else:
+            calculated_dimension1 = x_max - (small_thickness + thickness)
+            calculated_dimension2 = x_max - (small_thickness * 2)
+
+        # Check for the valid internal dimension based on conditions
+        internaldimensionx = None
+        if calculated_dimension1 > 0 and calculated_dimension1 == calculated_dimension2:
+            internaldimensionx = calculated_dimension1 + (thickness * 2)
+        elif calculated_dimension2 > 0:
+            internaldimensionx = calculated_dimension2 + (thickness * 2)
+
+        # Print and return the result if found
+        if internaldimensionx is not None:
+            return internaldimensionx
+
+        # Return default floor dimension if no valid internal dimension found
+        return self.floor[0]
+
 
     def applywallpoints(self, row):
         wall_number = row["Wall Number"]
@@ -247,460 +320,290 @@ class Exportexcelinfo(object):
         positiony = row["Position Y (mm)"]
         positionz = row["Position Z (mm)"]
         name = row["Point number/name"]
-        posy = 0
-        posx = 0
         center_z = self.centerlinez()
-        internaldimensionx = self.floor[0]
         internaldimensiony = self.floor[1]
+        twowall_x = 0
+        thickness = self.wall_finishes_height + self.wall_height
+        internaldimensionx = self.calculate_internaldimensionx()
+        x_min, x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
+        y_min, y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
+        direction_stack = []
+        count_plus_y = 0
+        count_minus_y = 0
+        for index, (start, end, direction) in enumerate(self.directional_axes_axis):
+            # Push current direction to the stack
+            direction_stack.append(direction)
+            # Check if the stack has at least two occurrences of -Y or +Y
+            count_minus_y = direction_stack.count("-Y")
+            count_plus_y = direction_stack.count("+Y")
+            if count_plus_y >= 2:
+                # If there are at least two +Y
+                twowall_x = x_max - (x_max - x_min)
+                # Clear the stack after detection to start fresh
+            elif count_minus_y >= 2:
+                # If there are at least two -Y
+                twowall_x = x_max - x_min
+        if internaldimensiony != (
+            max(self.axis_widths["x"]) - min(self.axis_widths["x"])
+        ):
+            internaldimensiony = max(self.axis_widths["x"]) - min(self.axis_widths["x"])
+            y_max = max(self.axis_widths["x"]) - min(self.axis_widths["x"])
+            y_min = (max(self.axis_widths["x"]) - min(self.axis_widths["x"])) - (
+                max(self.axis_widths["y"]) - min(self.axis_widths["y"])
+            )
         pos_z = positionz - center_z + (self.floorheight) - (self.wall_height / 2)
-        if self.is_descending is not True:
-            for wall_id, wall in self.wallformat.items():
-                if wall_number == wall_id:
-                    if wall["axis"] == "y":
-                        center_x = internaldimensionx / 2
-                        posy = internaldimensiony / 2
-                        robotposx = (
-                            positionx - self.wall_finishes_height - self.wall_height
-                        )
-                        if wall_id == len(self.wallformat):
-                            pos_z = positionz - center_z + (self.floorheight)
-                        if center_x < positionx and internaldimensionx > positionx:
-                            startingrange = wall["pos_y_range"][0]
-                            endrange = wall["pos_y_range"][1]
-                            robotposy = (
-                                positiony
-                                - startingrange
-                                - ((endrange - startingrange) / 2)
-                            )
-                            if wall_id == len(self.wallformat):
-                                robotposx = (
-                                    positionx
-                                    - self.wall_finishes_height
-                                    - self.wall_height
-                                ) - (
-                                    internaldimensiony
-                                    - (
-                                        (self.wall_height + self.wall_finishes_height)
-                                        * 2
-                                    )
-                                )
-                            if robotposy > 0:
-                                return pd.Series(
-                                    [
-                                        robotposx,
-                                        -abs(robotposy),
-                                        pos_z,
-                                    ]
+        for wall_id, wall in self.wallformat.items():
+            center_x = internaldimensionx / 2
+            posy = internaldimensiony / 2
+            if wall_number == wall_id:
+                if wall["axis"] == "y":
+                    if wall_id == len(self.wallformat):
+                        pos_z = positionz - center_z + (self.floorheight)
+                    robotposy = positiony - posy
+                    robotposx = positionx - thickness
+                    if (
+                        twowall_x < positionx
+                        and internaldimensionx > positionx
+                        and count_plus_y == 2
+                    ) or (
+                        center_x < positionx
+                        and internaldimensionx > positionx
+                        and count_minus_y == 2
+                    ):
+                        startingrange = wall["pos_y_range"][0]
+                        if (
+                            startingrange > y_max - y_min - thickness
+                            and startingrange < internaldimensiony - thickness
+                        ):
+                            startingrange = internaldimensiony - thickness
+                        endrange = wall["pos_y_range"][1]
+                        endrangex = wall["pos_x_range"][1]
+                        if (
+                            endrange - startingrange < internaldimensiony
+                            and endrange - startingrange > y_min
+                            and count_plus_y == 2
+                        ):
+                            endrange = internaldimensiony
+                        elif count_plus_y == 2:
+                            endrange = internaldimensiony - thickness
+                        if count_minus_y == 2 and endrangex == x_max:
+                            if self.wallformat[wall_id - 1]["width"] <= x_min:
+                                robotposx = robotposx - (
+                                    (x_max - x_min) - (thickness * 2)
                                 )
                             else:
-                                return pd.Series(
-                                    [
-                                        robotposx,
-                                        abs(robotposy),
-                                        pos_z,
-                                    ]
+                                robotposx = robotposx - (x_max - (x_max - x_min))
+                        elif count_plus_y == 2 and endrangex == x_max:
+                            if self.wallformat[wall_id - 1]["width"] <= x_min:
+                                robotposx = robotposx - (x_max - (x_max - x_min))
+                            else:
+                                robotposx = robotposx - (
+                                    (x_max - x_min) - (thickness * 2)
                                 )
-                        else:
-                            robotposy = positiony - posy
+                        robotposy = (
+                            positiony - startingrange - ((endrange - startingrange) / 2)
+                        )
+                        if robotposy > 0:
                             return pd.Series(
                                 [
                                     robotposx,
-                                    robotposy,
+                                    -abs(robotposy),
+                                    pos_z,
+                                ]
+                            )
+                        else:
+                            return pd.Series(
+                                [
+                                    robotposx,
+                                    abs(robotposy),
                                     pos_z,
                                 ]
                             )
                     else:
-                        posx = internaldimensionx / 2
-                        posy = internaldimensiony / 2
-                        robotposy = (
-                            positiony - self.wall_finishes_height - self.wall_height
+                        endrange = wall["pos_y_range"][1]
+                        if endrange != internaldimensiony:
+                            robotposy = positiony - (endrange / 2)
+                        if count_plus_y == 2:
+                            robotposx = -abs(internaldimensionx - (thickness * 2))
+                        return pd.Series(
+                            [
+                                robotposx,
+                                robotposy,
+                                pos_z,
+                            ]
                         )
-                        if posy < positiony and internaldimensiony > positiony:
-                            startingrange = wall["pos_x_range"][0]
-                            endrange = wall["pos_x_range"][1]
-                            startingrangey = wall["pos_y_range"][0]
-                            endrangey = wall["pos_y_range"][1]
-                            if endrange == internaldimensionx - (self.wall_height * 2):
-                                endrange = self.floor[0] - (
-                                    self.wall_finishes_height * 2
-                                )
-                            if endrange == internaldimensiony - (self.wall_height * 2):
-                                endrange = self.floor[1]
-                            robotposx = (
-                                positionx
-                                - startingrange
-                                - ((endrange - startingrange) / 2)
-                            )
-                            if wall_id == len(self.wallformat) - 1:
-                                robotposy = (
-                                    internaldimensiony
-                                    - (
-                                        (self.wall_height + self.wall_finishes_height)
-                                        * 2
-                                    )
-                                ) - (
-                                    positiony
-                                    - self.wall_finishes_height
-                                    - self.wall_height
-                                )
-                                if robotposy < ((endrangey-startingrangey)*5):
-                                    remainingposy = ((endrangey-startingrangey)*5)-robotposy
-                                    robotposy = robotposy + remainingposy
-                                return pd.Series(
-                                    [
-                                        -abs(robotposy),
-                                        robotposx,
-                                        pos_z,
-                                    ]
-                                )
-                            if robotposx > 0:
-                                return pd.Series(
-                                    [
-                                        robotposy,
-                                        -abs(robotposx),
-                                        pos_z,
-                                    ]
-                                )
-                            else:
-                                return pd.Series(
-                                    [
-                                        robotposy,
-                                        abs(robotposx),
-                                        pos_z,
-                                    ]
-                                )
-
-                        else:
-                            robotposx = positionx - posx
-                            return pd.Series(
-                                [
-                                    robotposy,
-                                    robotposx,
-                                    pos_z,
-                                ]
-                            )
-        else:
-            internaldimensionx = self.floor[0]
-            internaldimensiony = self.wallformat[5]["width"]
-            for wall_id, wall in self.wallformat.items():
-                if wall_number == wall_id:
-                    if wall["axis"] == "y":
-                        center_x = self.min_widthx
-                        if self.wallformat[5]["width"] != internaldimensiony:
-                            internaldimensiony = self.wallformat[5]["width"]
-                        posy = internaldimensiony / 2
-                        pos_x = internaldimensionx - (
-                            (self.wall_finishes_height + self.wall_height) * 2
-                        )
-                        if wall_id == len(self.wallformat):
-                            pos_z = positionz - center_z + (self.floorheight)
+                elif wall["axis"] == "x":
+                    robotposy = positiony - thickness
+                    robotposx = positionx - center_x
+                    if posy < positiony and internaldimensiony > positiony:
+                        startingrange = wall["pos_x_range"][0]
+                        endrange = wall["pos_x_range"][1]
+                        endrangey = wall["pos_y_range"][1]
                         robotposx = (
-                            positionx
-                            - pos_x
-                            - self.wall_finishes_height
-                            - self.wall_height
+                            positionx - startingrange - ((endrange - startingrange) / 2)
                         )
-                        if (
-                            center_x + self.wall_finishes_height + self.wall_height
-                            >= positionx
+                        if count_minus_y == 2 and (
+                            endrangey == y_max - y_min
+                            or endrangey == y_max - (y_max - y_min)
                         ):
-                            startingrange = wall["pos_y_range"][0]
-                            endrange = wall["pos_y_range"][1]
-                            if self.wallformat[6]["width"] == endrange:
-                                endrange = (
-                                    self.wallformat[5]["width"]
-                                    - self.wall_finishes_height
-                                    - self.wall_height
-                                )
-                                robotposx = pos_x + robotposx
-                            if self.wallformat[2]["width"] != (
-                                endrange - startingrange
-                            ):
-                                startingrange = (
-                                    self.wallformat[2]["width"]
-                                    - self.wall_finishes_height
-                                    - self.wall_height
-                                )
-                            robotposy = (
-                                positiony
-                                - startingrange
-                                - ((endrange - startingrange) / 2)
-                            )
-                            return pd.Series(
-                                [
-                                    robotposx,
-                                    robotposy,
-                                    pos_z,
-                                ]
-                            )
-                        else:
-                            if wall_id == len(self.wallformat):
-                                robotposx = (
-                                    positionx
-                                    - (internaldimensionx - self.wallformat[5]["width"])
-                                    - self.wall_finishes_height
-                                    - self.wall_height
-                                )
-                            robotposy = positiony - posy
-                            return pd.Series(
-                                [
-                                    -abs(robotposx),
-                                    robotposy,
-                                    pos_z,
-                                ]
-                            )
-                    elif wall["axis"] == "x":
-                        if self.wallformat[5]["width"] != internaldimensiony:
-                            internaldimensiony = self.wallformat[5]["width"]
-                        posx = internaldimensionx / 2
-                        posy = internaldimensiony / 2
-                        robotposy = (
-                            positiony - self.wall_finishes_height - self.wall_height
-                        )
-                        if posy < positiony and internaldimensiony > positiony:
-                            startingrange = (
-                                wall["pos_x_range"][0]
-                                - self.wall_finishes_height
-                                - self.wall_height
-                            )
-                            endrange = wall["pos_x_range"][1]
-                            endrangey = wall["pos_y_range"][1]
-                            if self.wallformat[2]["width"] != endrangey:
-                                endrangey = self.wallformat[5]["width"]
+                            robotposy = -abs((y_max - (thickness * 2)) - robotposy)
                             robotposx = (
                                 positionx
                                 - startingrange
                                 - ((endrange - startingrange) / 2)
                             )
-                            if wall_id == (len(self.wallformat) - 1):
+                        elif (
+                            count_plus_y == 2
+                            and endrangey > y_max - y_min
+                            and endrangey <= y_max
+                        ):
+                            if self.wallformat[wall_id - 1]["width"] <= y_min:
                                 robotposy = robotposy - (
-                                    self.wallformat[2]["width"]
-                                    - (
-                                        (self.wall_finishes_height + self.wall_height)
-                                        * 2
-                                    )
+                                    (y_max - y_min) - (thickness * 2)
                                 )
-                            if robotposy > (
-                                endrangey
-                                - ((self.wall_finishes_height + self.wall_height) * 2)
-                            ):
-                                remainingposy = robotposy - (
-                                    endrangey
-                                    - (
-                                        (self.wall_finishes_height + self.wall_height)
-                                        * 2
-                                    )
+                            else:
+                                robotposy = robotposy - (
+                                    (y_max - (y_max - y_min)) - (thickness * 2)
                                 )
-                                robotposy = robotposy - remainingposy
+                        if robotposx > 0:
                             return pd.Series(
                                 [
                                     robotposy,
-                                    robotposx,
+                                    -abs(robotposx),
                                     pos_z,
                                 ]
                             )
                         else:
-                            robotposx = positionx - posx
-                            if robotposx > 0:
-                                return pd.Series(
-                                    [
-                                        robotposy,
-                                        -abs(robotposx),
-                                        pos_z,
-                                    ]
-                                )
-                            else:
-                                return pd.Series(
-                                    [
-                                        robotposy,
-                                        abs(robotposx),
-                                        pos_z,
-                                    ]
-                                )
-        return pd.Series(
-            [
-                positionx - self.wall_height - self.wall_finishes_height,
-                positiony - self.wall_height - self.wall_finishes_height,
-                positionz,
-            ]
-        )
+                            return pd.Series(
+                                [
+                                    robotposy,
+                                    abs(robotposx),
+                                    pos_z,
+                                ]
+                            )
+
+                    else:
+                        return pd.Series(
+                            [
+                                robotposy,
+                                robotposx,
+                                pos_z,
+                            ]
+                        )
+        return pd.Series([positionx - thickness, positiony - thickness, positionz])
 
     def centerlinez(self):
         return (self.floorheight - (self.flooroffset)) + self.meterline
 
     def addranges(self):
-        current_y = 0
-        current_x = 0
-        max_y = self.floor[1]  # Maximum Y position based on the image
-        max_x = self.floor[0]  # Maximum X position based on the image
-        for wall in self.wallformat.values():
-            wall.setdefault("pos_x_range", (0, 0))
-            wall.setdefault("pos_y_range", (0, 0))
-        if self.is_descending is not True:
-            for wall_id, wall in self.wallformat.items():
-                if wall["axis"] == "y":  # Wall along the Y-axis
-                    # Y-axis walls increase current_y
-                    if wall_id == 1:  # Specific for Wall 1
-                        wall["pos_x_range"] = (
-                            current_x,
-                            self.wall_height + self.wall_finishes_height,
-                        )
-                        wall["pos_y_range"] = (0, self.floor[0])
-                    elif wall_id == 3:  # Specific for wall 3
-                        wall["pos_x_range"] = (
-                            self.floor[1] - (self.wall_height * 2),
-                            self.floor[1],
-                        )
-                        wall["pos_y_range"] = (
-                            self.floor[1]
-                            - self.wallformat[wall_id]["width"]
-                            - (self.wall_finishes_height + self.wall_height),
-                            self.floor[1]
-                            - (self.wall_finishes_height + self.wall_height),
-                        )
-                    elif wall_id == 5:  # Specific for wall 5
-                        wall["pos_x_range"] = (
-                            self.floor[0] - self.wall_height * 2,
-                            max_x,
-                        )
-                        wall["pos_y_range"] = (
-                            0,
-                            max_y - self.wallformat[wall_id - 2]["width"],
-                        )
+        max_x, max_y = self.floor
+        thickness = self.wall_height + self.wall_finishes_height
+        direction_widths = {}
+        direction_axes = {}
+        self.axis_widths = {"x": [], "y": []}
+        # Step 1: Compute max width and axis per direction
+        for index, (label, wall_data, direction, axis) in enumerate(
+            self.label_map, start=1
+        ):
+            wall_width = self.wallformat[index]["width"]
+            mesh = wall_data["mesh"]
+            x_len = mesh.bounds[1] - mesh.bounds[0]
+            y_len = mesh.bounds[3] - mesh.bounds[2]
+            if (
+                direction not in direction_widths
+                or wall_width > direction_widths[direction]
+            ):
+                direction_widths[direction] = wall_width
+                direction_axes[direction] = axis.lower()
+            self.axis_widths[axis.lower()].append(wall_width)
+        x_min, x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
+        y_min, y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
+        interior_x, interior_y = None, None
+        direction_stack = []
+        for index, (start, end, direction) in enumerate(self.directional_axes_axis):
+            # Push current direction to the stack
+            direction_stack.append(direction)
+
+            # Check if the stack has at least two occurrences of -Y or +Y
+            count_minus_y = direction_stack.count("-Y")
+            count_plus_y = direction_stack.count("+Y")
+            if count_plus_y >= 2:
+                # If there are at least two +Y
+                interior_x = (x_max - (x_max - x_min), x_max)
+                interior_y = (y_max - y_min, y_max)
+                # Clear the stack after detection to start fresh
+                direction_stack.clear()
+            elif count_minus_y >= 2:
+                # If there are at least two -Y
+                interior_x = (x_max - x_min, x_max)
+                interior_y = (y_max - y_min, y_max)
+        # Clear the stack after detection to start fresh
+        direction_stack.clear()
+        directional_signs = {
+            label: sign for label, _, sign in self.directional_axes_axis
+        }
+        for index, (_, _, direction, _) in enumerate(self.label_map, start=1):
+            wall = self.wallformat[index]
+            wall_width = wall["width"]
+            axis = direction_axes[direction]
+            is_exterior = wall_width == direction_widths[direction]
+            sign = directional_signs.get(label, "")
+            next_index = index % len(self.label_map)
+            next_label = self.label_map[next_index][0]
+            next_sign = directional_signs.get(next_label, "")
+            if is_exterior:
+                if direction == "South":
+                    wall["pos_x_range"] = (0, wall_width)
+                    wall["pos_y_range"] = (0, thickness)
+                elif direction == "North":
+                    if next_sign == "-Y" and next_index == 3:
+                        wall["pos_x_range"] = (0, wall_width)
+                        wall["pos_y_range"] = (max_y - thickness, max_y)
                     else:
-                        wall["pos_x_range"] = (0, max_x)
-                        wall["pos_y_range"] = (current_y, current_y + self.floor[0])
-                elif wall["axis"] == "x":  # Wall along the X-axis
-                    # X-axis walls increase current_x
-                    if wall_id == 2:  # Specific for Wall 2
+                        wall["pos_x_range"] = (interior_x[0], interior_x[1])
+                        wall["pos_y_range"] = (max_y - thickness, max_y)
+                elif direction == "West":
+                    if next_sign == "+Y":
                         wall["pos_x_range"] = (
-                            0,
-                            (wall["width"] - (self.wall_height * 2)),
+                            interior_x[0] - thickness,
+                            interior_x[1] - thickness,
                         )
-                        wall["pos_y_range"] = (
-                            max_y
-                            - self.wallformat[wall_id + 1]["width"]
-                            + self.wall_height,
-                            max_y,
-                        )
-                    elif wall_id == 4:  # Specific for Wall 4
-                        wall["pos_x_range"] = (
-                            self.floor[1] - self.wall_finishes_height,
-                            max_x - self.wall_height - self.wall_finishes_height,
-                        )
-                        wall["pos_y_range"] = (
-                            max_y
-                            - self.wallformat[wall_id - 1]["width"]
-                            - self.wall_height * 2
-                            - self.wall_finishes_height,
-                            max_y - self.wallformat[wall_id - 1]["width"],
-                        )
-                    elif wall_id == 6:  # Wall 6
-                        wall["pos_x_range"] = (
-                            self.wall_finishes_height + self.wall_height,
-                            max_x - (self.wall_height * 2),
-                        )  # Corrected range
-                        wall["pos_y_range"] = (current_y, self.wall_height)
+                        wall["pos_y_range"] = (max_y - thickness, max_y)
+                    else:
+                        wall["pos_x_range"] = (0, thickness)
+                        wall["pos_y_range"] = (0, wall_width)
+                elif direction == "East":
+                    wall["pos_x_range"] = (max_x - thickness, max_x)
+                    wall["pos_y_range"] = (0, wall_width)
+            else:
+                if direction == "North":
+                    wall["pos_x_range"] = (interior_x[0] - thickness, interior_x[0])
+                    wall["pos_y_range"] = (
+                        interior_y[0] - thickness,
+                        interior_y[1] - thickness,
+                    )
+                elif direction == "East":
+                    wall["pos_x_range"] = (
+                        interior_x[0] - thickness,
+                        interior_x[1] - thickness,
+                    )
+                    wall["pos_y_range"] = (interior_y[0] - thickness, interior_y[0])
+                elif direction == "South":
+                    wall["pos_x_range"] = (interior_x[0] - thickness, interior_x[0])
+                    wall["pos_y_range"] = (
+                        interior_y[0] - thickness,
+                        interior_y[1] - thickness,
+                    )
+                elif direction == "West":
+                    if next_sign == "+Y":
+                        wall["pos_x_range"] = (thickness, wall_width)
+                        wall["pos_y_range"] = (interior_y[0] - thickness, interior_y[0])
                     else:
                         wall["pos_x_range"] = (
-                            current_x,
-                            current_x
-                            + max_x
-                            - self.wall_finishes_height
-                            - self.wall_height,
+                            interior_x[0] - thickness,
+                            interior_x[1] - thickness,
                         )
-                        wall["pos_y_range"] = (current_y, max_y)
-                wall["pos_x_range"] = (
-                    max(current_x, wall["pos_x_range"][0]),
-                    min(max_x, wall["pos_x_range"][1]),
-                )
-                wall["pos_y_range"] = (
-                    max(0, wall["pos_y_range"][0]),
-                    min(max_y, wall["pos_y_range"][1]),
-                )
-        else:
-            for wall_id, wall in self.wallformat.items():
-                if wall["axis"] == "y":  # Walls along the Y-axis
-                    if wall_id == 6:  # Wall 1
-                        wall["pos_x_range"] = (
-                            max_x,
-                            max_x - self.wall_finishes_height - self.wall_height,
-                        )
-                        wall["pos_y_range"] = (0, self.floor[1])
-                    elif wall_id == 4:  # Wall 3
-                        wall["pos_x_range"] = (
-                            max_x - self.wallformat[wall_id + 1]["width"],
-                            max_x
-                            - self.wallformat[wall_id + 1]["width"]
-                            + self.wall_height
-                            + self.wall_finishes_height,
-                        )
-                        wall["pos_y_range"] = (
-                            self.floor[1] - self.wallformat[wall_id]["width"],
-                            self.floor[1],
-                        )
-                    elif wall_id == 2:  # Wall 5
-                        wall["pos_x_range"] = (
-                            current_x + self.wall_height + self.wall_finishes_height,
-                            current_x,
-                        )
-                        wall["pos_y_range"] = (
-                            0,
-                            max_y - self.wallformat[wall_id + 2]["width"],
-                        )
-                    else:  # Default case
-                        wall["pos_x_range"] = (max_x, 0)
-                        wall["pos_y_range"] = (current_y, current_y + self.floor[0])
-                elif wall["axis"] == "x":  # Walls along the X-axis
-                    if wall_id == 5:  # Wall 2
-                        wall["pos_x_range"] = (
-                            max_x,
-                            max_x
-                            - self.wallformat[wall_id]["width"]
-                            + self.wall_height
-                            + self.wall_finishes_height,
-                        )
-                        wall["pos_y_range"] = (
-                            max_y - self.wall_height - self.wall_finishes_height,
-                            max_y,
-                        )
-                    elif wall_id == 3:  # Wall 4
-                        wall["pos_x_range"] = (
-                            max_x
-                            - self.wallformat[wall_id + 2]["width"]
-                            + self.wall_height
-                            + self.wall_finishes_height,
-                            current_x + self.wall_height + self.wall_finishes_height,
-                        )
-                        wall["pos_y_range"] = (
-                            max_y
-                            - self.wallformat[wall_id + 1]["width"]
-                            - self.wall_height * 2
-                            - self.wall_finishes_height,
-                            max_y - self.wallformat[wall_id + 1]["width"],
-                        )
-                    elif wall_id == 1:  # Wall 6 (Remains unchanged)
-                        wall["pos_x_range"] = (
-                            self.wall_finishes_height + self.wall_height,
-                            max_x - self.wall_finishes_height - self.wall_height,
-                        )
-                        wall["pos_y_range"] = (current_y, self.wall_height)
-                    else:  # Default case
-                        wall["pos_x_range"] = (
-                            max_x - self.wall_finishes_height - self.wall_height,
-                            current_x,
-                        )
-                        wall["pos_y_range"] = (current_y, max_y)
-            # Step 2: Restore all walls back to (min_x, max_x)
-            for wall_id, wall in self.wallformat.items():
-                wall["pos_x_range"] = (
-                    min(wall["pos_x_range"]),  # Ensure min_x is first
-                    max(wall["pos_x_range"]),  # Ensure max_x is second
-                )
-                wall["pos_y_range"] = (
-                    min(wall["pos_y_range"]),  # Ensure min_y is first
-                    max(wall["pos_y_range"]),  # Ensure max_y is second
-                )
+                        wall["pos_y_range"] = (interior_y[0] - thickness, interior_y[0])
 
     def itemposition(self, row):
         register = row["Unnamed : 9"]
@@ -925,24 +828,6 @@ class Exportexcelinfo(object):
             ]
         )
 
-    def determine_walls(self, row):
-        for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
-            if "Basic Wall:BSS.50" in wall and wall == row["Point number/name"]:
-                if index == len(self.wall_dimensions) - 1:
-                    return 1
-                return index + 2
-        return row["Wall Number"]
-
-    def wall_increment(self, row):
-        name = row["Point number/name"]
-        if row["Wall Number"] == 6:
-            if all(keyword not in name for keyword in ["CP", "LP", "SP", "TMP"]):
-                return 1
-        elif row["Wall Number"] < 6:
-            if all(keyword not in name for keyword in ["CP", "LP", "SP", "TMP"]):
-                return row["Wall Number"] + 1
-        return row["Wall Number"]
-
     # get wall height and width
     def determinewallbasedonwidthandheight(self, row):
         name = row["Point number/name"]
@@ -950,30 +835,6 @@ class Exportexcelinfo(object):
             if (index + 1) == row["Wall Number"]:
                 width = dims.get("width", "Not available")
                 height = dims.get("height", "Not available")
-                if (
-                    index + 1
-                    == 4 & row["Wall Number"]
-                    == 4 & self.is_descending
-                    is True
-                ):
-                    return pd.Series(
-                        [
-                            (
-                                (
-                                    self.wallformat[5]["width"]
-                                    - (
-                                        (self.wall_height + self.wall_finishes_height)
-                                        * 2
-                                    )
-                                )
-                                / 3
-                            ),
-                            height,
-                            row["Position X (mm)"],
-                            row["Position Y (mm)"],
-                            row["Position Z (mm)"],
-                        ]
-                    )
                 return pd.Series(
                     [
                         width,
@@ -985,16 +846,6 @@ class Exportexcelinfo(object):
                 )
             if row["Wall Number"] == 7:
                 height = dims.get("height", "Not available")
-                if "Floor" in name:
-                    return pd.Series(
-                        [
-                            self.floor[0],
-                            self.floor[1],
-                            (self.floor[0]) / 2,
-                            self.floor[1] / 2,
-                            0,
-                        ]
-                    )
                 return pd.Series(
                     [
                         self.floor[0],
@@ -1006,16 +857,6 @@ class Exportexcelinfo(object):
                 )
             elif row["Wall Number"] == 8:
                 height = dims.get("height", "Not available")
-                if "Floor" in name:
-                    return pd.Series(
-                        [
-                            self.floor[0],
-                            self.floor[1],
-                            (self.floor[0]) / 2,
-                            self.floor[1] / 2,
-                            height,
-                        ]
-                    )
                 return pd.Series(
                     [
                         self.floor[0],
