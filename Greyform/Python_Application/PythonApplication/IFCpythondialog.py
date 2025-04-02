@@ -217,7 +217,6 @@ class ProgressBarDialogIFC(QDialog):
                             }
                 except Exception as e:
                     self.log_error(f"Error while processing IFC shapes: {e}")
-                    # === Bounding box ===
                 centers = np.array([w["center"] for w in wallsformat])
                 x_min, x_max = centers[:, 0].min(), centers[:, 0].max()
                 y_min, y_max = centers[:, 1].min(), centers[:, 1].max()
@@ -336,19 +335,15 @@ class ProgressBarDialogIFC(QDialog):
     def validate_and_fix_wall_finishes(self, wall_finishes_dimensions):
         invalid_walls = {}
         fixed_walls = {}
-
-        # Dynamically get the expected heights
         expected_heights = self.get_expected_heights(wall_finishes_dimensions)
         for wall_name, dimensions in wall_finishes_dimensions.items():
-        # Check each wall type dynamically
             for wall_type, expected_height in expected_heights.items():
                 if wall_type in wall_name:
-                    # Check if height is not as expected and width is as expected
                     if dimensions['height'] != expected_height and dimensions['width'] == expected_height:
                         dimensions['width'], dimensions['height'] = dimensions['height'], dimensions['width']
                     # Store the (fixed or correct) dimensions
                     fixed_walls[wall_name] = dimensions
-                    break  # Stop checking further once a match is found
+                    break  # 
         return fixed_walls
 
     def get_expected_heights(self, wall_finishes_dimensions):

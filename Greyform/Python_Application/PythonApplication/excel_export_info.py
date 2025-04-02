@@ -4,11 +4,7 @@ from ifcopenshell.util.placement import get_local_placement, get_axis2placement
 import PythonApplication.arraystorage as storingelement
 import ifcopenshell
 import numpy as np
-import math
-import openpyxl
 
-
-# fixing this so that It will show based on rotation since I already rotated the wall based on the pdf
 # export excel sheet
 class Exportexcelinfo(object):
     def __init__(
@@ -37,7 +33,6 @@ class Exportexcelinfo(object):
         self.floor_height = int(self.floor_height)
         self.floor_height = self.floor_height * 2
         self.wall_finishes_dimensions = wall_finishes_dimensions
-        print(self.wall_finishes_dimensions)
         self.wall_finishes_offset = wall_finishes_offset
         self.wall_offset = wall_offset
         self.label_map = label_map
@@ -235,12 +230,10 @@ class Exportexcelinfo(object):
         )
     
     def calculate_internaldimensionx(self):
-        # Calculate the thickness and small thickness
         thickness = self.wall_finishes_height + self.wall_height
         small_thickness = self.small_wall_height + self.wall_height
         small_thickness_range = range(self.small_wall_height + self.wall_height, 
                                   self.wall_finishes_height + self.wall_height)
-        # Extract x_max and x_min dynamically from wallformat
         x_max_values = [
             wall["pos_x_range"][1]
             for wall in self.wallformat.values()
@@ -261,18 +254,8 @@ class Exportexcelinfo(object):
             for wall in self.wallformat.values()
             if wall["axis"] == "y"
         ]
-
-        # Find the maximum and minimum x values
-        try:
-            x_max = max(x_max_values)
-            x_min = min(x_min_values)
-        except ValueError:
-            print("Error: x_max_values or x_min_values is empty.")
-            return 0
-
-        x_diff = x_max - x_min
-
-        # Check if y-axis has small thickness (more robust condition)
+        x_max = max(x_max_values)
+        x_min = min(x_min_values)
         y_has_small_thickness = False
         for y_min, y_max in zip(y_min_values, y_max_values):
             # Check different combinations that may indicate small thickness
@@ -289,28 +272,19 @@ class Exportexcelinfo(object):
                     break
             if y_has_small_thickness:
                 break
-
-
-        # Dynamically calculate the internal dimension x
         if y_has_small_thickness:
             calculated_dimension1 = x_max - (thickness * 2)
             calculated_dimension2 = x_max - (thickness * 2)
         else:
             calculated_dimension1 = x_max - (small_thickness + thickness)
             calculated_dimension2 = x_max - (small_thickness * 2)
-
-        # Check for the valid internal dimension based on conditions
         internaldimensionx = None
         if calculated_dimension1 > 0 and calculated_dimension1 == calculated_dimension2:
             internaldimensionx = calculated_dimension1 + (thickness * 2)
         elif calculated_dimension2 > 0:
             internaldimensionx = calculated_dimension2 + (thickness * 2)
-
-        # Print and return the result if found
         if internaldimensionx is not None:
             return internaldimensionx
-
-        # Return default floor dimension if no valid internal dimension found
         return self.floor[0]
 
 
@@ -331,17 +305,12 @@ class Exportexcelinfo(object):
         count_plus_y = 0
         count_minus_y = 0
         for index, (start, end, direction) in enumerate(self.directional_axes_axis):
-            # Push current direction to the stack
             direction_stack.append(direction)
-            # Check if the stack has at least two occurrences of -Y or +Y
             count_minus_y = direction_stack.count("-Y")
             count_plus_y = direction_stack.count("+Y")
             if count_plus_y >= 2:
-                # If there are at least two +Y
                 twowall_x = x_max - (x_max - x_min)
-                # Clear the stack after detection to start fresh
             elif count_minus_y >= 2:
-                # If there are at least two -Y
                 twowall_x = x_max - x_min
         if internaldimensiony != (
             max(self.axis_widths["x"]) - min(self.axis_widths["x"])
@@ -501,7 +470,6 @@ class Exportexcelinfo(object):
         direction_widths = {}
         direction_axes = {}
         self.axis_widths = {"x": [], "y": []}
-        # Step 1: Compute max width and axis per direction
         for index, (label, wall_data, direction, axis) in enumerate(
             self.label_map, start=1
         ):
@@ -523,21 +491,16 @@ class Exportexcelinfo(object):
         for index, (start, end, direction) in enumerate(self.directional_axes_axis):
             # Push current direction to the stack
             direction_stack.append(direction)
-
-            # Check if the stack has at least two occurrences of -Y or +Y
             count_minus_y = direction_stack.count("-Y")
             count_plus_y = direction_stack.count("+Y")
             if count_plus_y >= 2:
-                # If there are at least two +Y
                 interior_x = (x_max - (x_max - x_min), x_max)
                 interior_y = (y_max - y_min, y_max)
-                # Clear the stack after detection to start fresh
                 direction_stack.clear()
             elif count_minus_y >= 2:
                 # If there are at least two -Y
                 interior_x = (x_max - x_min, x_max)
                 interior_y = (y_max - y_min, y_max)
-        # Clear the stack after detection to start fresh
         direction_stack.clear()
         directional_signs = {
             label: sign for label, _, sign in self.directional_axes_axis
@@ -547,7 +510,6 @@ class Exportexcelinfo(object):
             wall_width = wall["width"]
             axis = direction_axes[direction]
             is_exterior = wall_width == direction_widths[direction]
-            sign = directional_signs.get(label, "")
             next_index = index % len(self.label_map)
             next_label = self.label_map[next_index][0]
             next_sign = directional_signs.get(next_label, "")
