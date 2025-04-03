@@ -44,7 +44,6 @@ class Exportexcelinfo(object):
         self.wall_finishes_height, self.small_wall_height = (
             storingelement.wall_format_finishes(self.wall_finishes_dimensions)
         )
-        self.spacing = "\n"
         self.wallformat, self.axis_widths = extractor.addranges(
             self.floor,
             self.wall_height,
@@ -138,7 +137,7 @@ class Exportexcelinfo(object):
                 "BSS.TECE.CONCEALED",
                 "BSS.Gate Valve",
                 "LP",
-                "Floor"
+                "Floor",
             ]
             pattern = "|".join(unwanted_names)
             dataframe = dataframe[
@@ -264,34 +263,16 @@ class Exportexcelinfo(object):
                             positiony - startingrange - ((endrange - startingrange) / 2)
                         )
                         if robotposy > 0:
-                            return pd.Series(
-                                [
-                                    robotposx,
-                                    -abs(robotposy),
-                                    pos_z,
-                                ]
-                            )
+                            return pd.Series([robotposx, -abs(robotposy), pos_z])
                         else:
-                            return pd.Series(
-                                [
-                                    robotposx,
-                                    abs(robotposy),
-                                    pos_z,
-                                ]
-                            )
+                            return pd.Series([robotposx, abs(robotposy), pos_z])
                     else:
                         endrange = wall["pos_y_range"][1]
                         if endrange != internaldimensiony:
                             robotposy = positiony - (endrange / 2)
                         if count_plus_y == 2:
                             robotposx = -abs(internaldimensionx - (thickness * 2))
-                        return pd.Series(
-                            [
-                                robotposx,
-                                robotposy,
-                                pos_z,
-                            ]
-                        )
+                        return pd.Series([robotposx, robotposy, pos_z])
                 elif wall["axis"] == "x":
                     robotposy = positiony - thickness
                     robotposx = positionx - center_x
@@ -326,46 +307,24 @@ class Exportexcelinfo(object):
                                     (y_max - (y_max - y_min)) - (thickness * 2)
                                 )
                         if robotposx > 0:
-                            return pd.Series(
-                                [
-                                    robotposy,
-                                    -abs(robotposx),
-                                    pos_z,
-                                ]
-                            )
+                            return pd.Series([robotposy, -abs(robotposx), pos_z])
                         else:
-                            return pd.Series(
-                                [
-                                    robotposy,
-                                    abs(robotposx),
-                                    pos_z,
-                                ]
-                            )
-
+                            return pd.Series([robotposy, abs(robotposx), pos_z])
                     else:
-                        return pd.Series(
-                            [
-                                robotposy,
-                                robotposx,
-                                pos_z,
-                            ]
-                        )
+                        return pd.Series([robotposy, robotposx, pos_z])
         return pd.Series([positionx - thickness, positiony - thickness, positionz])
 
     def centerlinez(self):
         return (self.floorheight - (self.flooroffset)) + self.meterline
 
     def itemposition(self, row):
-        register = row["Unnamed : 9"]
         walls = 0
         for index, (wall, data) in enumerate(self.wallformat.items()):
             transformed_x = row["Position X (mm)"]
             transformed_y = row["Position Y (mm)"]
             transformed_z = row["Position Z (mm)"]
             x_pass = data["pos_x_range"][0] < transformed_x < data["pos_x_range"][1]
-            y_pass = (
-                data["pos_y_range"][0] <= transformed_y < data["pos_y_range"][1]
-            )
+            y_pass = data["pos_y_range"][0] <= transformed_y < data["pos_y_range"][1]
             z_pass = transformed_z >= -abs(self.floorheight - self.wall_height)
             if x_pass and y_pass and z_pass:
                 return wall
