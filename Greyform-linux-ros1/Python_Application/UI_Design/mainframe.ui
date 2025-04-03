@@ -142,7 +142,7 @@
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_20" stretch="1,1">
        <item>
-        <widget class="QListView" name="Selectivefiledirectoryview">
+        <widget class="QTreeView" name="Selectivefiledirectoryview">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
            <horstretch>0</horstretch>
@@ -152,7 +152,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListView" name="Selectivefilelistview">
+        <widget class="QTreeView" name="Selectivefilelistview">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="MinimumExpanding">
            <horstretch>0</horstretch>

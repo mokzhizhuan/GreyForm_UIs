@@ -30,6 +30,16 @@ class Bridge(QObject):
         return "Hello from PyQt5!"
 
 
+class FileItemDelegate(QStyledItemDelegate):
+    def sizeHint(self, option, index):
+        size = super().sizeHint(option, index)
+        size.setWidth(size.width() + 50)  # Increase the width for better visibility
+        return size
+
+    def paint(self, painter, option, index):
+        option.displayAlignment = Qt.AlignLeft | Qt.AlignVCenter  # Align text for readability
+        super().paint(painter, option, index)
+
 class FileFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, parent=None):
         super(FileFilterProxyModel, self).__init__(parent)
@@ -46,7 +56,7 @@ class FileFilterProxyModel(QSortFilterProxyModel):
             return True
         allowed_extensions = {".dxf", ".ifc", ".stl"}
         return any(file_name.lower().endswith(ext) for ext in allowed_extensions)
-
+    
 # load the mainwindow application
 class Ui_MainWindow(QMainWindow):
     # starting ui
@@ -97,16 +107,42 @@ class Ui_MainWindow(QMainWindow):
         )
         self.model = QFileSystemModel()
         self.model.setRootPath("")  # Show entire system
-        self.model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot)  # Show only folders
+        self.model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot | QDir.Drives)  # Show only folders
         self.mainwindow.Selectivefiledirectoryview.setModel(self.model)
-        root_index = self.model.index("/")  # Set root to '/' for Linux
+        root_index = self.model.index(QDir.rootPath())
         self.mainwindow.Selectivefiledirectoryview.setRootIndex(root_index)  # Now safe to set
         self.file_model = QFileSystemModel()
-        self.file_model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)  
-        self.file_model.setRootPath("/")  # Initialize root
+        self.file_model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot| QDir.Drives) 
+        self.file_model.setRootPath(QDir.rootPath())
+        self.mainwindow.Selectivefiledirectoryview.setModel(self.file_model)
+        self.mainwindow.Selectivefiledirectoryview.setRootIndex(self.file_model.index(QDir.rootPath()))
+        self.mainwindow.Selectivefiledirectoryview.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.mainwindow.Selectivefiledirectoryview.setHeaderHidden(True) 
+        self.mainwindow.Selectivefiledirectoryview.setAnimated(True)  # Smooth folder expansion
+        self.mainwindow.Selectivefiledirectoryview.setIndentation(20)  # Indentation for nested folders
         self.proxy_model = FileFilterProxyModel()
         self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefilelistview.setModel(self.file_model)
+        self.mainwindow.Selectivefilelistview.setRootIndex(self.file_model.index(QDir.rootPath()))
+        self.mainwindow.Selectivefilelistview.setHeaderHidden(False)
+        self.mainwindow.Selectivefilelistview.setSortingEnabled(True)  # Allow sorting by columns
+        self.mainwindow.Selectivefilelistview.setUniformRowHeights(True)  # Optimize performance
+        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)  # Better visibility
+        self.mainwindow.Selectivefilelistview.setSelectionMode(QAbstractItemView.SingleSelection)
+        header = self.mainwindow.Selectivefilelistview.header()
+        header.setSectionResizeMode(QHeaderView.ResizeToContents)
+        header.setStretchLastSection(True)  # Stretch the last column to fill space
+        self.file_model.setHeaderData(0, Qt.Horizontal, "Name")
+        self.file_model.setHeaderData(1, Qt.Horizontal, "Size")
+        self.file_model.setHeaderData(2, Qt.Horizontal, "Type")
+        self.file_model.setHeaderData(3, Qt.Horizontal, "Date Modified")
+        self.mainwindow.Selectivefilelistview.sortByColumn(0, Qt.AscendingOrder)  # Sort by Name initially
+        self.mainwindow.Selectivefilelistview.setItemsExpandable(False)  # Disable folder expansion
+        self.mainwindow.Selectivefilelistview.setRootIsDecorated(False)  # Hide tree structure in the right panel
+        self.mainwindow.Selectivefilelistview.setColumnWidth(0, 250)  # Minimum width for "Name"
+        self.mainwindow.Selectivefilelistview.setIconSize(QSize(32, 32))  # Slightly larger icon size
+        delegate = FileItemDelegate()
+        self.mainwindow.Selectivefilelistview.setItemDelegate(delegate)
         self.mainwindow.Selectivefiledirectoryview.clicked.connect(self.on_folder_selected)
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
         self.mainwindow.horizontalLayout_16.addWidget(self.plotterloader.interactor)
