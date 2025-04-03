@@ -38,11 +38,16 @@ class Exportexcelinfo(object):
         self.directional_axes_axis = directional_axes_axis
         self.stagecategory = storingelement.stagecatergorize(self.file)
         self.axis_widths = {"x": [], "y": []}
-        self.wallformat, self.heighttotal, self.wall_height = (
-            storingelement.wall_format(self.wall_dimensions, self.floor, self.label_map)
-        )
         self.wall_finishes_height, self.small_wall_height = (
             storingelement.wall_format_finishes(self.wall_finishes_dimensions)
+        )
+        self.wallformat, self.heighttotal, self.wall_height = (
+            storingelement.wall_format(
+                self.wall_dimensions,
+                self.floor,
+                self.label_map,
+                self.wall_finishes_height,
+            )
         )
         self.wallformat, self.axis_widths = extractor.addranges(
             self.floor,
@@ -120,9 +125,7 @@ class Exportexcelinfo(object):
             ]  # Exclude specific conditions for Wall Number 7
             dataframe = dataframe[
                 ~(
-                    dataframe["Position Z (mm)"].between(
-                        0, self.wall_finishes_height / 2
-                    )
+                    (dataframe["Position Z (mm)"] < -(self.wall_height / 2))
                     & (dataframe["Wall Number"] == 7)
                 )
             ]
@@ -134,6 +137,10 @@ class Exportexcelinfo(object):
                 "BSS.Gate Valve",
                 "LP",
                 "Floor",
+                "Vesbo",
+                "Chrome",
+                "Ceiling",
+                "THRESHOLD",
             ]
             pattern = "|".join(unwanted_names)
             dataframe = dataframe[
@@ -151,7 +158,7 @@ class Exportexcelinfo(object):
                 by="Wall Number"
             )
             dataframe.loc[dataframe["Wall Number"] == 7, "Wall Number"] = "F"
-            file_name = f"exporteddatassss(with TMP)(draft1)(tetra).xlsx"
+            file_name = f"exporteddatassss(with TMP)(draft)(tetra).xlsx"
             print(self.wallformat)
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
@@ -314,7 +321,10 @@ class Exportexcelinfo(object):
                         else:
                             return pd.Series([robotposy, robotposx, pos_z])
                     else:
-                        return pd.Series([robotposy, robotposx, pos_z])
+                        if robotposx > 0:
+                            return pd.Series([robotposy, -abs(robotposx), pos_z])
+                        else:
+                            return pd.Series([robotposy, abs(robotposx), pos_z])
         return pd.Series([positionx - thickness, positiony - thickness, positionz])
 
     def centerlinez(self):
@@ -331,12 +341,12 @@ class Exportexcelinfo(object):
             z_pass = transformed_z >= -abs(self.floorheight - self.wall_height)
             if x_pass and y_pass and z_pass:
                 return wall
-        if row["Position Z (mm)"] < -abs(self.floorheight - self.wall_height):
-            walls = 7
-            return walls
-        elif self.heighttotal - 60 <= row["Position Z (mm)"] <= self.heighttotal:
-            walls = 8
-            return walls
+            if row["Position Z (mm)"] < -abs(self.floorheight - self.wall_height):
+                walls = 7
+                return walls
+            elif self.heighttotal - 60 <= row["Position Z (mm)"] <= self.heighttotal:
+                walls = 8
+                return walls
         return row["Wall Number"]
 
     def applystage(self, row):

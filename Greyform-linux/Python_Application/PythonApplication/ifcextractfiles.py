@@ -252,10 +252,10 @@ def addranges(floor , wall_height, wall_finishes_height, label_map, wallformat, 
             elif direction == "North":
                 if next_sign == "-Y" and next_index == 3:
                     wall["pos_x_range"] = (0, wall_width)
-                    wall["pos_y_range"] = (max_y - thickness, max_y)
+                    wall["pos_y_range"] = (max_y - thickness - (wall_height*11), max_y)
                 else:
                     wall["pos_x_range"] = (interior_x[0], interior_x[1])
-                    wall["pos_y_range"] = (max_y - thickness, max_y)
+                    wall["pos_y_range"] = (max_y - thickness - (wall_height*11), max_y)
             elif direction == "West":
                 if next_sign == "+Y":
                     wall["pos_x_range"] = (

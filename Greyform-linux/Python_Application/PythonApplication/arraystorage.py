@@ -42,7 +42,7 @@ def stagecatergorize(ifc_file):
 
 
 def add_legends():
-    dataframe_Legend = pd.read_excel("Pin Allocation BOM for PBU_T1a.xlsx", engine='openpyxl', skiprows=2)
+    dataframe_Legend = pd.read_excel("Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2, engine='openpyxl')
     pen_column = dataframe_Legend.columns[3]
     pin_id_column = dataframe_Legend.columns[9]
     dataframe_Legend = dataframe_Legend[[pen_column, pin_id_column]]
@@ -74,7 +74,7 @@ def add_legends():
     return wall_legend, pen_column, pin_id_column, wall_600x600mm, wall_name, indexwall
 
 
-def wall_format(wall, floor, label_map):
+def wall_format(wall, floor, label_map, wall_finishes_height):
     wall_format = {}
     axis = ""
     direction_groups = {}
@@ -108,9 +108,9 @@ def wall_format(wall, floor, label_map):
         wall_format[index] = {
             "axis": axis,
             "width": final_width,
-            "height": depth + height + 10,
+            "height": depth + height + (wall_finishes_height/2),
         }
-        heighttotal = depth + height + 10
+        heighttotal = depth + height + (wall_finishes_height/2)
     return wall_format, heighttotal, height
 
 
