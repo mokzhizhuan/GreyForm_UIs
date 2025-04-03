@@ -105,13 +105,9 @@ class Exportexcelinfo(object):
                     "Position Z (mm)",
                 ]
             ] = dataframe.apply(self.determinewallbasedonwidthandheight, axis=1)
-            dataframe[
-                [
-                    "Position X (mm)",
-                    "Position Y (mm)",
-                    "Position Z (mm)",
-                ]
-            ] = dataframe.apply(self.applywallpoints, axis=1)
+            dataframe[["Position X (mm)", "Position Y (mm)", "Position Z (mm)"]] = (
+                dataframe.apply(self.applywallpoints, axis=1)
+            )
             dataframe[["Stage", "Marking type"]] = dataframe.apply(
                 self.applystage, axis=1
             )

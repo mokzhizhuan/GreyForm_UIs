@@ -431,7 +431,6 @@ class ProgressBarDialogIFC(QDialog):
     def convertStl(self, data):
         try:
             points = np.array(data["points"])
-            message = f"Points: {self.spacing}"
             cells = [("triangle", np.array(data["cells"]))]
             self.stl_file = "output.stl"
             mesh = meshio.Mesh(points=points, cells=cells)
