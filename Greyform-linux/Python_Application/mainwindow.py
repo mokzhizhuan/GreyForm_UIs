@@ -84,13 +84,13 @@ class Ui_MainWindow(QMainWindow):
         )
         self.model = QFileSystemModel()
         self.model.setRootPath("")  # Show entire system
-        self.model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot)  # Show only folders
+        self.model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot | QDir.Drives)  # Show only folders
         self.mainwindow.Selectivefiledirectoryview.setModel(self.model)
-        root_index = self.model.index("/")  # Set root to '/' for Linux
+        root_index = self.model.index(QDir.rootPath())
         self.mainwindow.Selectivefiledirectoryview.setRootIndex(root_index)  # Now safe to set
         self.file_model = QFileSystemModel()
-        self.file_model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot)  
-        self.file_model.setRootPath("/")  # Initialize root
+        self.file_model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot| QDir.Drives) 
+        self.file_model.setRootPath(QDir.rootPath())
         self.proxy_model = FileFilterProxyModel()
         self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefilelistview.setModel(self.file_model)
