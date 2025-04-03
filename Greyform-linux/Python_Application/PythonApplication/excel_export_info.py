@@ -156,6 +156,7 @@ class Exportexcelinfo(object):
             )
             dataframe.loc[dataframe["Wall Number"] == 7, "Wall Number"] = "F"
             file_name = f"exporteddatassss(with TMP)(draft1)(tetra).xlsx"
+            print(self.wallformat)
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
                 for object_class in stages:
@@ -254,11 +255,11 @@ class Exportexcelinfo(object):
                                 robotposx = robotposx - (x_max - (x_max - x_min))
                         elif count_plus_y == 2 and endrangex == x_max:
                             if self.wallformat[wall_id - 1]["width"] <= x_min:
-                                robotposx = robotposx - (x_max - (x_max - x_min))
-                            else:
                                 robotposx = robotposx - (
                                     (x_max - x_min) - (thickness * 2)
                                 )
+                            else:
+                                robotposx = robotposx - (x_max - (x_max - x_min))
                         robotposy = (
                             positiony - startingrange - ((endrange - startingrange) / 2)
                         )
