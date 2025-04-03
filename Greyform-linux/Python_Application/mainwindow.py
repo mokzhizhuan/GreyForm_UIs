@@ -20,29 +20,38 @@ from threading import Thread
 class FileItemDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
         size = super().sizeHint(option, index)
-        size.setWidth(size.width() + 50)  # Increase the width for better visibility
+        size.setWidth(size.width() + 50)
         return size
 
     def paint(self, painter, option, index):
-        option.displayAlignment = Qt.AlignLeft | Qt.AlignVCenter  # Align text for readability
+        option.displayAlignment = Qt.AlignLeft | Qt.AlignVCenter
         super().paint(painter, option, index)
 
+# Proxy model to filter IFC files only
 class FileFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, parent=None):
         super(FileFilterProxyModel, self).__init__(parent)
         self.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.setFilterKeyColumn(0)
+        self.setFilterKeyColumn(0)  # Filter by the file name column
 
     def filterAcceptsRow(self, source_row, source_parent):
         index = self.sourceModel().index(source_row, 0, source_parent)
         if not index.isValid():
             return False
+        
+        # Get the file name and file info
         file_name = self.sourceModel().fileName(index)
         file_info = self.sourceModel().fileInfo(index)
+
+        # Allow directories to be shown
         if file_info.isDir():
             return True
-        allowed_extensions = {".dxf", ".ifc", ".stl"}
-        return any(file_name.lower().endswith(ext) for ext in allowed_extensions)
+        
+        # Filter to include only .ifc files
+        if file_name.lower().endswith(".ifc"):
+            return True
+        
+        return False
 
 # load the mainwindow application
 class Ui_MainWindow(QMainWindow):
@@ -92,25 +101,27 @@ class Ui_MainWindow(QMainWindow):
                 self.mainwindow.vtkframe
             )
         )
+        usb_path = "/media/ubuntu/DF4A-89D8/"
+        self.check_usb_directory(usb_path)
         self.model = QFileSystemModel()
-        self.model.setRootPath("")  # Show entire system
-        self.model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot | QDir.Drives)  # Show only folders
+        self.model.setFilter(QDir.AllDirs | QDir.NoDotAndDotDot | QDir.Drives)
+        self.model.setRootPath(usb_path)
         self.mainwindow.Selectivefiledirectoryview.setModel(self.model)
-        root_index = self.model.index(QDir.rootPath())
+        root_index = self.model.index(usb_path)
         self.mainwindow.Selectivefiledirectoryview.setRootIndex(root_index)  # Now safe to set
         self.file_model = QFileSystemModel()
-        self.file_model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot| QDir.Drives) 
-        self.file_model.setRootPath(QDir.rootPath())
-        self.mainwindow.Selectivefiledirectoryview.setModel(self.file_model)
-        self.mainwindow.Selectivefiledirectoryview.setRootIndex(self.file_model.index(QDir.rootPath()))
+        self.file_model.setFilter(QDir.Files | QDir.NoDotAndDotDot) 
+        self.file_model.setRootPath(usb_path)
+        self.proxy_model = FileFilterProxyModel()
+        self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefiledirectoryview.setSelectionMode(QAbstractItemView.SingleSelection)
         self.mainwindow.Selectivefiledirectoryview.setHeaderHidden(True) 
         self.mainwindow.Selectivefiledirectoryview.setAnimated(True)  # Smooth folder expansion
         self.mainwindow.Selectivefiledirectoryview.setIndentation(20)  # Indentation for nested folders
         self.proxy_model = FileFilterProxyModel()
         self.proxy_model.setSourceModel(self.file_model)
-        self.mainwindow.Selectivefilelistview.setModel(self.file_model)
-        self.mainwindow.Selectivefilelistview.setRootIndex(self.file_model.index(QDir.rootPath()))
+        self.mainwindow.Selectivefilelistview.setModel(self.proxy_model)
+        self.mainwindow.Selectivefilelistview.setRootIndex(self.proxy_model.mapFromSource(self.file_model.index(usb_path)))
         self.mainwindow.Selectivefilelistview.setHeaderHidden(False)
         self.mainwindow.Selectivefilelistview.setSortingEnabled(True)  # Allow sorting by columns
         self.mainwindow.Selectivefilelistview.setUniformRowHeights(True)  # Optimize performance
@@ -137,21 +148,37 @@ class Ui_MainWindow(QMainWindow):
         self.button_UI()
         self.setStretch()
 
+    def check_usb_directory(self, path):
+        """Check the folder structure manually to verify visibility."""
+        print(f"Checking contents of: {path}")
+        try:
+            contents = os.listdir(path)
+            print(f"Contents of {path}: {contents}")
+        except PermissionError:
+            print(f"Permission denied for: {path}")
+        except Exception as e:
+            print(f"Error accessing {path}: {e}")
+
     def on_folder_selected(self, index):
         folder_path = self.model.filePath(index)
+        print(f"Selected folder: {folder_path}")
+    
+        # Update the file model's root path to the selected folder
         self.file_model.setRootPath(folder_path)
-        if self.mainwindow.Selectivefilelistview.model() != self.proxy_model:
-            self.mainwindow.Selectivefilelistview.setModel(self.proxy_model)
-        if self.proxy_model.sourceModel() != self.file_model:
-            self.proxy_model.setSourceModel(self.file_model)
         source_index = self.file_model.index(folder_path)
         proxy_index = self.proxy_model.mapFromSource(source_index)
-        if proxy_index.isValid():
-            self.mainwindow.Selectivefilelistview.setRootIndex(proxy_index)
     
+        # Ensure the model is correctly linked and the root index is set
+        if proxy_index.isValid():
+            print(f"Updating list view with folder: {folder_path}")
+            self.mainwindow.Selectivefilelistview.setRootIndex(proxy_index)
+        else:
+            print(f"Invalid proxy index for: {folder_path}")
+
+    # File selection function
     def on_file_selected(self, index):
         selected_path = self.file_model.filePath(self.proxy_model.mapToSource(index))
-        if self.file_model.isDir(self.proxy_model.mapToSource(index)):  
+        if self.file_model.isDir(self.proxy_model.mapToSource(index)):
             new_source_index = self.file_model.index(selected_path)
             new_proxy_index = self.proxy_model.mapFromSource(new_source_index)
             if new_proxy_index.isValid():
