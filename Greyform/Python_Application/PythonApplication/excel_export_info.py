@@ -321,7 +321,10 @@ class Exportexcelinfo(object):
                         else:
                             return pd.Series([robotposy, robotposx, pos_z])
                     else:
-                        return pd.Series([robotposy, robotposx, pos_z])
+                        if robotposx > 0:
+                            return pd.Series([robotposy, -abs(robotposx), pos_z])
+                        else:
+                            return pd.Series([robotposy, abs(robotposx), pos_z])
         return pd.Series([positionx - thickness, positiony - thickness, positionz])
 
     def centerlinez(self):
