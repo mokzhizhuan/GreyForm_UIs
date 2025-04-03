@@ -259,10 +259,13 @@ class Exportexcelinfo(object):
                         robotposy = (
                             positiony - startingrange - ((endrange - startingrange) / 2)
                         )
-                        if robotposy > 0:
-                            return pd.Series([robotposx, -abs(robotposy), pos_z])
+                        if count_minus_y == 2:
+                            if robotposy > 0:
+                                return pd.Series([robotposx, -abs(robotposy), pos_z])
+                            else:
+                                return pd.Series([robotposx, abs(robotposy), pos_z])
                         else:
-                            return pd.Series([robotposx, abs(robotposy), pos_z])
+                            return pd.Series([robotposx, robotposy, pos_z])
                     else:
                         endrange = wall["pos_y_range"][1]
                         if endrange != internaldimensiony:
@@ -303,10 +306,13 @@ class Exportexcelinfo(object):
                                 robotposy = robotposy - (
                                     (y_max - (y_max - y_min)) - (thickness * 2)
                                 )
-                        if robotposx > 0:
-                            return pd.Series([robotposy, -abs(robotposx), pos_z])
+                        if count_minus_y == 2:
+                            if robotposx > 0:
+                                return pd.Series([robotposy, -abs(robotposx), pos_z])
+                            else:
+                                return pd.Series([robotposy, abs(robotposx), pos_z])
                         else:
-                            return pd.Series([robotposy, abs(robotposx), pos_z])
+                            return pd.Series([robotposy, robotposx, pos_z])
                     else:
                         return pd.Series([robotposy, robotposx, pos_z])
         return pd.Series([positionx - thickness, positiony - thickness, positionz])

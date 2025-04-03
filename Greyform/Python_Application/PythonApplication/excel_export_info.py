@@ -38,11 +38,16 @@ class Exportexcelinfo(object):
         self.directional_axes_axis = directional_axes_axis
         self.stagecategory = storingelement.stagecatergorize(self.file)
         self.axis_widths = {"x": [], "y": []}
-        self.wallformat, self.heighttotal, self.wall_height = (
-            storingelement.wall_format(self.wall_dimensions, self.floor, self.label_map)
-        )
         self.wall_finishes_height, self.small_wall_height = (
             storingelement.wall_format_finishes(self.wall_finishes_dimensions)
+        )
+        self.wallformat, self.heighttotal, self.wall_height = (
+            storingelement.wall_format(
+                self.wall_dimensions,
+                self.floor,
+                self.label_map,
+                self.wall_finishes_height,
+            )
         )
         self.wallformat, self.axis_widths = extractor.addranges(
             self.floor,
@@ -120,9 +125,7 @@ class Exportexcelinfo(object):
             ]  # Exclude specific conditions for Wall Number 7
             dataframe = dataframe[
                 ~(
-                    dataframe["Position Z (mm)"].between(
-                        0, self.wall_finishes_height / 2
-                    )
+                    (dataframe["Position Z (mm)"] < -(self.wall_height / 2))
                     & (dataframe["Wall Number"] == 7)
                 )
             ]
@@ -134,6 +137,10 @@ class Exportexcelinfo(object):
                 "BSS.Gate Valve",
                 "LP",
                 "Floor",
+                "Vesbo",
+                "Chrome",
+                "Ceiling",
+                "THRESHOLD",
             ]
             pattern = "|".join(unwanted_names)
             dataframe = dataframe[
@@ -259,10 +266,13 @@ class Exportexcelinfo(object):
                         robotposy = (
                             positiony - startingrange - ((endrange - startingrange) / 2)
                         )
-                        if robotposy > 0:
-                            return pd.Series([robotposx, -abs(robotposy), pos_z])
+                        if count_minus_y == 2:
+                            if robotposy > 0:
+                                return pd.Series([robotposx, -abs(robotposy), pos_z])
+                            else:
+                                return pd.Series([robotposx, abs(robotposy), pos_z])
                         else:
-                            return pd.Series([robotposx, abs(robotposy), pos_z])
+                            return pd.Series([robotposx, robotposy, pos_z])
                     else:
                         endrange = wall["pos_y_range"][1]
                         if endrange != internaldimensiony:
@@ -303,10 +313,13 @@ class Exportexcelinfo(object):
                                 robotposy = robotposy - (
                                     (y_max - (y_max - y_min)) - (thickness * 2)
                                 )
-                        if robotposx > 0:
-                            return pd.Series([robotposy, -abs(robotposx), pos_z])
+                        if count_minus_y == 2:
+                            if robotposx > 0:
+                                return pd.Series([robotposy, -abs(robotposx), pos_z])
+                            else:
+                                return pd.Series([robotposy, abs(robotposx), pos_z])
                         else:
-                            return pd.Series([robotposy, abs(robotposx), pos_z])
+                            return pd.Series([robotposy, robotposx, pos_z])
                     else:
                         return pd.Series([robotposy, robotposx, pos_z])
         return pd.Series([positionx - thickness, positiony - thickness, positionz])
@@ -325,12 +338,12 @@ class Exportexcelinfo(object):
             z_pass = transformed_z >= -abs(self.floorheight - self.wall_height)
             if x_pass and y_pass and z_pass:
                 return wall
-        if row["Position Z (mm)"] < -abs(self.floorheight - self.wall_height):
-            walls = 7
-            return walls
-        elif self.heighttotal - 60 <= row["Position Z (mm)"] <= self.heighttotal:
-            walls = 8
-            return walls
+            if row["Position Z (mm)"] < -abs(self.floorheight - self.wall_height):
+                walls = 7
+                return walls
+            elif self.heighttotal - 60 <= row["Position Z (mm)"] <= self.heighttotal:
+                walls = 8
+                return walls
         return row["Wall Number"]
 
     def applystage(self, row):

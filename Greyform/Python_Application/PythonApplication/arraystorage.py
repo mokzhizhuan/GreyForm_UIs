@@ -74,7 +74,7 @@ def add_legends():
     return wall_legend, pen_column, pin_id_column, wall_600x600mm, wall_name, indexwall
 
 
-def wall_format(wall, floor, label_map):
+def wall_format(wall, floor, label_map, wall_finishes_height):
     wall_format = {}
     axis = ""
     direction_groups = {}
@@ -108,9 +108,9 @@ def wall_format(wall, floor, label_map):
         wall_format[index] = {
             "axis": axis,
             "width": final_width,
-            "height": depth + height + 10,
+            "height": depth + height + (wall_finishes_height/2),
         }
-        heighttotal = depth + height + 10
+        heighttotal = depth + height + (wall_finishes_height/2)
     return wall_format, heighttotal, height
 
 
