@@ -138,6 +138,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             if not self.remaining_walls_to_scan and self.stagetext == "Stage 2" and next_wall_number is None:
                 self.stage_completed = True
                 self.goto_next_stage_or_page()
+                return
             if not self.remaining_walls_to_scan and self.stagetext == "Stage 3" and not self.stage_completed:
                 self.show_message("✅ All walls and Floor in Stage 2 & 3 are completed. Moving to the finalization page..")
                 self.stacked_widget.setCurrentIndex(5)

@@ -1,1 +1,5 @@
 
+Failed to load stlfile in the vtkframe: 'wall_numbers'
+Failed to load stlfile in the vtkframe: 'NoneType' object has no attribute 'group'
+Failed to load stlfile in the vtkframe: 'NoneType' object has no attribute 'group'
+Failed to load stlfile in the vtkframe: 'NoneType' object has no attribute 'group'

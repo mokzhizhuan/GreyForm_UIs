@@ -1,13 +1,12 @@
 Metadata-Version: 2.1
 Name: talker-listener
 Version: 0.0.0
-Summary: TODO: Package description
+Summary: ROS 2 package for talker and listener nodes
 Home-page: UNKNOWN
-Maintainer: ubuntu
-Maintainer-email: ubuntu@todo.todo
-License: TODO: License declaration
+Maintainer: your_name
+Maintainer-email: your_email@example.com
+License: Apache License 2.0
 Platform: UNKNOWN
-Provides-Extra: test
 
 UNKNOWN
 

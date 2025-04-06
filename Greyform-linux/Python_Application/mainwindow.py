@@ -11,11 +11,47 @@ from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
 import vtk
 import os
+from fastapi import FastAPI
+from threading import Thread
+import uvicorn
 import pyvista as pv
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtWebChannel import QWebChannel
 import talker_listener.talker_node as RosPublisher
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from threading import Thread
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+
+# FastAPI app
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Adjust to your frontend's URL in production
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/api/data")
+async def get_data():
+    return {"data": "Hello from FastAPI and PyQt!"}
+
+def start_fastapi():
+    uvicorn.run(app, host="127.0.0.1", port=8000)
+
+class Bridge(QObject):
+    def __init__(self):
+        super().__init__()
+        self.data = "PyQt to React"
+
+    @pyqtSlot(str)  # Exposing the method to JavaScript
+    def update_data(self, new_data):
+        self.data = new_data
+        print(f"Data received from React: {new_data}")
+
 
 class FileItemDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
@@ -70,20 +106,14 @@ class Ui_MainWindow(QMainWindow):
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
         self.stagestoring = ["Stage 1", "Stage 2" , "Stage 3", "Obstacles"]
-        # Find the promoted QWebEngineView from the UI
         """self.webview = QWebEngineView()
         self.setCentralWidget(self.webview)
-
-        # Setup WebChannel for communication
         self.channel = QWebChannel()
         self.bridge = Bridge()
         self.channel.registerObject("bridge", self.bridge)
         self.webview.page().setWebChannel(self.channel)
-
-        # Load ReactJS index.html from the build folder
-        react_app_path = os.path.abspath("my-react-app/build/index.html")
+        react_app_path = os.path.abspath("/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/frontend/build/index.html")
         self.webview.load(QUrl.fromLocalFile(react_app_path))"""
-
         self.setupUi()
 
     # setup UI
@@ -112,8 +142,6 @@ class Ui_MainWindow(QMainWindow):
         self.file_model = QFileSystemModel()
         self.file_model.setFilter(QDir.Files | QDir.NoDotAndDotDot) 
         self.file_model.setRootPath(usb_path)
-        self.proxy_model = FileFilterProxyModel()
-        self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefiledirectoryview.setSelectionMode(QAbstractItemView.SingleSelection)
         self.mainwindow.Selectivefiledirectoryview.setHeaderHidden(True) 
         self.mainwindow.Selectivefiledirectoryview.setAnimated(True)  # Smooth folder expansion
@@ -321,6 +349,8 @@ def ros_spin(node):
 # initalize ros node for talker
 if __name__ == "__main__":
     rclpy.init()
+    fastapi_thread = Thread(target=start_fastapi, daemon=True)
+    fastapi_thread.start()
     talker_node = RosPublisher.TalkerNode()
     app = QApplication(sys.argv)
     main_window = Ui_MainWindow(talker_node)

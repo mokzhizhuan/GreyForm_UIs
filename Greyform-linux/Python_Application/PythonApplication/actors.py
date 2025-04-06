@@ -28,9 +28,9 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel):
             sheet_data = wall_identifiers[stagetext]
             
             if wall_number == "F":
-                indexes = [i for i, wn in enumerate(sheet_data["wall_numbers"]) if wn == "F"]
+                indexes = [i for i, wn in enumerate(sheet_data["Wall Number"]) if wn == "F"]
             else:
-                indexes = [i for i, wn in enumerate(sheet_data["wall_numbers"]) if wn == wall_number]
+                indexes = [i for i, wn in enumerate(sheet_data["Wall Number"]) if wn == wall_number]
 
             for idx in indexes:  # Store all occurrences
                 if (
@@ -49,6 +49,7 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel):
                     identifier[wall_number].append({
                         "sheet_name": stagetext,
                         "markingidentifiers": sheet_data["markingidentifiers"][idx],
+                        "Wall Number" : wall_number,
                         "Position X (mm)": sheet_data["Position X (mm)"][idx],
                         "Position Y (mm)": sheet_data["Position Y (mm)"][idx],
                         "Position Z (mm)": sheet_data["Position Z (mm)"][idx],

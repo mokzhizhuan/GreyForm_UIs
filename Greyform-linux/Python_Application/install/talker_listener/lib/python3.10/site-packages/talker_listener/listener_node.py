@@ -5,19 +5,7 @@ from my_robot_wallinterfaces.msg import (
     SelectionWall,
     FileExtractionMessage,
 )
-from PyQt5 import uic
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from my_robot_wallinterfaces.srv import SetLed
-from std_msgs.msg import String
-from stl import mesh
 import pandas as pd
-import numpy as np
-import sys
-import tkinter as tk
-from tkinter import Text, Scrollbar, Toplevel, Button, END, BOTH, RIGHT, Y, LEFT, X, ttk
 
 
 # listenerNode
@@ -47,12 +35,12 @@ class ListenerNode(Node):
         self.spacing = "\n"
         self.title = "Listener Node"
         self.active_dialog = None
-        self.setup_tk_ui()
+        self.log_buffer = []
+
 
     def file_listener_callback(self, msg):
         """ Process STL and Excel file messages but DO NOT show logs yet """
         try:
-
             # Process the Excel file
             self.process_excel_data(msg.excelfile)
         except Exception as e:
@@ -79,19 +67,26 @@ class ListenerNode(Node):
 
             for index, row in df.iterrows():
                 df_wall_number = str(df.at[index, "Wall Number"])
-                df_stage = stage  # ✅ Sheet name represents the stage
+                df_stage = stage
 
-            # ✅ Ensure all rows that match `self.wallselection` and `self.typeselection` are updated
-                if df_wall_number in str(self.wallselection) and df_stage in str(self.typeselection):
+                # Debug prints to ensure correct matching
+                print(f"Wall Number from Excel: {df_wall_number}")
+                print(f"Wall Selection: {self.wallselection}")
+                print(f"Stage from Excel: {df_stage}")
+                print(f"Type Selection: {self.typeselection}")
+
+                # ✅ Ensure all rows that match `self.wallselection` and `self.typeselection` are updated
+                if str(df_wall_number) == str(self.wallselection) and str(df_stage) == str(self.typeselection):
+                    print(f"✅ Updating row {index} in stage {stage} to 'done'")
                     df.at[index, "Status"] = "done"
 
             processed_data[stage] = df
+
         with pd.ExcelWriter(excel_filepath, engine="openpyxl") as writer:
             for sheet_name, df in processed_data.items():
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
-        self.log_buffer.clear()  # ✅ Clear buffer after logging
-
-
+        self.log_buffer.clear()
+        
 # run ros
 def run_ros_spin(listenerNode):
     rclpy.spin(listenerNode)
@@ -101,11 +96,13 @@ def run_ros_spin(listenerNode):
 def main(args=None):
     rclpy.init(args=args)
     listenerNode = ListenerNode()
-    ros_thread = threading.Thread(target=run_ros_spin, args=(listenerNode,))
-    ros_thread.start()
-    listenerNode.destroy_node()
-    rclpy.shutdown()
-
+    try:
+        rclpy.spin(listenerNode)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        listenerNode.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == "__main__":
     main()

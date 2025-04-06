@@ -24,7 +24,7 @@ def exceldataextractor():
         # Store extracted data
         wall_numbers_by_sheet[sheet_name] = {
             "markingidentifiers": df["Point number/name"].astype(str).tolist(),
-            "wall_numbers": df["Wall Number"].tolist(),
+            "Wall Number": df["Wall Number"].tolist(),
             "Position X (mm)": df["Position X (mm)"].tolist(),
             "Position Y (mm)": df["Position Y (mm)"].tolist(),
             "Position Z (mm)": df["Position Z (mm)"].tolist(),

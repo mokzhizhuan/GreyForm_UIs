@@ -1,0 +1,233 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-f74feaf738efd3051cb1.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17
+					]
+				},
+				{
+					"build" : "my_robot_wallinterfaces__py",
+					"jsonFile" : "directory-my_robot_wallinterfaces__py-bfc8ef8923cc71b4f4df.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/my_robot_wallinterfaces__py",
+					"targetIndexes" : 
+					[
+						4
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "my_robot_wallinterfaces",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_build_my_robot_wallinterfaces_egg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_build_my_robot_wallinterfaces_egg-e52001704b78cb61b885.json",
+					"name" : "ament_cmake_python_build_my_robot_wallinterfaces_egg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_copy_my_robot_wallinterfaces::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_copy_my_robot_wallinterfaces-6eb49badb1db016787b7.json",
+					"name" : "ament_cmake_python_copy_my_robot_wallinterfaces",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces-dcb97e923f1dae39f227.json",
+					"name" : "my_robot_wallinterfaces",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__cpp-fde128ae1af1dc24df52.json",
+					"name" : "my_robot_wallinterfaces__cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "my_robot_wallinterfaces__py::@73eecf88cb6769caf966",
+					"jsonFile" : "target-my_robot_wallinterfaces__py-d1a4cebee818c72cef63.json",
+					"name" : "my_robot_wallinterfaces__py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__rosidl_generator_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__rosidl_generator_c-31c4c434a858a27dd915.json",
+					"name" : "my_robot_wallinterfaces__rosidl_generator_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__rosidl_generator_py::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__rosidl_generator_py-97c4f92e5f900495fc27.json",
+					"name" : "my_robot_wallinterfaces__rosidl_generator_py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__rosidl_typesupport_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__rosidl_typesupport_c-2c0f982822e319d6e2ef.json",
+					"name" : "my_robot_wallinterfaces__rosidl_typesupport_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__rosidl_typesupport_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__rosidl_typesupport_c__pyext-f45c15e2014328c5422f.json",
+					"name" : "my_robot_wallinterfaces__rosidl_typesupport_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__rosidl_typesupport_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__rosidl_typesupport_cpp-0384ece88ab722532c28.json",
+					"name" : "my_robot_wallinterfaces__rosidl_typesupport_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c-71e31900556e2016f3d8.json",
+					"name" : "my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c__pyext-1538b2f04905f8e22586.json",
+					"name" : "my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cpp-76c0a06d886e93caaf6d.json",
+					"name" : "my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__rosidl_typesupport_introspection_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__rosidl_typesupport_introspection_c-ffc3520c76a6366362a4.json",
+					"name" : "my_robot_wallinterfaces__rosidl_typesupport_introspection_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__rosidl_typesupport_introspection_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__rosidl_typesupport_introspection_c__pyext-8f2841d9c046337d4091.json",
+					"name" : "my_robot_wallinterfaces__rosidl_typesupport_introspection_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces__rosidl_typesupport_introspection_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces__rosidl_typesupport_introspection_cpp-6c35d2a581b5541c9fba.json",
+					"name" : "my_robot_wallinterfaces__rosidl_typesupport_introspection_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "my_robot_wallinterfaces_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-my_robot_wallinterfaces_uninstall-2c41b5c4df7a67a7ede7.json",
+					"name" : "my_robot_wallinterfaces_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-3fc3c2a9e0583aa728be.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces",
+		"source" : "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_robot_wallinterfaces"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}
