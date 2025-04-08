@@ -486,6 +486,11 @@ class ProgressBarDialogIFC(QDialog):
             self.walllabel,
             self.stackedWidget,
             self.listenerdialog,
+            self.wall_dimensions,
+            self.top_two,
+            self.wall_finishes_dimensions,
+            self.label_map,
+            self.directions
         )
     
     

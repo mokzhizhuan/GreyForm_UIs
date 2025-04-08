@@ -36,10 +36,6 @@ class ListenerNodeRunner():
                 self.signals.status_signal.emit(f"Status: Error - {str(e)}")
 
     def run_execution(self , markingitemsbasedonwallnumber , wall_number, Stagetext, excel_data, next_wall_number):
-        print(excel_data)
-        print(markingitemsbasedonwallnumber)
-        print(wall_number)
-        print(Stagetext)
         if self.listener_started:
             for data in markingitemsbasedonwallnumber:
                 picked_position = [
@@ -68,18 +64,14 @@ class ListenerNodeRunner():
             )
             self.signals.page_change_signal.emit(4)  
             stdout, stderr = process.communicate()
-            # Debugging: Print output
             if process.returncode == 0:
-                print("Node started successfully.")
                 self.signals.status_signal.emit("Node started successfully.")
                 self.signals.status_signal.emit(stdout.decode("utf-8"))
             else:
-                print("Failed to start node.")
                 self.signals.status_signal.emit("Failed to start node.")
                 self.signals.status_signal.emit(stderr.decode("utf-8"))
             self.process_finished()
         except Exception as e:
-            print(f"Process failed: {str(e)}")
             self.signals.status_signal.emit(f"Process failed: {str(e)}")
 
     def process_finished(self):

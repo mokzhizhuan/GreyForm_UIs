@@ -25,32 +25,48 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-# FastAPI app
-app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Adjust to your frontend's URL in production
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+def source_ros2_environment():
+    ros2_setup = (
+        "/opt/ros/humble/setup.bash"  # Change 'foxy' if using a different distribution
+    )
+    workspace_setup = "~/ros2_ws/install/setup.bash"
+    # Source ROS 2 global environment
+    if os.path.exists(ros2_setup):
+        command = f"source {ros2_setup} && env"
+        process = os.popen(command)
+        for line in process:
+            (key, _, value) = line.strip().partition("=")
+            os.environ[key] = value
+        process.close()
+    # Source ROS 2 workspace environment
+    if os.path.exists(os.path.expanduser(workspace_setup)):
+        command = f"source {os.path.expanduser(workspace_setup)} && env"
+        process = os.popen(command)
+        for line in process:
+            (key, _, value) = line.strip().partition("=")
+            os.environ[key] = value
+        process.close()
 
-@app.get("/api/data")
-async def get_data():
-    return {"data": "Hello from FastAPI and PyQt!"}
+# Call the function to load environment
+source_ros2_environment()
 
 def start_fastapi():
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    os.system("uvicorn backend.main:app --host 0.0.0.0 --port 8000 --workers 1")
 
 class Bridge(QObject):
     def __init__(self):
         super().__init__()
-        self.data = "PyQt to React"
+        self.data = "Initial data from Python"
 
-    @pyqtSlot(str)  # Exposing the method to JavaScript
+    @pyqtSlot(str)
     def update_data(self, new_data):
+        print(f"Received from React: {new_data}")
         self.data = new_data
-        print(f"Data received from React: {new_data}")
+
+    @pyqtSlot(result=str)
+    def get_data(self):
+        return self.data
 
 
 class FileItemDelegate(QStyledItemDelegate):
@@ -74,20 +90,17 @@ class FileFilterProxyModel(QSortFilterProxyModel):
         index = self.sourceModel().index(source_row, 0, source_parent)
         if not index.isValid():
             return False
-        
         # Get the file name and file info
         file_name = self.sourceModel().fileName(index)
         file_info = self.sourceModel().fileInfo(index)
-
         # Allow directories to be shown
         if file_info.isDir():
             return True
-        
         # Filter to include only .ifc files
         if file_name.lower().endswith(".ifc"):
             return True
-        
         return False
+
 
 # load the mainwindow application
 class Ui_MainWindow(QMainWindow):
@@ -105,15 +118,16 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.showMaximized()
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
-        self.stagestoring = ["Stage 1", "Stage 2" , "Stage 3", "Obstacles"]
-        """self.webview = QWebEngineView()
+        self.stagestoring = ["Stage 1", "Stage 2", "Stage 3", "Obstacles"]
+        self.webview = QWebEngineView()
         self.setCentralWidget(self.webview)
         self.channel = QWebChannel()
         self.bridge = Bridge()
         self.channel.registerObject("bridge", self.bridge)
         self.webview.page().setWebChannel(self.channel)
-        react_app_path = os.path.abspath("/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/frontend/build/index.html")
-        self.webview.load(QUrl.fromLocalFile(react_app_path))"""
+        react_build_path = "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/frontend/frontend/build/index.html"
+        react_app_path = os.path.abspath(react_build_path)
+        self.webview.load(QUrl.fromLocalFile(react_app_path))
         self.setupUi()
 
     # setup UI
@@ -138,23 +152,41 @@ class Ui_MainWindow(QMainWindow):
         self.model.setRootPath(usb_path)
         self.mainwindow.Selectivefiledirectoryview.setModel(self.model)
         root_index = self.model.index(usb_path)
-        self.mainwindow.Selectivefiledirectoryview.setRootIndex(root_index)  # Now safe to set
+        self.mainwindow.Selectivefiledirectoryview.setRootIndex(
+            root_index
+        )  # Now safe to set
         self.file_model = QFileSystemModel()
-        self.file_model.setFilter(QDir.Files | QDir.NoDotAndDotDot) 
+        self.file_model.setFilter(QDir.Files | QDir.NoDotAndDotDot)
         self.file_model.setRootPath(usb_path)
-        self.mainwindow.Selectivefiledirectoryview.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.mainwindow.Selectivefiledirectoryview.setHeaderHidden(True) 
-        self.mainwindow.Selectivefiledirectoryview.setAnimated(True)  # Smooth folder expansion
-        self.mainwindow.Selectivefiledirectoryview.setIndentation(20)  # Indentation for nested folders
+        self.mainwindow.Selectivefiledirectoryview.setSelectionMode(
+            QAbstractItemView.SingleSelection
+        )
+        self.mainwindow.Selectivefiledirectoryview.setHeaderHidden(True)
+        self.mainwindow.Selectivefiledirectoryview.setAnimated(
+            True
+        )  # Smooth folder expansion
+        self.mainwindow.Selectivefiledirectoryview.setIndentation(
+            20
+        )  # Indentation for nested folders
         self.proxy_model = FileFilterProxyModel()
         self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefilelistview.setModel(self.proxy_model)
-        self.mainwindow.Selectivefilelistview.setRootIndex(self.proxy_model.mapFromSource(self.file_model.index(usb_path)))
+        self.mainwindow.Selectivefilelistview.setRootIndex(
+            self.proxy_model.mapFromSource(self.file_model.index(usb_path))
+        )
         self.mainwindow.Selectivefilelistview.setHeaderHidden(False)
-        self.mainwindow.Selectivefilelistview.setSortingEnabled(True)  # Allow sorting by columns
-        self.mainwindow.Selectivefilelistview.setUniformRowHeights(True)  # Optimize performance
-        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)  # Better visibility
-        self.mainwindow.Selectivefilelistview.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.mainwindow.Selectivefilelistview.setSortingEnabled(
+            True
+        )  # Allow sorting by columns
+        self.mainwindow.Selectivefilelistview.setUniformRowHeights(
+            True
+        )  # Optimize performance
+        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(
+            True
+        )  # Better visibility
+        self.mainwindow.Selectivefilelistview.setSelectionMode(
+            QAbstractItemView.SingleSelection
+        )
         header = self.mainwindow.Selectivefilelistview.header()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         header.setStretchLastSection(True)  # Stretch the last column to fill space
@@ -162,14 +194,26 @@ class Ui_MainWindow(QMainWindow):
         self.file_model.setHeaderData(1, Qt.Horizontal, "Size")
         self.file_model.setHeaderData(2, Qt.Horizontal, "Type")
         self.file_model.setHeaderData(3, Qt.Horizontal, "Date Modified")
-        self.mainwindow.Selectivefilelistview.sortByColumn(0, Qt.AscendingOrder)  # Sort by Name initially
-        self.mainwindow.Selectivefilelistview.setItemsExpandable(False)  # Disable folder expansion
-        self.mainwindow.Selectivefilelistview.setRootIsDecorated(False)  # Hide tree structure in the right panel
-        self.mainwindow.Selectivefilelistview.setColumnWidth(0, 250)  # Minimum width for "Name"
-        self.mainwindow.Selectivefilelistview.setIconSize(QSize(32, 32))  # Slightly larger icon size
+        self.mainwindow.Selectivefilelistview.sortByColumn(
+            0, Qt.AscendingOrder
+        )  # Sort by Name initially
+        self.mainwindow.Selectivefilelistview.setItemsExpandable(
+            False
+        )  # Disable folder expansion
+        self.mainwindow.Selectivefilelistview.setRootIsDecorated(
+            False
+        )  # Hide tree structure in the right panel
+        self.mainwindow.Selectivefilelistview.setColumnWidth(
+            0, 250
+        )  # Minimum width for "Name"
+        self.mainwindow.Selectivefilelistview.setIconSize(
+            QSize(32, 32)
+        )  # Slightly larger icon size
         delegate = FileItemDelegate()
         self.mainwindow.Selectivefilelistview.setItemDelegate(delegate)
-        self.mainwindow.Selectivefiledirectoryview.clicked.connect(self.on_folder_selected)
+        self.mainwindow.Selectivefiledirectoryview.clicked.connect(
+            self.on_folder_selected
+        )
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
         self.mainwindow.horizontalLayout_16.addWidget(self.plotterloader.interactor)
         self.mainwindow.verticalLayoutframe.addWidget(self.renderWindowInteractor)
@@ -178,30 +222,21 @@ class Ui_MainWindow(QMainWindow):
 
     def check_usb_directory(self, path):
         """Check the folder structure manually to verify visibility."""
-        print(f"Checking contents of: {path}")
         try:
             contents = os.listdir(path)
-            print(f"Contents of {path}: {contents}")
+            return
         except PermissionError:
-            print(f"Permission denied for: {path}")
+            return
         except Exception as e:
-            print(f"Error accessing {path}: {e}")
+            return
 
     def on_folder_selected(self, index):
         folder_path = self.model.filePath(index)
-        print(f"Selected folder: {folder_path}")
-    
-        # Update the file model's root path to the selected folder
         self.file_model.setRootPath(folder_path)
         source_index = self.file_model.index(folder_path)
         proxy_index = self.proxy_model.mapFromSource(source_index)
-    
-        # Ensure the model is correctly linked and the root index is set
         if proxy_index.isValid():
-            print(f"Updating list view with folder: {folder_path}")
             self.mainwindow.Selectivefilelistview.setRootIndex(proxy_index)
-        else:
-            print(f"Invalid proxy index for: {folder_path}")
 
     # File selection function
     def on_file_selected(self, index):
@@ -236,7 +271,7 @@ class Ui_MainWindow(QMainWindow):
         file_path = self.file_model.filePath(source_index)
         self.file_path = file_path
         if self.file_path in self.selected_files:
-            self.selected_files.remove(self.file_path) 
+            self.selected_files.remove(self.file_path)
         else:
             self.selected_files.append(self.file_path)
         file = self.mainwindow.Selectivefilelistview.model().itemData(index)[0]
@@ -251,15 +286,17 @@ class Ui_MainWindow(QMainWindow):
             self.stagestoring,
             self.mainwindow.labelstatus,
             self.mainwindow.scanprogressBar,
-            self.mainwindow.walllabel
+            self.mainwindow.walllabel,
         ]
         self.mainwindow.Itemlabel.setText(f"Model Product : {file}")
         fileselectionmesh.FileSelectionMesh(
-            file, mainwindowforfileselection, self.mainwindow , self.mainwindow.stackedWidget
+            file,
+            mainwindowforfileselection,
+            self.mainwindow,
+            self.mainwindow.stackedWidget,
         )
         self.show_completion_message()
         self.file_list_selected = True
-
 
     # main window layout
     def setStretch(self):
@@ -312,7 +349,6 @@ class Ui_MainWindow(QMainWindow):
         self.renderWindowInteractor.GetRenderWindow().GetInteractor().TerminateApp()
         event.accept()
 
-
     def show_completion_message(self):
         msg_box = QMessageBox()
         msg_box.setStyleSheet(
@@ -334,6 +370,7 @@ class Ui_MainWindow(QMainWindow):
         msg_box.setText("3d Objects file initialize is completed.")
         msg_box.setStandardButtons(QMessageBox.Ok)
         msg_box.exec_()
+
 
 # ros executor
 def ros_spin(node):

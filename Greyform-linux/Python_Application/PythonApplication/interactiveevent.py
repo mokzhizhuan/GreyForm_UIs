@@ -9,7 +9,7 @@ import PythonApplication.actors as createactorvtk
 
 class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     def __init__(
-        self, setcamerainteraction, wall_identifiers, parent=None
+        self, setcamerainteraction, cameraactors, parent=None
     ):
         # starting initialize
         super().__init__()
@@ -29,6 +29,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.stacked_widget = setcamerainteraction[17]
         self.walllabel = setcamerainteraction[18]
         self.listenerdialog = setcamerainteraction[19]
+        self.cameraactors = cameraactors
         match = re.search(r'\d+', self.wallname)
         self.wall_number = int(match.group())
         self.scan = self.identifier[self.wall_number]
@@ -44,8 +45,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.initialize_wall_tracking()
         self.scanning = self.AddObserver(
             "RightButtonPressEvent", self.wallscanning
-        )
-        
+        ) 
     
     def wallscanning(self, obj, event):
         self.progress_dialog = QProgressDialog("Scanning...", "Cancel", 0, self.totalsteps, self.parent)
@@ -54,7 +54,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.progress_dialog.setAutoClose(True)
         self.progress_dialog.setAutoReset(True)
         self.progress_dialog.show()
-
         self.current_step = 0
         self.run_scan_step()  # Start the progress loop
 
@@ -65,10 +64,8 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             return
         self.current_step += 1
         self.progress_dialog.setValue(self.current_step)
-
         if self.progress_dialog.wasCanceled():
             return  # Stop execution if canceled
-
         QTimer.singleShot(50, self.run_scan_step)  # Recursive update every 50ms
 
     def programexecute(self):
@@ -117,7 +114,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             if "F" in self.remaining_walls_to_scan:
                 self.wallname = "Floor"
                 return "F"
-
         return None  # No valid wall or fallback found
 
     def changewall(self):
@@ -134,6 +130,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 if next_wall_number is not None:
                     self.wallname = "Floor" if next_wall_number == "F" else self.wallname
                     self.wall_actors[self.wallname].VisibilityOn()
+                    createactorvtk.switch_hidden_camera(self.wallname, self.render, self.cameraactors, self.renderwindowinteractor)
             self.walllabel.setText(f"Wall : {self.wallname}")
             if not self.remaining_walls_to_scan and self.stagetext == "Stage 2" and next_wall_number is None:
                 self.stage_completed = True
@@ -151,12 +148,12 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.wall_index = 0
         self.stagetext = self.stagestorage[self.currentindexstage]
         self.Stagelabel.setText(f"Stage : {self.stagetext}")
-        # Reset tracking for new stage
-        self.wall_actors, self.identifier, self.wallname = createactorvtk.setupactors(
-            self.walls, self.stagetext, self.wall_identifiers, self.render, self.walllabel
+        self.wall_actors, self.identifier, self.wallname ,self.cameraactors = createactorvtk.setupactors(
+            self.walls, self.stagetext, self.wall_identifiers, self.render, self.walllabel , self.cameraactors
         )
         self.show_message(f"Stage 2 is completed. Please Move in to {self.wallname} for Stage 3 process")
         self.wall_actors[self.wallname].VisibilityOn()
+        createactorvtk.switch_hidden_camera(self.wallname, self.render, self.cameraactors, self.renderwindowinteractor)
         match = re.search(r'\d+', self.wallname)
         self.wall_number = int(match.group())
         self.stage_completed = False
@@ -173,14 +170,12 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         root.destroy()
 
     def set_progress_bar(self, progress_bar):
-        """Attach a QProgressBar from the main UI."""
         self.progress_bar = progress_bar
 
     def update_progress(self):
         value = self.progress_bar.value()
         if value < 100:
             self.progress_bar.setValue(value + 1)
-            # Update progress again after 100 milliseconds
             QTimer.singleShot(100, self.update_progress)
         else:
             self.timer.stop()  # Stop the timer when progress reaches 100%

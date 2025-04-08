@@ -159,7 +159,6 @@ class Exportexcelinfo(object):
             )
             dataframe.loc[dataframe["Wall Number"] == 7, "Wall Number"] = "F"
             file_name = f"exporteddatassss(with TMP)(draft)(tetra).xlsx"
-            print(self.wallformat)
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
                 for object_class in stages:
