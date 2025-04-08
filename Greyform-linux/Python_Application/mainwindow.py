@@ -17,6 +17,7 @@ import uvicorn
 import pyvista as pv
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWebChannel import QWebChannel
+from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 import talker_listener.talker_node as RosPublisher
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
@@ -24,6 +25,7 @@ from threading import Thread
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+import subprocess
 
 
 def source_ros2_environment():
@@ -48,12 +50,36 @@ def source_ros2_environment():
             os.environ[key] = value
         process.close()
 
+
 # Call the function to load environment
 source_ros2_environment()
 
-def start_fastapi():
-    os.system("uvicorn backend.main:app --host 0.0.0.0 --port 8000 --workers 1")
 
+def is_server_running(port=8000):
+    try:
+        # Use lsof to check if the port is in use
+        result = subprocess.run(
+            ["lsof", "-i", f"tcp:{port}"], 
+            stdout=subprocess.PIPE, 
+            stderr=subprocess.PIPE
+        )
+        # If the return code is 0, the port is in use
+        return result.returncode == 0
+    except Exception as e:
+        return False
+
+# Function to start the FastAPI server
+def start_fastapi():
+    if is_server_running():
+        print("FastAPI server is already running.")
+        return
+    try:
+        print("Starting FastAPI server...")
+        os.system("uvicorn backend.main:app --host 0.0.0.0 --port 8000 --workers 1")
+    except Exception as e:
+        print(f"Failed to start FastAPI: {str(e)}")
+
+# Bridge class for Qt and WebChannel communication
 class Bridge(QObject):
     def __init__(self):
         super().__init__()
@@ -63,6 +89,16 @@ class Bridge(QObject):
     def update_data(self, new_data):
         print(f"Received from React: {new_data}")
         self.data = new_data
+        if new_data == "Continue clicked":
+            print("Processing continue action...")
+        elif new_data == "Exit clicked":
+            print("Exiting application...")
+            QApplication.quit()
+
+    @pyqtSlot()
+    def exit_app(self):
+        print("Closing application from React")
+        QApplication.quit()
 
     @pyqtSlot(result=str)
     def get_data(self):
@@ -78,6 +114,7 @@ class FileItemDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         option.displayAlignment = Qt.AlignLeft | Qt.AlignVCenter
         super().paint(painter, option, index)
+
 
 # Proxy model to filter IFC files only
 class FileFilterProxyModel(QSortFilterProxyModel):
@@ -119,15 +156,6 @@ class Ui_MainWindow(QMainWindow):
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
         self.stagestoring = ["Stage 1", "Stage 2", "Stage 3", "Obstacles"]
-        self.webview = QWebEngineView()
-        self.setCentralWidget(self.webview)
-        self.channel = QWebChannel()
-        self.bridge = Bridge()
-        self.channel.registerObject("bridge", self.bridge)
-        self.webview.page().setWebChannel(self.channel)
-        react_build_path = "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/frontend/frontend/build/index.html"
-        react_app_path = os.path.abspath(react_build_path)
-        self.webview.load(QUrl.fromLocalFile(react_app_path))
         self.setupUi()
 
     # setup UI
