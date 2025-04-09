@@ -260,7 +260,7 @@ source /opt/ros/noetic/setup.bash <br>
 ##
 Extendsion Used:<br>
 QtPython <br>
-Python 3.08(ros1-linux) <br> 
+Python 3.09(ros1-linux) <br> 
 Python 3.10(ros2-linux) <br><br>
 
 UI_Drawinng is included and including layout for uidesign and box layout <br>
