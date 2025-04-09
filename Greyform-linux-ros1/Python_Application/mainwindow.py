@@ -14,21 +14,6 @@ import os
 from src.talker_listener.talker_listener import talker_node as RosPublisher
 import pyvista as pv
 import rospy
-"""from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWebChannel import QWebChannel
-from PyQt5.QtCore import QObject, pyqtSlot, QUrl"""
-
-class Bridge(QObject):
-    """Bridge between Python and JavaScript."""
-    
-    @pyqtSlot(str)
-    def receiveMessage(self, message):
-        print(f"Received from JS: {message}")
-
-    @pyqtSlot(result=str)
-    def sendMessage(self):
-        return "Hello from PyQt5!"
-
 
 class FileItemDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
@@ -74,7 +59,6 @@ class Ui_MainWindow(QMainWindow):
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
         self.stagestoring = ["Stage 1", "Stage 2" , "Stage 3", "Obstacles"]
-        # Find the promoted QWebEngineView from the UI
         self.setupUi()
 
     # setup UI
