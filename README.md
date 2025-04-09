@@ -284,15 +284,7 @@ python/python3 mainapplication.py<br>
 <br>
 
 ##
-Press right click to go inside the PBU(Pre-Fabricated Bathroom Unit) view  <br>
-Up , down, left, right for the camera <br>
-Left click is to move the inside view <br>
-Right click is to insert the actor in the room view , right click for room interact shower and toilet <br>
-Middle click is to add the position in a sequence .(will include a storing position variable ui) <br>
-l key is to remove the actor in the room view and set the mesh to the original position <br>
-m Key is to restore moving position <br>
-Lastly , disable one movement. if the mesh struck collision . it will disable one movement key, this will prevent crashing the cameraactor program <br>
-include thickness based on the door using revit and vtk thickness for stl <br>
+Right click is to chnage camera from wall 1 to wall F <br>
 
 ##
 IFC format: <br>
@@ -304,28 +296,8 @@ configuration of ros <br>
 ros publisher and Ros Subscriber are linked to qt Python GUI<br>
 
 ##
-Main Classes:<br>                               
-MainApplication > Mainframe(main classes, consist of 6 pages) > Starting Menu > File Selection Mesh > Sequence Selection > Marking UI > Marking Button Ui > Setting UI
-
-##
-Sub Classes:<br>
-createmesh > progressBarvtk > interactiveevent <br>
-menu_confirm <br>
-fileselectionmesh > progressBar                          > load_pyvistaframe <br>
-                  > ifcpythondialog > excel_export_info                      <br>
-menu_close <br>
-setsequence 
-enable_robot
-setting UI > Wifi <br>
-           > About <br>
-           > Service IP Address <br>
-           > Services <br>
-           > User Account <br> > Change Password Page <br>
-                               > Upload Home BIM File > Upload BIM File > Localization File Progress UI > Select Localization Marking > Marking Completed <br>
-                                                      > Delete BIM FIle <br>
-           > Restart/Shutdown <br>
-           > About <br>
-User Manual Page <br>
+Main Classes UI:<br>                               
+MainApplication > Mainframe(main classes, consist of 6 pages) > Starting Menu > File Selection Mesh > Confirm PBU > Marking UI > Confirm model UI
 
 ##
 Loading the STL link , using the STL/IFC/DXF file extension. <br>
@@ -335,7 +307,6 @@ for Mobile <br>
 Launch the launcher.py file to reload the uvicorn <br>
 launch the react website by npm start <br>
 
-
 ##
 Setup python path in ~/.bashrc <br>
 export PYTHONPATH="$PYTHONPATH:/root/catkin_ws/src/Greyform-linux/Python_Application" <br>
@@ -344,4 +315,4 @@ export PYTHONPATH="$PYTHONPATH:/home/username/ros2_ws/src/Greyform-linux/Python_
 
 ##
 Progress: <br>
-Robot scan
+None
