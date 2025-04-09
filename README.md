@@ -331,6 +331,10 @@ User Manual Page <br>
 Loading the STL link , using the STL/IFC/DXF file extension. <br>
 This program is only load STL/IFC/DXF file for the frames. <br>
 Ifc/DXF will be loaded and will convert to STL file format to load pyvista. <br>
+for Mobile <br>
+Launch the launcher.py file to reload the uvicorn <br>
+launch the react website by npm start <br>
+
 
 ##
 Setup python path in ~/.bashrc <br>
