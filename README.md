@@ -218,7 +218,7 @@ webencodings                         0.5.1 <br>
 wheel                                0.44.0 <br>
 xacro                                1.14.18 <br>
 zipp                                 3.20.2 <br>
-or use the script sh file(linux): <br>
+or use the script sh file/text file(linux): <br>
 sudo chmod +x installpip.sh/installpip3.sh <br>
 execute the script using sudo sh/bash installpip3.sh <br>
 for Window script execution: <br>
