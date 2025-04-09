@@ -138,8 +138,6 @@ class TalkerNode(Node):
                 cube_actor,
             )
 
-
-
 # main runner for listener node
 def main(args=None):
     rclpy.init(args=args)

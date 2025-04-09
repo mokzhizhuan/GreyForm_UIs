@@ -411,8 +411,6 @@ def ros_spin(node):
 # initalize ros node for talker
 if __name__ == "__main__":
     rclpy.init()
-    fastapi_thread = Thread(target=start_fastapi, daemon=True)
-    fastapi_thread.start()
     talker_node = RosPublisher.TalkerNode()
     app = QApplication(sys.argv)
     main_window = Ui_MainWindow(talker_node)
