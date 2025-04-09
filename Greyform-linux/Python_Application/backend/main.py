@@ -14,29 +14,58 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+@app.get("/api/start-fastapi")
 def start_fastapi():
-    os.system("uvicorn backend.main:app --host 0.0.0.0 --port 8000 --workers 1")
+    try:
+        env = os.environ.copy()
+        env["DISPLAY"] = ":0"  # Adjust if needed
+        process = subprocess.Popen(
+            ["python3", "launcher.py"],
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        stdout, stderr = process.communicate()
+        if process.returncode != 0:
+            error_message = stderr.decode("utf-8")
+            print(f"[launcher.py ERROR]: {error_message}")
+            return {
+                "status": "error",
+                "message": f"launcher.py failed: {error_message}",
+            }
+        return {"status": "success", "message": "FastAPI started"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 
 @app.get("/api/launch_qt")
 async def launch_qt():
     try:
-        # Set the display environment variable explicitly
         env = os.environ.copy()
-        env["DISPLAY"] = ":0"  # Adjust as needed
-
-        # Launch the Qt UI as a separate process and capture errors
-        process = subprocess.Popen(["python3", "mainwindow.py"], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        env["DISPLAY"] = ":0"  # Adjust if needed
+        # Then run mainwindow.py
+        process = subprocess.Popen(
+            ["python3", "mainwindow.py"],
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
         stdout, stderr = process.communicate()
-
         if process.returncode != 0:
             error_message = stderr.decode("utf-8")
-            print(f"Error launching Qt UI: {error_message}")
-            return {"status": "error", "message": error_message}
-
+            print(f"[mainwindow.py ERROR]: {error_message}")
+            return {
+                "status": "error",
+                "message": f"mainwindow.py failed: {error_message}",
+            }
         return {"status": "success", "message": "Qt UI launched"}
+
     except Exception as e:
-        print(f"Exception: {str(e)}")
+        import traceback
+
+        print("Exception launching Qt UI:", traceback.format_exc())
         return {"status": "error", "message": str(e)}
+
 
 @app.get("/api/hello")
 async def hello():

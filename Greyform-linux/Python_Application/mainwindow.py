@@ -49,9 +49,6 @@ def source_ros2_environment():
             (key, _, value) = line.strip().partition("=")
             os.environ[key] = value
         process.close()
-
-
-# Call the function to load environment
 source_ros2_environment()
 
 

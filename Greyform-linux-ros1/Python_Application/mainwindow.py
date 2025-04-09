@@ -75,19 +75,6 @@ class Ui_MainWindow(QMainWindow):
         self._translate = QCoreApplication.translate
         self.stagestoring = ["Stage 1", "Stage 2" , "Stage 3", "Obstacles"]
         # Find the promoted QWebEngineView from the UI
-        """self.webview = QWebEngineView()
-        self.setCentralWidget(self.webview)
-
-        # Setup WebChannel for communication
-        self.channel = QWebChannel()
-        self.bridge = Bridge()
-        self.channel.registerObject("bridge", self.bridge)
-        self.webview.page().setWebChannel(self.channel)
-
-        # Load ReactJS index.html from the build folder
-        react_app_path = os.path.abspath("my-react-app/build/index.html")
-        self.webview.load(QUrl.fromLocalFile(react_app_path))"""
-
         self.setupUi()
 
     # setup UI
