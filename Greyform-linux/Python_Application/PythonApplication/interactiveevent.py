@@ -110,16 +110,15 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             wall_number = int(match.group()) if match else None
             if wall_number in self.identifier and wall_number in self.remaining_walls_to_scan:
                 return wall_number
-        if self.wallname == "Wall 6":  # ✅ After Wall 6, prioritize Floor
+        if self.wallname == "Wall 6":  
             if "F" in self.remaining_walls_to_scan:
                 self.wallname = "Floor"
                 return "F"
-        return None  # No valid wall or fallback found
+        return None  
 
     def changewall(self):
         self.wall_actors[self.wallname].VisibilityOff()
         if self.wall_number:
-            # Remove scanned wall
             if self.wall_number in self.identifier:
                 self.scan = self.identifier[self.wall_number]
                 self.remaining_walls_to_scan.discard(self.wall_number)
@@ -143,7 +142,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.refresh()
 
     def goto_next_stage_or_page(self):
-        # ✅ Otherwise, move to the next stage (Stage 2 → Stage 3)
         self.currentindexstage += 1
         self.wall_index = 0
         self.stagetext = self.stagestorage[self.currentindexstage]

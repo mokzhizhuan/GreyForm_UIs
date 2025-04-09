@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-import PythonApplication.progressBar as Progress
 import PythonApplication.dxfframeloader as dxfload
 import PythonApplication.IFCpythondialog as ProgressIFCFile
 import ifcopenshell
@@ -22,12 +21,7 @@ class FileSelectionMesh():
 
     # load meshdata from file
     def meshdata(self):
-        if ".stl" in self.file_path:
-            progressbarprogram = Progress.pythonProgressBar(
-                80000, self.file_path, self.mainwindowforfileselection , self.mainwindow
-            )
-            progressbarprogram.exec_()
-        elif ".dxf" in self.file_path:
+        if ".dxf" in self.file_path:
             gdf = gpd.read_file(self.file_path, engine="fiona")
             dxfload.dxfloader(self.file_path, self.mainwindowforfileselection, gdf , self.mainwindow, self.stackedWidget)
         elif ".ifc" in self.file_path:

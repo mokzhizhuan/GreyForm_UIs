@@ -11,96 +11,10 @@ from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
 import vtk
 import os
-from fastapi import FastAPI
-from threading import Thread
-import uvicorn
-import pyvista as pv
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWebChannel import QWebChannel
-from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 import talker_listener.talker_node as RosPublisher
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from threading import Thread
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-import subprocess
-
-
-def source_ros2_environment():
-    ros2_setup = (
-        "/opt/ros/humble/setup.bash"  # Change 'foxy' if using a different distribution
-    )
-    workspace_setup = "~/ros2_ws/install/setup.bash"
-    # Source ROS 2 global environment
-    if os.path.exists(ros2_setup):
-        command = f"source {ros2_setup} && env"
-        process = os.popen(command)
-        for line in process:
-            (key, _, value) = line.strip().partition("=")
-            os.environ[key] = value
-        process.close()
-    # Source ROS 2 workspace environment
-    if os.path.exists(os.path.expanduser(workspace_setup)):
-        command = f"source {os.path.expanduser(workspace_setup)} && env"
-        process = os.popen(command)
-        for line in process:
-            (key, _, value) = line.strip().partition("=")
-            os.environ[key] = value
-        process.close()
-source_ros2_environment()
-
-
-def is_server_running(port=8000):
-    try:
-        # Use lsof to check if the port is in use
-        result = subprocess.run(
-            ["lsof", "-i", f"tcp:{port}"], 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE
-        )
-        # If the return code is 0, the port is in use
-        return result.returncode == 0
-    except Exception as e:
-        return False
-
-# Function to start the FastAPI server
-def start_fastapi():
-    if is_server_running():
-        print("FastAPI server is already running.")
-        return
-    try:
-        print("Starting FastAPI server...")
-        os.system("uvicorn backend.main:app --host 0.0.0.0 --port 8000 --workers 1")
-    except Exception as e:
-        print(f"Failed to start FastAPI: {str(e)}")
-
-# Bridge class for Qt and WebChannel communication
-class Bridge(QObject):
-    def __init__(self):
-        super().__init__()
-        self.data = "Initial data from Python"
-
-    @pyqtSlot(str)
-    def update_data(self, new_data):
-        print(f"Received from React: {new_data}")
-        self.data = new_data
-        if new_data == "Continue clicked":
-            print("Processing continue action...")
-        elif new_data == "Exit clicked":
-            print("Exiting application...")
-            QApplication.quit()
-
-    @pyqtSlot()
-    def exit_app(self):
-        print("Closing application from React")
-        QApplication.quit()
-
-    @pyqtSlot(result=str)
-    def get_data(self):
-        return self.data
-
 
 class FileItemDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
