@@ -56,9 +56,9 @@ async def launch_qt():
             print(f"[mainwindow.py ERROR]: {error_message}")
             return {
                 "status": "error",
-                "message": f"mainwindow.py failed: {error_message}",
+                "message": f"UI failed: {error_message}",
             }
-        return {"status": "success", "message": "Qt UI launched"}
+        return {"status": "success", "message": "UI launched"}
 
     except Exception as e:
         import traceback
