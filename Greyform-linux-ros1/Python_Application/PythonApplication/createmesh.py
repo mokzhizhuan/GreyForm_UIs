@@ -12,6 +12,8 @@ import PythonApplication.interactiveevent as events
 import PythonApplication.exceldatavtk as vtk_data_excel
 import re
 import PythonApplication.actors as createactorvtk
+import PythonApplication.arraystorage as storingelement
+import PythonApplication.ifcextractfiles as extractor
 
 
 # create the imported stl mesh in vtk frame
@@ -28,6 +30,11 @@ class createMesh(QMainWindow):
         walllabel,
         stacked_widget,
         listenerdialog,
+        wall_dimensions,
+        floor,
+        wall_finishes_dimensions,
+        label_map,
+        directional_axes_axis
     ):
         # starting initialize
         super().__init__()
@@ -35,15 +42,21 @@ class createMesh(QMainWindow):
         self.reader = vtk.vtkPolyData()
         self.meshbounds = None
         self.polydata = polydata
+        self.wall_dimensions = wall_dimensions
+        self.floor = floor
+        self.label_map = label_map
+        self.directional_axes_axis = directional_axes_axis
         self.ren = ren
         self.dialog = None
         self.renderwindowinteractor = renderwindowinteractor
+        self.wall_finishes_dimensions = wall_finishes_dimensions
         self.renderwindowinteractor.GetRenderWindow().AddRenderer(self.ren)
         self.ros_node = ros_node
         self.filepath = file_path
         self.walllabel = walllabel
         self.stacked_widget = stacked_widget
         self.listenerdialog = listenerdialog
+        self.axis_widths = {"x": [], "y": []}
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
@@ -57,6 +70,26 @@ class createMesh(QMainWindow):
             self.stagewallnum,
             self.stagestorage,
         ) = vtk_data_excel.exceldataextractor()
+        self.wall_finishes_height, self.small_wall_height = (
+            storingelement.wall_format_finishes(self.wall_finishes_dimensions)
+        )
+        self.wallformat, self.heighttotal, self.wall_height = (
+            storingelement.wall_format(
+                self.wall_dimensions,
+                self.floor,
+                self.label_map,
+                self.wall_finishes_height,
+            )
+        )
+        self.wallformat, self.axis_widths = extractor.addranges(
+            self.floor,
+            self.wall_height,
+            self.wall_finishes_height,
+            self.label_map,
+            self.wallformat,
+            self.axis_widths,
+            self.directional_axes_axis,
+        )
         self.stagetext = self.stagestorage[self.currentindexstage]
         Stagelabel.setText(f"Stage : {self.stagetext}")
         self.wallaxis = vtk_data_excel.wall_format(self.wall)
@@ -94,95 +127,13 @@ class createMesh(QMainWindow):
             (self.meshbounds[4] + self.meshbounds[5]) / 2,
         ]
         self.wall7 = [self.meshbounds[1], self.meshbounds[3]]
-        self.addranges()
-        self.walls = {
-            "Wall 1": {
-                "position": ((self.meshbounds[0] + self.meshbounds[1]), -100, 0),
-                "size": (self.wallaxis[1]["height"], self.wallaxis[1]["width"]),
-                "color": (0, 1, 1),
-                "rotation": (90, 0, 90),
-            },  # Cyan
-            "Wall 2": {
-                "position": (self.meshbounds[0] - 100, 0, 0),
-                "size": (
-                    (self.meshbounds[2] + self.meshbounds[3]),
-                    self.wallaxis[1]["height"],
-                ),
-                "color": (1, 0, 0),
-                "rotation": (0, 90, 90),
-            },  # Red
-            "Wall 3": {
-                "position": (
-                    self.wallaxis[3]["width"],
-                    (self.meshbounds[2] + self.meshbounds[3]) + 100,
-                    0,
-                ),
-                "size": (
-                    self.wallaxis[1]["height"],
-                    self.wallaxis[3]["width"],
-                ),
-                "color": (1, 0, 1),
-                "rotation": (90, 0, 90),
-            },  # Magenta
-            "Wall 4": {
-                "position": (
-                    (self.meshbounds[0] + self.meshbounds[1]),
-                    (self.meshbounds[2] + self.meshbounds[3]) - 300,
-                    0,
-                ),
-                "size": (
-                    self.wallaxis[1]["height"],
-                    self.wallaxis[5]["width"],
-                ),
-                "color": (0.5, 0.5, 0),
-                "rotation": (90, 0, 90),
-            },  # Brown
-            "Wall 5": {
-                "position": (
-                    self.wallaxis[3]["width"] + 100,
-                    self.wallaxis[3]["width"] - 200,
-                    0,
-                ),
-                "size": (self.wallaxis[4]["width"], self.wallaxis[1]["height"]),
-                "color": (0, 0.5, 0.5),
-                "rotation": (0, 90, 90),
-            },  # Teal
-            "Wall 6": {
-                "position": (self.meshbounds[0] + self.meshbounds[1] + 100, 0, 0),
-                "size": ((self.wallaxis[6]["width"], self.wallaxis[1]["height"])),
-                "color": (0, 1, 0),
-                "rotation": (0, 90, 90),
-            },  # Green
-            "Floor": {
-                "position": (0, 0, -100),
-                "points": (
-                    (0, 0, -100),
-                    (0, (self.meshbounds[2] + self.meshbounds[3]), -100),
-                    (
-                        (self.meshbounds[2] + self.meshbounds[3]),
-                        (self.meshbounds[2] + self.meshbounds[3]),
-                        -100,
-                    ),
-                    (
-                        (self.meshbounds[2] + self.meshbounds[3]),
-                        self.wallaxis[6]["width"],
-                        -100,
-                    ),
-                    (
-                        (self.meshbounds[0] + self.meshbounds[1]),
-                        self.wallaxis[6]["width"],
-                        -100,
-                    ),
-                    ((self.meshbounds[0] + self.meshbounds[1]), 0, -100),
-                ),
-                "color": (1, 1, 0),
-                "rotation": (0, 0, 0),
-            },  # Yellow
-        }
-        self.wall_actors, self.identifier, self.wallname = createactorvtk.setupactors(
-            self.walls, self.stagetext, self.wall_identifiers, self.ren, self.walllabel
+        self.walls = {}
+        self.walls , self.cameraactors= createactorvtk.initialize_walls(self.wallformat,self.axis_widths , self.walls)
+        self.wall_actors, self.identifier, self.wallname , self.cameraactors = createactorvtk.setupactors(
+            self.walls, self.stagetext, self.wall_identifiers, self.ren, self.walllabel ,self.cameraactors
         )
         self.setupvtkframe()
+
 
     # setup vtk frame ui
     def setupvtkframe(self):
@@ -210,7 +161,7 @@ class createMesh(QMainWindow):
         ]
         camera = events.myInteractorStyle(
             setcamerainteraction,
-            self.wall_identifiers,
+            self.cameraactors
         )
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
@@ -287,56 +238,3 @@ class createMesh(QMainWindow):
         self.meshbounds = []
         for i in range(6):
             self.meshbounds.append(actor.GetBounds()[i])
-
-    def addranges(self):
-        current_y = 0
-        current_x = 0
-        max_y = self.wall7[1]  # Maximum Y position based on the image
-        max_x = self.wall7[0]  # Maximum X position based on the image
-        for wall_id, wall in self.wallaxis.items():
-            if "pos_y_range" not in wall or wall["pos_y_range"] is None:
-                wall["pos_y_range"] = (0, 0)
-            if "pos_x_range" not in wall or wall["pos_x_range"] is None:
-                wall["pos_x_range"] = (0, 0)
-            if wall["axis"] == "y":  # Wall along the Y-axis
-                # Y-axis walls increase current_y
-                if wall_id == 2:  # Specific for Wall 1
-                    wall["pos_x_range"] = (0, 50)
-                    wall["pos_y_range"] = (0, self.wall7[0])
-                elif wall_id == 4:  # Specific for wall 3
-                    wall["pos_x_range"] = (self.wall7[1] - 50, self.wall7[1])
-                    wall["pos_y_range"] = (
-                        self.wall7[1] - self.wallaxis[4]["width"],
-                        self.wall7[1],
-                    )
-                elif wall_id == 6:  # Specific for wall 5
-                    wall["pos_x_range"] = (self.wall7[0] - 100, max_x)
-                    wall["pos_y_range"] = (0, max_y)
-                else:
-                    wall["pos_x_range"] = (0, max_x)
-                    wall["pos_y_range"] = (current_y, current_y + self.wall7[0])
-            elif wall["axis"] == "x":  # Wall along the X-axis
-                # X-axis walls increase current_x
-                if wall_id == 3:  # Specific for Wall 2
-                    wall["pos_x_range"] = (0, wall["width"])
-                    wall["pos_y_range"] = (
-                        max_y - self.wallaxis[4]["width"] + 50,
-                        max_y,
-                    )
-                elif wall_id == 5:  # Specific for Wall 4
-                    wall["pos_x_range"] = (self.wall7[1], max_x)
-                    wall["pos_y_range"] = (max_y - 50, max_y)
-                elif wall_id == 1:  # Wall 6
-                    wall["pos_x_range"] = (0, max_x)  # Corrected range
-                    wall["pos_y_range"] = (0, 50)
-                else:
-                    wall["pos_x_range"] = (current_x, current_x + max_x)
-                    wall["pos_y_range"] = (0, max_y)
-            wall["pos_x_range"] = (
-                max(0, wall["pos_x_range"][0]),
-                min(max_x, wall["pos_x_range"][1]),
-            )
-            wall["pos_y_range"] = (
-                max(0, wall["pos_y_range"][0]),
-                min(max_y, wall["pos_y_range"][1]),
-            )

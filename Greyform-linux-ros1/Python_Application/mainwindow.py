@@ -76,30 +76,48 @@ class Ui_MainWindow(QMainWindow):
                 self.mainwindow.vtkframe
             )
         )
+        usb_path = "/media/ubuntu/DF4A-89D8/"
+        self.check_usb_directory(usb_path)
         self.model = QFileSystemModel()
-        self.model.setRootPath("")  # Show entire system
-        self.model.setFilter(QDir.Dirs | QDir.NoDotAndDotDot | QDir.Drives)  # Show only folders
+        self.model.setFilter(QDir.AllDirs | QDir.NoDotAndDotDot | QDir.Drives)
+        self.model.setRootPath(usb_path)
         self.mainwindow.Selectivefiledirectoryview.setModel(self.model)
-        root_index = self.model.index(QDir.rootPath())
-        self.mainwindow.Selectivefiledirectoryview.setRootIndex(root_index)  # Now safe to set
+        root_index = self.model.index(usb_path)
+        self.mainwindow.Selectivefiledirectoryview.setRootIndex(
+            root_index
+        )  # Now safe to set
         self.file_model = QFileSystemModel()
-        self.file_model.setFilter(QDir.AllEntries | QDir.NoDotAndDotDot| QDir.Drives) 
-        self.file_model.setRootPath(QDir.rootPath())
-        self.mainwindow.Selectivefiledirectoryview.setModel(self.file_model)
-        self.mainwindow.Selectivefiledirectoryview.setRootIndex(self.file_model.index(QDir.rootPath()))
-        self.mainwindow.Selectivefiledirectoryview.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.mainwindow.Selectivefiledirectoryview.setHeaderHidden(True) 
-        self.mainwindow.Selectivefiledirectoryview.setAnimated(True)  # Smooth folder expansion
-        self.mainwindow.Selectivefiledirectoryview.setIndentation(20)  # Indentation for nested folders
+        self.file_model.setFilter(QDir.Files | QDir.NoDotAndDotDot)
+        self.file_model.setRootPath(usb_path)
+        self.mainwindow.Selectivefiledirectoryview.setSelectionMode(
+            QAbstractItemView.SingleSelection
+        )
+        self.mainwindow.Selectivefiledirectoryview.setHeaderHidden(True)
+        self.mainwindow.Selectivefiledirectoryview.setAnimated(
+            True
+        )  # Smooth folder expansion
+        self.mainwindow.Selectivefiledirectoryview.setIndentation(
+            20
+        )  # Indentation for nested folders
         self.proxy_model = FileFilterProxyModel()
         self.proxy_model.setSourceModel(self.file_model)
-        self.mainwindow.Selectivefilelistview.setModel(self.file_model)
-        self.mainwindow.Selectivefilelistview.setRootIndex(self.file_model.index(QDir.rootPath()))
+        self.mainwindow.Selectivefilelistview.setModel(self.proxy_model)
+        self.mainwindow.Selectivefilelistview.setRootIndex(
+            self.proxy_model.mapFromSource(self.file_model.index(usb_path))
+        )
         self.mainwindow.Selectivefilelistview.setHeaderHidden(False)
-        self.mainwindow.Selectivefilelistview.setSortingEnabled(True)  # Allow sorting by columns
-        self.mainwindow.Selectivefilelistview.setUniformRowHeights(True)  # Optimize performance
-        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)  # Better visibility
-        self.mainwindow.Selectivefilelistview.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.mainwindow.Selectivefilelistview.setSortingEnabled(
+            True
+        )  # Allow sorting by columns
+        self.mainwindow.Selectivefilelistview.setUniformRowHeights(
+            True
+        )  # Optimize performance
+        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(
+            True
+        )  # Better visibility
+        self.mainwindow.Selectivefilelistview.setSelectionMode(
+            QAbstractItemView.SingleSelection
+        )
         header = self.mainwindow.Selectivefilelistview.header()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
         header.setStretchLastSection(True)  # Stretch the last column to fill space
@@ -107,19 +125,41 @@ class Ui_MainWindow(QMainWindow):
         self.file_model.setHeaderData(1, Qt.Horizontal, "Size")
         self.file_model.setHeaderData(2, Qt.Horizontal, "Type")
         self.file_model.setHeaderData(3, Qt.Horizontal, "Date Modified")
-        self.mainwindow.Selectivefilelistview.sortByColumn(0, Qt.AscendingOrder)  # Sort by Name initially
-        self.mainwindow.Selectivefilelistview.setItemsExpandable(False)  # Disable folder expansion
-        self.mainwindow.Selectivefilelistview.setRootIsDecorated(False)  # Hide tree structure in the right panel
-        self.mainwindow.Selectivefilelistview.setColumnWidth(0, 250)  # Minimum width for "Name"
-        self.mainwindow.Selectivefilelistview.setIconSize(QSize(32, 32))  # Slightly larger icon size
+        self.mainwindow.Selectivefilelistview.sortByColumn(
+            0, Qt.AscendingOrder
+        )  # Sort by Name initially
+        self.mainwindow.Selectivefilelistview.setItemsExpandable(
+            False
+        )  # Disable folder expansion
+        self.mainwindow.Selectivefilelistview.setRootIsDecorated(
+            False
+        )  # Hide tree structure in the right panel
+        self.mainwindow.Selectivefilelistview.setColumnWidth(
+            0, 250
+        )  # Minimum width for "Name"
+        self.mainwindow.Selectivefilelistview.setIconSize(
+            QSize(32, 32)
+        )  # Slightly larger icon size
         delegate = FileItemDelegate()
         self.mainwindow.Selectivefilelistview.setItemDelegate(delegate)
-        self.mainwindow.Selectivefiledirectoryview.clicked.connect(self.on_folder_selected)
+        self.mainwindow.Selectivefiledirectoryview.clicked.connect(
+            self.on_folder_selected
+        )
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
         self.mainwindow.horizontalLayout_16.addWidget(self.plotterloader.interactor)
         self.mainwindow.verticalLayoutframe.addWidget(self.renderWindowInteractor)
         self.button_UI()
         self.setStretch()
+
+    def check_usb_directory(self, path):
+        """Check the folder structure manually to verify visibility."""
+        try:
+            contents = os.listdir(path)
+            return
+        except PermissionError:
+            return
+        except Exception as e:
+            return
 
     def on_folder_selected(self, index):
         folder_path = self.model.filePath(index)

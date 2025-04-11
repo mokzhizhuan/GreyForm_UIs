@@ -44,4 +44,3 @@ async def launch_qt():
 @app.get("/api/hello")
 async def hello():
     return {"message": "Hello from FastAPI"}
-
