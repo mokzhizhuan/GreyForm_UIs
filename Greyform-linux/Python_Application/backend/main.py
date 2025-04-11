@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import subprocess
 import os
+import traceback
 
 app = FastAPI()
 
@@ -14,12 +15,12 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+
 @app.get("/api/launch_qt")
 async def launch_qt():
     try:
         env = os.environ.copy()
-        env["DISPLAY"] = ":0"  # Adjust if needed
-        # Then run mainwindow.py
+        env["DISPLAY"] = ":0" 
         process = subprocess.Popen(
             ["python3", "mainwindow.py"],
             env=env,
@@ -35,10 +36,7 @@ async def launch_qt():
                 "message": f"UI failed: {error_message}",
             }
         return {"status": "success", "message": "UI launched"}
-
     except Exception as e:
-        import traceback
-
         print("Exception launching Qt UI:", traceback.format_exc())
         return {"status": "error", "message": str(e)}
 
@@ -46,3 +44,4 @@ async def launch_qt():
 @app.get("/api/hello")
 async def hello():
     return {"message": "Hello from FastAPI"}
+
