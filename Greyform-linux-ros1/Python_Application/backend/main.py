@@ -14,6 +14,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+
 @app.get("/api/launch_qt")
 async def launch_qt():
     try:
