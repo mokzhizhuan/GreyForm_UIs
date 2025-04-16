@@ -342,10 +342,17 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_6" stretch="3">
            <item>
-            <layout class="QVBoxLayout" name="verticalLayout_21" stretch="2,2">
+            <layout class="QVBoxLayout" name="verticalLayout_21" stretch="0,2,2">
              <property name="sizeConstraint">
               <enum>QLayout::SetNoConstraint</enum>
              </property>
+             <item>
+              <widget class="QPushButton" name="viewButton">
+               <property name="text">
+                <string>Switch View</string>
+               </property>
+              </widget>
+             </item>
              <item>
               <widget class="QLabel" name="walllabel">
                <property name="font">

@@ -1,0 +1,202 @@
+[4.515s] Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces -- -j8 -l8
+[6.545s] [  2%] Built target my_robot_wallinterfaces__cpp
+[6.982s] [  2%] Built target ament_cmake_python_copy_my_robot_wallinterfaces
+[7.576s] [ 12%] Built target my_robot_wallinterfaces__rosidl_typesupport_cpp
+[12.607s] running egg_info
+[12.610s] writing my_robot_wallinterfaces.egg-info/PKG-INFO
+[12.611s] writing dependency_links to my_robot_wallinterfaces.egg-info/dependency_links.txt
+[12.611s] writing top-level names to my_robot_wallinterfaces.egg-info/top_level.txt
+[12.647s] reading manifest file 'my_robot_wallinterfaces.egg-info/SOURCES.txt'
+[12.657s] writing manifest file 'my_robot_wallinterfaces.egg-info/SOURCES.txt'
+[13.296s] [ 12%] Built target ament_cmake_python_build_my_robot_wallinterfaces_egg
+[13.910s] [ 23%] Built target my_robot_wallinterfaces__rosidl_typesupport_introspection_cpp
+[14.399s] [ 34%] Built target my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cpp
+[14.659s] [ 44%] Built target my_robot_wallinterfaces__rosidl_generator_c
+[15.131s] [ 55%] Built target my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c
+[15.358s] [ 65%] Built target my_robot_wallinterfaces__rosidl_typesupport_c
+[15.679s] [ 76%] Built target my_robot_wallinterfaces__rosidl_typesupport_introspection_c
+[16.017s] [ 76%] Built target my_robot_wallinterfaces
+[16.294s] [ 78%] Built target my_robot_wallinterfaces__py
+[16.746s] [ 87%] Built target my_robot_wallinterfaces__rosidl_generator_py
+[17.153s] [ 91%] Built target my_robot_wallinterfaces__rosidl_typesupport_fastrtps_c__pyext
+[17.471s] [ 95%] Built target my_robot_wallinterfaces__rosidl_typesupport_c__pyext
+[17.925s] [100%] Built target my_robot_wallinterfaces__rosidl_typesupport_introspection_c__pyext
+[18.118s] Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces -- -j8 -l8
+[18.176s] Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces
+[18.255s] -- Install configuration: ""
+[18.268s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/ament_index/resource_index/rosidl_interfaces/my_robot_wallinterfaces
+[18.277s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces
+[18.279s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv
+[18.279s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail
+[18.288s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__type_support.h
+[18.288s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__struct.h
+[18.288s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__functions.c
+[18.289s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__functions.h
+[18.290s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/set_led.h
+[18.290s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg
+[18.292s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail
+[18.292s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__functions.h
+[18.294s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support.h
+[18.294s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__struct.h
+[18.295s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__functions.c
+[18.296s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__functions.h
+[18.296s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__type_support.h
+[18.297s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__functions.c
+[18.297s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__struct.h
+[18.297s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/file_extraction_message.h
+[18.298s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/rosidl_generator_c__visibility_control.h
+[18.298s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/selection_wall.h
+[18.306s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/library_path.sh
+[18.309s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/library_path.dsv
+[18.326s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_generator_c.so
+[18.335s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces
+[18.345s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv
+[18.348s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail
+[18.363s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__rosidl_typesupport_fastrtps_c.h
+[18.368s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg
+[18.383s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail
+[18.388s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__rosidl_typesupport_fastrtps_c.h
+[18.389s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__rosidl_typesupport_fastrtps_c.h
+[18.398s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[18.398s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_fastrtps_c.so
+[18.399s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces
+[18.399s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv
+[18.414s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail
+[18.416s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__rosidl_typesupport_introspection_c.h
+[18.416s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__type_support.c
+[18.416s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg
+[18.417s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail
+[18.417s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__rosidl_typesupport_introspection_c.h
+[18.425s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__rosidl_typesupport_introspection_c.h
+[18.433s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support.c
+[18.434s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__type_support.c
+[18.435s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[18.435s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_introspection_c.so
+[18.447s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_c.so
+[18.455s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces
+[18.455s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv
+[18.456s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail
+[18.456s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__builder.hpp
+[18.456s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__struct.hpp
+[18.459s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__type_support.hpp
+[18.462s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__traits.hpp
+[18.462s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/set_led.hpp
+[18.463s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg
+[18.463s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/rosidl_generator_cpp__visibility_control.hpp
+[18.464s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/file_extraction_message.hpp
+[18.464s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail
+[18.465s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__builder.hpp
+[18.465s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__struct.hpp
+[18.466s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__struct.hpp
+[18.467s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__traits.hpp
+[18.467s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__builder.hpp
+[18.468s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support.hpp
+[18.468s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__traits.hpp
+[18.468s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__type_support.hpp
+[18.468s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/selection_wall.hpp
+[18.474s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces
+[18.474s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv
+[18.475s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail
+[18.477s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/dds_fastrtps
+[18.478s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__rosidl_typesupport_fastrtps_cpp.hpp
+[18.478s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg
+[18.479s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail
+[18.481s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__rosidl_typesupport_fastrtps_cpp.hpp
+[18.482s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/dds_fastrtps
+[18.484s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__rosidl_typesupport_fastrtps_cpp.hpp
+[18.485s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[18.503s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_fastrtps_cpp.so
+[18.507s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces
+[18.516s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv
+[18.531s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail
+[18.532s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__type_support.cpp
+[18.533s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/srv/detail/set_led__rosidl_typesupport_introspection_cpp.hpp
+[18.534s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg
+[18.535s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail
+[18.536s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__rosidl_typesupport_introspection_cpp.hpp
+[18.536s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/file_extraction_message__type_support.cpp
+[18.537s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__type_support.cpp
+[18.543s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/include/my_robot_wallinterfaces/my_robot_wallinterfaces/msg/detail/selection_wall__rosidl_typesupport_introspection_cpp.hpp
+[18.553s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_introspection_cpp.so
+[18.590s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_typesupport_cpp.so
+[18.598s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/pythonpath.sh
+[18.601s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/pythonpath.dsv
+[18.617s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces-0.0.0-py3.10.egg-info
+[18.619s] -- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces-0.0.0-py3.10.egg-info/dependency_links.txt
+[18.630s] -- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces-0.0.0-py3.10.egg-info/SOURCES.txt
+[18.631s] -- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces-0.0.0-py3.10.egg-info/PKG-INFO
+[18.633s] -- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces-0.0.0-py3.10.egg-info/top_level.txt
+[18.652s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces
+[18.660s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/__init__.py
+[18.662s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[18.663s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/libmy_robot_wallinterfaces__rosidl_generator_py.so
+[18.663s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[18.681s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/srv
+[18.685s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/srv/__init__.py
+[18.692s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/srv/_set_led.py
+[18.693s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/srv/_set_led_s.c
+[18.695s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_fastrtps_c.c
+[18.701s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[18.702s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg
+[18.703s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg/__init__.py
+[18.703s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg/_selection_wall.py
+[18.704s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg/_selection_wall_s.c
+[18.704s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg/_file_extraction_message_s.c
+[18.705s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg/_file_extraction_message.py
+[18.705s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_introspection_c.c
+[18.706s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/_my_robot_wallinterfaces_s.ep.rosidl_typesupport_c.c
+[19.068s] Listing '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces'...
+[19.069s] Listing '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/msg'...
+[19.071s] Listing '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/srv'...
+[19.114s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[19.137s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[19.147s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/local/lib/python3.10/dist-packages/my_robot_wallinterfaces/my_robot_wallinterfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[19.154s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/lib/libmy_robot_wallinterfaces__rosidl_generator_py.so
+[19.157s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/msg/FileExtractionMessage.idl
+[19.158s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/msg/SelectionWall.idl
+[19.159s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/srv/SetLed.idl
+[19.159s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/msg/FileExtractionMessage.msg
+[19.162s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/msg/SelectionWall.msg
+[19.163s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/srv/SetLed.srv
+[19.164s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/srv/SetLed_Request.msg
+[19.165s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/srv/SetLed_Response.msg
+[19.166s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/ament_index/resource_index/package_run_dependencies/my_robot_wallinterfaces
+[19.168s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/ament_index/resource_index/parent_prefix_path/my_robot_wallinterfaces
+[19.169s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/ament_prefix_path.sh
+[19.171s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/ament_prefix_path.dsv
+[19.178s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/path.sh
+[19.180s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/environment/path.dsv
+[19.182s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/local_setup.bash
+[19.183s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/local_setup.sh
+[19.183s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/local_setup.zsh
+[19.184s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/local_setup.dsv
+[19.184s] -- Installing: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.dsv
+[19.185s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/ament_index/resource_index/packages/my_robot_wallinterfaces
+[19.195s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_generator_cExport.cmake
+[19.197s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_generator_cExport-noconfig.cmake
+[19.202s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cExport.cmake
+[19.203s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cExport-noconfig.cmake
+[19.211s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_introspection_cExport.cmake
+[19.212s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[19.216s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_cExport.cmake
+[19.218s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_cExport-noconfig.cmake
+[19.219s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_generator_cppExport.cmake
+[19.223s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cppExport.cmake
+[19.226s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake
+[19.232s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_introspection_cppExport.cmake
+[19.235s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[19.242s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_cppExport.cmake
+[19.246s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfaces__rosidl_typesupport_cppExport-noconfig.cmake
+[19.249s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_generator_pyExport.cmake
+[19.253s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/export_my_robot_wallinterfaces__rosidl_generator_pyExport-noconfig.cmake
+[19.255s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/rosidl_cmake-extras.cmake
+[19.256s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/ament_cmake_export_dependencies-extras.cmake
+[19.256s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/ament_cmake_export_include_directories-extras.cmake
+[19.257s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/ament_cmake_export_libraries-extras.cmake
+[19.257s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/ament_cmake_export_targets-extras.cmake
+[19.258s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[19.258s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[19.259s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfacesConfig.cmake
+[19.260s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/cmake/my_robot_wallinterfacesConfig-version.cmake
+[19.261s] -- Up-to-date: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_robot_wallinterfaces/share/my_robot_wallinterfaces/package.xml
+[19.281s] Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces

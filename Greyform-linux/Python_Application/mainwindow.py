@@ -153,8 +153,12 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.Selectivefiledirectoryview.clicked.connect(
             self.on_folder_selected
         )
+        self.camera_label = QLabel()
+        self.camera_label.setScaledContents(True)
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
         self.mainwindow.horizontalLayout_16.addWidget(self.plotterloader.interactor)
+        self.mainwindow.horizontalLayout_16.addWidget(self.camera_label)
+        self.camera_label.hide()
         self.mainwindow.verticalLayoutframe.addWidget(self.renderWindowInteractor)
         self.button_UI()
         self.setStretch()
@@ -226,6 +230,8 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.labelstatus,
             self.mainwindow.scanprogressBar,
             self.mainwindow.walllabel,
+            self.mainwindow.viewButton,
+            self.camera_label
         ]
         self.mainwindow.Itemlabel.setText(f"Model Product : {file}")
         fileselectionmesh.FileSelectionMesh(
