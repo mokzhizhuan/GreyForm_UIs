@@ -56,6 +56,7 @@ class createMesh(QMainWindow):
         self.tracker = None
         self.toggle_button = toggle_button
         self.stacked_display = stacked_display
+        self.showing_camera = False
         self.cameralabel = camera_label
         self.cap = cv2.VideoCapture(0)
         ret, frame = self.cap.read()
@@ -65,7 +66,8 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor.GetRenderWindow().AddRenderer(self.ren)
         self.filepath = file_path
         self.walllabel = walllabel
-        self.stacked_widget = stacked_widget    
+        self.stacked_widget = stacked_widget
+        self.listenerdialog = listenerdialog    
         self.axis_widths = {"x": [], "y": []}
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)

@@ -84,13 +84,9 @@ class Ui_MainWindow(QMainWindow):
                 self.mainwindow.vtkframe
             )
         )
-        usb_paths = self.get_usb_paths_windows()
-        if usb_paths:
-            usb_path = usb_paths[0]  # e.g. 'E:\\'
-        else:
-            usb_path = "C:\\Users\\MokZhiZhuan\\Downloads" 
+        usb_path = "/media/ubuntu/"
         self.check_usb_directory(usb_path)
-        self.model = QFileSystemModel()
+        self.model = QFileSystemModel()     
         self.model.setFilter(QDir.AllDirs | QDir.NoDotAndDotDot | QDir.Drives)
         self.model.setRootPath(usb_path)
         self.mainwindow.Selectivefiledirectoryview.setModel(self.model)

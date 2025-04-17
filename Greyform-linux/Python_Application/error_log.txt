@@ -8,3 +8,4 @@ Failed to load stlfile in the vtkframe: 'createMesh' object has no attribute 'ax
 Failed to load stlfile in the vtkframe: module 'PythonApplication.actors' has no attribute 'setupactors'
 Failed to load stlfile in the vtkframe: 'createMesh' object has no attribute 'cameraactors'
 Failed to load stlfile in the vtkframe: 'vtkmodules.vtkRenderingOpenGL2.vtkOpenGLCamera' object has no attribute 'SetDirectionOfProjection'
+Failed to load stlfile in the vtkframe: 'createMesh' object has no attribute 'listenerdialog'
