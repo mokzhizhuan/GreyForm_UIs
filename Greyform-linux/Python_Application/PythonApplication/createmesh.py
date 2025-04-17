@@ -37,7 +37,8 @@ class createMesh(QMainWindow):
         label_map,
         directional_axes_axis,
         toggle_button,
-        camera_label
+        camera_label,
+        stacked_display
     ):
         # starting initialize
         super().__init__()
@@ -54,6 +55,7 @@ class createMesh(QMainWindow):
         self.tracking = False
         self.tracker = None
         self.toggle_button = toggle_button
+        self.stacked_display = stacked_display
         self.cameralabel = camera_label
         self.cap = cv2.VideoCapture(0)
         ret, frame = self.cap.read()
@@ -61,11 +63,9 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor = renderwindowinteractor
         self.wall_finishes_dimensions = wall_finishes_dimensions
         self.renderwindowinteractor.GetRenderWindow().AddRenderer(self.ren)
-        self.ros_node = ros_node
         self.filepath = file_path
         self.walllabel = walllabel
-        self.stacked_widget = stacked_widget
-        self.listenerdialog = listenerdialog    
+        self.stacked_widget = stacked_widget    
         self.axis_widths = {"x": [], "y": []}
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
@@ -101,9 +101,11 @@ class createMesh(QMainWindow):
             self.directional_axes_axis,
         )
         self.stagetext = self.stagestorage[self.currentindexstage]
+        self.timer = QTimer()
+        self.timer.timeout.connect(lambda:self.update_frame())
         Stagelabel.setText(f"Stage : {self.stagetext}")
         self.wallaxis = vtk_data_excel.wall_format(self.wall)
-        self.toggle_button.clicked.connect(self.toggle_view)
+        self.toggle_button.clicked.connect(lambda: self.toggle_view())
         self.loadStl()
 
     def show_cancelation_dialog(self, text):
@@ -116,18 +118,11 @@ class createMesh(QMainWindow):
 
     def toggle_view(self):
         if self.showing_camera:
-            # Switch to VTK
             self.timer.stop()
-            self.cameralabel.hide()
-            self.renderwindowinteractor.show()
+            self.stacked_display.setCurrentIndex(0)  # Show VTK
             self.loadStl()
         else:
-            # Switch to Camera
-            self.renderwindowinteractor.hide()
-            self.cameralabel.show()
-            self.timer.start()
-            self.timer = QTimer()
-            self.timer.timeout.connect(self.update_frame)
+            self.stacked_display.setCurrentIndex(1)  # Show webcam
             self.timer.start(30)
         self.showing_camera = not self.showing_camera
 
@@ -150,8 +145,8 @@ class createMesh(QMainWindow):
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
         qimg = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-        self.image_label.setPixmap(QPixmap.fromImage(qimg))
-        self.image_label.resize(w, h)
+        self.cameralabel.setPixmap(QPixmap.fromImage(qimg))
+        self.cameralabel.resize(w, h)
         self.resize(w, h + self.toggle_button.height())
 
     def draw_box(self, frame, bbox):

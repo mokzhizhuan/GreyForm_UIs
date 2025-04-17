@@ -42,7 +42,7 @@ def stagecatergorize(ifc_file):
 
 
 def add_legends():
-    dataframe_Legend = pd.read_excel("Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2)
+    dataframe_Legend = pd.read_excel("Pin Allocation BOM for PBU_T1a.xlsx", skiprows=2, engine='openpyxl')
     pen_column = dataframe_Legend.columns[3]
     pin_id_column = dataframe_Legend.columns[9]
     dataframe_Legend = dataframe_Legend[[pen_column, pin_id_column]]

@@ -1,8 +1,14 @@
-import PythonApplication.menu_close as closewindow
+import menu_close as closewindow
 import PythonApplication.menuconfirm as backtomenudialog
-import PythonApplication.menu_confirmack as confirmack
+import menu_sendmodel as sendmodel
+from PyQt5 import QtCore, QtWidgets, QtGui, uic
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
-#button interaction ui
+
+# main window button interaction
 class mainwindowbuttonUI(object):
     def __init__(
         self,
@@ -13,13 +19,9 @@ class mainwindowbuttonUI(object):
         NextButton_Page_2,
         BacktoMenuButton,
         BackButton_Page_2,
-        BackButton_Page_3,
-        NextButton_Page_3,
-        ConfirmButton,
-        HomeButton,
+        ChooseButton,
+        sendmodelButton,
         CloseButton,
-        ConfirmAckButton,
-        MarkingButton,
     ):
         # starting initialize
         super().__init__()
@@ -30,55 +32,42 @@ class mainwindowbuttonUI(object):
         self.NextButton_Page_2 = NextButton_Page_2
         self.BacktoMenuButton = BacktoMenuButton
         self.BackButton_Page_2 = BackButton_Page_2
-        self.BackButton_Page_3 = BackButton_Page_3
-        self.NextButton_Page_3 = NextButton_Page_3
-        self.ConfirmButton = ConfirmButton
-        self.HomeButton = HomeButton
+        self.ChooseButton = ChooseButton
         self.CloseButton = CloseButton
-        self.ConfirmAckButton = ConfirmAckButton
-        self.MarkingButton = MarkingButton
+        self.sendmodelButton = sendmodelButton
         self.button_UI()
 
-    #stacked widget page
+    # stacked widget page ui
     def startconfigure(self):
         self.stackedWidget.setCurrentIndex(1)
 
-    def configurestage(self):
+    def confirmmodel(self):
         self.stackedWidget.setCurrentIndex(2)
 
-    def guiconfigure(self):
-        self.stackedWidget.setCurrentIndex(3)
-
-    def guibuttonconfig(self):
-        self.stackedWidget.setCurrentIndex(4)
-
-    def homeui(self):
-        self.stackedWidget.setCurrentIndex(0)
-
-    #button ui for the main interaction window
+    # button interaction ui
     def button_UI(self):
         self.menuStartButton.clicked.connect(self.startconfigure)
         self.menuCloseButton.clicked.connect(
-            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(self.mainwindow)
+            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(
+                self.mainwindow
+            )
         )
-        self.NextButton_Page_2.clicked.connect(self.configurestage)
+        self.NextButton_Page_2.clicked.connect(self.confirmmodel)
         self.BacktoMenuButton.clicked.connect(
             lambda: backtomenudialog.Ui_Dialog_Confirm.show_dialog_confirm(
                 self.mainwindow,
                 self.stackedWidget,
             )
         )
+        self.ChooseButton.clicked.connect(self.startconfigure)
         self.BackButton_Page_2.clicked.connect(self.startconfigure)
-        self.BackButton_Page_3.clicked.connect(self.configurestage)
-        self.NextButton_Page_3.clicked.connect(self.guiconfigure)
-        self.ConfirmButton.clicked.connect(self.guibuttonconfig)
-        self.MarkingButton.clicked.connect(self.guiconfigure)
-        self.HomeButton.clicked.connect(self.homeui)
         self.CloseButton.clicked.connect(
-            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(self.mainwindow)
+            lambda: closewindow.Ui_Dialog_Close.show_dialog_close(
+                self.mainwindow
+            )
         )
-        self.ConfirmAckButton.clicked.connect(
-            lambda: confirmack.Ui_Dialog_ConfirmAck.show_dialog_ConfirmAck(
+        self.sendmodelButton.clicked.connect(
+            lambda: sendmodel.Ui_Dialog_Confirm.show_dialog_confirm(
                 self.mainwindow
             )
         )

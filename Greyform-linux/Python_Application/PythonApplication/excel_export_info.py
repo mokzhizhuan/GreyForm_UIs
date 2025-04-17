@@ -159,6 +159,11 @@ class Exportexcelinfo(object):
             )
             dataframe.loc[dataframe["Wall Number"] == 7, "Wall Number"] = "F"
             dataframe[["Position X (mm)", "Position Y (mm)", "Position Z (mm)", "Width", "Height"]] = dataframe[["Position X (mm)", "Position Y (mm)", "Position Z (mm)", "Width", "Height"]] / 1000
+            dataframe.rename(columns={
+                "Position X (mm)": "Position X (m)",
+                "Position Y (mm)": "Position Y (m)",
+                "Position Z (mm)": "Position Z (m)",
+            }, inplace=True)
             file_name = f"exporteddatassss(with TMP)(draft)(tetra).xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"

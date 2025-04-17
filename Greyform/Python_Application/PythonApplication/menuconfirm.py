@@ -36,8 +36,8 @@ class Ui_Dialog_Confirm(QMainWindow):
         buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 100))
         buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
         buttonBox.setStandardButtons(
-            QtWidgets.QDialogButtonBox.StandardButton.Cancel
-            | QtWidgets.QDialogButtonBox.StandardButton.Ok
+            QtWidgets.QDialogButtonBox.StandardButton.Ok
+            | QtWidgets.QDialogButtonBox.StandardButton.Cancel
         )
         buttonBox.setObjectName("buttonBox")
         buttonBox.accepted.connect(lambda: stacked_widget.setCurrentIndex(0))

@@ -84,7 +84,11 @@ class Ui_MainWindow(QMainWindow):
                 self.mainwindow.vtkframe
             )
         )
-        usb_path = "/media/ubuntu/DF4A-89D8/"
+        usb_paths = self.get_usb_paths_windows()
+        if usb_paths:
+            usb_path = usb_paths[0]  # e.g. 'E:\\'
+        else:
+            usb_path = "C:\\Users\\MokZhiZhuan\\Downloads" 
         self.check_usb_directory(usb_path)
         self.model = QFileSystemModel()
         self.model.setFilter(QDir.AllDirs | QDir.NoDotAndDotDot | QDir.Drives)
@@ -155,11 +159,14 @@ class Ui_MainWindow(QMainWindow):
         )
         self.camera_label = QLabel()
         self.camera_label.setScaledContents(True)
-        self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
+        self.camera_label.setMinimumSize(640, 480)
+        self.camera_label.setStyleSheet("background-color: black;")
+        self.stacked_display = QStackedWidget()
+        self.stacked_display.addWidget(self.renderWindowInteractor)  # Index 0
+        self.stacked_display.addWidget(self.camera_label)  
         self.mainwindow.horizontalLayout_16.addWidget(self.plotterloader.interactor)
-        self.mainwindow.horizontalLayout_16.addWidget(self.camera_label)
-        self.camera_label.hide()
-        self.mainwindow.verticalLayoutframe.addWidget(self.renderWindowInteractor)
+        self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
+        self.mainwindow.verticalLayoutframe.addWidget(self.stacked_display)
         self.button_UI()
         self.setStretch()
 
@@ -231,11 +238,12 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.scanprogressBar,
             self.mainwindow.walllabel,
             self.mainwindow.viewButton,
-            self.camera_label
+            self.camera_label,
+            self.stacked_display,
         ]
         self.mainwindow.Itemlabel.setText(f"Model Product : {file}")
         fileselectionmesh.FileSelectionMesh(
-            file,
+            self.file_path,
             mainwindowforfileselection,
             self.mainwindow,
             self.mainwindow.stackedWidget,

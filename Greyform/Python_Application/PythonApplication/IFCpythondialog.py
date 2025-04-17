@@ -16,13 +16,15 @@ import PythonApplication.createmesh as Createmesh
 import PythonApplication.loadpyvista as loadingstl
 import PythonApplication.excel_export_info as biminfo
 import PythonApplication.excel_export_4sidesinfo as bim4sideinfo
+import PythonApplication.processloader as Thread
+import PythonApplication.processlistenerrunner as process
 import numpy as np
+import traceback
 import re
-
 
 # ifc loader
 class ProgressBarDialogIFC(QDialog):
-    def __init__(self, total_steps, ifc_file, mainwindowforfileselection):
+    def __init__(self, total_steps, ifc_file, mainwindowforfileselection, mainwindow ,stackedWidget):
         # starting initialize
         super().__init__()
         progress_layout = QVBoxLayout()
@@ -31,21 +33,20 @@ class ProgressBarDialogIFC(QDialog):
         self.setGeometry(100, 100, 600, 200)
         self.ifc_file = ifc_file
         self.totalsteps = total_steps
+        self.mainwindow = mainwindow
+        self.stackedWidget = stackedWidget
         self.loader = mainwindowforfileselection[0]
-        self.loader_2 = mainwindowforfileselection[1]
-        self.renderer = mainwindowforfileselection[2]
-        self.renderWindowInteractor = mainwindowforfileselection[3]
-        self.Ylabel = mainwindowforfileselection[4]
-        self.Xlabel = mainwindowforfileselection[5]
-        self.Xlabel_before = mainwindowforfileselection[6]
-        self.Ylabel_before = mainwindowforfileselection[7]
-        self.Zlabel_before = mainwindowforfileselection[8]
-        self.seq1Button = mainwindowforfileselection[9]
-        self.seq2Button = mainwindowforfileselection[10]
-        self.seq3Button = mainwindowforfileselection[11]
-        self.NextButton_Page_3 = mainwindowforfileselection[12]
-        self.Seqlabel = mainwindowforfileselection[13]
-        self.localizebutton = mainwindowforfileselection[14]
+        self.renderer = mainwindowforfileselection[1]
+        self.renderWindowInteractor = mainwindowforfileselection[2]
+        self.Stagelabel = mainwindowforfileselection[5]
+        self.buttonlocalize = mainwindowforfileselection[4]
+        self.stagestoring = mainwindowforfileselection[6]
+        self.labelstatus = mainwindowforfileselection[7]
+        self.scanprogressBar = mainwindowforfileselection[8]
+        self.walllabel = mainwindowforfileselection[9]
+        self.toggle_button = mainwindowforfileselection[10]
+        self.camera_label = mainwindowforfileselection[11]
+        self.stacked_display = mainwindowforfileselection[12]
         self.spacing = "\n"
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFont(QFont("Arial", 30))
@@ -88,12 +89,12 @@ class ProgressBarDialogIFC(QDialog):
             )
             if iterator.initialize():
                 stl_data = {"points": [], "cells": [], "material_ids": []}
-                wall_dimensions = {}
-                wall_finishes_dimensions = {}
-                floor_dimensions = {}
+                self.wall_dimensions = {}
+                self.wall_finishes_dimensions = {}
+                self.floor_dimensions = {}
                 self.scale_factor = 1000.0
                 marking_points = {}
-                wall_offset, wall_finishes_offset, floor_finishes_offset = {}, {}, {}
+                self.wall_offset, self.wall_finishes_offset, floor_finishes_offset = {}, {}, {}
                 try:
                     while True:
                         shape = iterator.get()
@@ -136,7 +137,6 @@ class ProgressBarDialogIFC(QDialog):
                                 ]
                             )
                             stl_data["material_ids"].extend(material_ids)
-                            # data array for STL
                         if not iterator.next():
                             break
                     walls = self.ifc_file.by_type("IfcWallStandardCase")
@@ -158,18 +158,18 @@ class ProgressBarDialogIFC(QDialog):
                                 ]
                             )
                             plotter.add_mesh(mesh, color="lightgray", opacity=0.6)
-                            width, wall_height, depth, offsets, wallcoordi = (
+                            width, wall_height, depth, self.offsets, wallcoordi = (
                                 self.get_wall_dimensions(wall)
                             )
                             dimensions = self.get_wall_dimensions(wall)
                             if width and wall_height:
-                                wall_dimensions[wall.Name] = {
+                                self.wall_dimensions[wall.Name] = {
                                     "width": int(round(width)),
                                     "height": int(round(wall_height)),
                                     "depth": int(round(depth)),
-                                    "offset": int(round(offsets)),
+                                    "offset": int(round(self.offsets)),
                                 }
-                                wall_offset[wall.Name] = {
+                                self.wall_offset[wall.Name] = {
                                     "x": int(round(wallcoordi[0])),
                                     "y": int(round(wallcoordi[1])),
                                     "z": int(round(wallcoordi[2])),
@@ -184,37 +184,45 @@ class ProgressBarDialogIFC(QDialog):
                             )
                             if dimensions[0]:
                                 widths.append(int(round(dimensions[0])))
-                        if "BSS.20mm Wall Finishes" in wall.Name or "BSS.12mm Wall Finishes" in wall.Name:
+                        if "BSS.20mm Wall Finishes" in wall.Name:
                             width, height, depth, offset, wallfinishescoordi = (
                                 self.get_wall_dimensions(wall)
                             )
-                            wall_finishes_dimensions[wall.Name] = {
+                            self.wall_finishes_dimensions[wall.Name] = {
                                 "width": int(round(width)),
                                 "height": int(round(height)),
                                 "depth": int(round(depth)),
                                 "offset": offset,
                             }
-                            wall_finishes_offset[wall.Name] = {
+                            self.wall_finishes_offset[wall.Name] = {
                                 "width": int(round(wallfinishescoordi[0])),
                                 "height": int(round(wallfinishescoordi[1])),
                                 "depth": int(round(wallfinishescoordi[2])),
                             }
                     for floor in floors:
                         if "Floor" in floor.Name:
-                            width, floor_height, depth, floor_offset, floorcoordi = (
+                            width, self.floor_height, depth, self.floor_offset, floorcoordi = (
                                 self.get_wall_dimensions(wall)
                             )
-                            floor_dimensions[floor.Name] = {
+                            self.floor_dimensions[floor.Name] = {
                                 "width": int(round(width)),
-                                "height": int(round(floor_height)),
+                                "height": int(round(self.floor_height)),
                                 "depth": int(round(depth)),
-                                "offset": floor_offset,
+                                "offset": self.floor_offset,
                             }
                             floor_finishes_offset[floor.Name] = {
                                 "width": int(round(floorcoordi[0])),
                                 "height": int(round(floorcoordi[1])),
                                 "depth": int(round(floorcoordi[2])),
                             }
+                    if len(widths) > 1 and len(widths) == 6:
+                        self.top_two = sorted(widths, reverse=True)[:2]
+                        self.top_two[0] = self.top_two[0] + 100
+                    elif len(widths) > 1 and len(widths) == 4:
+                        self.top_two = sorted(widths, reverse=True)[:3]
+                        self.top_two[0] = self.top_two[0] + 50
+                    else:
+                        top_two = widths
                 except Exception as e:
                     self.log_error(f"Error while processing IFC shapes: {e}")
                 centers = np.array([w["center"] for w in wallsformat])
@@ -235,7 +243,7 @@ class ProgressBarDialogIFC(QDialog):
                 west.sort(key=lambda w: -w["center"][0])  # B
                 north.sort(key=lambda w: w["center"][0])  # C, E
                 east.sort(key=lambda w: -w["center"][1])  # D (top), F (bottom)
-                label_map = []
+                self.label_map = []
                 label_letters = iter("ABCDEF")
                 def detect_axis(mesh):
                     bounds = mesh.bounds
@@ -247,91 +255,62 @@ class ProgressBarDialogIFC(QDialog):
                     south.sort(key=lambda w: w["center"][0])
                     for wall in south:
                         axis = detect_axis(wall["mesh"])
-                        label_map.append((next(label_letters), wall, "South", axis))
+                        self.label_map.append((next(label_letters), wall, "South", axis))
                 # West (left, bottom → top)
                 if west:
                     west.sort(key=lambda w: w["center"][1])
                     for wall in west:
                         axis = detect_axis(wall["mesh"])
-                        label_map.append((next(label_letters), wall, "West", axis))
+                        self.label_map.append((next(label_letters), wall, "West", axis))
                 # North (back, left → right)
                 if north:
                     north.sort(key=lambda w: w["center"][0])
                     for wall in north:
                         axis = detect_axis(wall["mesh"])
-                        label_map.append((next(label_letters), wall, "North", axis))
+                        self.label_map.append((next(label_letters), wall, "North", axis))
                 # East (right, top → bottom)
                 if east:
                     east.sort(key=lambda w: -w["center"][1])
                     for wall in east:
                         axis = detect_axis(wall["mesh"])
-                        label_map.append((next(label_letters), wall, "East", axis))
-                label_map.sort(key=lambda x: x[0])  # sort by label A–F
-                num_walls = len(label_map)
+                        self.label_map.append((next(label_letters), wall, "East", axis))
+                self.label_map.sort(key=lambda x: x[0])  # sort by label A–F
+                num_walls = len(self.label_map)
                 x_widths = []  # for labels A, C, E (even index)
                 y_heights = []  # for labels B, D, F (odd index)
-                top_two = []
-                for i, (label, wall, direction, axiss) in enumerate(label_map):
+                self.top_two = []
+                for i, (label, wall, direction, axiss) in enumerate(self.label_map):
                     wall_name = wall["name"]
-                    if wall_name in wall_dimensions:
-                        wall_dimensions[wall_name]["label"] = label
-                        width = wall_dimensions[wall_name].get("width", 0)
+                    if wall_name in self.wall_dimensions:
+                        self.wall_dimensions[wall_name]["label"] = label
+                        width = self.wall_dimensions[wall_name].get("width", 0)
                         if i % 2 == 0:
                             x_widths.append(width)
                         else:  # Odd labels: B, D, F → Y axis
                             y_heights.append(width)
-                directions = self.calculate_wall_directions(label_map)
-                top_two = [
+                self.directions = self.calculate_wall_directions(self.label_map)
+                self.top_two = [
                     max(x_widths) + (wall_height * 2) if x_widths else 0,
                     max(y_heights) if y_heights else 0,
                 ]
-                wall_dimensions = dict(
+                self.wall_dimensions = dict(
                     sorted(
-                        wall_dimensions.items(),
+                        self.wall_dimensions.items(),
                         key=lambda item: item[1].get("label", "Z"),
                     )
                 )
                 self.convertStl(stl_data)
-                wall_finishes_dimensions = self.validate_and_fix_wall_finishes(wall_finishes_dimensions)
-                if len(wall_dimensions) == 6:
-                    biminfo.Exportexcelinfo(
-                        self.ifc_file,
-                        "IfcElement",
-                        wall_dimensions,
-                        top_two,
-                        offsets,
-                        wall_finishes_dimensions,
-                        floor_offset,
-                        floor_height,
-                        wall_finishes_offset,
-                        wall_offset,
-                        label_map,
-                        directions
-                    )
-                else:
-                    bim4sideinfo.Exportexcelinfo(
-                        self.ifc_file,
-                        "IfcElement",
-                        wall_dimensions,
-                        top_two,
-                        offsets,
-                        wall_finishes_dimensions,
-                        floor_offset,
-                        floor_height,
-                        wall_finishes_offset,
-                        wall_offset,
-                        label_map,
-                    )
-                try:
-                    self.stlloader()
-                except Exception as e:
-                    self.log_error(f"Failed to load stlfile in the frame: {e}")
+                self.wall_finishes_dimensions = self.validate_and_fix_wall_finishes(self.wall_finishes_dimensions)
+                """self.listenerdialog = process.ListenerNodeRunner(
+                    self.rosnode, self.stl_file, self.labelstatus, self.stackedWidget
+                )"""
+                self.buttonlocalize.clicked.connect(lambda: self.start_scan())
         except Exception as e:
             self.log_error(
                 f"Failed to initialize IFC geometry settings or iterator: {str(e)}"
             )
         self.close()
-
+    
     def validate_and_fix_wall_finishes(self, wall_finishes_dimensions):
         invalid_walls = {}
         fixed_walls = {}
@@ -341,9 +320,8 @@ class ProgressBarDialogIFC(QDialog):
                 if wall_type in wall_name:
                     if dimensions['height'] != expected_height and dimensions['width'] == expected_height:
                         dimensions['width'], dimensions['height'] = dimensions['height'], dimensions['width']
-                    # Store the (fixed or correct) dimensions
                     fixed_walls[wall_name] = dimensions
-                    break  # 
+                    break  # Stop checking further once a match is found
         return fixed_walls
 
     def get_expected_heights(self, wall_finishes_dimensions):
@@ -379,6 +357,35 @@ class ProgressBarDialogIFC(QDialog):
             directions.append((curr_label, next_label, direction))
         return directions
 
+    def start_scan(self):
+        self.stackedWidget.setCurrentIndex(3)
+        self.worker = Thread.WorkerThread(self.stackedWidget)
+        self.worker.update_progress.connect(self.update_progress_bar)
+        self.worker.update_status.connect(self.update_status_label)
+        self.worker.render_mesh.connect(self.create_mesh)  # Connect new signal
+        self.worker.start()  # Start the worker thread
+
+    def update_progress_bar(self, value):
+        """Update the progress bar with the current value."""
+        self.scanprogressBar.setValue(value)  # Ensure progressBar is properly defined in your UI
+
+    def update_status_label(self, text):
+        """Update the status label with progress text."""
+        self.labelstatus.setText(text)
+    
+    def create_mesh(self):
+        # Call the createMesh function in the main thread
+        try:
+            if len(self.wall_dimensions) == 6:
+                self.loadexcel()
+            else:
+                self.loadexcel4sides()
+            self.stlloader()
+        except Exception as e:
+            error_message = f"Failed to load stlfile in the vtkframe: {e}"
+            self.log_error(error_message)
+            print(traceback.format_exc())
+
 
     def get_wall_dimensions(self, wall):
         placement = wall.ObjectPlacement
@@ -396,7 +403,6 @@ class ProgressBarDialogIFC(QDialog):
                 extrusion_depth = solid.Depth if hasattr(solid, "Depth") else None
                 if hasattr(extruded_area, "XDim") and hasattr(extruded_area, "YDim"):
                     width = extruded_area.XDim
-
                     height = extruded_area.YDim
                     return width, height, extrusion_depth, offset, coordinates
             elif (
@@ -412,7 +418,7 @@ class ProgressBarDialogIFC(QDialog):
                             width = profile.XDim
                             height = profile.YDim
                             return width, height, depth, offset, coordinates
-        return None, None, None, None, None
+        return None, None, None
 
     # include error in text file
     def log_error(self, message):
@@ -427,33 +433,67 @@ class ProgressBarDialogIFC(QDialog):
     def convertStl(self, data):
         try:
             points = np.array(data["points"])
+            message = f"Points: {self.spacing}"
             cells = [("triangle", np.array(data["cells"]))]
             self.stl_file = "output.stl"
             mesh = meshio.Mesh(points=points, cells=cells)
             mesh.cell_data["triangle"] = [np.array(data["material_ids"])]
             meshio.write(self.stl_file, mesh)
             self.meshsplot = pv.read(self.stl_file)
+            loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
         except Exception as e:
-            self.log_error(f"Failed to write STL file: {e}")
+            error_message = f"Failed to load stlfile in the frame: {e}"
+            self.log_error(error_message)
+
+    def loadexcel(self):
+        biminfo.Exportexcelinfo(
+            self.ifc_file,
+            "IfcElement",
+            self.wall_dimensions,
+            self.top_two,
+            self.offsets,
+            self.wall_finishes_dimensions,
+            self.floor_offset,
+            self.floor_height,
+            self.wall_finishes_offset,
+            self.wall_offset,
+            self.label_map,
+            self.directions
+        )
+    
+    def loadexcel4sides(self):
+        bim4sideinfo.Exportexcelinfo(
+            self.ifc_file,
+            "IfcElement",
+            self.wall_dimensions,
+            self.top_two,
+            self.offsets,
+            self.wall_finishes_dimensions,
+            self.floor_offset,
+            self.floor_height,
+            self.wall_finishes_offset,
+            self.wall_offset
+        )
 
     # add mesh in pyvista frame
     def stlloader(self):
-        self.meshsplot = pv.read(self.stl_file)
-        loadingstl.StLloaderpyvista(self.meshsplot, self.loader, self.loader_2)
-        """Createmesh.createMesh(
+        Createmesh.createMesh(
             self.renderer,
             self.stl_file,
             self.renderWindowInteractor,
-            self.Ylabel,
-            self.Xlabel,
-            self.Xlabel_before,
-            self.Ylabel_before,
-            self.Zlabel_before,
-            self.seq1Button,
-            self.seq2Button,
-            self.seq3Button,
-            self.NextButton_Page_3,
-            self.Seqlabel,
-            self.stl_file,
-        )"""
-        self.close()
+            self.stl_file, 
+            self.mainwindow,
+            self.Stagelabel,
+            self.walllabel,
+            self.stackedWidget,
+            self.wall_dimensions,
+            self.top_two,
+            self.wall_finishes_dimensions,
+            self.label_map,
+            self.directions,
+            self.toggle_button,
+            self.camera_label,
+            self.stacked_display,
+        )
+    
+    

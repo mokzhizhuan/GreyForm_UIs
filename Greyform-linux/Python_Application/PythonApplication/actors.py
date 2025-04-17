@@ -49,9 +49,9 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
         for idx in indexes:
             if (
                 0 <= idx < len(sheet_data["markingidentifiers"])
-                and 0 <= idx < len(sheet_data["Position X (mm)"])
-                and 0 <= idx < len(sheet_data["Position Y (mm)"])
-                and 0 <= idx < len(sheet_data["Position Z (mm)"])
+                and 0 <= idx < len(sheet_data["Position X (m)"])
+                and 0 <= idx < len(sheet_data["Position Y (m)"])
+                and 0 <= idx < len(sheet_data["Position Z (m)"])
                 and 0 <= idx < len(sheet_data["Shape type"])
                 and 0 <= idx < len(sheet_data["width"])
                 and 0 <= idx < len(sheet_data["height"])
@@ -64,9 +64,9 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
                         "sheet_name": stagetext,
                         "markingidentifiers": sheet_data["markingidentifiers"][idx],
                         "Wall Number": wall_number,
-                        "Position X (mm)": sheet_data["Position X (mm)"][idx],
-                        "Position Y (mm)": sheet_data["Position Y (mm)"][idx],
-                        "Position Z (mm)": sheet_data["Position Z (mm)"][idx],
+                        "Position X (m)": sheet_data["Position X (m)"][idx],
+                        "Position Y (m)": sheet_data["Position Y (m)"][idx],
+                        "Position Z (m)": sheet_data["Position Z (m)"][idx],
                         "Shape type": sheet_data["Shape type"][idx],
                         "width": sheet_data["width"][idx],
                         "height": sheet_data["height"][idx],

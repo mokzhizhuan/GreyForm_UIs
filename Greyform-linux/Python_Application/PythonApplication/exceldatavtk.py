@@ -16,7 +16,12 @@ def exceldataextractor():
     for sheet_name, df in all_sheets.items():
         if "Wall Number" not in df.columns:
             continue  # Skip if no wall data in sheet
-
+        if "Position X (mm)" in df.columns:
+            df.rename(columns={
+                "Position X (mm)": "Position X (m)",
+                "Position Y (mm)": "Position Y (m)",
+                "Position Z (mm)": "Position Z (m)",
+            }, inplace=True)    
         # Ensure Wall Number is kept as numeric when possible, but keep "F"
         df["Wall Number"] = df["Wall Number"].astype(str).fillna("Unknown")  # Convert all to string, replace NaN
         df["Wall Number"] = df["Wall Number"].apply(lambda x: int(x) if x.isdigit() else x)  # Convert numbers to int
@@ -25,9 +30,9 @@ def exceldataextractor():
         wall_numbers_by_sheet[sheet_name] = {
             "markingidentifiers": df["Point number/name"].astype(str).tolist(),
             "Wall Number": df["Wall Number"].tolist(),
-            "Position X (mm)": df["Position X (mm)"].tolist(),
-            "Position Y (mm)": df["Position Y (mm)"].tolist(),
-            "Position Z (mm)": df["Position Z (mm)"].tolist(),
+            "Position X (m)": df["Position X (m)"].tolist(),
+            "Position Y (m)": df["Position Y (m)"].tolist(),
+            "Position Z (m)": df["Position Z (m)"].tolist(),
             "Shape type": df["Shape type"].tolist(),
             "width": df["Width"].tolist(),
             "height": df["Height"].tolist(),
@@ -83,7 +88,8 @@ def wall_format(wall):
 
         width = dims.get("width", ["Not available"])  # Default to list
         height = dims.get("height", ["Not available"])  # Default to list
-
+        width = width *1000
+        height = height *1000
         # Convert to single value if the list contains one item
         width = width[0] if len(width) == 1 else width
         height = height[0] if len(height) == 1 else height

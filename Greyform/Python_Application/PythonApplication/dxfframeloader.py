@@ -12,34 +12,41 @@ from stl import mesh
 import PythonApplication.loadpyvista as loadingstl
 import meshio
 import PythonApplication.createmesh as Createmesh
+import PythonApplication.processlistenerrunner as process
+import PythonApplication.processloader as Thread
 from stl import mesh
-import meshio
 import pyvista as pv
 import numpy as np
 
 
 class dxfloader(object):
-    def __init__(self, file_path, mainwindowforfileselection, gdf):
+    def __init__(
+        self, file_path, mainwindowforfileselection, gdf, mainwindow, stackedWidget
+    ):
         # starting initialize
         super().__init__()
         self.file_path = file_path
         self.mainwindowforfileselection = mainwindowforfileselection
+        self.mainwindow = mainwindow
         self.loader = mainwindowforfileselection[0]
-        self.loader_2 = mainwindowforfileselection[1]
-        self.renderer = mainwindowforfileselection[2]
-        self.renderWindowInteractor = mainwindowforfileselection[3]
-        self.Ylabel = mainwindowforfileselection[4]
-        self.Xlabel = mainwindowforfileselection[5]
-        self.Xlabel_before = mainwindowforfileselection[6]
-        self.Ylabel_before = mainwindowforfileselection[7]
-        self.Zlabel_before = mainwindowforfileselection[8]
-        self.seq1Button = mainwindowforfileselection[9]
-        self.seq2Button = mainwindowforfileselection[10]
-        self.seq3Button = mainwindowforfileselection[11]
-        self.NextButton_Page_3 = mainwindowforfileselection[12]
-        self.Stagelabel = mainwindowforfileselection[13]
-        self.localizebutton = mainwindowforfileselection[14]
+        self.renderer = mainwindowforfileselection[1]
+        self.renderWindowInteractor = mainwindowforfileselection[2]
+        self.rosnode = mainwindowforfileselection[3]
+        self.Stagelabel = mainwindowforfileselection[6]
+        self.buttonlocalize = mainwindowforfileselection[5]
+        self.stagestoring = mainwindowforfileselection[7]
+        self.labelstatus = mainwindowforfileselection[8]
+        self.scanprogressBar = mainwindowforfileselection[9]
+        self.walllabel = mainwindowforfileselection[10]
+        self.markingitemsbasedonwallnumber = {}
+        self.stackedWidget = stackedWidget
         self.gdf = gdf
+        self.stagewallindex = 1
+        self.Stagelabel.setText(f"Stage : {self.stagestoring[0]}")
+        self.exceldata = "exporteddatassss(with TMP)(draft).xlsx"
+        self.listenerdialog = process.ListenerNodeRunner(
+            self.rosnode, self.file_path, self.labelstatus, self.stackedWidget
+        )
         self.loaddxftoframe()
 
     def loaddxftoframe(self):
@@ -53,13 +60,11 @@ class dxfloader(object):
             all_vertices = np.vstack(self.all_vertices)
             all_faces = np.hstack(self.all_faces)
             self.meshsplot = pv.PolyData(all_vertices, all_faces)
-            output_stl_path = "output.stl"
+            self.output_stl_path = "output.stl"
             if not self.meshsplot.is_all_triangles:
                 self.meshsplot = self.meshsplot.triangulate()
-                self.meshsplot.save(output_stl_path)
-                scale_factor = 1.5
-                self.resize_stl(output_stl_path, scale_factor, output_stl_path)
-                meshs = meshio.read(output_stl_path)
+                self.meshsplot.save(self.output_stl_path)
+                meshs = meshio.read(self.output_stl_path)
                 offset = []
                 cells = []
                 cell_types = []
@@ -87,24 +92,40 @@ class dxfloader(object):
                 else:
                     vtk_cells = cells[0]
                 self.meshsplot = pv.PolyData(meshs.points, vtk_cells)
-                loadingstl.StLloaderpyvista(self.meshsplot, self.loader, self.loader_2)
-                Createmesh.createMesh(
-                    self.renderer,
-                    output_stl_path,
-                    self.renderWindowInteractor,
-                    self.Ylabel,
-                    self.Xlabel,
-                    self.Xlabel_before,
-                    self.Ylabel_before,
-                    self.Zlabel_before,
-                    self.seq1Button,
-                    self.seq2Button,
-                    self.seq3Button,
-                    self.NextButton_Page_3,
-                    self.Stagelabel,
-                    self.localizebutton,
-                    self.file_path,
-                )
+                loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
+                self.buttonlocalize.clicked.connect(lambda: self.start_scan())
+
+    def start_scan(self):
+        self.stackedWidget.setCurrentIndex(3)
+        self.worker = Thread.WorkerThread(self.listenerdialog, self.stackedWidget)
+        self.worker.update_progress.connect(self.update_progress_bar)
+        self.worker.update_status.connect(self.update_status_label)
+        self.worker.render_mesh.connect(self.create_mesh)  # Connect new signal
+        self.worker.start()  # Start the worker thread
+
+    def update_progress_bar(self, value):
+        """Update the progress bar with the current value."""
+        self.scanprogressBar.setValue(value)  # Ensure progressBar is properly defined in your UI
+
+    def update_status_label(self, text):
+        """Update the status label with progress text."""
+        self.labelstatus.setText(text)
+    
+    def create_mesh(self):
+        # Call the createMesh function in the main thread
+        Createmesh.createMesh(
+            self.renderer,
+            self.output_stl_path,
+            self.renderWindowInteractor,
+            self.rosnode,
+            self.file_path,
+            self.mainwindow,
+            self.Stagelabel,
+            self.walllabel,
+            self.stackedWidget,
+            self.listenerdialog,
+        )
+        self.renderWindowInteractor.GetRenderWindow().Render()  # Force UI update
 
     # process geometry in geodata pandas
     def process_line_string(self, geometry, offset):

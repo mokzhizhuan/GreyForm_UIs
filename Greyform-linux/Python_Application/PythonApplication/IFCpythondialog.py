@@ -47,6 +47,7 @@ class ProgressBarDialogIFC(QDialog):
         self.walllabel = mainwindowforfileselection[10]
         self.toggle_button = mainwindowforfileselection[11]
         self.camera_label = mainwindowforfileselection[12]
+        self.stacked_display = mainwindowforfileselection[13]
         self.spacing = "\n"
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFont(QFont("Arial", 30))
@@ -495,6 +496,7 @@ class ProgressBarDialogIFC(QDialog):
             self.directions,
             self.toggle_button,
             self.camera_label,
+            self.stacked_display,
         )
     
     

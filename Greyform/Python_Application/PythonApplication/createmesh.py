@@ -6,10 +6,15 @@ from PyQt5.QtGui import *
 import vtk
 from vtk import *
 from vtkmodules.vtkCommonColor import vtkNamedColors
+import numpy as np
+from stl import mesh
 import PythonApplication.interactiveevent as events
-import PythonApplication.doormeshvtk as doormeshVTK
 import PythonApplication.exceldatavtk as vtk_data_excel
-import PythonApplication.markingprogressbar as stageofmarking
+import re
+import PythonApplication.actors as createactorvtk
+import PythonApplication.arraystorage as storingelement
+import PythonApplication.ifcextractfiles as extractor
+import cv2
 
 
 # create the imported stl mesh in vtk frame
@@ -19,143 +24,196 @@ class createMesh(QMainWindow):
         ren,
         polydata,
         renderwindowinteractor,
-        ylabel,
-        xlabel,
-        xlabelbefore,
-        ylabelbefore,
-        zlabelbefore,
-        seq1Button,
-        seq2Button,
-        seq3Button,
-        NextButton_Page_3,
-        Seqlabel,
         file_path,
+        mainwindow,
+        Stagelabel,
+        walllabel,
+        stacked_widget,
+        wall_dimensions,
+        floor,
+        wall_finishes_dimensions,
+        label_map,
+        directional_axes_axis,
+        toggle_button,
+        camera_label,
+        stacked_display
     ):
         # starting initialize
         super().__init__()
         self.defaultposition = [0, 0, 1]
-        self.reader = vtk.vtkSTLReader()
+        self.reader = vtk.vtkPolyData()
         self.meshbounds = None
         self.polydata = polydata
+        self.wall_dimensions = wall_dimensions
+        self.floor = floor
+        self.label_map = label_map
+        self.directional_axes_axis = directional_axes_axis
         self.ren = ren
+        self.dialog = None
+        self.tracking = False
+        self.tracker = None
+        self.showing_camera = False  # <-- ADD THIS
+        self.toggle_button = toggle_button
+        self.stacked_display = stacked_display
+        self.cameralabel = camera_label
+        self.cap = cv2.VideoCapture(0)
+        ret, frame = self.cap.read()
+        self.frameSize = (frame.shape[1], frame.shape[0]) if ret else (640, 480)
         self.renderwindowinteractor = renderwindowinteractor
+        self.wall_finishes_dimensions = wall_finishes_dimensions
         self.renderwindowinteractor.GetRenderWindow().AddRenderer(self.ren)
-        self.xlabelbefore = xlabelbefore
-        self.ylabelbefore = ylabelbefore
-        self.zlabelbefore = zlabelbefore
-        self.xlabels = xlabel
-        self.ylabels = ylabel
-        self.seq1Button = seq1Button
-        self.seq2Button = seq2Button
-        self.seq3Button = seq3Button
-        self.NextButton_Page_3 = NextButton_Page_3
-        self.Seqlabel = Seqlabel
         self.filepath = file_path
+        self.walllabel = walllabel
+        self.stacked_widget = stacked_widget    
+        self.axis_widths = {"x": [], "y": []}
         self.ren.SetBackground(1, 1, 1)
-        self.dataseqtext = None
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
-        self.door = doormeshVTK.doorMesh()
-        self.seq1Button = seq1Button
-        self.seq2Button = seq2Button
-        self.seq3Button = seq3Button
-        self.NextButton_Page_3 = NextButton_Page_3
-        self.button_UI()    
-        self.wall_identifiers = vtk_data_excel.exceldataextractor()
+        self.mainwindow = mainwindow
+        self.currentindexstage = 0
+        self.Stagelabel = Stagelabel
+        (
+            self.wall_identifiers,
+            self.wall,
+            self.excelfiletext,
+            self.stagewallnum,
+            self.stagestorage,
+        ) = vtk_data_excel.exceldataextractor()
+        self.wall_finishes_height, self.small_wall_height = (
+            storingelement.wall_format_finishes(self.wall_finishes_dimensions)
+        )
+        self.wallformat, self.heighttotal, self.wall_height = (
+            storingelement.wall_format(
+                self.wall_dimensions,
+                self.floor,
+                self.label_map,
+                self.wall_finishes_height,
+            )
+        )
+        self.wallformat, self.axis_widths = extractor.addranges(
+            self.floor,
+            self.wall_height,
+            self.wall_finishes_height,
+            self.label_map,
+            self.wallformat,
+            self.axis_widths,
+            self.directional_axes_axis,
+        )
+        self.stagetext = self.stagestorage[self.currentindexstage]
+        self.timer = QTimer()
+        self.timer.timeout.connect(lambda:self.update_frame())
+        Stagelabel.setText(f"Stage : {self.stagetext}")
+        self.wallaxis = vtk_data_excel.wall_format(self.wall)
+        self.toggle_button.clicked.connect(lambda: self.toggle_view())
+        self.loadStl()
 
-    def button_UI(self):
-        self.seq1Button.clicked.connect(
-            lambda: self.addseqtext(self.seq1Button, self.NextButton_Page_3)
-        )
-        self.seq2Button.clicked.connect(
-            lambda: self.addseqtext(self.seq2Button, self.NextButton_Page_3)
-        )
-        self.seq3Button.clicked.connect(
-            lambda: self.addseqtext(self.seq3Button, self.NextButton_Page_3)
-        )
+    def show_cancelation_dialog(self, text):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+        msg.setWindowTitle("Cancellation")
+        msg.setText(text)
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
 
-    #load stl loader to pyvista
-    def loadStl(self, dataseqtext):
-        self.clearactor()
-        self.reader.SetFileName(self.polydata)
-        self.reader.Update()
-        polydata = self.reader.GetOutput()
-        self.polyDataToActor(polydata)
-        self.doordimension = self.door.includedimension()
-        self.fixedposition(polydata)
+    def toggle_view(self):
+        if self.showing_camera:
+            self.timer.stop()
+            self.stacked_display.setCurrentIndex(0)  # Show VTK
+            self.loadStl()
+        else:
+            self.stacked_display.setCurrentIndex(1)  # Show webcam
+            self.timer.start(30)
+        self.showing_camera = not self.showing_camera
+
+    def update_frame(self):
+        ret, frame = self.cap.read()
+        if not ret:
+            return
+        frame = cv2.resize(frame, self.frameSize)
+        if self.tracking and self.tracker:
+            success, bbox = self.tracker.update(frame)
+            if success:
+                self.draw_box(frame, bbox)
+            else:
+                frame_h, frame_w = frame.shape[:2]
+                font_scale = frame_w / 1600 * 0.7
+                thickness = max(2, frame_w // 400)
+                cv2.putText(frame, "Tracker Lost", (int(0.05 * frame_w), int(0.07 * frame_h)),
+                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), thickness)
+        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        h, w, ch = rgb_image.shape
+        bytes_per_line = ch * w
+        qimg = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
+        self.cameralabel.setPixmap(QPixmap.fromImage(qimg))
+        self.cameralabel.resize(w, h)
+        self.resize(w, h + self.toggle_button.height())
+
+    def draw_box(self, frame, bbox):
+        x, y, w, h = map(int, bbox)
+        frame_h, frame_w = frame.shape[:2]
+        thickness = max(2, frame_w // 400)
+        font_scale = frame_w / 1600 * 0.7
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 255), thickness)
+        cv2.putText(frame, "Tracking", (int(0.05 * frame_w), int(0.07 * frame_h)),
+                    cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), thickness)
+
+    # load stl in vtk frame
+    def loadStl(self):
+        meshs = mesh.Mesh.from_file(self.polydata)
+        points = meshs.points.reshape(-1, 3)
+        faces = np.arange(points.shape[0]).reshape(-1, 3)
+        vtk_points = vtk.vtkPoints()
+        for vertex in points:
+            vtk_points.InsertNextPoint(vertex)
+        vtk_faces = vtk.vtkCellArray()
+        for face in faces:
+            polygon = vtk.vtkPolygon()
+            for vertex_index in face:
+                polygon.GetPointIds().InsertNextId(vertex_index)
+            vtk_faces.InsertNextCell(polygon)
+        self.reader.SetPoints(vtk_points)
+        self.reader.SetPolys(vtk_faces)
+        self.polyDataToActor()
+        self.fixedposition()
         self.center = [
             (self.meshbounds[0] + self.meshbounds[1]) / 2,
             (self.meshbounds[2] + self.meshbounds[3]) / 2,
             (self.meshbounds[4] + self.meshbounds[5]) / 2,
         ]
-        x_coords = []
-        y_coords = []
-        z_coords = []
-        for wall_identify in self.wall_identifiers:
-            x_coords.append(wall_identify["Position X (m)"])
-            y_coords.append(wall_identify["Position Y (m)"])
-            z_coords.append(wall_identify["Position Z (m)"])
-        self.cubeactor = self.create_cube_actor()
-        self.cameraactor = self.create_cube_actor()
-        self.cubeactor.SetPosition(160, self.center[1], self.center[2])
-        self.cubeactor.SetOrientation(
-            self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
+        self.wall7 = [self.meshbounds[1], self.meshbounds[3]]
+        self.walls = {}
+        self.walls , self.cameraactors= createactorvtk.initialize_walls(self.wallformat,self.axis_widths , self.walls)
+        self.wall_actors, self.identifier, self.wallname , self.cameraactors = createactorvtk.setupactors(
+            self.walls, self.stagetext, self.wall_identifiers, self.ren, self.walllabel ,self.cameraactors
         )
-        self.spaceseperation = 50
-        self.cameraactor.SetPosition(
-            160,
-            self.center[1] - self.spaceseperation,
-            self.center[2] - self.spaceseperation,
-        )
-        self.cameraactor.SetOrientation(
-            self.defaultposition[0], self.defaultposition[1], self.defaultposition[2]
-        )
-        self.ren.AddActor(self.cameraactor)
-        self.ren.AddActor(self.cubeactor)
-        self.ren.AddActor(self.actor)
-        self.oldcamerapos = self.cubeactor.GetPosition()
-        self.set_Collision()
-        self.setupvtkframe(dataseqtext)
+        self.setupvtkframe()
 
-    #include collision
-    def set_Collision(self):
-        self.collisionFilter = vtk.vtkCollisionDetectionFilter()
-        self.collisionFilter.SetInputData(0, self.cubeactor.GetMapper().GetInput())
-        self.collisionFilter.SetInputData(1, self.actor.GetMapper().GetInput())
-        self.collisionFilter.SetTransform(0, vtk.vtkTransform())
-        self.collisionFilter.SetTransform(1, vtk.vtkTransform())
-        self.collisionFilter.SetMatrix(0, self.cubeactor.GetMatrix())
-        self.collisionFilter.SetMatrix(1, self.actor.GetMatrix())
-        self.collisionFilter.SetCollisionModeToAllContacts()
-        self.collisionFilter.GenerateScalarsOn()
-
-    #setup vtk frame ui
-    def setupvtkframe(self, dataseqtext):
+    # setup vtk frame ui
+    def setupvtkframe(self):
         setcamerainteraction = [
-            self.xlabels,
-            self.ylabels,
             self.ren,
             self.renderwindowinteractor,
             self.meshbounds,
-            self.xlabelbefore,
-            self.ylabelbefore,
-            self.zlabelbefore,
-            self.actor,
-            self.polydata,
-            self.reader,
-            self.cubeactor,
-            self.cameraactor,
-            self.oldcamerapos,
-            self.collisionFilter,
-            self.spaceseperation,
-            self.center,
             self.filepath,
-            dataseqtext,
+            self.excelfiletext,
+            self.dialog,
+            self.stagetext,
+            self.wall7,
+            self.wallaxis,
+            self.wall_identifiers,
+            self.stagestorage,
+            self.currentindexstage,
+            self.Stagelabel,
+            self.walls,
+            self.wall_actors,
+            self.wallname,
+            self.identifier,
+            self.stacked_widget,
+            self.walllabel,
         ]
         camera = events.myInteractorStyle(
             setcamerainteraction,
-            self.wall_identifiers,
-            self.localizebutton,
+            self.cameraactors
         )
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
@@ -164,33 +222,39 @@ class createMesh(QMainWindow):
         self.ren.ResetCameraClippingRange()
         self.ren.ResetCamera()
         self.renderwindowinteractor.GetRenderWindow().Render()
+        self.renderwindowinteractor.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.Expanding
+        )
+        renderWindow = self.renderwindowinteractor.GetRenderWindow()
+        renderWindow.AddRenderer(self.ren)
         self.renderwindowinteractor.Initialize()
         self.renderwindowinteractor.Start()
 
-    #fixed position stl data
-    def fixedposition(self, polydata):
+    # fixed x y and z pos
+    def fixedposition(self):
         minBounds = [self.meshbounds[0], self.meshbounds[2], self.meshbounds[4]]
         transform = vtk.vtkTransform()
         transform.Translate(-minBounds[0], -minBounds[1], -minBounds[2])
         transformFilter = vtkTransformPolyDataFilter()
-        transformFilter.SetInputData(polydata)
+        transformFilter.SetInputData(self.reader)
         transformFilter.SetTransform(transform)
         transformFilter.Update()
         transformedPolyData = transformFilter.GetOutput()
-        self.setappendfilter(transformedPolyData)
+        self.setnormals(transformedPolyData)
 
-    #set append filter
-    def setappendfilter(self, transformedPolyData):
-        append_filter = vtkAppendPolyData()
-        append_filter.AddInputData(transformedPolyData)
-        # append_filter.AddInputData(internal_mesh)
-        append_filter.Update()
-        combined_mesh = append_filter.GetOutput()
+    # set the mesh to the 0,0,0 starting pos
+    def setnormals(self, transformedPolyData):
+        normals = vtkPolyDataNormals()
+        normals.SetInputData(transformedPolyData)
+        normals.ComputePointNormalsOn()
+        normals.ComputeCellNormalsOff()
+        normals.Update()
+        mesh_with_normals = normals.GetOutput()
         mapper = vtkPolyDataMapper()
-        mapper.SetInputData(combined_mesh)
+        mapper.SetInputData(mesh_with_normals)
         self.setactor(mapper)
 
-    #setup main actor
+    # setup main actor
     def setactor(self, mapper):
         self.actor = vtk.vtkActor()
         self.actor.SetMapper(mapper)
@@ -207,7 +271,7 @@ class createMesh(QMainWindow):
         for i in range(6):
             self.meshbounds[i] = int(self.actor.GetBounds()[i])
 
-    #clear actor
+    # clear actor
     def clearactor(self):
         actors = self.ren.GetActors()
         actors.InitTraversal()
@@ -216,38 +280,13 @@ class createMesh(QMainWindow):
             self.ren.RemoveActor(actor)
             actor = actors.GetNextActor()
 
-    #create visual actor for camera range
-    def create_cube_actor(self):
-        self.cube_source = vtk.vtkCubeSource()
-        self.cube_source.SetXLength(10)
-        self.cube_source.SetYLength(10)
-        self.cube_source.SetZLength(10)
-        self.cube_mapper = vtk.vtkPolyDataMapper()
-        self.cube_mapper.SetInputConnection(self.cube_source.GetOutputPort())
-        self.cube_mapper.ScalarVisibilityOff()
-        self.cube_actor = vtk.vtkActor()
-        self.cube_actor.SetMapper(self.cube_mapper)
-        self.cube_actor.GetProperty().BackfaceCullingOn()
-        self.cube_actor.GetProperty().FrontfaceCullingOn()
-        self.cube_actor.GetProperty().SetOpacity(0.0)
-        return self.cube_actor
-
-    # set mesh as actor in vtk frame
-    def polyDataToActor(self, polydata):
+    # set actor in the vtk mapper
+    def polyDataToActor(self):
         mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(self.reader.GetOutputPort())
-        self.actor = vtk.vtkActor()
-        self.actor.SetMapper(mapper)
+        mapper.SetInputData(self.reader)
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        actor.GetProperty().SetRepresentationToSurface()
         self.meshbounds = []
         for i in range(6):
-            self.meshbounds.append(self.actor.GetBounds()[i])
-
-    #set sequence as a variable
-    def addseqtext(self, buttonseq, buttonnextpage):
-        self.dataseqtext = buttonseq.text()
-        self.dataseqtext = self.dataseqtext.replace("Sequence ", "")
-        self.dataseqtext = int(self.dataseqtext)
-        markingprogessbar = stageofmarking.MarkingProgressBar()
-        markingprogessbar.exec_()
-        buttonnextpage.show()
-        self.loadStl(self.dataseqtext)
+            self.meshbounds.append(actor.GetBounds()[i])
