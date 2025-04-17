@@ -116,14 +116,15 @@ class createMesh(QMainWindow):
         msg.exec_()
 
     def toggle_view(self):
-        if self.showing_camera:
+        if self.showing_camera is True:
             self.timer.stop()
             self.stacked_display.setCurrentIndex(0)  # Show VTK
+            self.showing_camera= False
             self.loadStl()
         else:
             self.stacked_display.setCurrentIndex(1)  # Show webcam
             self.timer.start(30)
-        self.showing_camera = not self.showing_camera
+            self.showing_camera = True
 
     def update_frame(self):
         ret, frame = self.cap.read()
