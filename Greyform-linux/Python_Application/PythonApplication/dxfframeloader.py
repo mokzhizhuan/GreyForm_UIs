@@ -15,8 +15,7 @@ import PythonApplication.createmesh as Createmesh
 import PythonApplication.processlistenerrunner as process
 import PythonApplication.processloader as Thread
 from stl import mesh
-import meshio
-import pyvista as pv
+import pyta as pv
 import numpy as np
 
 
