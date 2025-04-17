@@ -1,4 +1,4 @@
 # generated from genmsg/cmake/pkg-msg-paths.cmake.develspace.in
 
-set(my_robot_wallinterfaces_MSG_INCLUDE_DIRS "/root/catkin_ws/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces/msg")
+set(my_robot_wallinterfaces_MSG_INCLUDE_DIRS "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces/msg")
 set(my_robot_wallinterfaces_MSG_DEPENDENCIES std_msgs)

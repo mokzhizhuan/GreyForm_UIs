@@ -1,8 +1,8 @@
-# Install script for directory: /root/catkin_ws/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces
+# Install script for directory: /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/root/catkin_ws/Greyform-linux-ros1/Python_Application/install")
+  set(CMAKE_INSTALL_PREFIX "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -39,59 +39,59 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/msg" TYPE FILE FILES
-    "/root/catkin_ws/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg"
-    "/root/catkin_ws/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces/msg/SelectionWall.msg"
+    "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg"
+    "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces/msg/SelectionWall.msg"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/srv" TYPE FILE FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces/srv/SetLed.srv")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/srv" TYPE FILE FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces/srv/SetLed.srv")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/cmake" TYPE FILE FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/catkin_generated/installspace/my_robot_wallinterfaces-msg-paths.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/cmake" TYPE FILE FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/catkin_generated/installspace/my_robot_wallinterfaces-msg-paths.cmake")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/devel/include/my_robot_wallinterfaces")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/devel/include/my_robot_wallinterfaces")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/roseus/ros" TYPE DIRECTORY FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/devel/share/roseus/ros/my_robot_wallinterfaces")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/roseus/ros" TYPE DIRECTORY FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/devel/share/roseus/ros/my_robot_wallinterfaces")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/common-lisp/ros" TYPE DIRECTORY FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/devel/share/common-lisp/ros/my_robot_wallinterfaces")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/common-lisp/ros" TYPE DIRECTORY FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/devel/share/common-lisp/ros/my_robot_wallinterfaces")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/gennodejs/ros" TYPE DIRECTORY FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/devel/share/gennodejs/ros/my_robot_wallinterfaces")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/gennodejs/ros" TYPE DIRECTORY FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/devel/share/gennodejs/ros/my_robot_wallinterfaces")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  execute_process(COMMAND "/usr/bin/python3" -m compileall "/root/catkin_ws/Greyform-linux-ros1/Python_Application/devel/lib/python3/dist-packages/my_robot_wallinterfaces")
+  execute_process(COMMAND "/usr/bin/python3" -m compileall "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/devel/lib/python3/dist-packages/my_robot_wallinterfaces")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python3/dist-packages" TYPE DIRECTORY FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/devel/lib/python3/dist-packages/my_robot_wallinterfaces")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python3/dist-packages" TYPE DIRECTORY FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/devel/lib/python3/dist-packages/my_robot_wallinterfaces")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/catkin_generated/installspace/my_robot_wallinterfaces.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/catkin_generated/installspace/my_robot_wallinterfaces.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/cmake" TYPE FILE FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/catkin_generated/installspace/my_robot_wallinterfaces-msg-extras.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/cmake" TYPE FILE FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/catkin_generated/installspace/my_robot_wallinterfaces-msg-extras.cmake")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/cmake" TYPE FILE FILES
-    "/root/catkin_ws/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/catkin_generated/installspace/my_robot_wallinterfacesConfig.cmake"
-    "/root/catkin_ws/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/catkin_generated/installspace/my_robot_wallinterfacesConfig-version.cmake"
+    "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/catkin_generated/installspace/my_robot_wallinterfacesConfig.cmake"
+    "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/catkin_generated/installspace/my_robot_wallinterfacesConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces" TYPE FILE FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces" TYPE FILE FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces/package.xml")
 endif()
 

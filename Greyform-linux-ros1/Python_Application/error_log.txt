@@ -1,6 +1,1 @@
 
-Failed to write Excel file: 'Worksheet' object has no attribute 'write'
-Failed to load stlfile in the vtkframe: module 'PythonApplication.actors' has no attribute 'initialize_walls'
-Failed to write Excel file: 'Worksheet' object has no attribute 'write'
-Failed to write Excel file: 'Worksheet' object has no attribute 'write'
-Failed to write Excel file: 'Worksheet' object has no attribute 'write'

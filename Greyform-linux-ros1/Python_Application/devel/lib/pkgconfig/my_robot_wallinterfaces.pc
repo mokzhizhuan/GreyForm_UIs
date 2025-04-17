@@ -1,8 +1,8 @@
-prefix=/root/catkin_ws/Greyform-linux-ros1/Python_Application/devel
+prefix=/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/devel
 
 Name: my_robot_wallinterfaces
 Description: Description of my_robot_wallinterfaces
 Version: 0.0.0
-Cflags: -I/root/catkin_ws/Greyform-linux-ros1/Python_Application/devel/include
+Cflags: -I/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/devel/include
 Libs: -L${prefix}/lib 
 Requires: message_runtime std_msgs

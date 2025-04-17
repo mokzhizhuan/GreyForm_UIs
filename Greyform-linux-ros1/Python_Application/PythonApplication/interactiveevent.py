@@ -186,8 +186,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
     def goto_next_stage_or_page(self):
         self.currentindexstage += 1
         self.wall_index = 0
-        print(self.stagestorage)
-        print(self.currentindexstage)
         self.stagetext = self.stagestorage[self.currentindexstage]
         self.Stagelabel.setText(f"Stage : {self.stagetext}")
         self.wall_actors, self.identifier, self.wallname, self.cameraactors = (

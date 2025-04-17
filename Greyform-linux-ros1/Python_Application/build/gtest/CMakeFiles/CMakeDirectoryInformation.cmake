@@ -3,7 +3,7 @@
 
 # Relative path conversion top directories.
 set(CMAKE_RELATIVE_PATH_TOP_SOURCE "/usr/src/googletest")
-set(CMAKE_RELATIVE_PATH_TOP_BINARY "/root/catkin_ws/Greyform-linux-ros1/Python_Application/build")
+set(CMAKE_RELATIVE_PATH_TOP_BINARY "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build")
 
 # Force unix paths in dependencies.
 set(CMAKE_FORCE_UNIX_PATHS 1)

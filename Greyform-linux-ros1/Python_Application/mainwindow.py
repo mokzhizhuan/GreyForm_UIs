@@ -63,23 +63,6 @@ class Ui_MainWindow(QMainWindow):
         self.stagestoring = ["Stage 1", "Stage 2" , "Stage 3", "Obstacles"]
         self.setupUi()
 
-    # starting ui
-    def __init__(self, ros_node):
-        # starting initialize
-        super(Ui_MainWindow, self).__init__()
-        self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
-        self.mainwindow.setMouseTracking(False)
-        self.selected_files = []
-        self.filepaths = os.getcwd()
-        self.file = None
-        self.file_path = None
-        self.ros_node = ros_node
-        self.mainwindow.showMaximized()
-        self.renderer = vtk.vtkRenderer()
-        self._translate = QCoreApplication.translate
-        self.stagestoring = ["Stage 1", "Stage 2", "Stage 3", "Obstacles"]
-        self.setupUi()
-
     # setup UI
     def setupUi(self):
         self.plotterloader = QtInteractor(
@@ -95,7 +78,7 @@ class Ui_MainWindow(QMainWindow):
                 self.mainwindow.vtkframe
             )
         )
-        usb_path = "/mnt/usb/"
+        usb_path = "/media/ubuntu/DF4A-89D8/"
         self.check_usb_directory(usb_path)
         self.model = QFileSystemModel()
         self.model.setFilter(QDir.AllDirs | QDir.NoDotAndDotDot | QDir.Drives)
@@ -164,12 +147,8 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.Selectivefiledirectoryview.clicked.connect(
             self.on_folder_selected
         )
-        self.camera_label = QLabel()
-        self.camera_label.setScaledContents(True)
         self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
         self.mainwindow.horizontalLayout_16.addWidget(self.plotterloader.interactor)
-        self.mainwindow.horizontalLayout_16.addWidget(self.camera_label)
-        self.camera_label.hide()
         self.mainwindow.verticalLayoutframe.addWidget(self.renderWindowInteractor)
         self.button_UI()
         self.setStretch()
@@ -229,7 +208,7 @@ class Ui_MainWindow(QMainWindow):
         file_path = self.file_model.filePath(source_index)
         self.file_path = file_path
         if self.file_path in self.selected_files:
-            self.selected_files.remove(self.file_path)
+            self.selected_files.remove(self.file_path) 
         else:
             self.selected_files.append(self.file_path)
         file = self.mainwindow.Selectivefilelistview.model().itemData(index)[0]
@@ -244,16 +223,11 @@ class Ui_MainWindow(QMainWindow):
             self.stagestoring,
             self.mainwindow.labelstatus,
             self.mainwindow.scanprogressBar,
-            self.mainwindow.walllabel,
-            self.mainwindow.viewButton,
-            self.camera_label
+            self.mainwindow.walllabel
         ]
         self.mainwindow.Itemlabel.setText(f"Model Product : {file}")
         fileselectionmesh.FileSelectionMesh(
-            file,
-            mainwindowforfileselection,
-            self.mainwindow,
-            self.mainwindow.stackedWidget,
+            file, mainwindowforfileselection, self.mainwindow , self.mainwindow.stackedWidget
         )
         self.show_completion_message()
         self.file_list_selected = True

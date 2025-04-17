@@ -1,8 +1,8 @@
-# Install script for directory: /root/catkin_ws/Greyform-linux-ros1/Python_Application/src/talker_listener
+# Install script for directory: /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src/talker_listener
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/root/catkin_ws/Greyform-linux-ros1/Python_Application/install")
+  set(CMAKE_INSTALL_PREFIX "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,24 +38,24 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/build/talker_listener/catkin_generated/installspace/talker_listener.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build/talker_listener/catkin_generated/installspace/talker_listener.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/talker_listener/cmake" TYPE FILE FILES
-    "/root/catkin_ws/Greyform-linux-ros1/Python_Application/build/talker_listener/catkin_generated/installspace/talker_listenerConfig.cmake"
-    "/root/catkin_ws/Greyform-linux-ros1/Python_Application/build/talker_listener/catkin_generated/installspace/talker_listenerConfig-version.cmake"
+    "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build/talker_listener/catkin_generated/installspace/talker_listenerConfig.cmake"
+    "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build/talker_listener/catkin_generated/installspace/talker_listenerConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/talker_listener" TYPE FILE FILES "/root/catkin_ws/Greyform-linux-ros1/Python_Application/src/talker_listener/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/talker_listener" TYPE FILE FILES "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src/talker_listener/package.xml")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/talker_listener" TYPE PROGRAM FILES
-    "/root/catkin_ws/Greyform-linux-ros1/Python_Application/src/talker_listener/talker_listener/talker_node.py"
-    "/root/catkin_ws/Greyform-linux-ros1/Python_Application/src/talker_listener/talker_listener/listener_node.py"
+    "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src/talker_listener/talker_listener/talker_node.py"
+    "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src/talker_listener/talker_listener/listener_node.py"
     )
 endif()
 

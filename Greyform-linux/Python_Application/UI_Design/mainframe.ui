@@ -342,12 +342,23 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_6" stretch="3">
            <item>
-            <layout class="QVBoxLayout" name="verticalLayout_21" stretch="0,2,2">
+            <layout class="QVBoxLayout" name="verticalLayout_21" stretch="2,2,2">
              <property name="sizeConstraint">
               <enum>QLayout::SetNoConstraint</enum>
              </property>
              <item>
               <widget class="QPushButton" name="viewButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <pointsize>20</pointsize>
+                </font>
+               </property>
                <property name="text">
                 <string>Switch View</string>
                </property>
@@ -357,7 +368,7 @@
               <widget class="QLabel" name="walllabel">
                <property name="font">
                 <font>
-                 <pointsize>16</pointsize>
+                 <pointsize>20</pointsize>
                 </font>
                </property>
                <property name="text">
@@ -367,6 +378,11 @@
              </item>
              <item>
               <widget class="QLabel" name="Stagelabel">
+               <property name="font">
+                <font>
+                 <pointsize>20</pointsize>
+                </font>
+               </property>
                <property name="text">
                 <string>Stage</string>
                </property>

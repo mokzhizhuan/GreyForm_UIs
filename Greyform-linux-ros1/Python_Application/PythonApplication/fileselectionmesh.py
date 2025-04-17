@@ -5,10 +5,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import PythonApplication.progressBar as Progress
 import PythonApplication.dxfframeloader as dxfload
-import PythonApplication.IFCpythondialog as ProgressIFCFile
 from shapely.geometry import Polygon
 import geopandas as gpd
-import ifcopenshell
 
 # load pyvista in the frame
 class FileSelectionMesh():
@@ -31,13 +29,3 @@ class FileSelectionMesh():
         elif ".dxf" in self.file_path:
             gdf = gpd.read_file(self.file_path, engine="fiona")
             dxfload.dxfloader(self.file_path, self.mainwindowforfileselection, gdf , self.mainwindow, self.stackedWidget)
-        elif ".ifc" in self.file_path:
-            try:
-                ifc_file = ifcopenshell.open(self.file_path)
-            except Exception as e:
-                self.log_error(f"Failed to open IFC file: {e}")
-            else:
-                progressbarprogram = ProgressIFCFile.ProgressBarDialogIFC(
-                    30000, ifc_file, self.mainwindowforfileselection , self.mainwindow ,self.stackedWidget
-                )
-                progressbarprogram.exec_()

@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/catkin_ws/Greyform-linux-ros1/Python_Application/src
+CMAKE_SOURCE_DIR = /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/catkin_ws/Greyform-linux-ros1/Python_Application/build
+CMAKE_BINARY_DIR = /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build
 
 # Utility rule file for my_robot_wallinterfaces_genpy.
 
@@ -63,10 +63,10 @@ my_robot_wallinterfaces/CMakeFiles/my_robot_wallinterfaces_genpy.dir/build: my_r
 .PHONY : my_robot_wallinterfaces/CMakeFiles/my_robot_wallinterfaces_genpy.dir/build
 
 my_robot_wallinterfaces/CMakeFiles/my_robot_wallinterfaces_genpy.dir/clean:
-	cd /root/catkin_ws/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces && $(CMAKE_COMMAND) -P CMakeFiles/my_robot_wallinterfaces_genpy.dir/cmake_clean.cmake
+	cd /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces && $(CMAKE_COMMAND) -P CMakeFiles/my_robot_wallinterfaces_genpy.dir/cmake_clean.cmake
 .PHONY : my_robot_wallinterfaces/CMakeFiles/my_robot_wallinterfaces_genpy.dir/clean
 
 my_robot_wallinterfaces/CMakeFiles/my_robot_wallinterfaces_genpy.dir/depend:
-	cd /root/catkin_ws/Greyform-linux-ros1/Python_Application/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/catkin_ws/Greyform-linux-ros1/Python_Application/src /root/catkin_ws/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces /root/catkin_ws/Greyform-linux-ros1/Python_Application/build /root/catkin_ws/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces /root/catkin_ws/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/CMakeFiles/my_robot_wallinterfaces_genpy.dir/DependInfo.cmake --color=$(COLOR)
+	cd /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/src/my_robot_wallinterfaces /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/build/my_robot_wallinterfaces/CMakeFiles/my_robot_wallinterfaces_genpy.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : my_robot_wallinterfaces/CMakeFiles/my_robot_wallinterfaces_genpy.dir/depend
 

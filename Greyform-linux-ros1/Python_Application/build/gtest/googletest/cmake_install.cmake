@@ -2,7 +2,7 @@
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/root/catkin_ws/Greyform-linux-ros1/Python_Application/install")
+  set(CMAKE_INSTALL_PREFIX "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
