@@ -123,7 +123,6 @@ class createMesh(QMainWindow):
             self.timer.stop()
             self.stacked_display.setCurrentIndex(0)  # Show VTK
             self.showing_camera= False
-            self.loadStl()
         else:
             self.stacked_display.setCurrentIndex(1)  # Show webcam
             self.timer.start(30)

@@ -99,8 +99,10 @@ class Exportexcelinfo(object):
                 self.determine_wall_number, axis=1
             )
             dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
-            dataframe["Wall Number"] = dataframe.apply(self.determine_walls, axis=1)
             dataframe["Wall Number"] = dataframe.apply(self.itemposition, axis=1)
+            dataframe["Wall Number"] = dataframe.apply(
+                self.determine_wall_number, axis=1
+            )
             dataframe[
                 [
                     "Width",
@@ -158,6 +160,12 @@ class Exportexcelinfo(object):
                 by="Wall Number"
             )
             dataframe.loc[dataframe["Wall Number"] == 7, "Wall Number"] = "F"
+            dataframe[["Position X (mm)", "Position Y (mm)", "Position Z (mm)", "Width", "Height"]] = dataframe[["Position X (mm)", "Position Y (mm)", "Position Z (mm)", "Width", "Height"]] / 1000
+            dataframe.rename(columns={
+                "Position X (mm)": "Position X (m)",
+                "Position Y (mm)": "Position Y (m)",
+                "Position Z (mm)": "Position Z (m)",
+            }, inplace=True)
             file_name = f"exporteddatassss(with TMP)(draft)(tetra).xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
@@ -172,12 +180,6 @@ class Exportexcelinfo(object):
                     extractor.apply_rotation_to_markers(worksheet, df_class)
         except Exception as e:
             extractor.log_error(f"Failed to write Excel file: {e}")
-
-    def determine_walls(self, row):
-        for index, (wall, dims) in enumerate(self.wall_dimensions.items(), start=0):
-            if "Basic Wall:BSS.50" in wall and wall == row["Point number/name"]:
-                return index + 1
-        return row["Wall Number"]
 
     def applywallpoints(self, row):
         wall_number = row["Wall Number"]
@@ -239,7 +241,6 @@ class Exportexcelinfo(object):
                         ):
                             startingrange = internaldimensiony - thickness
                         endrange = wall["pos_y_range"][1]
-                        endrangex = wall["pos_x_range"][1]
                         if (
                             endrange - startingrange < internaldimensiony
                             and endrange - startingrange > y_min
@@ -248,20 +249,7 @@ class Exportexcelinfo(object):
                             endrange = internaldimensiony
                         elif count_plus_y == 2:
                             endrange = internaldimensiony - thickness
-                        if count_minus_y == 2 and endrangex == x_max:
-                            if self.wallformat[wall_id - 1]["width"] <= x_min:
-                                robotposx = robotposx - (
-                                    (x_max - x_min) - (thickness * 2)
-                                )
-                            else:
-                                robotposx = robotposx - (x_max - (x_max - x_min))
-                        elif count_plus_y == 2 and endrangex == x_max:
-                            if self.wallformat[wall_id - 1]["width"] <= x_min:
-                                robotposx = robotposx - (
-                                    (x_max - x_min) - (thickness * 2)
-                                )
-                            else:
-                                robotposx = robotposx - (x_max - (x_max - x_min))
+                        robotposx = (x_max-(thickness*2)) - robotposx
                         robotposy = (
                             positiony - startingrange - ((endrange - startingrange) / 2)
                         )
@@ -277,7 +265,7 @@ class Exportexcelinfo(object):
                         if endrange != internaldimensiony:
                             robotposy = positiony - (endrange / 2)
                         if count_plus_y == 2:
-                            robotposx = -abs(internaldimensionx - (thickness * 2))
+                            robotposx = internaldimensionx - (thickness * 2)
                         return pd.Series([robotposx, robotposy, pos_z])
                 elif wall["axis"] == "x":
                     robotposy = positiony - thickness
@@ -293,25 +281,11 @@ class Exportexcelinfo(object):
                             endrangey == y_max - y_min
                             or endrangey == y_max - (y_max - y_min)
                         ):
-                            robotposy = -abs((y_max - (thickness * 2)) - robotposy)
                             robotposx = (
                                 positionx
                                 - startingrange
                                 - ((endrange - startingrange) / 2)
                             )
-                        elif (
-                            count_plus_y == 2
-                            and endrangey > y_max - y_min
-                            and endrangey <= y_max
-                        ):
-                            if self.wallformat[wall_id - 1]["width"] <= y_min:
-                                robotposy = robotposy - (
-                                    (y_max - y_min) - (thickness * 2)
-                                )
-                            else:
-                                robotposy = robotposy - (
-                                    (y_max - (y_max - y_min)) - (thickness * 2)
-                                )
                         if count_minus_y == 2:
                             if robotposx > 0:
                                 return pd.Series([robotposy, -abs(robotposx), pos_z])

@@ -137,7 +137,10 @@ class Ui_MainWindow(QMainWindow):
             False
         )  # Hide tree structure in the right panel
         self.mainwindow.Selectivefilelistview.setColumnWidth(
-            0, 250
+            0, 400
+        )  # Minimum width for "Name"
+        self.mainwindow.Selectivefiledirectoryview.setColumnWidth(
+            0, 400
         )  # Minimum width for "Name"
         self.mainwindow.Selectivefilelistview.setIconSize(
             QSize(32, 32)
