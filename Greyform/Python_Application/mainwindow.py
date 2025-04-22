@@ -112,7 +112,7 @@ class Ui_MainWindow(QMainWindow):
         )  # Smooth folder expansion
         self.mainwindow.Selectivefiledirectoryview.setIndentation(
             20
-        )  # Indentation for nested folders
+        )  
         self.proxy_model = FileFilterProxyModel()
         self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefilelistview.setModel(self.proxy_model)
@@ -149,7 +149,10 @@ class Ui_MainWindow(QMainWindow):
             False
         )  # Hide tree structure in the right panel
         self.mainwindow.Selectivefilelistview.setColumnWidth(
-            0, 250
+            0, 400
+        )  # Minimum width for "Name"
+        self.mainwindow.Selectivefiledirectoryview.setColumnWidth(
+            0, 400
         )  # Minimum width for "Name"
         self.mainwindow.Selectivefilelistview.setIconSize(
             QSize(32, 32)
