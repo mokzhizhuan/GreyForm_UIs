@@ -1,0 +1,165 @@
+BSS.Shallow_FT:150 x 150MM:1018227
+BSS.Shallow_FW:BSS.Shallow_FW:1038276
+Shower Ledge2:Shower Ledge:1090921
+BSS.TECE.CHAIR BRACKET.9370228:BSS.TECE.CHAIR BRACKET.9370228:1090922
+BSS.Shower Door Hand Rail:BSS.Shower Door Hand Rail:1090927
+BSS.BASIN CABINET.C5-MASTER BATH:BSS.BASIN CABINET.C5-MASTER BATH:1090928
+BSS.GOMGO.TR.GG-6108-600:Chrome 000:1090991
+BSS.GOMGO.PH.GG-6106:Chrome 000:1090992
+BSS.Ceiling Access Panel:450 x 450MM:1091046
+BSS.Ceiling Access Panel Opening:450 x 450MM:1091047
+Compound Ceiling:BSS.600/1200.Grid:1091012
+BSS.Shower Glass Door:650/2200:1091007
+Floor:BSS.115:1090847
+Floor:BSS.20mm Floor Finishes (600x600mm):1090854
+Floor:BSS.20mm Floor Finishes (600x150mm):1090859
+Floor:BSS.90:1090864
+Floor:BSS.60:1090882
+Floor:BSS.80:1090926
+THRESHOLD1:THRESHOLD:1091082
+Floor:BSS.20mm Floor Finishes (600x150mm):1091107
+Floor:BSS.20mm Floor Finishes (600x150mm):1091107
+Floor:BSS.20mm Floor Finishes (600x150mm):1091107
+BOX-UP2:BOX-UP:1091056
+Basic Wall:BSS.50:1090834
+Basic Wall:BSS.50:1090835
+Basic Wall:BSS.50:1090836
+Basic Wall:BSS.50:1090837
+Basic Wall:BSS.50:1090838
+Basic Wall:BSS.50:1090839
+Basic Wall:BSS.20mm Wall Finishes (600x600mm):1090840
+Basic Wall:BSS.20mm Wall Finishes (600x600mm):1090841
+Basic Wall:BSS.20mm Wall Finishes (600x600mm):1090842
+Basic Wall:BSS.20mm Wall Finishes (600x600mm):1090843
+Basic Wall:BSS.20mm Wall Finishes (600x600mm):1090844
+Basic Wall:BSS.20mm Wall Finishes (600x600mm):1090869
+Basic Wall:BSS.12mm Wall Finishes:1090909
+Basic Wall:BSS.10 Glass:1090994
+BSS.Gate Valve:20 mm:1018294
+BSS.Gate Valve:32 mm:1040816
+BSS.Gate Valve:32 mm:1040885
+BSS.Bottle Trap:BSS.Bottle trap:1018126
+BSS.Round To Oval1:BSS.Round To Oval:1018130
+M_Elbow Reducing - Threaded - MI - Class 150:Standard:1018134
+M_Elbow Reducing - Threaded - MI - Class 150:Standard:1018138
+M_Coupling - Threaded - MI - Class 150:Standard:1018144
+BSS.Vesbo Elbow 90:Standard:1018160
+BSS.Vesbo Elbow 90:Standard:1018164
+BSS.Vesbo Elbow 90:Standard:1018174
+BSS.Vesbo Elbow 90:Standard:1018186
+BSS.Vesbo Elbow 90:Standard:1018188
+BSS.Vesbo Elbow 90:Standard:1018190
+M_Oval Elbow - Mitered:Standard:1018234
+M_Oval Elbow - Mitered:Standard:1018236
+BSS.Vesbo Elbow 90:Standard:1018248
+BSS.Vesbo Elbow 90:Standard:1018258
+BSS.Vesbo Elbow 90:Standard:1018303
+BSS.Vesbo Elbow 90:Standard:1018873
+BSS.Vesbo Elbow 90:Standard:1018879
+BSS.Vesbo Elbow 90:Standard:1031709
+BSS.Vesbo Tee Fiting:Standard:1032950
+BSS.Vesbo Elbow 90:Standard:1032962
+BSS.Vesbo Tee Fiting:Standard:1033022
+BSS.Vesbo Elbow 90:Standard:1033034
+BSS.Vesbo Elbow 90:Standard:1033212
+BSS.Vesbo Elbow 90:Standard:1033215
+BSS.Vesbo Elbow 90:Standard:1034834
+BSS.Vesbo Elbow 90:Standard:1034861
+BSS.Vesbo Tee Fiting:Standard:1035758
+BSS.Vesbo Elbow 90:Standard:1035782
+BSS.Vesbo Elbow 90:Standard:1036106
+M_Oval Elbow - Mitered:Standard:1038557
+M_Oval Elbow - Mitered:Standard:1038566
+M_Oval Elbow - Mitered:Standard:1038575
+M_Oval Elbow - Mitered:Standard:1038747
+BSS.Round To Oval1:BSS.Round To Oval:1040053
+M_Transition - Generic:Standard:1040548
+M_Transition - Generic:Standard:1040550
+M_Transition - Generic:Standard:1040647
+M_Transition - Generic:Standard:1040649
+BSS.Vesbo Elbow 90:Standard:1040709
+M_Oval Elbow - Mitered:Standard:1042401
+BSS.Vesbo Elbow 90:Standard:1042672
+BSS.Vesbo Elbow 90:Standard:1042674
+BSS.Vesbo Elbow 90:Standard:1042745
+BSS.Vesbo Tee Fiting:Standard:1042747
+M_Transition - Generic:Standard:1042755
+BSS.Vesbo Elbow 90:Standard:1042948
+BSS.Vesbo Elbow 90:Standard:1042966
+BSS.Vesbo Elbow 90:Standard:1042982
+BSS.Vesbo Elbow 90:Standard:1043200
+BSS.Vesbo Elbow 90:Standard:1043206
+M_Elbow Reducing - Threaded - MI - Class 150:Standard:1043888
+M_Elbow Reducing - Threaded - MI - Class 150:Standard:1043937
+M_Coupling - Threaded - MI - Class 150:Standard:1044021
+BSS.GESSI.SM.49079:29046000:1090989
+Pipe Types:BSS.Sanitary Pipe (PVC):1018128
+Pipe Types:BSS.Sanitary Pipe (PVC) - BASIN:1018132
+Pipe Types:BSS.Sanitary Pipe (PVC):1018136
+Pipe Types:BSS.Domestic Mixed Water Pipe (PPR):1018140
+Pipe Types:BSS.Sanitary Pipe (PVC) - WC:1018146
+Pipe Types:BSS.Domestic Cold Water Pipe (Pex) - Basin:1018148
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Basin:1018150
+Pipe Types:BSS.Domestic Cold Water Pipe (Pex) - Basin:1018152
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Basin:1018156
+Pipe Types:BSS.Domestic Mixed Water Pipe (PPR):1018158
+Pipe Types:BSS.Domestic Mixed Water Pipe (PPR):1018162
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - Bib Tap:1018168
+Pipe Types:BSS.Domestic Mixed Water Pipe (PPR):1018176
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Shower:1018178
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Shower:1018180
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - Shower:1018182
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - Shower:1018184
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Shower:1018194
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Shower:1018204
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - WC:1018208
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - Shower:1018212
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - Bib Tap:1018214
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - WC:1018218
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Basin:1018222
+Oval Duct:BSS.Flat Pipe:1018226
+Pipe Types:BSS.Sanitary Pipe (PVC) - SFT:1018228
+Oval Duct:BSS.Flat Pipe:1018233
+Oval Duct:BSS.Flat Pipe:1018235
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Shower:1018246
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - Shower:1018262
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - Main:1018281
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - WC:1018286
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - WC:1018288
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - WC:1018290
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Main:1019026
+Pipe Types:BSS.Domestic Cold Water Pipe (Pex) - Basin:1019303
+Pipe Types:BSS.Domestic Mixed Water Pipe (PPR):1032638
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Main:1032951
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - Shower:1033023
+Pipe Types:BSS.Domestic Mixed Water Pipe (PPR):1034815
+Pipe Types:BSS.Domestic Mixed Water Pipe (PPR):1034853
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - WC:1035759
+Oval Duct:BSS.Flat Pipe:1038541
+Oval Duct:BSS.Flat Pipe:1038548
+Oval Duct:BSS.Flat Pipe:1038559
+Oval Duct:BSS.Flat Pipe:1038568
+Oval Duct:BSS.Flat Pipe:1038577
+Pipe Types:BSS.Sanitary Pipe (PVC) - Heater Overflow:1040058
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Main:1040688
+Pipe Types:BSS.Domestic Hot Water Pipe (PPR) - Main:1040698
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - Main:1040735
+Oval Duct:BSS.Flat Pipe:1042382
+Oval Duct:BSS.Flat Pipe:1042394
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - Main:1042734
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - Main:1042748
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - WC:1042940
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - WC:1042950
+Pipe Types:BSS.Domestic Cold Water Pipe (PPR) - WC:1042971
+Pipe Types:BSS.Sanitary Pipe (PVC) - Heater Overflow:1043876
+Pipe Types:BSS.Sanitary Pipe (PVC) - Heater Overflow:1043926
+BSS.TECE.CONCEALED CISTERN.9370224:BSS.TECE.CONCEALED CISTERN.9370224:1090923
+BSS.MONIC.BIB TAP.T-4L:BIB TAP:1090961
+BSS.GESSI,BM.49001:Default:1090988
+BSS.GESSI.SH.63352:Default - please load Revit Family Type Catalog:1090990
+BSS.TECE.AP.9240402:Flush Plate:1091024
+BSS.FLOOR DRAIN_100:BSS.FLOOR DRAIN_100:1091045
+BSS.LAUFEN.WC.820714:820959000 White:1091064
+BSS.FLOOR DRAIN_150:BSS.FLOOR DRAIN_150:1091065
+BSS.HAND SHOWER SET.MASTER BATH:BSS.HAND SHOWER SET.MASTER BATH:1091130
+BSS.MIRROR CABINET.C5-MASTER BATH:BSS.MIRROR CABINET.C5-MASTER BATH:1090945

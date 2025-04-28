@@ -79,13 +79,13 @@ def wall_format(wall, floor, label_map, wall_finishes_height):
     axis = ""
     direction_groups = {}
 
-    for label, wall_data, direction, axiss in label_map:
+    for label, wall_data, direction, axiss, names in label_map:
         wall_name = wall_data["name"]
         wall_width = wall[wall_name]["width"]
         direction_groups.setdefault(direction, []).append(wall_width)
     direction_max_width = {d: max(wlist) for d, wlist in direction_groups.items()}
     direction_totals = {d: sum(wlist) for d, wlist in direction_groups.items()}
-    for index, (label, wall_data, direction, axiss) in enumerate(label_map, start=1):
+    for index, (label, wall_data, direction, axiss,names) in enumerate(label_map, start=1):
         wall_name = wall_data["name"]
         wall_info = wall[wall_name]
         raw_width = wall_info["width"]

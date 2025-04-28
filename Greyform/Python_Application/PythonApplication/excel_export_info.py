@@ -2,6 +2,7 @@ import pandas as pd
 from ifcopenshell.util.placement import get_local_placement, get_axis2placement
 import PythonApplication.arraystorage as storingelement
 import PythonApplication.ifcextractfiles as extractor
+import PythonApplication.loadtmp as tmpinserter
 
 
 # export excel sheet
@@ -20,6 +21,7 @@ class Exportexcelinfo(object):
         wall_offset,
         label_map,
         directional_axes_axis,
+        Cellingstorey
     ):
         # starting initialize
         super().__init__()
@@ -49,6 +51,7 @@ class Exportexcelinfo(object):
                 self.wall_finishes_height,
             )
         )
+        self.thickness = self.wall_height + self.wall_finishes_height
         self.wallformat, self.axis_widths = extractor.addranges(
             self.floor,
             self.wall_height,
@@ -61,7 +64,8 @@ class Exportexcelinfo(object):
         self.meterline = 1000
         self.wallformat = dict(sorted(self.wallformat.items()))
         try:
-            data = extractor.get_objects_data_by_class(file, class_type)
+            data , verts_data = extractor.get_objects_data_by_class(file, class_type)
+            #datainserter = tmpinserter.loadTMP(data ,verts_data , Cellingstorey, self.thickness, self.wall_height)
             attributes = [
                 "Stage",
                 "Marking type",

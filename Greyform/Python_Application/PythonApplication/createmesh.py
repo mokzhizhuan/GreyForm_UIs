@@ -36,7 +36,7 @@ class createMesh(QMainWindow):
         directional_axes_axis,
         toggle_button,
         camera_label,
-        stacked_display
+        stacked_display,
     ):
         # starting initialize
         super().__init__()
@@ -64,7 +64,7 @@ class createMesh(QMainWindow):
         self.renderwindowinteractor.GetRenderWindow().AddRenderer(self.ren)
         self.filepath = file_path
         self.walllabel = walllabel
-        self.stacked_widget = stacked_widget    
+        self.stacked_widget = stacked_widget
         self.axis_widths = {"x": [], "y": []}
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
@@ -101,7 +101,7 @@ class createMesh(QMainWindow):
         )
         self.stagetext = self.stagestorage[self.currentindexstage]
         self.timer = QTimer()
-        self.timer.timeout.connect(lambda:self.update_frame())
+        self.timer.timeout.connect(lambda: self.update_frame())
         Stagelabel.setText(f"Stage : {self.stagetext}")
         self.wallaxis = vtk_data_excel.wall_format(self.wall)
         self.toggle_button.clicked.connect(lambda: self.toggle_view())
@@ -119,7 +119,7 @@ class createMesh(QMainWindow):
         if self.showing_camera is True:
             self.timer.stop()
             self.stacked_display.setCurrentIndex(0)  # Show VTK
-            self.showing_camera= False
+            self.showing_camera = False
         else:
             self.stacked_display.setCurrentIndex(1)  # Show webcam
             self.timer.start(30)
@@ -138,8 +138,15 @@ class createMesh(QMainWindow):
                 frame_h, frame_w = frame.shape[:2]
                 font_scale = frame_w / 1600 * 0.7
                 thickness = max(2, frame_w // 400)
-                cv2.putText(frame, "Tracker Lost", (int(0.05 * frame_w), int(0.07 * frame_h)),
-                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), thickness)
+                cv2.putText(
+                    frame,
+                    "Tracker Lost",
+                    (int(0.05 * frame_w), int(0.07 * frame_h)),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    font_scale,
+                    (0, 0, 255),
+                    thickness,
+                )
         rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
@@ -154,8 +161,15 @@ class createMesh(QMainWindow):
         thickness = max(2, frame_w // 400)
         font_scale = frame_w / 1600 * 0.7
         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 255), thickness)
-        cv2.putText(frame, "Tracking", (int(0.05 * frame_w), int(0.07 * frame_h)),
-                    cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), thickness)
+        cv2.putText(
+            frame,
+            "Tracking",
+            (int(0.05 * frame_w), int(0.07 * frame_h)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            font_scale,
+            (0, 255, 0),
+            thickness,
+        )
 
     # load stl in vtk frame
     def loadStl(self):
@@ -182,9 +196,19 @@ class createMesh(QMainWindow):
         ]
         self.wall7 = [self.meshbounds[1], self.meshbounds[3]]
         self.walls = {}
-        self.walls , self.cameraactors= createactorvtk.initialize_walls(self.wallformat,self.axis_widths , self.walls)
-        self.wall_actors, self.identifier, self.wallname , self.cameraactors = createactorvtk.setupactors(
-            self.walls, self.stagetext, self.wall_identifiers, self.ren, self.walllabel ,self.cameraactors
+        self.walls, self.cameraactors = createactorvtk.initialize_walls(
+            self.wallformat, self.axis_widths, self.walls
+        )
+        self.wall_actors, self.identifier, self.wallname, self.cameraactors = (
+            createactorvtk.setupactors(
+                self.walls,
+                self.stagetext,
+                self.wall_identifiers,
+                self.ren,
+                self.walllabel,
+                self.cameraactors,
+                self.label_map,
+            )
         )
         self.setupvtkframe()
 
@@ -211,10 +235,7 @@ class createMesh(QMainWindow):
             self.stacked_widget,
             self.walllabel,
         ]
-        camera = events.myInteractorStyle(
-            setcamerainteraction,
-            self.cameraactors
-        )
+        camera = events.myInteractorStyle(setcamerainteraction, self.cameraactors)
         self.renderwindowinteractor.SetInteractorStyle(camera)
         self.ren.GetActiveCamera().SetPosition(0, -1, 0)
         self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
