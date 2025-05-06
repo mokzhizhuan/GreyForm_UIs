@@ -234,6 +234,7 @@ class createMesh(QMainWindow):
             self.identifier,
             self.stacked_widget,
             self.walllabel,
+            self.label_map
         ]
         camera = events.myInteractorStyle(setcamerainteraction, self.cameraactors)
         self.renderwindowinteractor.SetInteractorStyle(camera)

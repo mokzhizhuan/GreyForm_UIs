@@ -11,6 +11,7 @@ from stl import mesh
 import PythonApplication.interactiveevent as events
 import PythonApplication.exceldatavtk as vtk_data_excel
 import re
+from stl import mesh
 
 
 def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actors, label_map):
@@ -18,20 +19,16 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
     wall_actors = {}
     camera_actors_set = {}
     wallname = None  # Initialize wallname to ensure valid return
-
     for wall, properties in walls.items():
         if wall == "Floor":
             wall_number = "F"  # Special case for Floor
         else:
             match = re.search(r"\d+", wall)
             wall_number = int(match.group()) if match else None
-
         # Skip walls that are not in the stage text or Excel data
         if wall_number is None or stagetext not in wall_identifiers:
             continue
-
         sheet_data = wall_identifiers[stagetext]
-
         # Get indexes where wall number matches the Excel data
         if wall_number == "F":
             indexes = [
@@ -127,9 +124,9 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
                         color=properties["color"],
                         rotation=properties["rotation"],
                     )
+            if actor is not None:  # <- ADD THIS CHECK
                 wall_actors[wall] = actor
                 ren.AddActor(actor)
-    print("Wall actors created:", wall_actors)
     # Determine the first valid wall to display
     if identifier:
         # Find the first wall number based on valid identifiers
@@ -143,9 +140,6 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
                 wall_actors[wall_name].VisibilityOn()
                 wallname = wall_name  # Set the valid wallname
                 walllabel.setText(f"Wall : {wallname}")
-                break  # Stop after finding the first valid wall
-            else:
-                wall_actors[wall_name].VisibilityOff()
     # Ensure that wallname is correctly set as the first valid wall
     if wallname is None:
         # Get the first key from identifier if no wall was set
@@ -189,19 +183,49 @@ def create_wall_actor(name, position, size, color, rotation, real_name):
     """Creates a wall (rectangular plane) at a given position, size, and color."""
     safe_wall_name = real_name.replace(":", "_").replace(" ", "_")
     stlpath = f"{safe_wall_name}.stl"
-    print(f"Wallname: {name}")
-    print(f"STL Path: {stlpath}")
-    reader = vtk.vtkSTLReader()
-    reader.SetFileName(stlpath)
-    reader.Update()
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputConnection(reader.GetOutputPort())
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
+    reader = vtk.vtkPolyData()
+    meshs = mesh.Mesh.from_file(stlpath)
+    points = meshs.points.reshape(-1, 3)
+    faces = np.arange(points.shape[0]).reshape(-1, 3)
+    vtk_points = vtk.vtkPoints()
+    for vertex in points:
+        vtk_points.InsertNextPoint(vertex)
+    vtk_faces = vtk.vtkCellArray()
+    for face in faces:
+        polygon = vtk.vtkPolygon()
+        for vertex_index in face:
+            polygon.GetPointIds().InsertNextId(vertex_index)
+        vtk_faces.InsertNextCell(polygon)
+    reader.SetPoints(vtk_points)
+    reader.SetPolys(vtk_faces)
+    actor = polyDataToActor(reader)
     actor.GetProperty().SetColor(color)
     actor.name = name
     actor.VisibilityOff()
     return actor 
+
+def setactor(mapper):
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+    actor.GetProperty().SetRepresentationToSurface()
+    colorsd = vtkNamedColors()
+    actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
+    actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
+    actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d("LightSteelBlue"))
+    actor.GetProperty().SetDiffuse(0.8)
+    actor.GetProperty().SetSpecular(0.3)
+    actor.GetProperty().SetSpecularPower(60.0)
+    actor.GetProperty().BackfaceCullingOn()
+    actor.GetProperty().FrontfaceCullingOn()
+    return actor
+
+def polyDataToActor(reader):
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(reader)
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+    actor.GetProperty().SetRepresentationToSurface()
+    return actor
 
 
 def create_floor_actor(name, position, points_list, color, rotation):

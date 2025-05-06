@@ -34,6 +34,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.identifier = setcamerainteraction[16]
         self.stacked_widget = setcamerainteraction[17]
         self.walllabel = setcamerainteraction[18]
+        self.label_map = setcamerainteraction[19]
         self.cameraactors = cameraactors
         match = re.search(r"\d+", self.wallname)
         self.wall_number = int(match.group())
@@ -148,7 +149,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                     self.wallname = (
                         "Floor" if next_wall_number == "F" else self.wallname
                     )
-                    print(self.wall_actors[self.wallname])
                     self.wall_actors[self.wallname].VisibilityOn()
                     createactorvtk.switch_hidden_camera(
                         self.wallname,
@@ -190,6 +190,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 self.render,
                 self.walllabel,
                 self.cameraactors,
+                self.label_map,
             )
         )
         self.show_message(
@@ -202,9 +203,11 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         match = re.search(r"\d+", self.wallname)
         self.wall_number = int(match.group())
         self.stage_completed = False
+        self.refresh()
         self.initialize_wall_tracking()
 
     def refresh(self):
+        self.render.ResetCamera()
         self.render.ResetCameraClippingRange()
         self.renderwindowinteractor.GetRenderWindow().Render()
 

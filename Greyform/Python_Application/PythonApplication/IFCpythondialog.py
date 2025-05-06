@@ -201,7 +201,7 @@ class ProgressBarDialogIFC(QDialog):
                             if dimensions[0]:
                                 widths.append(int(round(dimensions[0])))
                             self.save_wall_mesh_as_stl(wall.Name, mesh)
-                        if "BSS.20mm Wall Finishes" in wall.Name:
+                        if "Wall Finishes" in wall.Name:
                             width, height, depth, offset, wallfinishescoordi = (
                                 self.get_wall_dimensions(wall)
                             )
