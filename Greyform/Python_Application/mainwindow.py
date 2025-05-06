@@ -219,13 +219,9 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow,
             self.mainwindow.stackedWidget,
             self.mainwindow.menuStartButton,
-            self.mainwindow.menuCloseButton,
             self.mainwindow.NextButton_Page_2,
-            self.mainwindow.BacktoMenuButton,
-            self.mainwindow.BackButton_Page_2,
             self.mainwindow.ChooseButton,
             self.mainwindow.sendmodelButton,
-            self.mainwindow.CloseButton,
         )
 
     # file selection when clicked
@@ -274,6 +270,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.layoutWidget,
             self.mainwindow.horizontalLayout,
             self.mainwindow.mainmenu,
+            self.mainwindow.filelabel,
             self.mainwindow.horizontalLayoutWidgetPage2,
             self.mainwindow.buttonpage2layoutWidget,
             self.mainwindow.page,
@@ -288,7 +285,6 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.horizontalLayoutWidgetpage4,
             self.mainwindow.page_3,
             self.mainwindow.sendmodelButton,
-            self.mainwindow.CloseButton,
             self.mainwindow.ChooseButton,
             self.mainwindow.page_4,
         )

@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
 
-#main window layout
+# main window layout
 class Ui_MainWindow_layout(object):
     def __init__(
         self,
@@ -13,6 +13,7 @@ class Ui_MainWindow_layout(object):
         mainlayoutwidget,
         mainlayoutpagebutton,
         mainmenu,
+        filelabel,
         filedirectorylayout,
         buttonfiledirectorylayout,
         page2,
@@ -27,7 +28,6 @@ class Ui_MainWindow_layout(object):
         page4frame,
         page4,
         sendmodelButton,
-        CloseButton,
         ChooseButton,
         page5,
     ):
@@ -38,6 +38,7 @@ class Ui_MainWindow_layout(object):
         self.mainlayoutwidget = mainlayoutwidget
         self.mainlayoutpagebutton = mainlayoutpagebutton
         self.mainmenu = mainmenu
+        self.filelabel = filelabel
         self.filedirectorylayout = filedirectorylayout
         self.buttonfiledirrectorylayout = buttonfiledirectorylayout
         self.page2 = page2
@@ -53,11 +54,10 @@ class Ui_MainWindow_layout(object):
         self.page4 = page4
         self.page5 = page5
         self.sendmodelButton = sendmodelButton
-        self.CloseButton = CloseButton
         self.ChooseButton = ChooseButton
         self.setStretch()
 
-    #stretch layout
+    # stretch layout
     def setStretch(self):
         self.page1boxlayout = QVBoxLayout()
         self.verticalSpacer = QSpacerItem(
@@ -79,10 +79,12 @@ class Ui_MainWindow_layout(object):
         self.mainlayoutpagebutton.setStretch(1, 1)
         self.mainmenu.setLayout(self.page1boxlayout)
         self.page2boxLayout = QVBoxLayout()
+        self.page2boxLayout.addWidget(self.filelabel)
         self.page2boxLayout.addWidget(self.filedirectorylayout)
         self.page2boxLayout.addWidget(self.buttonfiledirrectorylayout)
-        self.page2boxLayout.setStretch(0, 3)
-        self.page2boxLayout.setStretch(1, 1)
+        self.page2boxLayout.setStretch(0, 1)
+        self.page2boxLayout.setStretch(1, 4)
+        self.page2boxLayout.setStretch(2, 1)
         self.page2.setLayout(self.page2boxLayout)
         self.page3boxLayout = QVBoxLayout()
         self.page3boxLayout.addWidget(self.itemlabel_page3)
@@ -117,10 +119,6 @@ class Ui_MainWindow_layout(object):
         self.page5boxLayout = QVBoxLayout()
         self.page5boxLayout.addWidget(self.sendmodelButton)
         self.page5boxLayout.addWidget(self.ChooseButton)
-        self.page5boxLayout.addWidget(self.CloseButton) 
         self.page5boxLayout.setStretch(0, 1)
         self.page5boxLayout.setStretch(1, 1)
-        self.page5boxLayout.setStretch(2, 1)
         self.page5.setLayout(self.page5boxLayout)
-
-
