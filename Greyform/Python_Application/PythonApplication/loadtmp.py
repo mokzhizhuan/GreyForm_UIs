@@ -46,11 +46,6 @@ class loadTMP:
         self.y_min, self.y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
         self.addTMP1()
 
-    def _log_tmp_error(self, e, stage):
-        print(f"[ERROR] addTMP{stage} failed: {e}")
-        traceback.print_exc()
-        raise
-
     def get_tmp_label_from_excel(self, name: str, z_ref: int = 225, tolerance: int = 5, default="TMP??") -> str:
         df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
         df = df[df["Stage 2"].notna()]
@@ -76,7 +71,6 @@ class loadTMP:
                     z_vals = vertices[:, 2]
                     for z in z_vals:
                         if abs(z - z_target) <= tolerance:
-                            print(f"[DEBUG] Found match in vertices: {name} with Z={z}")
                             return int(z)
                 except Exception as e:
                     print(f"[WARN] Error reading vertices from {name}: {e}")
