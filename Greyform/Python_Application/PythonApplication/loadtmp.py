@@ -7,9 +7,7 @@ import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
 import math
 import re
-import PythonApplication.ifcextractfiles as extractor
 from collections import defaultdict
-import traceback
 
 class loadTMP:
     def __init__(
@@ -62,18 +60,12 @@ class loadTMP:
         for obj in self.verts_data:
             name = obj.get("Point number/name", "")
             pos_z = obj.get("Position Z (mm)", 0)
-            if abs(pos_z - z_target) <= tolerance:
-                print(f"[DEBUG] Found match in position: {name} with Z={pos_z}")
-                return int(pos_z)
             vertices = obj.get("verticles", [])
             if len(vertices) > 0:
-                try:
-                    z_vals = vertices[:, 2]
-                    for z in z_vals:
-                        if abs(z - z_target) <= tolerance:
-                            return int(z)
-                except Exception as e:
-                    print(f"[WARN] Error reading vertices from {name}: {e}")
+                z_vals = vertices[:, 2]
+                for z in z_vals:
+                    if abs(z - z_target) <= tolerance:
+                        return int(z)
         return z_target
     
     def get_wall_alias_from_excel(self, pin_id: str) -> str:
