@@ -185,9 +185,19 @@ class createMesh(QMainWindow):
         ]
         self.wall7 = [self.meshbounds[1], self.meshbounds[3]]
         self.walls = {}
-        self.walls , self.cameraactors= createactorvtk.initialize_walls(self.wallformat,self.axis_widths , self.walls)
-        self.wall_actors, self.identifier, self.wallname , self.cameraactors = createactorvtk.setupactors(
-            self.walls, self.stagetext, self.wall_identifiers, self.ren, self.walllabel ,self.cameraactors
+        self.walls, self.cameraactors = createactorvtk.initialize_walls(
+            self.wallformat, self.axis_widths, self.walls
+        )
+        self.wall_actors, self.identifier, self.wallname, self.cameraactors = (
+            createactorvtk.setupactors(
+                self.walls,
+                self.stagetext,
+                self.wall_identifiers,
+                self.ren,
+                self.walllabel,
+                self.cameraactors,
+                self.label_map,
+            )
         )
         self.setupvtkframe()
 
@@ -214,6 +224,7 @@ class createMesh(QMainWindow):
             self.stacked_widget,
             self.walllabel,
             self.listenerdialog,
+            self.label_map
         ]
         camera = events.myInteractorStyle(
             setcamerainteraction,

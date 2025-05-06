@@ -75,6 +75,7 @@ def log_text(message):
 
 def get_objects_data_by_class(file, class_type):
     objects_data = []
+    verts_data = []
     pset_attributes = set()
     objects = file.by_type(class_type)
     for object in objects:
@@ -93,6 +94,16 @@ def get_objects_data_by_class(file, class_type):
                 placement = object.ObjectPlacement.RelativePlacement
                 if placement and placement.Location:
                     x, y, z = placement.Location.Coordinates
+            scale_factor = 1000.0
+            if object.Representation is not None:
+                settings = ifcopenshell.geom.settings()
+                shape = ifcopenshell.geom.create_shape(settings, object)
+                verts = shape.geometry.verts
+                grouped_verts = [[verts[i], verts[i + 1], verts[i + 2]] for i in range(0, len(verts), 3)]
+                scaled_grouped_verts = np.array(grouped_verts) * scale_factor
+                scaled_grouped_verts = scaled_grouped_verts.astype(int)
+            else:
+                scaled_grouped_verts = []
             for rel in object.ContainedInStructure:
                 if rel.RelatingStructure.is_a("IfcBuildingStorey"):
                     storey = rel.RelatingStructure
@@ -119,7 +130,16 @@ def get_objects_data_by_class(file, class_type):
                     "Diameter": "",
                 }
             )
-    return objects_data
+            verts_data.append(
+                {
+                    "Point number/name": name,
+                    "verticles" : scaled_grouped_verts,
+                    "Position X (mm)": int(round(x)),
+                    "Position Y (mm)": int(round(y)),
+                    "Position Z (mm)": int(round(z)),
+                }
+            )
+    return objects_data , verts_data
 
 
 def stagenumber(name):
@@ -207,7 +227,7 @@ def addranges(floor , wall_height, wall_finishes_height, label_map, wallformat, 
     thickness = wall_height + wall_finishes_height
     direction_widths = {}
     direction_axes = {}
-    for index, (label, wall_data, direction, axis) in enumerate(
+    for index, (label, wall_data, direction, axis, ____) in enumerate(
         label_map, start=1
     ):
         wall_width = wallformat[index]["width"]
@@ -237,7 +257,7 @@ def addranges(floor , wall_height, wall_finishes_height, label_map, wallformat, 
     directional_signs = {
         label: sign for label, _, sign in directional_axes_axis
     }
-    for index, (_, _, direction, _) in enumerate(label_map, start=1):
+    for index, (_, _, direction, _, _) in enumerate(label_map, start=1):
         wall = wallformat[index]
         wall_width = wall["width"]
         axis = direction_axes[direction]

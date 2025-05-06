@@ -11,9 +11,10 @@ from stl import mesh
 import PythonApplication.interactiveevent as events
 import PythonApplication.exceldatavtk as vtk_data_excel
 import re
+from stl import mesh
 
 
-def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actors):
+def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actors, label_map):
     identifier = {}
     wall_actors = {}
     camera_actors_set = {}
@@ -73,60 +74,63 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
                         "Status": sheet_data["Status"][idx],
                     }
                 )
-
         # Create wall actor if not already created
         if wall not in wall_actors:
-            if wall != "Floor":
-                actor = create_wall_actor(
-                    name=wall,
-                    position=properties["position"],
-                    size=properties["size"],
-                    color=properties["color"],
-                    rotation=properties["rotation"],
-                )
-                # Create camera actor if the camera key exists
-                camera_key = f"Camera_{wall_number}"
-                if camera_key not in camera_actors:
-                    if "position" in properties and "size" in properties:
-                        view_up = (0, 0, 1)  # Horizontal walls (sideways)
-                        camera_position = (
-                            properties["position"][0] - properties["size"][0] * 1.5, 
-                            properties["position"][1], 
-                            properties["position"][2] + properties["size"][0] / 2
-                        )
+            for label, wall_data, orientation, axis , wall_name in label_map:
+                real_name = wall_data["name"]
+                if wall == wall_name:
+                    actor = create_wall_actor(
+                        name=wall,
+                        position=properties["position"],
+                        size=properties["size"],
+                        color=properties["color"],
+                        rotation=properties["rotation"],
+                        real_name=real_name
+                    )
+                    # Create camera actor if the camera key exists
+                    camera_key = f"Camera_{wall_number}"
+                    if camera_key not in camera_actors:
+                        if "position" in properties and "size" in properties:
+                            view_up = (0, 0, 1)  # Horizontal walls (sideways)
+                            camera_position = (
+                                properties["position"][0] - properties["size"][0] * 1.5, 
+                                    properties["position"][1], 
+                                    properties["position"][2] + properties["size"][0] / 2
+                                )
+                            camera_actor = create_camera_actor(
+                                position=camera_position,
+                                focal_point=properties["position"],
+                                view_up=view_up,
+                                height=properties["size"][1],
+                                width=properties["size"][0],
+                            )
+                            camera_actors[camera_key] = {
+                                "position": camera_position,
+                                "focal_point": properties["position"],
+                                "view_up": view_up,
+                            }
+                        else:
+                            continue
+                    else:
                         camera_actor = create_camera_actor(
-                            position=camera_position,
-                            focal_point=properties["position"],
-                            view_up=view_up,
+                            position=camera_actors[camera_key]["position"],
+                            focal_point=camera_actors[camera_key]["focal_point"],
+                            view_up=camera_actors[camera_key]["view_up"],
                             height=properties["size"][1],
                             width=properties["size"][0],
-                        )
-                        camera_actors[camera_key] = {
-                            "position": camera_position,
-                            "focal_point": properties["position"],
-                            "view_up": view_up,
-                        }
-                    else:
-                        continue
-                else:
-                    camera_actor = create_camera_actor(
-                        position=camera_actors[camera_key]["position"],
-                        focal_point=camera_actors[camera_key]["focal_point"],
-                        view_up=camera_actors[camera_key]["view_up"],
-                        height=properties["size"][1],
-                        width=properties["size"][0],
+                        )      
+                        camera_actors_set[wall] = camera_actor
+                elif wall == "Floor":
+                    actor = create_floor_actor(
+                        name=wall,
+                        position=properties["position"],
+                        points_list=properties["points"],
+                        color=properties["color"],
+                        rotation=properties["rotation"],
                     )
-                camera_actors_set[wall] = camera_actor
-            else:
-                actor = create_floor_actor(
-                    name=wall,
-                    position=properties["position"],
-                    points_list=properties["points"],
-                    color=properties["color"],
-                    rotation=properties["rotation"],
-                )
-            wall_actors[wall] = actor
-            ren.AddActor(actor)
+            if actor is not None:  # <- ADD THIS CHECK
+                wall_actors[wall] = actor
+                ren.AddActor(actor)
     # Determine the first valid wall to display
     if identifier:
         # Find the first wall number based on valid identifiers
@@ -140,17 +144,12 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
                 wall_actors[wall_name].VisibilityOn()
                 wallname = wall_name  # Set the valid wallname
                 walllabel.setText(f"Wall : {wallname}")
-                break  # Stop after finding the first valid wall
-            else:
-                wall_actors[wall_name].VisibilityOff()
-
     # Ensure that wallname is correctly set as the first valid wall
     if wallname is None:
         # Get the first key from identifier if no wall was set
         if identifier:
             first_wall_number = min(identifier.keys(), key=lambda x: (x == "F", x))
             wallname = f"Wall {first_wall_number}"
-
     # Return the result, ensuring wallname is included
     return wall_actors, identifier, wallname, camera_actors_set
 
@@ -184,58 +183,69 @@ def create_camera_actor(position, focal_point, view_up, height, width):
     return camera_actor
 
 
-def create_wall_actor(name, position, size, color, rotation):
+def create_wall_actor(name, position, size, color, rotation, real_name):
     """Creates a wall (rectangular plane) at a given position, size, and color."""
-    plane = vtk.vtkPlaneSource()
-    plane.SetOrigin(0, 0, 0)
-    plane.SetPoint1(size[0], 0, 0)  # Width
-    plane.SetPoint2(0, size[1], 0)  # Height
-    transform = vtk.vtkTransform()
-    transform.RotateX(rotation[0])  # Rotation around X-axis
-    transform.RotateY(rotation[1])  # Rotation around Y-axis
-    transform.RotateZ(rotation[2])  # Rotation around Z-axis
-    transform_filter = vtk.vtkTransformPolyDataFilter()
-    transform_filter.SetInputConnection(plane.GetOutputPort())
-    transform_filter.SetTransform(transform)
-    transform_filter.Update()
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputConnection(transform_filter.GetOutputPort())
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
+    safe_wall_name = real_name.replace(":", "_").replace(" ", "_")
+    stlpath = f"{safe_wall_name}.stl"
+    reader = vtk.vtkPolyData()
+    meshs = mesh.Mesh.from_file(stlpath)
+    points = meshs.points.reshape(-1, 3)
+    faces = np.arange(points.shape[0]).reshape(-1, 3)
+    vtk_points = vtk.vtkPoints()
+    for vertex in points:
+        vtk_points.InsertNextPoint(vertex)
+    vtk_faces = vtk.vtkCellArray()
+    for face in faces:
+        polygon = vtk.vtkPolygon()
+        for vertex_index in face:
+            polygon.GetPointIds().InsertNextId(vertex_index)
+        vtk_faces.InsertNextCell(polygon)
+    reader.SetPoints(vtk_points)
+    reader.SetPolys(vtk_faces)
+    actor = polyDataToActor(reader)
     actor.GetProperty().SetColor(color)
     actor.name = name
-    actor.SetPosition(position)
     actor.VisibilityOff()
+    return actor 
+
+def setactor(mapper):
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+    actor.GetProperty().SetRepresentationToSurface()
+    colorsd = vtkNamedColors()
+    actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
+    actor.GetProperty().SetColor((230 / 255), (230 / 255), (250 / 255))
+    actor.GetProperty().SetDiffuseColor(colorsd.GetColor3d("LightSteelBlue"))
+    actor.GetProperty().SetDiffuse(0.8)
+    actor.GetProperty().SetSpecular(0.3)
+    actor.GetProperty().SetSpecularPower(60.0)
+    actor.GetProperty().BackfaceCullingOn()
+    actor.GetProperty().FrontfaceCullingOn()
+    return actor
+
+def polyDataToActor(reader):
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputData(reader)
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
+    actor.GetProperty().SetRepresentationToSurface()
     return actor
 
 
 def create_floor_actor(name, position, points_list, color, rotation):
-    points = vtk.vtkPoints()
-    for i, point in enumerate(points_list):
-        points.InsertNextPoint(point)
-    # Step 2: Define a polygon with the points
-    polygon = vtk.vtkPolygon()
-    polygon.GetPointIds().SetNumberOfIds(len(points_list))
-    for i in range(len(points_list)):
-        polygon.GetPointIds().SetId(i, i)
-    poly_data = vtk.vtkPolyData()
-    poly_data.SetPoints(points)
-    cells = vtk.vtkCellArray()
-    cells.InsertNextCell(polygon)
-    poly_data.SetPolys(cells)
+    stlpath = "floor.stl"
+    reader = vtk.vtkSTLReader()
+    reader.SetFileName(stlpath)
+    reader.Update()
     mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputData(poly_data)
+    mapper.SetInputConnection(reader.GetOutputPort())
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
     actor.GetProperty().SetColor(color)
-    actor.SetPosition(position)
-    actor.RotateX(rotation[0])
-    actor.RotateY(rotation[1])
-    actor.RotateZ(rotation[2])
+    # Attach metadata
     actor.name = name
     actor.VisibilityOff()
     return actor
-
 
 def switch_hidden_camera(wall_name, ren, camera_actors, renderwindowinteractor):
     if wall_name not in camera_actors:

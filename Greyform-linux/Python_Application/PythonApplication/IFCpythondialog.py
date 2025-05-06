@@ -19,6 +19,7 @@ import PythonApplication.excel_export_4sidesinfo as bim4sideinfo
 import PythonApplication.processloader as Thread
 import PythonApplication.processlistenerrunner as process
 import numpy as np
+import ifcopenshell.util.element as Element
 import traceback
 import re
 
@@ -94,8 +95,15 @@ class ProgressBarDialogIFC(QDialog):
                 self.wall_finishes_dimensions = {}
                 self.floor_dimensions = {}
                 self.scale_factor = 1000.0
+                self.Cellingstorey = []
                 marking_points = {}
-                self.wall_offset, self.wall_finishes_offset, floor_finishes_offset = {}, {}, {}
+                self.floor_offset = {}
+                self.floor_height = 0
+                self.wall_offset, self.wall_finishes_offset, floor_finishes_offset = (
+                    {},
+                    {},
+                    {},
+                )
                 try:
                     while True:
                         shape = iterator.get()
@@ -185,7 +193,8 @@ class ProgressBarDialogIFC(QDialog):
                             )
                             if dimensions[0]:
                                 widths.append(int(round(dimensions[0])))
-                        if "BSS.20mm Wall Finishes" in wall.Name:
+                            self.save_wall_mesh_as_stl(wall.Name, mesh)
+                        if "Wall Finishes" in wall.Name:
                             width, height, depth, offset, wallfinishescoordi = (
                                 self.get_wall_dimensions(wall)
                             )
@@ -200,11 +209,33 @@ class ProgressBarDialogIFC(QDialog):
                                 "height": int(round(wallfinishescoordi[1])),
                                 "depth": int(round(wallfinishescoordi[2])),
                             }
+                    all_floor_points = []
+                    all_floor_faces = []
+                    point_offset = 0
                     for floor in floors:
+                        container = Element.get_container(floor)
+                        if floor.Representation is None:
+                            continue  # Skip floors without geometry
+                        if "bedroom" in container.Name.lower():
+                            shape = ifcopenshell.geom.create_shape(settings, floor)
+                            verts = np.array(shape.geometry.verts).reshape(-1, 3)
+                            faces = np.array(shape.geometry.faces).reshape(-1, 3)
+                            if verts.size == 0 or faces.size == 0:
+                                print(f"[SKIP] {floor.Name}: Empty verts or faces")
+                                continue
+                            all_floor_points.append(verts)
+                            # Update face indices based on the current point offset
+                            adjusted_faces = faces + point_offset
+                            all_floor_faces.append(adjusted_faces)
+                            point_offset += verts.shape[0]
                         if "Floor" in floor.Name:
-                            width, self.floor_height, depth, self.floor_offset, floorcoordi = (
-                                self.get_wall_dimensions(wall)
-                            )
+                            (
+                                width,
+                                self.floor_height,
+                                depth,
+                                self.floor_offset,
+                                floorcoordi,
+                            ) = self.get_wall_dimensions(wall)
                             self.floor_dimensions[floor.Name] = {
                                 "width": int(round(width)),
                                 "height": int(round(self.floor_height)),
@@ -216,6 +247,35 @@ class ProgressBarDialogIFC(QDialog):
                                 "height": int(round(floorcoordi[1])),
                                 "depth": int(round(floorcoordi[2])),
                             }
+                    if all_floor_points and all_floor_faces:
+                        all_floor_points = np.vstack(all_floor_points)
+                        all_floor_faces = np.vstack(all_floor_faces)
+                        # meshio expects faces as a dictionary
+                        floor_mesh = meshio.Mesh(
+                            points=all_floor_points,
+                            cells=[("triangle", all_floor_faces)]
+                        )
+                        # Save to STL
+                        meshio.write("floor.stl", floor_mesh)
+                    else:
+                        print("⚠️ No valid geometry found. STL not created.")
+                    storeys = self.ifc_file.by_type("IfcBuildingStorey")
+                    for storey in storeys:
+                        object_type = storey.ObjectType
+                        if (
+                            object_type
+                            and "level:bss.level head" in object_type.lower().strip()
+                        ):
+                            placement = storey.ObjectPlacement
+                            if placement and hasattr(placement, "RelativePlacement"):
+                                axis_placement = placement.RelativePlacement
+                                if axis_placement and hasattr(
+                                    axis_placement, "Location"
+                                ):
+                                    location_point = axis_placement.Location
+                                    self.Cellingstorey = list(
+                                        location_point.Coordinates
+                                    )
                     if len(widths) > 1 and len(widths) == 6:
                         self.top_two = sorted(widths, reverse=True)[:2]
                         self.top_two[0] = self.top_two[0] + 100
@@ -246,6 +306,7 @@ class ProgressBarDialogIFC(QDialog):
                 east.sort(key=lambda w: -w["center"][1])  # D (top), F (bottom)
                 self.label_map = []
                 label_letters = iter("ABCDEF")
+                counter = 1
                 def detect_axis(mesh):
                     bounds = mesh.bounds
                     x_range = abs(bounds[1] - bounds[0])
@@ -256,31 +317,57 @@ class ProgressBarDialogIFC(QDialog):
                     south.sort(key=lambda w: w["center"][0])
                     for wall in south:
                         axis = detect_axis(wall["mesh"])
-                        self.label_map.append((next(label_letters), wall, "South", axis))
+                        self.label_map.append(
+                            (
+                                next(label_letters),
+                                wall,
+                                "South",
+                                axis,
+                                f"Wall {counter}",
+                            )
+                        )
+                        counter += 1
                 # West (left, bottom → top)
                 if west:
                     west.sort(key=lambda w: w["center"][1])
                     for wall in west:
                         axis = detect_axis(wall["mesh"])
-                        self.label_map.append((next(label_letters), wall, "West", axis))
+                        self.label_map.append(
+                            (next(label_letters), wall, "West", axis, f"Wall {counter}")
+                        )
+                        counter += 1
                 # North (back, left → right)
                 if north:
                     north.sort(key=lambda w: w["center"][0])
                     for wall in north:
                         axis = detect_axis(wall["mesh"])
-                        self.label_map.append((next(label_letters), wall, "North", axis))
+                        self.label_map.append(
+                            (
+                                next(label_letters),
+                                wall,
+                                "North",
+                                axis,
+                                f"Wall {counter}",
+                            )
+                        )
+                        counter += 1
                 # East (right, top → bottom)
                 if east:
                     east.sort(key=lambda w: -w["center"][1])
                     for wall in east:
                         axis = detect_axis(wall["mesh"])
-                        self.label_map.append((next(label_letters), wall, "East", axis))
+                        self.label_map.append(
+                            (next(label_letters), wall, "East", axis, f"Wall {counter}")
+                        )
+                        counter += 1
                 self.label_map.sort(key=lambda x: x[0])  # sort by label A–F
                 num_walls = len(self.label_map)
                 x_widths = []  # for labels A, C, E (even index)
                 y_heights = []  # for labels B, D, F (odd index)
                 self.top_two = []
-                for i, (label, wall, direction, axiss) in enumerate(self.label_map):
+                for i, (label, wall, direction, axiss, wall_name) in enumerate(
+                    self.label_map
+                ):
                     wall_name = wall["name"]
                     if wall_name in self.wall_dimensions:
                         self.wall_dimensions[wall_name]["label"] = label
@@ -301,7 +388,9 @@ class ProgressBarDialogIFC(QDialog):
                     )
                 )
                 self.convertStl(stl_data)
-                self.wall_finishes_dimensions = self.validate_and_fix_wall_finishes(self.wall_finishes_dimensions)
+                self.wall_finishes_dimensions = self.validate_and_fix_wall_finishes(
+                    self.wall_finishes_dimensions
+                )
                 self.listenerdialog = process.ListenerNodeRunner(
                     self.rosnode, self.stl_file, self.labelstatus, self.stackedWidget
                 )
@@ -319,8 +408,14 @@ class ProgressBarDialogIFC(QDialog):
         for wall_name, dimensions in wall_finishes_dimensions.items():
             for wall_type, expected_height in expected_heights.items():
                 if wall_type in wall_name:
-                    if dimensions['height'] != expected_height and dimensions['width'] == expected_height:
-                        dimensions['width'], dimensions['height'] = dimensions['height'], dimensions['width']
+                    if (
+                        dimensions["height"] != expected_height
+                        and dimensions["width"] == expected_height
+                    ):
+                        dimensions["width"], dimensions["height"] = (
+                            dimensions["height"],
+                            dimensions["width"],
+                        )
                     fixed_walls[wall_name] = dimensions
                     break  # Stop checking further once a match is found
         return fixed_walls
@@ -328,7 +423,7 @@ class ProgressBarDialogIFC(QDialog):
     def get_expected_heights(self, wall_finishes_dimensions):
         expected_heights = {}
         for wall_name in wall_finishes_dimensions.keys():
-            match = re.search(r'BSS\.(\d{2})mm Wall Finishes', wall_name)
+            match = re.search(r"BSS\.(\d{2})mm Wall Finishes", wall_name)
             if match:
                 height_value = int(match.group(1))
                 wall_type = f"BSS.{height_value}mm Wall Finishes"
@@ -336,12 +431,27 @@ class ProgressBarDialogIFC(QDialog):
                     expected_heights[wall_type] = height_value
         return expected_heights
 
+    def save_wall_mesh_as_stl(self, wall_name, mesh, scale=1000.0):
+        try:
+            # Sanitize wall name for filename
+            safe_wall_name = wall_name.replace(":", "_").replace(" ", "_")
+            scaled_points = (mesh.points * scale).tolist()
+            tri_faces = np.array(mesh.faces).reshape(-1, 4)[:, 1:]
+            meshio_mesh = meshio.Mesh(
+                points=scaled_points, cells=[("triangle", tri_faces)]
+            )
+            meshio.write(f"{safe_wall_name}.stl", meshio_mesh)
+        except Exception as e:
+            print(f"[Error] Could not save {wall_name} to STL: {e}")
+
     def calculate_wall_directions(self, label_map):
         directions = []
         num_walls = len(label_map)
         for i in range(num_walls):
-            curr_label, curr_wall, curr_elevation, curr_axis = label_map[i]
-            next_label, next_wall, next_elevation, next_axis = label_map[(i + 1) % num_walls]
+            curr_label, curr_wall, curr_elevation, curr_axis, name = label_map[i]
+            next_label, next_wall, next_elevation, next_axis, name = label_map[
+                (i + 1) % num_walls
+            ]
             curr_center = curr_wall["center"]
             next_center = next_wall["center"]
             dx = next_center[0] - curr_center[0]
@@ -357,6 +467,7 @@ class ProgressBarDialogIFC(QDialog):
                     direction = "+Y" if dy > 0 else "-Y"
             directions.append((curr_label, next_label, direction))
         return directions
+
 
     def start_scan(self):
         self.stackedWidget.setCurrentIndex(3)
@@ -459,7 +570,8 @@ class ProgressBarDialogIFC(QDialog):
             self.wall_finishes_offset,
             self.wall_offset,
             self.label_map,
-            self.directions
+            self.directions,
+            self.Cellingstorey,
         )
     
     def loadexcel4sides(self):
@@ -499,4 +611,16 @@ class ProgressBarDialogIFC(QDialog):
             self.stacked_display,
         )
     
+    def save_wall_mesh_as_stl(self, wall_name, mesh, scale=1000.0):
+        try:
+            # Sanitize wall name for filename
+            safe_wall_name = wall_name.replace(":", "_").replace(" ", "_")
+            scaled_points = (mesh.points * scale).tolist()
+            tri_faces = np.array(mesh.faces).reshape(-1, 4)[:, 1:]
+            meshio_mesh = meshio.Mesh(
+                points=scaled_points, cells=[("triangle", tri_faces)]
+            )
+            meshio.write(f"{safe_wall_name}.stl", meshio_mesh)
+        except Exception as e:
+            print(f"[Error] Could not save {wall_name} to STL: {e}")
     
