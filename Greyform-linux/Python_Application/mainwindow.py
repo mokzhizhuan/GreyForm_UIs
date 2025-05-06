@@ -257,6 +257,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.layoutWidget,
             self.mainwindow.horizontalLayout,
             self.mainwindow.mainmenu,
+            self.mainwindow.filelabel,
             self.mainwindow.horizontalLayoutWidgetPage2,
             self.mainwindow.buttonpage2layoutWidget,
             self.mainwindow.page,

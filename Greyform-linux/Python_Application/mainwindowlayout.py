@@ -13,6 +13,7 @@ class Ui_MainWindow_layout(object):
         mainlayoutwidget,
         mainlayoutpagebutton,
         mainmenu,
+        filelabel,
         filedirectorylayout,
         buttonfiledirectorylayout,
         page2,
@@ -37,6 +38,7 @@ class Ui_MainWindow_layout(object):
         self.mainlayoutwidget = mainlayoutwidget
         self.mainlayoutpagebutton = mainlayoutpagebutton
         self.mainmenu = mainmenu
+        self.filelabel = filelabel
         self.filedirectorylayout = filedirectorylayout
         self.buttonfiledirrectorylayout = buttonfiledirectorylayout
         self.page2 = page2
@@ -77,10 +79,12 @@ class Ui_MainWindow_layout(object):
         self.mainlayoutpagebutton.setStretch(1, 1)
         self.mainmenu.setLayout(self.page1boxlayout)
         self.page2boxLayout = QVBoxLayout()
+        self.page2boxLayout.addWidget(self.filelabel)
         self.page2boxLayout.addWidget(self.filedirectorylayout)
         self.page2boxLayout.addWidget(self.buttonfiledirrectorylayout)
-        self.page2boxLayout.setStretch(0, 3)
-        self.page2boxLayout.setStretch(1, 1)
+        self.page2boxLayout.setStretch(0, 1)
+        self.page2boxLayout.setStretch(1, 6)
+        self.page2boxLayout.setStretch(2, 1)
         self.page2.setLayout(self.page2boxLayout)
         self.page3boxLayout = QVBoxLayout()
         self.page3boxLayout.addWidget(self.itemlabel_page3)

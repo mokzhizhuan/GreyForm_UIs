@@ -201,6 +201,24 @@
        </item>
       </layout>
      </widget>
+     <widget class="QLabel" name="filelabel">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>0</y>
+        <width>261</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Please put your File:</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="page_2">
      <property name="sizePolicy">
