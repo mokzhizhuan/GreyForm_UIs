@@ -10,7 +10,6 @@ import numpy as np
 from stl import mesh
 import PythonApplication.interactiveevent as events
 import PythonApplication.exceldatavtk as vtk_data_excel
-import re
 import PythonApplication.actors as createactorvtk
 import PythonApplication.arraystorage as storingelement
 import PythonApplication.ifcextractfiles as extractor

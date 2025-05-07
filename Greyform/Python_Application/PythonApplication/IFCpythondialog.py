@@ -442,11 +442,14 @@ class ProgressBarDialogIFC(QDialog):
         try:
             # Sanitize wall name for filename
             safe_wall_name = wall_name.replace(":", "_").replace(" ", "_")
+            self.stlwalls = []
+            filename = f"{safe_wall_name}.stl"
             scaled_points = (mesh.points * scale).tolist()
             tri_faces = np.array(mesh.faces).reshape(-1, 4)[:, 1:]
             meshio_mesh = meshio.Mesh(
                 points=scaled_points, cells=[("triangle", tri_faces)]
             )
+            self.stlwalls.append(filename)
             meshio.write(f"{safe_wall_name}.stl", meshio_mesh)
         except Exception as e:
             print(f"[Error] Could not save {wall_name} to STL: {e}")
@@ -555,7 +558,7 @@ class ProgressBarDialogIFC(QDialog):
             mesh = meshio.Mesh(points=points, cells=cells)
             mesh.cell_data["triangle"] = [np.array(data["material_ids"])]
             meshio.write(self.stl_file, mesh)
-            self.meshsplot = pv.read(self.stl_file)
+            self.meshsplot = pv.read(self.stlwalls[0])
             loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
         except Exception as e:
             error_message = f"Failed to load stlfile in the frame: {e}"
