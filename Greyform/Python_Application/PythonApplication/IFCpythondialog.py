@@ -18,9 +18,9 @@ import PythonApplication.excel_export_info as biminfo
 import PythonApplication.excel_export_4sidesinfo as bim4sideinfo
 import PythonApplication.processloader as Thread
 import PythonApplication.processlistenerrunner as process
+import PythonApplication.ifcextractmaterials as ifcmaterials
 import numpy as np
 import ifcopenshell.util.element as Element
-import traceback
 import re
 
 
@@ -103,11 +103,9 @@ class ProgressBarDialogIFC(QDialog):
                 marking_points = {}
                 self.floor_offset = {}
                 self.floor_height = 0
-                self.wall_offset, self.wall_finishes_offset, floor_finishes_offset = (
-                    {},
-                    {},
-                    {},
-                )
+                self.wall_offset = {} 
+                self.wall_finishes_offset = {} 
+                floor_finishes_offset = {}
                 try:
                     while True:
                         shape = iterator.get()
@@ -224,11 +222,7 @@ class ProgressBarDialogIFC(QDialog):
                             shape = ifcopenshell.geom.create_shape(settings, floor)
                             verts = np.array(shape.geometry.verts).reshape(-1, 3)
                             faces = np.array(shape.geometry.faces).reshape(-1, 3)
-                            if verts.size == 0 or faces.size == 0:
-                                print(f"[SKIP] {floor.Name}: Empty verts or faces")
-                                continue
                             all_floor_points.append(verts)
-                            # Update face indices based on the current point offset
                             adjusted_faces = faces + point_offset
                             all_floor_faces.append(adjusted_faces)
                             point_offset += verts.shape[0]
@@ -251,18 +245,12 @@ class ProgressBarDialogIFC(QDialog):
                                 "height": int(round(floorcoordi[1])),
                                 "depth": int(round(floorcoordi[2])),
                             }
-                    if all_floor_points and all_floor_faces:
-                        all_floor_points = np.vstack(all_floor_points)
-                        all_floor_faces = np.vstack(all_floor_faces)
-                        # meshio expects faces as a dictionary
-                        floor_mesh = meshio.Mesh(
-                            points=all_floor_points,
-                            cells=[("triangle", all_floor_faces)]
-                        )
-                        # Save to STL
-                        meshio.write("floor.stl", floor_mesh)
-                    else:
-                        print("⚠️ No valid geometry found. STL not created.")
+                    all_floor_points = np.vstack(all_floor_points)
+                    all_floor_faces = np.vstack(all_floor_faces)
+                    floor_mesh = meshio.Mesh(
+                        points=all_floor_points, cells=[("triangle", all_floor_faces)]
+                    )
+                    meshio.write("floor.stl", floor_mesh)
                     storeys = self.ifc_file.by_type("IfcBuildingStorey")
                     for storey in storeys:
                         object_type = storey.ObjectType
@@ -280,110 +268,11 @@ class ProgressBarDialogIFC(QDialog):
                                     self.Cellingstorey = list(
                                         location_point.Coordinates
                                     )
-                    if len(widths) > 1 and len(widths) == 6:
-                        self.top_two = sorted(widths, reverse=True)[:2]
-                        self.top_two[0] = self.top_two[0] + 100
-                    elif len(widths) > 1 and len(widths) == 4:
-                        self.top_two = sorted(widths, reverse=True)[:3]
-                        self.top_two[0] = self.top_two[0] + 50
-                    else:
-                        top_two = widths
                 except Exception as e:
-                    self.log_error(f"Error while processing IFC shapes: {e}")
-                centers = np.array([w["center"] for w in wallsformat])
-                x_min, x_max = centers[:, 0].min(), centers[:, 0].max()
-                y_min, y_max = centers[:, 1].min(), centers[:, 1].max()
-                x_range = x_max - x_min
-                y_range = y_max - y_min
-                south = [
-                    w for w in wallsformat if w["center"][1] < y_min + y_range * 0.3
-                ]
-                north = [
-                    w for w in wallsformat if w["center"][1] > y_min + y_range * 0.7
-                ]
-                remaining = [w for w in wallsformat if w not in south + north]
-                west = [w for w in remaining if w["center"][0] < x_min + x_range * 0.3]
-                east = [w for w in remaining if w["center"][0] > x_min + x_range * 0.7]
-                south.sort(key=lambda w: w["center"][0])  # A
-                west.sort(key=lambda w: -w["center"][0])  # B
-                north.sort(key=lambda w: w["center"][0])  # C, E
-                east.sort(key=lambda w: -w["center"][1])  # D (top), F (bottom)
-                self.label_map = []
-                label_letters = iter("ABCDEF")
-                counter = 1
-                def detect_axis(mesh):
-                    bounds = mesh.bounds
-                    x_range = abs(bounds[1] - bounds[0])
-                    y_range = abs(bounds[3] - bounds[2])
-                    return "X" if x_range >= y_range else "Y"
-                # South (front, left → right)
-                if south:
-                    south.sort(key=lambda w: w["center"][0])
-                    for wall in south:
-                        axis = detect_axis(wall["mesh"])
-                        self.label_map.append(
-                            (
-                                next(label_letters),
-                                wall,
-                                "South",
-                                axis,
-                                f"Wall {counter}",
-                            )
-                        )
-                        counter += 1
-                # West (left, bottom → top)
-                if west:
-                    west.sort(key=lambda w: w["center"][1])
-                    for wall in west:
-                        axis = detect_axis(wall["mesh"])
-                        self.label_map.append(
-                            (next(label_letters), wall, "West", axis, f"Wall {counter}")
-                        )
-                        counter += 1
-                # North (back, left → right)
-                if north:
-                    north.sort(key=lambda w: w["center"][0])
-                    for wall in north:
-                        axis = detect_axis(wall["mesh"])
-                        self.label_map.append(
-                            (
-                                next(label_letters),
-                                wall,
-                                "North",
-                                axis,
-                                f"Wall {counter}",
-                            )
-                        )
-                        counter += 1
-                # East (right, top → bottom)
-                if east:
-                    east.sort(key=lambda w: -w["center"][1])
-                    for wall in east:
-                        axis = detect_axis(wall["mesh"])
-                        self.label_map.append(
-                            (next(label_letters), wall, "East", axis, f"Wall {counter}")
-                        )
-                        counter += 1
-                self.label_map.sort(key=lambda x: x[0])  # sort by label A–F
-                x_widths = []  # for labels A, C, E (even index)
-                y_heights = []  # for labels B, D, F (odd index)
-                self.top_two = []
-                for i, (label, wall, direction, axiss, wall_name) in enumerate(
-                    self.label_map
-                ):
-                    wall_name = wall["name"]
-                    if wall_name in self.wall_dimensions:
-                        self.wall_dimensions[wall_name]["label"] = label
-                        width = self.wall_dimensions[wall_name].get("width", 0)
-                        if i % 2 == 0:
-                            x_widths.append(width)
-                        else:  # Odd labels: B, D, F → Y axis
-                            y_heights.append(width)
-                self.directions = self.calculate_wall_directions(self.label_map)
-                self.top_two = [
-                    max(x_widths) + (wall_height * 2) if x_widths else 0,
-                    max(y_heights) if y_heights else 0,
-                ]
+                    ifcmaterials.log_error(f"Error while processing IFC shapes: {e}")
+                self.label_map = ifcmaterials.shapesformat(wallsformat)
+                self.directions = ifcmaterials.calculate_wall_directions(self.label_map)
+                self.top_two = ifcmaterials.get_x_y(self.label_map, self.wall_dimensions, wall_height)
                 self.wall_dimensions = dict(
                     sorted(
                         self.wall_dimensions.items(),
@@ -399,13 +288,12 @@ class ProgressBarDialogIFC(QDialog):
                 )"""
                 self.buttonlocalize.clicked.connect(lambda: self.start_scan())
         except Exception as e:
-            self.log_error(
+            ifcmaterials.log_error(
                 f"Failed to initialize IFC geometry settings or iterator: {str(e)}"
             )
         self.close()
 
     def validate_and_fix_wall_finishes(self, wall_finishes_dimensions):
-        invalid_walls = {}
         fixed_walls = {}
         expected_heights = self.get_expected_heights(wall_finishes_dimensions)
         for wall_name, dimensions in wall_finishes_dimensions.items():
@@ -435,44 +323,14 @@ class ProgressBarDialogIFC(QDialog):
         return expected_heights
 
     def save_wall_mesh_as_stl(self, wall_name, mesh, scale=1000.0):
-        try:
-            # Sanitize wall name for filename
-            safe_wall_name = wall_name.replace(":", "_").replace(" ", "_")
-            self.stlwalls = []
-            filename = f"{safe_wall_name}.stl"
-            scaled_points = (mesh.points * scale).tolist()
-            tri_faces = np.array(mesh.faces).reshape(-1, 4)[:, 1:]
-            meshio_mesh = meshio.Mesh(
-                points=scaled_points, cells=[("triangle", tri_faces)]
-            )
-            self.stlwalls.append(filename)
-            meshio.write(f"{safe_wall_name}.stl", meshio_mesh)
-        except Exception as e:
-            print(f"[Error] Could not save {wall_name} to STL: {e}")
-
-    def calculate_wall_directions(self, label_map):
-        directions = []
-        num_walls = len(label_map)
-        for i in range(num_walls):
-            curr_label, curr_wall, curr_elevation, curr_axis, name = label_map[i]
-            next_label, next_wall, next_elevation, next_axis, name = label_map[
-                (i + 1) % num_walls
-            ]
-            curr_center = curr_wall["center"]
-            next_center = next_wall["center"]
-            dx = next_center[0] - curr_center[0]
-            dy = next_center[1] - curr_center[1]
-            if curr_axis == "X":
-                direction = "+X" if dx > 0 else "-X"
-            elif curr_axis == "Y":
-                direction = "+Y" if dy > 0 else "-Y"
-            else:
-                if abs(dx) > abs(dy):
-                    direction = "+X" if dx > 0 else "-X"
-                else:
-                    direction = "+Y" if dy > 0 else "-Y"
-            directions.append((curr_label, next_label, direction))
-        return directions
+        safe_wall_name = wall_name.replace(":", "_").replace(" ", "_")
+        self.stlwalls = []
+        filename = f"{safe_wall_name}.stl"
+        scaled_points = (mesh.points * scale).tolist()
+        tri_faces = np.array(mesh.faces).reshape(-1, 4)[:, 1:]
+        meshio_mesh = meshio.Mesh(points=scaled_points, cells=[("triangle", tri_faces)])
+        self.stlwalls.append(filename)
+        meshio.write(f"{safe_wall_name}.stl", meshio_mesh)
 
     def start_scan(self):
         self.stackedWidget.setCurrentIndex(3)
@@ -483,24 +341,17 @@ class ProgressBarDialogIFC(QDialog):
         self.worker.start()  # Start the worker thread
 
     def update_progress_bar(self, value):
-        self.scanprogressBar.setValue(
-            value
-        )  # Ensure progressBar is properly defined in your UI
+        self.scanprogressBar.setValue(value)
 
     def update_status_label(self, text):
         self.labelstatus.setText(text)
 
     def create_mesh(self):
-        try:
-            if len(self.wall_dimensions) == 6:
-                self.loadexcel()
-            else:
-                self.loadexcel4sides()
-            self.stlloader()
-        except Exception as e:
-            error_message = f"Failed to load stlfile in the vtkframe: {e}"
-            self.log_error(error_message)
-            print(traceback.format_exc())
+        if len(self.wall_dimensions) == 6:
+            self.loadexcel()
+        else:
+            self.loadexcel4sides()
+        self.stlloader()
 
     def get_wall_dimensions(self, wall):
         placement = wall.ObjectPlacement
@@ -535,30 +386,16 @@ class ProgressBarDialogIFC(QDialog):
                             return width, height, depth, offset, coordinates
         return None, None, None, None, None
 
-    # include error in text file
-    def log_error(self, message):
-        with open("error_log.txt", "a") as log_file:
-            log_file.write(message + "\n")
-
-    def log(self, message):
-        with open("log.txt", "a") as log_file:
-            log_file.write(message + "\n")
-
     # Convert to meshio format and write to STL
     def convertStl(self, data):
-        try:
-            points = np.array(data["points"])
-            message = f"Points: {self.spacing}"
-            cells = [("triangle", np.array(data["cells"]))]
-            self.stl_file = "output.stl"
-            mesh = meshio.Mesh(points=points, cells=cells)
-            mesh.cell_data["triangle"] = [np.array(data["material_ids"])]
-            meshio.write(self.stl_file, mesh)
-            self.meshsplot = pv.read(self.stlwalls[0])
-            loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
-        except Exception as e:
-            error_message = f"Failed to load stlfile in the frame: {e}"
-            self.log_error(error_message)
+        points = np.array(data["points"])
+        cells = [("triangle", np.array(data["cells"]))]
+        self.stl_file = "output.stl"
+        mesh = meshio.Mesh(points=points, cells=cells)
+        mesh.cell_data["triangle"] = [np.array(data["material_ids"])]
+        meshio.write(self.stl_file, mesh)
+        self.meshsplot = pv.read(self.stlwalls[0])
+        loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
 
     def loadexcel(self):
         biminfo.Exportexcelinfo(

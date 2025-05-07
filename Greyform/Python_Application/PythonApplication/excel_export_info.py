@@ -3,6 +3,7 @@ from ifcopenshell.util.placement import get_local_placement, get_axis2placement
 import PythonApplication.arraystorage as storingelement
 import PythonApplication.ifcextractfiles as extractor
 import PythonApplication.loadtmp as tmpinserter
+import PythonApplication.loadtmp2 as tmpinserter2
 
 
 # export excel sheet
@@ -65,7 +66,21 @@ class Exportexcelinfo(object):
         self.wallformat = dict(sorted(self.wallformat.items()))
         try:
             data, verts_data = extractor.get_objects_data_by_class(file, class_type)
-            datainserter = tmpinserter.loadTMP(
+            tmpinserter.loadTMP(
+                data,
+                verts_data,
+                Cellingstorey,
+                self.thickness,
+                self.wall_height,
+                self.file,
+                self.meterline,
+                self.label_map,
+                self.wall_finishes_height,
+                self.small_wall_height,
+                self.wallformat,
+                self.axis_widths
+            )
+            datainserter = tmpinserter2.loadTMP2(
                 data,
                 verts_data,
                 Cellingstorey,
