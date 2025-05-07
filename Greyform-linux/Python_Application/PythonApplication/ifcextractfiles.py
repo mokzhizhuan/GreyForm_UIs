@@ -30,30 +30,26 @@ def get_attribute_value(object_data, attribute):
 def apply_rotation_to_markers(worksheet, df_class):
     marker_col_index = df_class.columns.get_loc("Shape type")
     for row_idx, (name, marker) in enumerate(
-        zip(
-            df_class["Point number/name"],
-            df_class["Shape type"],
-        ),
-        start=1,
+        zip(df_class["Point number/name"], df_class["Shape type"]), start=1
     ):
-        if name and name.startswith("TMP") and name[8] == "s" and name[3] == "7":
-            print(f"Rotating marker for row {row_idx}: {marker}")
-            if "b" in name:
-                marker = 4
-                worksheet.write(row_idx, marker_col_index + 1, marker)
-            else:
-                marker = 3
-                worksheet.write(row_idx, marker_col_index + 1, marker)
-        else:
-            if marker == "T":
-                marker = 2
-                worksheet.write(row_idx, marker_col_index + 1, marker)
+        if pd.isna(marker) or marker == "":
+            marker = "?"  # default placeholder or leave it as-is
+        new_marker = marker  # Default fallback
+        if isinstance(name, str) and name.startswith("TMP"):
+            is_tmp7 = name[3:4] == "7"
+            is_subtype = name[8:9] == "s"
+            if is_tmp7 and is_subtype:
+                if "b" in name:
+                    new_marker = 4
+                else:
+                    new_marker = 3
+            elif marker == "T":
+                new_marker = 2
             elif marker == "+":
-                marker = 1
-                worksheet.write(row_idx, marker_col_index + 1, marker)
+                new_marker = 1
             elif marker == "6":
-                marker = 6
-                worksheet.write(row_idx, marker_col_index + 1, marker)
+                new_marker = 6
+            worksheet.write(row_idx, marker_col_index + 1, new_marker)
 
 
 def add_pset_attributes(psets, pset_attributes):
@@ -137,6 +133,8 @@ def get_objects_data_by_class(file, class_type):
                     "Position X (mm)": int(round(x)),
                     "Position Y (mm)": int(round(y)),
                     "Position Z (mm)": int(round(z)),
+                    "PredefinedType" : Element.get_predefined_type(object),
+                    "Level" : Element.get_container(object).Name if Element.get_container(object) else "",
                 }
             )
     return objects_data , verts_data

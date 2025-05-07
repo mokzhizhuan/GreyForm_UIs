@@ -23,9 +23,17 @@ import ifcopenshell.util.element as Element
 import traceback
 import re
 
+
 # ifc loader
 class ProgressBarDialogIFC(QDialog):
-    def __init__(self, total_steps, ifc_file, mainwindowforfileselection, mainwindow ,stackedWidget):
+    def __init__(
+        self,
+        total_steps,
+        ifc_file,
+        mainwindowforfileselection,
+        mainwindow,
+        stackedWidget,
+    ):
         # starting initialize
         super().__init__()
         progress_layout = QVBoxLayout()
@@ -400,7 +408,7 @@ class ProgressBarDialogIFC(QDialog):
                 f"Failed to initialize IFC geometry settings or iterator: {str(e)}"
             )
         self.close()
-    
+
     def validate_and_fix_wall_finishes(self, wall_finishes_dimensions):
         invalid_walls = {}
         fixed_walls = {}
@@ -435,11 +443,14 @@ class ProgressBarDialogIFC(QDialog):
         try:
             # Sanitize wall name for filename
             safe_wall_name = wall_name.replace(":", "_").replace(" ", "_")
+            self.stlwalls = []
+            filename = f"{safe_wall_name}.stl"
             scaled_points = (mesh.points * scale).tolist()
             tri_faces = np.array(mesh.faces).reshape(-1, 4)[:, 1:]
             meshio_mesh = meshio.Mesh(
                 points=scaled_points, cells=[("triangle", tri_faces)]
             )
+            self.stlwalls.append(filename)
             meshio.write(f"{safe_wall_name}.stl", meshio_mesh)
         except Exception as e:
             print(f"[Error] Could not save {wall_name} to STL: {e}")
@@ -468,7 +479,6 @@ class ProgressBarDialogIFC(QDialog):
             directions.append((curr_label, next_label, direction))
         return directions
 
-
     def start_scan(self):
         self.stackedWidget.setCurrentIndex(3)
         self.worker = Thread.WorkerThread(self.listenerdialog, self.stackedWidget)
@@ -478,15 +488,14 @@ class ProgressBarDialogIFC(QDialog):
         self.worker.start()  # Start the worker thread
 
     def update_progress_bar(self, value):
-        """Update the progress bar with the current value."""
-        self.scanprogressBar.setValue(value)  # Ensure progressBar is properly defined in your UI
+        self.scanprogressBar.setValue(
+            value
+        )  # Ensure progressBar is properly defined in your UI
 
     def update_status_label(self, text):
-        """Update the status label with progress text."""
         self.labelstatus.setText(text)
-    
+
     def create_mesh(self):
-        # Call the createMesh function in the main thread
         try:
             if len(self.wall_dimensions) == 6:
                 self.loadexcel()
@@ -497,7 +506,6 @@ class ProgressBarDialogIFC(QDialog):
             error_message = f"Failed to load stlfile in the vtkframe: {e}"
             self.log_error(error_message)
             print(traceback.format_exc())
-
 
     def get_wall_dimensions(self, wall):
         placement = wall.ObjectPlacement
@@ -530,7 +538,7 @@ class ProgressBarDialogIFC(QDialog):
                             width = profile.XDim
                             height = profile.YDim
                             return width, height, depth, offset, coordinates
-        return None, None, None
+        return None, None, None, None, None
 
     # include error in text file
     def log_error(self, message):
@@ -551,7 +559,7 @@ class ProgressBarDialogIFC(QDialog):
             mesh = meshio.Mesh(points=points, cells=cells)
             mesh.cell_data["triangle"] = [np.array(data["material_ids"])]
             meshio.write(self.stl_file, mesh)
-            self.meshsplot = pv.read(self.stl_file)
+            self.meshsplot = pv.read(self.stlwalls[0])
             loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
         except Exception as e:
             error_message = f"Failed to load stlfile in the frame: {e}"
@@ -573,7 +581,7 @@ class ProgressBarDialogIFC(QDialog):
             self.directions,
             self.Cellingstorey,
         )
-    
+
     def loadexcel4sides(self):
         bim4sideinfo.Exportexcelinfo(
             self.ifc_file,
@@ -585,7 +593,7 @@ class ProgressBarDialogIFC(QDialog):
             self.floor_offset,
             self.floor_height,
             self.wall_finishes_offset,
-            self.wall_offset
+            self.wall_offset,
         )
 
     # add mesh in pyvista frame
@@ -610,17 +618,3 @@ class ProgressBarDialogIFC(QDialog):
             self.camera_label,
             self.stacked_display,
         )
-    
-    def save_wall_mesh_as_stl(self, wall_name, mesh, scale=1000.0):
-        try:
-            # Sanitize wall name for filename
-            safe_wall_name = wall_name.replace(":", "_").replace(" ", "_")
-            scaled_points = (mesh.points * scale).tolist()
-            tri_faces = np.array(mesh.faces).reshape(-1, 4)[:, 1:]
-            meshio_mesh = meshio.Mesh(
-                points=scaled_points, cells=[("triangle", tri_faces)]
-            )
-            meshio.write(f"{safe_wall_name}.stl", meshio_mesh)
-        except Exception as e:
-            print(f"[Error] Could not save {wall_name} to STL: {e}")
-    
