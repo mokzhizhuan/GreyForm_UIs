@@ -365,7 +365,6 @@ class ProgressBarDialogIFC(QDialog):
                         )
                         counter += 1
                 self.label_map.sort(key=lambda x: x[0])  # sort by label A–F
-                num_walls = len(self.label_map)
                 x_widths = []  # for labels A, C, E (even index)
                 y_heights = []  # for labels B, D, F (odd index)
                 self.top_two = []
