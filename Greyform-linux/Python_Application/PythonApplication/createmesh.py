@@ -36,9 +36,6 @@ class createMesh(QMainWindow):
         wall_finishes_dimensions,
         label_map,
         directional_axes_axis,
-        toggle_button,
-        camera_label,
-        stacked_display
     ):
         # starting initialize
         super().__init__()
@@ -52,15 +49,6 @@ class createMesh(QMainWindow):
         self.directional_axes_axis = directional_axes_axis
         self.ren = ren
         self.dialog = None
-        self.tracking = False
-        self.tracker = None
-        self.toggle_button = toggle_button
-        self.stacked_display = stacked_display
-        self.showing_camera = False
-        self.cameralabel = camera_label
-        self.cap = cv2.VideoCapture(0)
-        ret, frame = self.cap.read()
-        self.frameSize = (frame.shape[1], frame.shape[0]) if ret else (640, 480)
         self.renderwindowinteractor = renderwindowinteractor
         self.wall_finishes_dimensions = wall_finishes_dimensions
         self.renderwindowinteractor.GetRenderWindow().AddRenderer(self.ren)
@@ -107,7 +95,6 @@ class createMesh(QMainWindow):
         self.timer.timeout.connect(lambda:self.update_frame())
         Stagelabel.setText(f"Stage : {self.stagetext}")
         self.wallaxis = vtk_data_excel.wall_format(self.wall)
-        self.toggle_button.clicked.connect(lambda: self.toggle_view())
         self.loadStl()
 
     def show_cancelation_dialog(self, text):
@@ -117,48 +104,6 @@ class createMesh(QMainWindow):
         msg.setText(text)
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
-
-    def toggle_view(self):
-        if self.showing_camera is True:
-            self.timer.stop()
-            self.stacked_display.setCurrentIndex(0)  # Show VTK
-            self.showing_camera= False
-        else:
-            self.stacked_display.setCurrentIndex(1)  # Show webcam
-            self.timer.start(30)
-            self.showing_camera = True
-
-    def update_frame(self):
-        ret, frame = self.cap.read()
-        if not ret:
-            return
-        frame = cv2.resize(frame, self.frameSize)
-        if self.tracking and self.tracker:
-            success, bbox = self.tracker.update(frame)
-            if success:
-                self.draw_box(frame, bbox)
-            else:
-                frame_h, frame_w = frame.shape[:2]
-                font_scale = frame_w / 1600 * 0.7
-                thickness = max(2, frame_w // 400)
-                cv2.putText(frame, "Tracker Lost", (int(0.05 * frame_w), int(0.07 * frame_h)),
-                            cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 0, 255), thickness)
-        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        h, w, ch = rgb_image.shape
-        bytes_per_line = ch * w
-        qimg = QImage(rgb_image.data, w, h, bytes_per_line, QImage.Format_RGB888)
-        self.cameralabel.setPixmap(QPixmap.fromImage(qimg))
-        self.cameralabel.resize(w, h)
-        self.resize(w, h + self.toggle_button.height())
-
-    def draw_box(self, frame, bbox):
-        x, y, w, h = map(int, bbox)
-        frame_h, frame_w = frame.shape[:2]
-        thickness = max(2, frame_w // 400)
-        font_scale = frame_w / 1600 * 0.7
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 255), thickness)
-        cv2.putText(frame, "Tracking", (int(0.05 * frame_w), int(0.07 * frame_h)),
-                    cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 0), thickness)
 
     # load stl in vtk frame
     def loadStl(self):
