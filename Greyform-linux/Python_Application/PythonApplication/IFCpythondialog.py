@@ -1,10 +1,5 @@
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import (
-    QVBoxLayout,
-    QDialog,
-    QProgressBar,
-    QLabel,
-)
+from PyQt5.QtWidgets import QVBoxLayout, QDialog, QProgressBar, QLabel
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QFont
 import ifcopenshell
@@ -18,8 +13,8 @@ import PythonApplication.excel_export_info as biminfo
 import PythonApplication.excel_export_4sidesinfo as bim4sideinfo
 import PythonApplication.processloader as Thread
 import PythonApplication.processlistenerrunner as process
-import numpy as np
 import PythonApplication.ifcextractmaterials as ifcmaterials
+import numpy as np
 import ifcopenshell.util.element as Element
 import re
 

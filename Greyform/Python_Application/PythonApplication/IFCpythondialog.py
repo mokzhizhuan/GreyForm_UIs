@@ -1,10 +1,5 @@
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import (
-    QVBoxLayout,
-    QDialog,
-    QProgressBar,
-    QLabel,
-)
+from PyQt5.QtWidgets import QVBoxLayout, QDialog, QProgressBar, QLabel
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QFont
 import ifcopenshell
@@ -102,8 +97,8 @@ class ProgressBarDialogIFC(QDialog):
                 marking_points = {}
                 self.floor_offset = {}
                 self.floor_height = 0
-                self.wall_offset = {} 
-                self.wall_finishes_offset = {} 
+                self.wall_offset = {}
+                self.wall_finishes_offset = {}
                 floor_finishes_offset = {}
                 try:
                     while True:
@@ -271,7 +266,9 @@ class ProgressBarDialogIFC(QDialog):
                     ifcmaterials.log_error(f"Error while processing IFC shapes: {e}")
                 self.label_map = ifcmaterials.shapesformat(wallsformat)
                 self.directions = ifcmaterials.calculate_wall_directions(self.label_map)
-                self.top_two = ifcmaterials.get_x_y(self.label_map, self.wall_dimensions, wall_height)
+                self.top_two = ifcmaterials.get_x_y(
+                    self.label_map, self.wall_dimensions, wall_height
+                )
                 self.wall_dimensions = dict(
                     sorted(
                         self.wall_dimensions.items(),
