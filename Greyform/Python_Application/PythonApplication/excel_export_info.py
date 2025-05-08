@@ -155,6 +155,7 @@ class Exportexcelinfo(object):
                 (dataframe["Position Z (mm)"] >= startingwall)
                 | (dataframe["Position Z (mm)"] <= endingwall)
             ]  # Exclude specific conditions for Wall Number 7
+            dataframe = dataframe[dataframe["Position Z (mm)"] < Cellingstorey[2]]
             dataframe = dataframe[
                 ~(
                     (dataframe["Position Z (mm)"] < -(self.wall_height / 2))
@@ -163,16 +164,13 @@ class Exportexcelinfo(object):
             ]
             unwanted_names = [
                 "Basic Wall",
-                "BSS.Shower",
-                "M_Coupling",
-                "BSS.TECE.CONCEALED",
                 "BSS.Gate Valve",
                 "LP",
                 "Floor",
-                "Vesbo",
-                "Chrome",
                 "Ceiling",
                 "THRESHOLD",
+                "BSS.Shower",
+                "BSS.GESSI.SH"
             ]
             pattern = "|".join(unwanted_names)
             dataframe = dataframe[
@@ -274,7 +272,9 @@ class Exportexcelinfo(object):
             posy = internaldimensiony / 2
             if wall_number == wall_id:
                 if wall["axis"] == "y":
-                    if wall_id == len(self.wallformat):
+                    if wall_id == len(self.wallformat) and count_minus_y == 2:
+                        pos_z = positionz - center_z + (self.floorheight)
+                    elif wall_id == (len(self.wallformat)/3):
                         pos_z = positionz - center_z + (self.floorheight)
                     robotposy = positiony - posy
                     robotposx = positionx - thickness
@@ -300,10 +300,9 @@ class Exportexcelinfo(object):
                             and count_plus_y == 2
                         ):
                             endrange = internaldimensiony
-                            robotposx = robotposx
+                            robotposx = (x_max - (thickness * 2)) - robotposx
                         elif count_plus_y == 2:
                             endrange = internaldimensiony - thickness
-                        robotposx = (x_max - (thickness * 2)) - robotposx
                         robotposy = (
                             positiony - startingrange - ((endrange - startingrange) / 2)
                         )
@@ -317,7 +316,7 @@ class Exportexcelinfo(object):
                     else:
                         endrange = wall["pos_y_range"][1]
                         if endrange != internaldimensiony:
-                            robotposy = positiony - (endrange / 2)
+                            robotposy = positiony - ((endrange-(thickness*2)) / 2)
                         return pd.Series([robotposx, robotposy, pos_z])
                 elif wall["axis"] == "x":
                     robotposy = positiony - thickness

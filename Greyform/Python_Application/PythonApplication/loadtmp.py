@@ -272,7 +272,6 @@ class loadTMP:
             for idx, obj in enumerate(candidate_objs):
                 if label_name in str(obj.get("Point number/name", "")).lower():
                     matched_obj = obj
-                    break
                 if matched_obj is None:
                     for objs in self.verts_data:
                         name = objs.get("Point number/name", "").lower()
@@ -299,38 +298,38 @@ class loadTMP:
                                     "Diameter": "",
                                 })
                                 counter += 1
-                    continue
-                verts = matched_obj["verticles"]
-                x_values = verts[:, 0]
-                z_values = verts[:, 2]
-                non_zero_x = x_values[x_values > 0]
-                non_zero_z = z_values[z_values > 0]
-                min_z = int(np.min(non_zero_z)) if non_zero_z.size else 0
-                lowest_x = int(np.min(non_zero_x)) if non_zero_x.size else 0
-                total_internal_wall = self.wall_format[self.index]["width"] - (self.thickness * 2)
-                x_array = [total_internal_wall - lowest_x - interval, total_internal_wall - lowest_x]
-                for idx, xpos in enumerate(x_array):
-                    tmp_base = self.get_next_tmp_base("TMP2S2a", idx)
-                    counter = 1
-                    for z in range(self.zreference, min_z, interval):
-                        self.data.append({
-                            "Stage": "Stage 2",
-                            "Marking type": "Tile",
-                            "Point number/name": f"{tmp_base}{counter}",
-                            "Position X (mm)": self.thickness,
-                            "Position Y (mm)": xpos,
-                            "Position Z (mm)": z,
-                            "Wall Number": wallname,
-                            "Shape type": "",
-                            "Status": "blank",
-                            "Quadrant": 1,
-                            "Unnamed : 9": "",
-                            "Width": "",
-                            "Height": "",
-                            "Orientation": "",
-                            "Diameter": "",
-                        })
-                        counter += 1
+                else:
+                    verts = matched_obj["verticles"]
+                    x_values = verts[:, 0]
+                    z_values = verts[:, 2]
+                    non_zero_x = x_values[x_values > 0]
+                    non_zero_z = z_values[z_values > 0]
+                    min_z = int(np.min(non_zero_z)) if non_zero_z.size else 0
+                    lowest_x = int(np.min(non_zero_x)) if non_zero_x.size else 0
+                    total_internal_wall = self.wall_format[self.index]["width"] - (self.thickness * 2)
+                    x_array = [total_internal_wall - lowest_x - interval, total_internal_wall - lowest_x]
+                    for idx, xpos in enumerate(x_array):
+                        tmp_base = self.get_next_tmp_base("TMP2S2a", idx)
+                        counter = 1
+                        for z in range(self.zreference, min_z, interval):
+                            self.data.append({
+                                "Stage": "Stage 2",
+                                "Marking type": "Tile",
+                                "Point number/name": f"{tmp_base}{counter}",
+                                "Position X (mm)": self.thickness,
+                                "Position Y (mm)": xpos,
+                                "Position Z (mm)": z,
+                                "Wall Number": wallname,
+                                "Shape type": "",
+                                "Status": "blank",
+                                "Quadrant": 1,
+                                "Unnamed : 9": "",
+                                "Width": "",
+                                "Height": "",
+                                "Orientation": "",
+                                "Diameter": "",
+                            })
+                            counter += 1
         self.index += 1
         self.addTMP3()
 
