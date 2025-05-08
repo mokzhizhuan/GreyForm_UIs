@@ -7,7 +7,7 @@ class StLloaderpyvista(object):
         self.loader = loader
         self.loadstl()
 
-    #load 2 frame implementation
+    #load frame implementation
     def loadstl(self):
         self.loader.remove_actor("roombuilding")
         self.loader.update()

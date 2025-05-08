@@ -1,7 +1,4 @@
-import menu_close as closewindow
-import PythonApplication.menuconfirm as backtomenudialog
 import menu_sendmodel as sendmodel
-from PyQt5 import QtCore, QtWidgets, QtGui, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *

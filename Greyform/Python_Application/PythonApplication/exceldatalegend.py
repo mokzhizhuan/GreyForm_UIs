@@ -55,7 +55,6 @@ class Exportexcelinfolegend(object):
             self.log_error(f"Failed to write Excel file: {e}")
 
     def process_data(self):
-        # Process and assign data to markingitems
         self.markingitems = self.markingdata
         self.returndata()
 
@@ -75,9 +74,6 @@ class Exportexcelinfolegend(object):
             self.index += 1
             return None
         name = str(name)
-        if self.index == 117:
-            self.index += 1
-            return None
         if self.wall_name in name:
             if self.indexwall < len(self.wall_600x600mm):
                 wallnum = self.stagenumber(

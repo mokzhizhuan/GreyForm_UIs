@@ -36,7 +36,6 @@ class FileSelectionMesh():
                 )
                 progressbarprogram.exec_()
 
-    
     #error message implement for converting to text file
     def log_error(self, message):
         with open("error_log.txt", "a") as log_file:
