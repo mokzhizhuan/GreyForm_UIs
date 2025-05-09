@@ -63,11 +63,21 @@ class Ui_MainWindow(QMainWindow):
         self.file = None
         self.file_path = None
         self.ros_node = ros_node
+        self.apply_shadow_to_labels(self.mainwindow)
         self.mainwindow.showMaximized()
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
         self.stagestoring = ["Stage 1", "Stage 2", "Stage 3", "Obstacles"]
         self.setupUi()
+
+    def apply_shadow_to_labels(self, widget):
+        for child in widget.findChildren(QLabel):
+            shadow = QGraphicsDropShadowEffect()
+            shadow.setBlurRadius(3)
+            shadow.setXOffset(-1)
+            shadow.setYOffset(-1)
+            shadow.setColor(QColor(63, 63, 63))
+            child.setGraphicsEffect(shadow)
 
     # setup UI
     def setupUi(self):
@@ -132,7 +142,6 @@ class Ui_MainWindow(QMainWindow):
         self.file_model.setHeaderData(0, Qt.Horizontal, "Name")
         self.file_model.setHeaderData(1, Qt.Horizontal, "Size")
         self.file_model.setHeaderData(2, Qt.Horizontal, "Type")
-        self.file_model.setHeaderData(3, Qt.Horizontal, "Date Modified")
         self.mainwindow.Selectivefilelistview.sortByColumn(
             0, Qt.AscendingOrder
         )  # Sort by Name initially
@@ -151,6 +160,7 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.Selectivefilelistview.setIconSize(
             QSize(32, 32)
         )  # Slightly larger icon size
+        self.set_treeview_font(self.mainwindow.Selectivefiledirectoryview)
         delegate = FileItemDelegate()
         self.mainwindow.Selectivefilelistview.setItemDelegate(delegate)
         self.mainwindow.Selectivefiledirectoryview.clicked.connect(
@@ -163,6 +173,12 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.verticalLayoutframe.addWidget(self.stacked_display)
         self.button_UI()
         self.setStretch()
+
+    
+    def set_treeview_font(self, treeview, size=18):
+        font = QFont()
+        font.setPointSize(size)
+        treeview.setFont(font)
 
     def check_usb_directory(self, path):
         """Check the folder structure manually to verify visibility."""
@@ -202,6 +218,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.NextButton_Page_2,
             self.mainwindow.sendmodelButton,
             self.mainwindow.ChooseButton,
+            self.mainwindow.DataButton,
             self.ros_node,
         )
 
@@ -265,6 +282,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.page_3,
             self.mainwindow.sendmodelButton,
             self.mainwindow.ChooseButton,
+            self.mainwindow.DataButton,
             self.mainwindow.page_4,
         )
 
@@ -328,6 +346,23 @@ if __name__ == "__main__":
     rclpy.init()
     talker_node = RosPublisher.TalkerNode()
     app = QApplication(sys.argv)
+    app.setStyleSheet("""
+        QPushButton {
+            background-color: #e0e0e0;
+            border: 2px solid #a9a9a9;
+            border-top-color: #ffffff;     /* highlight on top */
+            border-left-color: #ffffff;
+            border-bottom-color: #888888;  /* shadow on bottom */
+            border-right-color: #888888;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 20px;
+        }
+        QPushButton:pressed {
+            background-color: #d0d0d0;
+            border-style: inset;
+        }
+    """)
     main_window = Ui_MainWindow(talker_node)
     main_window.show()
     talker_thread = Thread(target=ros_spin, args=(talker_node,))

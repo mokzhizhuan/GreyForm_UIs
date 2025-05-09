@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+import subprocess
 
 
 # main window button interaction
@@ -15,6 +16,7 @@ class mainwindowbuttonUI(object):
         NextButton_Page_2,
         sendmodelButton,
         choosemodelButton,
+        DataButton,
         ros_node,
     ):
         # starting initialize
@@ -25,6 +27,7 @@ class mainwindowbuttonUI(object):
         self.NextButton_Page_2 = NextButton_Page_2
         self.sendmodelButton = sendmodelButton
         self.choosemodelButton = choosemodelButton
+        self.DataButton = DataButton
         self.ros_node = ros_node
         self.button_UI()
 
@@ -35,6 +38,9 @@ class mainwindowbuttonUI(object):
     def confirmmodel(self):
         self.stackedWidget.setCurrentIndex(2)
 
+    def open_excel_file(self):
+        excel_path = "exporteddatassss(with TMP)(draft)(tetra).xlsx"
+        subprocess.Popen(["libreoffice", excel_path])
 
     # button interaction ui
     def button_UI(self):
@@ -46,3 +52,4 @@ class mainwindowbuttonUI(object):
             )
         )
         self.choosemodelButton.clicked.connect(lambda: self.startconfigure())
+        self.DataButton.clicked.connect(lambda: self.open_excel_file())
