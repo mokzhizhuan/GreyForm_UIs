@@ -1,14 +1,16 @@
-from PyQt5.QtCore import pyqtSignal, QObject, QMetaObject , Qt , Q_ARG , QTimer
+from PyQt5.QtCore import pyqtSignal, QObject, QMetaObject, Qt, Q_ARG, QTimer
 from PyQt5.QtWidgets import QStackedWidget
 import threading
 import subprocess
 import os
 
+
 class StatusSignals(QObject):
     status_signal = pyqtSignal(str)
     page_change_signal = pyqtSignal(int)
 
-class ListenerNodeRunner():
+
+class ListenerNodeRunner:
     def __init__(
         self,
         talker_node,
@@ -32,20 +34,48 @@ class ListenerNodeRunner():
                 threading.Thread(target=self._run_process, daemon=True).start()
                 self.signals.status_signal.emit("Status: Running")
                 self.listener_started = True
+                self.process = None
+            except Exception as e:
+                self.signals.status_signal.emit(f"Status: Error - {str(e)}")
+        else:
+            self.stop_listener_node()
+            try:
+                threading.Thread(target=self._run_process, daemon=True).start()
+                self.signals.status_signal.emit("Status: Running")
+                self.listener_started = True
+                self.process = None
             except Exception as e:
                 self.signals.status_signal.emit(f"Status: Error - {str(e)}")
 
-    def run_execution(self , markingitemsbasedonwallnumber , wall_number, Stagetext, excel_data, next_wall_number):
+    def stop_listener_node(self):
+        if self.process and self.process.poll() is None:
+            self.process.terminate()
+            try:
+                self.process.wait(timeout=5)
+                self.signals.status_signal.emit("Extracting Excel File....")
+            except subprocess.TimeoutExpired:
+                self.process.kill()
+                self.signals.status_signal.emit("Extracting Excel File....")
+        self.process = None
+
+    def run_execution(
+        self,
+        markingitemsbasedonwallnumber,
+        wall_number,
+        Stagetext,
+        excel_data,
+        next_wall_number,
+    ):
         if self.listener_started:
             for data in markingitemsbasedonwallnumber:
                 picked_position = [
-                    int(data["Position X (mm)"]),
-                    int(data["Position Y (mm)"]),
-                    int(data["Position Z (mm)"]),
+                    int(data["Position X (m)"]),
+                    int(data["Position Y (m)"]),
+                    int(data["Position Z (m)"]),
                 ]
                 self.talker_node.publish_file_message(self.file, excel_data)
                 self.talker_node.publish_selection_message(
-                    wall_number, picked_position, Stagetext , next_wall_number
+                    wall_number, picked_position, Stagetext, next_wall_number
                 )
             self.talker_node.showdialog()
 
@@ -56,15 +86,15 @@ class ListenerNodeRunner():
         env["ROS_HOSTNAME"] = "localhost"
         command = "source /opt/ros/humble/setup.bash && source /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/setup.bash && ros2 run talker_listener listener_node"
         try:
-            process = subprocess.Popen(
+            self.process = subprocess.Popen(
                 ["bash", "-c", command],
                 env=env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            self.signals.page_change_signal.emit(4)  
-            stdout, stderr = process.communicate()
-            if process.returncode == 0:
+            self.signals.page_change_signal.emit(4)
+            stdout, stderr = self.process.communicate()
+            if self.process.returncode == 0:
                 self.signals.status_signal.emit("Node started successfully.")
                 self.signals.status_signal.emit(stdout.decode("utf-8"))
             else:
