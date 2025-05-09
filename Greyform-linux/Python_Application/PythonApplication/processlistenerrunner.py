@@ -51,10 +51,10 @@ class ListenerNodeRunner():
             self.process.terminate()
             try:
                 self.process.wait(timeout=5)
-                self.signals.status_signal.emit("Listener terminated.")
+                self.signals.status_signal.emit("Extracting Excel File.")
             except subprocess.TimeoutExpired:
                 self.process.kill()
-                self.signals.status_signal.emit("Listener force-killed.")
+                self.signals.status_signal.emit("Extracting Excel File.")
         self.process = None
 
     def run_execution(self , markingitemsbasedonwallnumber , wall_number, Stagetext, excel_data, next_wall_number):
