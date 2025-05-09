@@ -73,6 +73,7 @@ class ProgressBarDialogIFC(QDialog):
         value = self.progress_bar.value()
         if value < 100:
             self.progress_bar.setValue(value + 1)
+            # Update progress again after 100 milliseconds
             QTimer.singleShot(100, self.update_progress)
         else:
             self.timer.stop()  # Stop the timer when progress reaches 100%

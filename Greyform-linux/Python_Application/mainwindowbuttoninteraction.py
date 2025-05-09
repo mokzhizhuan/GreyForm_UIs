@@ -1,7 +1,4 @@
-import menu_close as closewindow
-import PythonApplication.menuconfirm as backtomenudialog
 import menu_sendmodel as sendmodel
-from PyQt5 import QtCore, QtWidgets, QtGui, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -16,8 +13,8 @@ class mainwindowbuttonUI(object):
         stackedWidget,
         menuStartButton,
         NextButton_Page_2,
-        ChooseButton,
         sendmodelButton,
+        choosemodelButton,
         ros_node,
     ):
         # starting initialize
@@ -26,8 +23,8 @@ class mainwindowbuttonUI(object):
         self.stackedWidget = stackedWidget
         self.menuStartButton = menuStartButton
         self.NextButton_Page_2 = NextButton_Page_2
-        self.ChooseButton = ChooseButton
         self.sendmodelButton = sendmodelButton
+        self.choosemodelButton = choosemodelButton
         self.ros_node = ros_node
         self.button_UI()
 
@@ -38,13 +35,14 @@ class mainwindowbuttonUI(object):
     def confirmmodel(self):
         self.stackedWidget.setCurrentIndex(2)
 
+
     # button interaction ui
     def button_UI(self):
         self.menuStartButton.clicked.connect(self.startconfigure)
         self.NextButton_Page_2.clicked.connect(self.confirmmodel)
-        self.ChooseButton.clicked.connect(self.startconfigure)
         self.sendmodelButton.clicked.connect(
             lambda: sendmodel.Ui_Dialog_Confirm.show_dialog_confirm(
                 self.mainwindow, self.ros_node
             )
         )
+        self.choosemodelButton.clicked.connect(lambda: self.startconfigure())

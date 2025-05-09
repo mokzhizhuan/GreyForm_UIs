@@ -2,10 +2,9 @@ from PyQt5.QtCore import *
 from vtk import *
 import tkinter as tk
 from tkinter import messagebox
-import time, re
+import re
 from PyQt5.QtWidgets import (
     QProgressDialog,
-    QApplication,
     QDialog,
     QPushButton,
     QVBoxLayout,
@@ -180,6 +179,11 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 self.show_message(
                     "✅ All walls and Floor in Stage 2 & 3 are completed. Moving to the finalization page.."
                 )
+                self.stagetext = "Stage 2"
+                self.Stagelabel.setText(f"Stage : {self.stagetext}")
+                self.wallname = "Wall 1"
+                self.walllabel.setText(f"Wall : {self.wallname}")
+                self.wall_number = 1
                 self.stacked_widget.setCurrentIndex(5)
                 return
             self.refresh()

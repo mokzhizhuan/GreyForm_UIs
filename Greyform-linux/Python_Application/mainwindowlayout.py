@@ -28,7 +28,7 @@ class Ui_MainWindow_layout(object):
         page4frame,
         page4,
         sendmodelButton,
-        ChooseButton,
+        choosemodelButton,
         page5,
     ):
         # starting initialize
@@ -52,9 +52,9 @@ class Ui_MainWindow_layout(object):
         self.page4Layout = page4layout
         self.page4frame = page4frame
         self.page4 = page4
+        self.choosemodelButton = choosemodelButton
         self.page5 = page5
         self.sendmodelButton = sendmodelButton
-        self.ChooseButton = ChooseButton
         self.setStretch()
 
     #stretch layout
@@ -118,7 +118,7 @@ class Ui_MainWindow_layout(object):
         self.page4.setLayout(self.page4boxLayout)
         self.page5boxLayout = QVBoxLayout()
         self.page5boxLayout.addWidget(self.sendmodelButton)
-        self.page5boxLayout.addWidget(self.ChooseButton)
+        self.page5boxLayout.addWidget(self.choosemodelButton)
         self.page5boxLayout.setStretch(0, 1)
         self.page5boxLayout.setStretch(1, 1)
         self.page5.setLayout(self.page5boxLayout)

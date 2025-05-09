@@ -200,8 +200,8 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.stackedWidget,
             self.mainwindow.menuStartButton,
             self.mainwindow.NextButton_Page_2,
-            self.mainwindow.ChooseButton,
             self.mainwindow.sendmodelButton,
+            self.mainwindow.ChooseButton,
             self.ros_node,
         )
 

@@ -9,6 +9,7 @@ import math
 import re
 from collections import defaultdict
 
+
 class loadTMP2:
     def __init__(
         self,
@@ -23,7 +24,7 @@ class loadTMP2:
         wall_finishes_height,
         small_wall_finishes_height,
         wall_format,
-        axis_widths
+        axis_widths,
     ):
         self.data = data
         self.verts_data = verts_data
@@ -46,10 +47,16 @@ class loadTMP2:
         self.y_min, self.y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
         self.addTMP4()
 
-    def get_tmp_label_from_excel(self, name: str, z_ref: int = 225, tolerance: int = 5, default="TMP??") -> str:
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+    def get_tmp_label_from_excel(
+        self, name: str, z_ref: int = 225, tolerance: int = 5, default="TMP??"
+    ) -> str:
+        df = pd.read_excel(
+            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+        )
         df = df[df["Stage 2"].notna()]
-        df["Name_clean"] = df["Penetration/Fitting/Reference Point Name"].astype(str).str.strip()
+        df["Name_clean"] = (
+            df["Penetration/Fitting/Reference Point Name"].astype(str).str.strip()
+        )
         for _, row in df.iterrows():
             if name.strip() in row["Name_clean"]:
                 pin_id = str(row["Pin ID"]).strip()
@@ -69,9 +76,11 @@ class loadTMP2:
                     if abs(z - z_target) <= tolerance:
                         return int(z)
         return z_target
-    
+
     def get_wall_alias_from_excel(self, pin_id: str) -> str:
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(
+            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+        )
         # Clean and filter
         df = df[df["Stage 2"].notna()]
         df["Pin ID"] = df["Pin ID"].astype(str)
@@ -93,7 +102,7 @@ class loadTMP2:
             except:
                 pass
         return 600, 600  # fallback if parsing fails
-        
+
     def is_near_wall(self, obj, wall_entry, threshold=300):
         wall_data = wall_entry[1]
         wall_position = None
@@ -105,7 +114,7 @@ class loadTMP2:
         wx, wy = wall_position
         distance = math.sqrt((ox - wx) ** 2 + (oy - wy) ** 2)
         return distance < threshold
-    
+
     def get_interval(self, row):
         name = str(row["Penetration/Fitting/Reference Point Name"])
         match = re.search(r"\\((\\d+)[xX](\\d+)\\)", name)
@@ -113,28 +122,38 @@ class loadTMP2:
             _, height = match.groups()
             return int(height)
         return 600  # default fallback
-    
+
     def get_next_tmp_base(self, current_base: str, index_offset: int = 0):
         if not isinstance(current_base, str):
-            raise TypeError(f"[FATAL] current_base is not a string: {type(current_base)}")
+            raise TypeError(
+                f"[FATAL] current_base is not a string: {type(current_base)}"
+            )
         if len(current_base) < 7:
             raise ValueError(f"[FATAL] Base ID too short: '{current_base}'")
         if not current_base.startswith("TMP"):
-            raise ValueError(f"[FATAL] Base ID does not start with TMP: '{current_base}'")
+            raise ValueError(
+                f"[FATAL] Base ID does not start with TMP: '{current_base}'"
+            )
         prefix = current_base[:-1]
         last_letter = current_base[-1].lower()
         if last_letter not in string.ascii_lowercase:
-            raise ValueError(f"[FATAL] Invalid last letter in Base ID: '{last_letter}' from '{current_base}'")
+            raise ValueError(
+                f"[FATAL] Invalid last letter in Base ID: '{last_letter}' from '{current_base}'"
+            )
         next_index = string.ascii_lowercase.index(last_letter) + index_offset
         if next_index >= len(string.ascii_lowercase):
-            raise ValueError(f"[FATAL] Base ID overflow: {current_base} + {index_offset}")
+            raise ValueError(
+                f"[FATAL] Base ID overflow: {current_base} + {index_offset}"
+            )
         next_letter = string.ascii_lowercase[next_index]
         return f"{prefix}{next_letter}"
 
     def addTMP4(self):
         ceiling = int(self.Cellingstoreyz)
         self.zreference = self.find_first_z_reference(225)
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(
+            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+        )
         df = df[df["Stage 2"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("TMP4S2")]
         df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
@@ -148,7 +167,14 @@ class loadTMP2:
                 wall_entry = entry
                 wallname = wall["name"]
                 break
-        matched_obj = next((obj for obj in self.verts_data if wallname in obj.get("Point number/name", "")), None)
+        matched_obj = next(
+            (
+                obj
+                for obj in self.verts_data
+                if wallname in obj.get("Point number/name", "")
+            ),
+            None,
+        )
         verts = matched_obj.get("verticles", [])
         x_values = verts[:, 0]
         x_max = int(np.max(x_values))
@@ -157,13 +183,20 @@ class loadTMP2:
         startingypos = ypos - self.wall_finishes_height - x_max
         wall_finish_obj = next(
             (
-                obj for obj in self.verts_data
+                obj
+                for obj in self.verts_data
                 if "Wall Finishes" in obj.get("Point number/name", "")
                 and self.is_near_wall(obj, wall_entry)
             ),
-            None
+            None,
         )
-        width = self.get_interval({"Penetration/Fitting/Reference Point Name": wall_finish_obj["Point number/name"]})
+        width = self.get_interval(
+            {
+                "Penetration/Fitting/Reference Point Name": wall_finish_obj[
+                    "Point number/name"
+                ]
+            }
+        )
         x_array = [startingypos, startingypos + (width / 2)]
         for i, xpos in enumerate(x_array):
             tmp_base = self.get_next_tmp_base("TMP4S2a", i)
@@ -171,40 +204,55 @@ class loadTMP2:
             interval = int(match["Z Interval (mm)"].values[0])
             counter = 1
             for z in range(self.zreference, ceiling, interval):
-                self.data.append({
-                    "Stage": "Stage 2",
-                    "Marking type": "Tile",
-                    "Point number/name": f"{tmp_base}{counter}",
-                    "Position X (mm)": (self.x_max-self.thickness)-self.x_min,
-                    "Position Y (mm)": xpos,
-                    "Position Z (mm)": z,
-                    "Wall Number": wallname,
-                    "Shape type": "",
-                    "Status": "blank",
-                    "Quadrant": 1,
-                    "Unnamed : 9": "",
-                    "Width": "",
-                    "Height": "",
-                    "Orientation": "",
-                    "Diameter": "",
-                })
+                self.data.append(
+                    {
+                        "Stage": "Stage 2",
+                        "Marking type": "Tile",
+                        "Point number/name": f"{tmp_base}{counter}",
+                        "Position X (mm)": (self.x_max - self.thickness)
+                        - ((self.x_max - self.thickness * 2) - self.x_min),
+                        "Position Y (mm)": xpos,
+                        "Position Z (mm)": z,
+                        "Wall Number": wallname,
+                        "Shape type": "",
+                        "Status": "blank",
+                        "Quadrant": 1,
+                        "Unnamed : 9": "",
+                        "Width": "",
+                        "Height": "",
+                        "Orientation": "",
+                        "Diameter": "",
+                    }
+                )
                 counter += 1
         self.index += 1
         self.addTMP5()
 
     def addTMP5(self):
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(
+            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+        )
         df = df[df["Stage 2"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("TMP5S2")]
         df["Base ID"] = df["Pin ID"].str.extract(r"(TMP5S2[a-z])")
         grouped = df.groupby("Base ID").first().reset_index()
         for i, row in grouped.iterrows():
             tmp_base = row.get("Base ID", "")
-            label_name = str(row.get("Penetration/Fitting/Reference Point Name", "")).strip().lower()
+            label_name = (
+                str(row.get("Penetration/Fitting/Reference Point Name", ""))
+                .strip()
+                .lower()
+            )
             if not label_name:
                 continue
-            matched_obj = next((obj for obj in self.verts_data
-                                if label_name in str(obj.get("Point number/name", "")).lower()), None)
+            matched_obj = next(
+                (
+                    obj
+                    for obj in self.verts_data
+                    if label_name in str(obj.get("Point number/name", "")).lower()
+                ),
+                None,
+            )
             xpos = matched_obj.get("Position X (mm)", 0)
             verts = matched_obj.get("verticles", [])
             x_values = verts[:, 0]
@@ -217,30 +265,36 @@ class loadTMP2:
                 new_x = np.sort(unique_x)
             counter = 1
             for x in new_x:
-                self.data.append({
-                    "Stage": "Stage 2",
-                    "Marking type": "Tile",
-                    "Point number/name": f"{tmp_base}{counter}",
-                    "Position X (mm)": x + xpos,
-                    "Position Y (mm)": self.y_max - self.small_wall_finishes_height -self.wall_height,
-                    "Position Z (mm)": self.zreference,
-                    "Wall Number": "",
-                    "Shape type": "",
-                    "Status": "blank",
-                    "Quadrant": 1,
-                    "Unnamed : 9": "",
-                    "Width": "",
-                    "Height": "",
-                    "Orientation": "",
-                    "Diameter": "",
-                })
-                counter += 1         
+                self.data.append(
+                    {
+                        "Stage": "Stage 2",
+                        "Marking type": "Tile",
+                        "Point number/name": f"{tmp_base}{counter}",
+                        "Position X (mm)": x + xpos,
+                        "Position Y (mm)": self.y_max
+                        - self.small_wall_finishes_height
+                        - self.wall_height,
+                        "Position Z (mm)": self.zreference,
+                        "Wall Number": "",
+                        "Shape type": "",
+                        "Status": "blank",
+                        "Quadrant": 1,
+                        "Unnamed : 9": "",
+                        "Width": "",
+                        "Height": "",
+                        "Orientation": "",
+                        "Diameter": "",
+                    }
+                )
+                counter += 1
         self.index += 1
         self.addTMP6()
 
     def addTMP6(self):
         ceiling = int(self.Cellingstoreyz)
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(
+            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+        )
         df = df[df["Stage 2"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("TMP6S2")]
         df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
@@ -254,18 +308,38 @@ class loadTMP2:
                 wall_entry = entry
                 wallname = wall["name"]
                 break
-        matched_wall_obj = next((obj for obj in self.verts_data if wallname in obj.get("Point number/name", "")), None)
+        matched_wall_obj = next(
+            (
+                obj
+                for obj in self.verts_data
+                if wallname in obj.get("Point number/name", "")
+            ),
+            None,
+        )
         xpos = matched_wall_obj.get("Position X (mm)", 0)
         ypos = matched_wall_obj.get("Position Y (mm)", 0)
-        x_values = matched_wall_obj.get("verticles", [])[:, 0] if len(matched_wall_obj.get("verticles", [])) else []
+        x_values = (
+            matched_wall_obj.get("verticles", [])[:, 0]
+            if len(matched_wall_obj.get("verticles", []))
+            else []
+        )
         x_max = np.max(x_values) - self.wall_height - self.small_wall_finishes_height
         wall_finish_obj = next(
-            (obj for obj in self.verts_data
-            if "Wall Finishes" in obj.get("Point number/name", "")
-            and self.is_near_wall(obj, wall_entry, threshold=100)),
-            None
-        )   
-        width = self.get_interval({"Penetration/Fitting/Reference Point Name": wall_finish_obj["Point number/name"]})
+            (
+                obj
+                for obj in self.verts_data
+                if "Wall Finishes" in obj.get("Point number/name", "")
+                and self.is_near_wall(obj, wall_entry, threshold=100)
+            ),
+            None,
+        )
+        width = self.get_interval(
+            {
+                "Penetration/Fitting/Reference Point Name": wall_finish_obj[
+                    "Point number/name"
+                ]
+            }
+        )
         x_array = [x_max - width, x_max - (width * 2)]
         for i, xpos in enumerate(x_array):
             tmp_base = self.get_next_tmp_base("TMP6S2a", i)
@@ -273,29 +347,33 @@ class loadTMP2:
             interval = int(match.iloc[0]["Z Interval (mm)"]) if not match.empty else 600
             counter = 1
             for z in range(self.zreference, ceiling, interval):
-                self.data.append({
-                    "Stage": "Stage 2",
-                    "Marking type": "Tile",
-                    "Point number/name": f"{tmp_base}{counter}",
-                    "Position X (mm)": self.x_max-self.thickness,
-                    "Position Y (mm)": xpos,
-                    "Position Z (mm)": z,
-                    "Wall Number": wallname,
-                    "Shape type": "",
-                    "Status": "blank",
-                    "Quadrant": 1,
-                    "Unnamed : 9": "",
-                    "Width": "",
-                    "Height": "",
-                    "Orientation": "",
-                    "Diameter": "",
-                })
-                counter += 1  
+                self.data.append(
+                    {
+                        "Stage": "Stage 2",
+                        "Marking type": "Tile",
+                        "Point number/name": f"{tmp_base}{counter}",
+                        "Position X (mm)": self.x_max - self.thickness,
+                        "Position Y (mm)": xpos,
+                        "Position Z (mm)": z,
+                        "Wall Number": wallname,
+                        "Shape type": "",
+                        "Status": "blank",
+                        "Quadrant": 1,
+                        "Unnamed : 9": "",
+                        "Width": "",
+                        "Height": "",
+                        "Orientation": "",
+                        "Diameter": "",
+                    }
+                )
+                counter += 1
         self.index += 1
         self.addTMP7()
 
     def addTMP7(self):
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(
+            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+        )
         df = df[df["Stage 2"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("TMP7S2")]
         base_groups = defaultdict(list)
@@ -305,9 +383,17 @@ class loadTMP2:
                 letter, number = match.groups()
                 base = f"TMP7S2{letter}"
                 base_groups[base].append(int(number))
-        ref_names = df["Penetration/Fitting/Reference Point Name"].dropna().astype(str).unique()
-        target_name_keyword150 = next((n for n in ref_names if "150mm" in n.lower() and "floor" in n.lower()), None)
-        target_name_keyword600 = next((n for n in ref_names if "600mm" in n.lower() and "floor" in n.lower()), None)
+        ref_names = (
+            df["Penetration/Fitting/Reference Point Name"].dropna().astype(str).unique()
+        )
+        target_name_keyword150 = next(
+            (n for n in ref_names if "150mm" in n.lower() and "floor" in n.lower()),
+            None,
+        )
+        target_name_keyword600 = next(
+            (n for n in ref_names if "600mm" in n.lower() and "floor" in n.lower()),
+            None,
+        )
         tece_label = next((n for n in ref_names if "tece" in n.lower()), None)
         drain_label = next((n for n in ref_names if "drain" in n.lower()), None)
         found_tece = found_floor150 = found_floor = found_drain = False
@@ -320,7 +406,11 @@ class loadTMP2:
             if tece_label and tece_label in name:
                 xpostece = obj["Position X (mm)"]
                 found_tece = True
-            if "floor" in name.lower() and "floor" in prefinedType.lower() and "bedroom" in level.lower():
+            if (
+                "floor" in name.lower()
+                and "floor" in prefinedType.lower()
+                and "bedroom" in level.lower()
+            ):
                 vertices = np.array(obj.get("verticles", []))
                 if target_name_keyword150 and target_name_keyword150 in name:
                     y_values = vertices[:, 1]
@@ -343,7 +433,10 @@ class loadTMP2:
                 x_max = np.max(vertices[:, 0])
                 xposdrain += x_max
                 found_drain = True
-            if all([found_tece, found_drain, found_floor150, found_floor]) and len(unique_y) >= 2:
+            if (
+                all([found_tece, found_drain, found_floor150, found_floor])
+                and len(unique_y) >= 2
+            ):
                 floor_small_x = [xposdrain - width150, xposdrain]
                 floor_large_x = [xpostece, xpostece + width, xpostece + (width * 2)]
                 min_step = min(height150, width)
@@ -355,7 +448,9 @@ class loadTMP2:
                         additional = list(range(max_counter + 1, max_required_rows + 1))
                         base_groups[base].extend(additional)
                 all_x_positions = floor_small_x + floor_large_x
-                tile_steps = [height150] * len(floor_small_x) + [width] * len(floor_large_x)
+                tile_steps = [height150] * len(floor_small_x) + [width] * len(
+                    floor_large_x
+                )
                 base_list = sorted(base_groups.keys())
                 for i, base in enumerate(base_list):
                     x = all_x_positions[i]
@@ -370,23 +465,25 @@ class loadTMP2:
                     for counter, y_pos in enumerate(y_positions, start=1):
                         label = f"{base}{counter}"
                         if not any(d["Point number/name"] == label for d in self.data):
-                            self.data.append({
-                                "Stage": "Stage 2",
-                                "Marking type": "Tile",
-                                "Point number/name": label,
-                                "Position X (mm)": x,
-                                "Position Y (mm)": y_pos,
-                                "Position Z (mm)": 0,
-                                "Wall Number": "7",
-                                "Shape type": "",
-                                "Status": "blank",
-                                "Quadrant": 1,
-                                "Unnamed : 9": "",
-                                "Width": "",
-                                "Height": "",
-                                "Orientation": "",
-                                "Diameter": "",
-                                })
+                            self.data.append(
+                                {
+                                    "Stage": "Stage 2",
+                                    "Marking type": "Tile",
+                                    "Point number/name": label,
+                                    "Position X (mm)": x,
+                                    "Position Y (mm)": y_pos,
+                                    "Position Z (mm)": 0,
+                                    "Wall Number": "7",
+                                    "Shape type": "",
+                                    "Status": "blank",
+                                    "Quadrant": 1,
+                                    "Unnamed : 9": "",
+                                    "Width": "",
+                                    "Height": "",
+                                    "Orientation": "",
+                                    "Diameter": "",
+                                }
+                            )
         return self.data
 
     def addobjects(self):

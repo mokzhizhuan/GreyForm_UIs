@@ -1,12 +1,3 @@
-from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QProgressBar,
-    QLabel,
-    QPushButton,
-    QVBoxLayout,
-    QWidget,
-)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 import time  # Simulate work
 
@@ -26,7 +17,6 @@ class WorkerThread(QThread):
             time.sleep(0.05)
             self.update_progress.emit(i)
             self.update_status.emit(f"Extracting Excel file...")
-
         self.scancompleted()  # Run completion function
 
     def scancompleted(self):

@@ -8,8 +8,6 @@ from vtk import *
 from vtkmodules.vtkCommonColor import vtkNamedColors
 import numpy as np
 from stl import mesh
-import PythonApplication.interactiveevent as events
-import PythonApplication.exceldatavtk as vtk_data_excel
 import re
 from stl import mesh
 
@@ -19,21 +17,15 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
     wall_actors = {}
     camera_actors_set = {}
     wallname = None  # Initialize wallname to ensure valid return
-
     for wall, properties in walls.items():
         if wall == "Floor":
             wall_number = "F"  # Special case for Floor
         else:
             match = re.search(r"\d+", wall)
             wall_number = int(match.group()) if match else None
-
-        # Skip walls that are not in the stage text or Excel data
         if wall_number is None or stagetext not in wall_identifiers:
             continue
-
         sheet_data = wall_identifiers[stagetext]
-
-        # Get indexes where wall number matches the Excel data
         if wall_number == "F":
             indexes = [
                 i for i, wn in enumerate(sheet_data["Wall Number"]) if wn == "F"
@@ -42,11 +34,8 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
             indexes = [
                 i for i, wn in enumerate(sheet_data["Wall Number"]) if wn == wall_number
             ]
-
-        if not indexes:  # If no valid indexes, skip to the next wall
+        if not indexes:  
             continue
-
-        # Store identifier information
         for idx in indexes:
             if (
                 0 <= idx < len(sheet_data["markingidentifiers"])
@@ -74,7 +63,6 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
                         "Status": sheet_data["Status"][idx],
                     }
                 )
-        # Create wall actor if not already created
         if wall not in wall_actors:
             for label, wall_data, orientation, axis , wall_name in label_map:
                 real_name = wall_data["name"]
@@ -87,7 +75,6 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
                         rotation=properties["rotation"],
                         real_name=real_name
                     )
-                    # Create camera actor if the camera key exists
                     camera_key = f"Camera_{wall_number}"
                     if camera_key not in camera_actors:
                         if "position" in properties and "size" in properties:
@@ -128,12 +115,10 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
                         color=properties["color"],
                         rotation=properties["rotation"],
                     )
-            if actor is not None:  # <- ADD THIS CHECK
+            if actor is not None:  #
                 wall_actors[wall] = actor
                 ren.AddActor(actor)
-    # Determine the first valid wall to display
     if identifier:
-        # Find the first wall number based on valid identifiers
         first_wall_number = min(identifier.keys(), key=lambda x: (x == "F", x))
         for wall_name in wall_actors:
             match = re.search(r"\d+", wall_name)
@@ -144,21 +129,16 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
                 wall_actors[wall_name].VisibilityOn()
                 wallname = wall_name  # Set the valid wallname
                 walllabel.setText(f"Wall : {wallname}")
-    # Ensure that wallname is correctly set as the first valid wall
     if wallname is None:
-        # Get the first key from identifier if no wall was set
         if identifier:
             first_wall_number = min(identifier.keys(), key=lambda x: (x == "F", x))
             wallname = f"Wall {first_wall_number}"
-    # Return the result, ensuring wallname is included
     return wall_actors, identifier, wallname, camera_actors_set
 
 def create_camera_actor(position, focal_point, view_up, height, width):
     camera = vtk.vtkCamera()
-    distance_factor = 1.5  # Adjusted distance factor for better framing
-    # Determine if the wall is vertical or horizontal based on position and focal point
+    distance_factor = 1.5 
     is_vertical = abs(focal_point[0] - position[0]) > abs(focal_point[1] - position[1])
-    # Adjust the view-up vector dynamically based on wall orientation
     if is_vertical:
         view_up = (0, 1, 0)  # Upright orientation for vertical walls
         camera_position = (
@@ -173,7 +153,6 @@ def create_camera_actor(position, focal_point, view_up, height, width):
             focal_point[1],
             focal_point[2] + height / 2,
         )
-    # Set camera properties
     camera.SetPosition(*camera_position)
     camera.SetFocalPoint(*focal_point)
     camera.SetViewUp(*view_up)
@@ -250,7 +229,6 @@ def create_floor_actor(name, position, points_list, color, rotation):
 def switch_hidden_camera(wall_name, ren, camera_actors, renderwindowinteractor):
     if wall_name not in camera_actors:
         return
-    # Get the selected camera actor
     hidden_camera = camera_actors[wall_name]
     ren.SetActiveCamera(hidden_camera.GetCamera())
     ren.ResetCameraClippingRange()
@@ -297,7 +275,6 @@ def initialize_walls(wallformat, axis_widths, walls):
             "color": color,
             "rotation": rotation,
         }
-    # Initialize floor separately
     walls["Floor"] = {
         "position": (0, 0, -100),
         "points": [
