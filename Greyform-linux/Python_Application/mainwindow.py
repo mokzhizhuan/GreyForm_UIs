@@ -180,7 +180,6 @@ class Ui_MainWindow(QMainWindow):
         treeview.setFont(font)
 
     def check_usb_directory(self, path):
-        """Check the folder structure manually to verify visibility."""
         try:
             contents = os.listdir(path)
             return
