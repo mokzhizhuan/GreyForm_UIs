@@ -78,7 +78,7 @@ class Exportexcelinfo(object):
                 self.wall_finishes_height,
                 self.small_wall_height,
                 self.wallformat,
-                self.axis_widths
+                self.axis_widths,
             )
             datainserter = tmpinserter2.loadTMP2(
                 data,
@@ -92,7 +92,7 @@ class Exportexcelinfo(object):
                 self.wall_finishes_height,
                 self.small_wall_height,
                 self.wallformat,
-                self.axis_widths
+                self.axis_widths,
             )
             data = datainserter.addTMP7()
             attributes = [
@@ -170,7 +170,7 @@ class Exportexcelinfo(object):
                 "Ceiling",
                 "THRESHOLD",
                 "BSS.Shower",
-                "BSS.GESSI.SH"
+                "BSS.GESSI.SH",
             ]
             pattern = "|".join(unwanted_names)
             dataframe = dataframe[
@@ -273,7 +273,7 @@ class Exportexcelinfo(object):
                 if wall["axis"] == "y":
                     if wall_id == len(self.wallformat) and count_minus_y == 2:
                         pos_z = positionz - center_z + (self.floorheight)
-                    elif wall_id == (len(self.wallformat)/3) and count_plus_y == 2:
+                    elif wall_id == (len(self.wallformat) / 3) and count_plus_y == 2:
                         pos_z = positionz - center_z + (self.floorheight)
                     robotposy = positiony - posy
                     robotposx = positionx - thickness
@@ -315,7 +315,7 @@ class Exportexcelinfo(object):
                     else:
                         endrange = wall["pos_y_range"][1]
                         if endrange != internaldimensiony:
-                            robotposy = positiony - ((endrange-(thickness*2)) / 2)
+                            robotposy = positiony - ((endrange - (thickness * 2)) / 2)
                         return pd.Series([robotposx, robotposy, pos_z])
                 elif wall["axis"] == "x":
                     robotposy = positiony - thickness
@@ -342,7 +342,9 @@ class Exportexcelinfo(object):
                             else:
                                 return pd.Series([robotposy, abs(robotposx), pos_z])
                         else:
-                            robotposy = (internaldimensiony-(thickness*2)) - robotposy
+                            robotposy = (
+                                internaldimensiony - (thickness * 2)
+                            ) - robotposy
                             return pd.Series([robotposy, robotposx, pos_z])
                     else:
                         if robotposx > 0:
@@ -447,7 +449,11 @@ class Exportexcelinfo(object):
         if pd.isnull(name):
             return "6"
         if isinstance(name, str) and name.startswith("TMP"):
-            if len(name) > 8 and name[8] == "s" and any(c in name for c in ["a", "b", "c"]):
+            if (
+                len(name) > 8
+                and name[8] == "s"
+                and any(c in name for c in ["a", "b", "c"])
+            ):
                 return "T"
             else:
                 return "+"
