@@ -38,7 +38,6 @@ class Ui_Dialog_Confirm(QMainWindow):
         buttonBox.setObjectName("buttonBox")
         buttonBox.accepted.connect(dialog.close)
         buttonBox.accepted.connect(self.close)
-        #jus close only , Will configure some robot interaction for this later
         dialog_layout.addWidget(buttonBox)
         dialog.exec_()
 
