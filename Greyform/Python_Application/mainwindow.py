@@ -67,6 +67,7 @@ class Ui_MainWindow(QMainWindow):
         #self.ros_node = ros_node
         self.mainwindow.showMaximized()
         self.renderer = vtk.vtkRenderer()
+        self.apply_shadow_to_labels(self.mainwindow)
         self._translate = QCoreApplication.translate
         self.stagestoring = ["Stage 1", "Stage 2", "Stage 3", "Obstacles"]
         self.setupUi()
@@ -162,6 +163,7 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.Selectivefiledirectoryview.clicked.connect(
             self.on_folder_selected
         )
+        self.set_treeview_font(self.mainwindow.Selectivefiledirectoryview)
         self.stacked_display = QStackedWidget()
         self.stacked_display.addWidget(self.renderWindowInteractor)  # Index 0
         self.mainwindow.horizontalLayout_16.addWidget(self.plotterloader.interactor)
@@ -169,6 +171,15 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.verticalLayoutframe.addWidget(self.stacked_display)
         self.button_UI()
         self.setStretch()
+
+    def apply_shadow_to_labels(self, widget):
+        for child in widget.findChildren(QLabel):
+            shadow = QGraphicsDropShadowEffect()
+            shadow.setBlurRadius(3)
+            shadow.setXOffset(-1)
+            shadow.setYOffset(-1)
+            shadow.setColor(QColor(63, 63, 63))
+            child.setGraphicsEffect(shadow)
 
     def get_usb_paths_windows(self):
         usb_paths = []
@@ -250,6 +261,11 @@ class Ui_MainWindow(QMainWindow):
         )
         self.show_completion_message()
         self.file_list_selected = True
+
+    def set_treeview_font(self, treeview, size=18):
+        font = QFont()
+        font.setPointSize(size)
+        treeview.setFont(font)
 
     # main window layout
     def setStretch(self):
@@ -341,6 +357,23 @@ if __name__ == "__main__":
     """rclpy.init()
     talker_node = RosPublisher.TalkerNode()"""
     app = QApplication(sys.argv)
+    app.setStyleSheet("""
+        QPushButton {
+            background-color: #e0e0e0;
+            border: 2px solid #a9a9a9;
+            border-top-color: #ffffff;     /* highlight on top */
+            border-left-color: #ffffff;
+            border-bottom-color: #888888;  /* shadow on bottom */
+            border-right-color: #888888;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 20px;
+        }
+        QPushButton:pressed {
+            background-color: #d0d0d0;
+            border-style: inset;
+        }
+    """)
     main_window = Ui_MainWindow()
     main_window.show()
     try:
