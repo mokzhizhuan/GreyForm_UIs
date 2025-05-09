@@ -16,6 +16,7 @@ import rclpy
 from rclpy.executors import MultiThreadedExecutor
 from threading import Thread
 
+
 class FileItemDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
         size = super().sizeHint(option, index)
@@ -96,7 +97,7 @@ class Ui_MainWindow(QMainWindow):
         )
         usb_path = "/media/ubuntu/"
         self.check_usb_directory(usb_path)
-        self.model = QFileSystemModel()     
+        self.model = QFileSystemModel()
         self.model.setFilter(QDir.AllDirs | QDir.NoDotAndDotDot | QDir.Drives)
         self.model.setRootPath(usb_path)
         self.mainwindow.Selectivefiledirectoryview.setModel(self.model)
@@ -111,12 +112,8 @@ class Ui_MainWindow(QMainWindow):
             QAbstractItemView.SingleSelection
         )
         self.mainwindow.Selectivefiledirectoryview.setHeaderHidden(True)
-        self.mainwindow.Selectivefiledirectoryview.setAnimated(
-            True
-        )  # Smooth folder expansion
-        self.mainwindow.Selectivefiledirectoryview.setIndentation(
-            20
-        )  # Indentation for nested folders
+        self.mainwindow.Selectivefiledirectoryview.setAnimated(True)
+        self.mainwindow.Selectivefiledirectoryview.setIndentation(20)
         self.proxy_model = FileFilterProxyModel()
         self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefilelistview.setModel(self.proxy_model)
@@ -124,42 +121,24 @@ class Ui_MainWindow(QMainWindow):
             self.proxy_model.mapFromSource(self.file_model.index(usb_path))
         )
         self.mainwindow.Selectivefilelistview.setHeaderHidden(False)
-        self.mainwindow.Selectivefilelistview.setSortingEnabled(
-            True
-        )  # Allow sorting by columns
-        self.mainwindow.Selectivefilelistview.setUniformRowHeights(
-            True
-        )  # Optimize performance
-        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(
-            True
-        )  # Better visibility
+        self.mainwindow.Selectivefilelistview.setSortingEnabled(True)
+        self.mainwindow.Selectivefilelistview.setUniformRowHeights(True)
+        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)
         self.mainwindow.Selectivefilelistview.setSelectionMode(
             QAbstractItemView.SingleSelection
         )
         header = self.mainwindow.Selectivefilelistview.header()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
-        header.setStretchLastSection(True)  # Stretch the last column to fill space
+        header.setStretchLastSection(True)
         self.file_model.setHeaderData(0, Qt.Horizontal, "Name")
         self.file_model.setHeaderData(1, Qt.Horizontal, "Size")
         self.file_model.setHeaderData(2, Qt.Horizontal, "Type")
-        self.mainwindow.Selectivefilelistview.sortByColumn(
-            0, Qt.AscendingOrder
-        )  # Sort by Name initially
-        self.mainwindow.Selectivefilelistview.setItemsExpandable(
-            False
-        )  # Disable folder expansion
-        self.mainwindow.Selectivefilelistview.setRootIsDecorated(
-            False
-        )  # Hide tree structure in the right panel
-        self.mainwindow.Selectivefilelistview.setColumnWidth(
-            0, 400
-        )  # Minimum width for "Name"
-        self.mainwindow.Selectivefiledirectoryview.setColumnWidth(
-            0, 400
-        )  # Minimum width for "Name"
-        self.mainwindow.Selectivefilelistview.setIconSize(
-            QSize(32, 32)
-        )  # Slightly larger icon size
+        self.mainwindow.Selectivefilelistview.sortByColumn(0, Qt.AscendingOrder)
+        self.mainwindow.Selectivefilelistview.setItemsExpandable(False)
+        self.mainwindow.Selectivefilelistview.setRootIsDecorated(False)
+        self.mainwindow.Selectivefilelistview.setColumnWidth(0, 400)
+        self.mainwindow.Selectivefiledirectoryview.setColumnWidth(0, 400)
+        self.mainwindow.Selectivefilelistview.setIconSize(QSize(32, 32))
         self.set_treeview_font(self.mainwindow.Selectivefiledirectoryview)
         delegate = FileItemDelegate()
         self.mainwindow.Selectivefilelistview.setItemDelegate(delegate)
@@ -181,7 +160,7 @@ class Ui_MainWindow(QMainWindow):
 
     def check_usb_directory(self, path):
         try:
-            contents = os.listdir(path)
+            os.listdir(path)
             return
         except PermissionError:
             return
@@ -308,18 +287,16 @@ class Ui_MainWindow(QMainWindow):
     def show_completion_message(self):
         msg_box = QMessageBox()
         msg_box.setStyleSheet(
-            """
-        QMessageBox {
-            font-family: Helvetica;
-            font-size: 20px;
-            color: blue;
+            """QMessageBox {
+                font-family: Helvetica;
+                font-size: 20px;
+                color: blue;
             }
-        QPushButton {
-            font-family: Helvetica;
-            font-size: 20px;
-            padding: 5px;
-            }
-            """
+            QPushButton {
+                font-family: Helvetica;
+                font-size: 20px;
+                padding: 5px;
+            }"""
         )
         msg_box.setIcon(QMessageBox.Information)
         msg_box.setWindowTitle("3d Objects file initialize")
@@ -344,7 +321,8 @@ if __name__ == "__main__":
     rclpy.init()
     talker_node = RosPublisher.TalkerNode()
     app = QApplication(sys.argv)
-    app.setStyleSheet("""
+    app.setStyleSheet(
+        """
         QPushButton {
             background-color: #e0e0e0;
             border: 2px solid #a9a9a9;
@@ -360,7 +338,8 @@ if __name__ == "__main__":
             background-color: #d0d0d0;
             border-style: inset;
         }
-    """)
+        """
+    )
     main_window = Ui_MainWindow(talker_node)
     main_window.show()
     talker_thread = Thread(target=ros_spin, args=(talker_node,))
