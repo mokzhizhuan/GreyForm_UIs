@@ -98,9 +98,7 @@ class Ui_MainWindow(QMainWindow):
         self.model.setRootPath(usb_path)
         self.mainwindow.Selectivefiledirectoryview.setModel(self.model)
         root_index = self.model.index(usb_path)
-        self.mainwindow.Selectivefiledirectoryview.setRootIndex(
-            root_index
-        )  # Now safe to set
+        self.mainwindow.Selectivefiledirectoryview.setRootIndex(root_index)  
         self.file_model = QFileSystemModel()
         self.file_model.setFilter(QDir.Files | QDir.NoDotAndDotDot)
         self.file_model.setRootPath(usb_path)
@@ -108,12 +106,8 @@ class Ui_MainWindow(QMainWindow):
             QAbstractItemView.SingleSelection
         )
         self.mainwindow.Selectivefiledirectoryview.setHeaderHidden(True)
-        self.mainwindow.Selectivefiledirectoryview.setAnimated(
-            True
-        )  # Smooth folder expansion
-        self.mainwindow.Selectivefiledirectoryview.setIndentation(
-            20
-        )  
+        self.mainwindow.Selectivefiledirectoryview.setAnimated(True) 
+        self.mainwindow.Selectivefiledirectoryview.setIndentation(20)  
         self.proxy_model = FileFilterProxyModel()
         self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefilelistview.setModel(self.proxy_model)
@@ -121,15 +115,9 @@ class Ui_MainWindow(QMainWindow):
             self.proxy_model.mapFromSource(self.file_model.index(usb_path))
         )
         self.mainwindow.Selectivefilelistview.setHeaderHidden(False)
-        self.mainwindow.Selectivefilelistview.setSortingEnabled(
-            True
-        )  # Allow sorting by columns
-        self.mainwindow.Selectivefilelistview.setUniformRowHeights(
-            True
-        )  # Optimize performance
-        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(
-            True
-        )  # Better visibility
+        self.mainwindow.Selectivefilelistview.setSortingEnabled(True)  
+        self.mainwindow.Selectivefilelistview.setUniformRowHeights(True)  
+        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)
         self.mainwindow.Selectivefilelistview.setSelectionMode(
             QAbstractItemView.SingleSelection
         )
@@ -140,24 +128,12 @@ class Ui_MainWindow(QMainWindow):
         self.file_model.setHeaderData(1, Qt.Horizontal, "Size")
         self.file_model.setHeaderData(2, Qt.Horizontal, "Type")
         self.file_model.setHeaderData(3, Qt.Horizontal, "Date Modified")
-        self.mainwindow.Selectivefilelistview.sortByColumn(
-            0, Qt.AscendingOrder
-        )  # Sort by Name initially
-        self.mainwindow.Selectivefilelistview.setItemsExpandable(
-            False
-        )  # Disable folder expansion
-        self.mainwindow.Selectivefilelistview.setRootIsDecorated(
-            False
-        )  # Hide tree structure in the right panel
-        self.mainwindow.Selectivefilelistview.setColumnWidth(
-            0, 400
-        )  # Minimum width for "Name"
-        self.mainwindow.Selectivefiledirectoryview.setColumnWidth(
-            0, 400
-        )  # Minimum width for "Name"
-        self.mainwindow.Selectivefilelistview.setIconSize(
-            QSize(32, 32)
-        )  # Slightly larger icon size
+        self.mainwindow.Selectivefilelistview.sortByColumn(0, Qt.AscendingOrder)
+        self.mainwindow.Selectivefilelistview.setItemsExpandable(False)  
+        self.mainwindow.Selectivefilelistview.setRootIsDecorated(False)  
+        self.mainwindow.Selectivefilelistview.setColumnWidth(0, 400) 
+        self.mainwindow.Selectivefiledirectoryview.setColumnWidth(0, 400)  
+        self.mainwindow.Selectivefilelistview.setIconSize(QSize(32, 32))  
         delegate = FileItemDelegate()
         self.mainwindow.Selectivefilelistview.setItemDelegate(delegate)
         self.mainwindow.Selectivefiledirectoryview.clicked.connect(
@@ -192,7 +168,7 @@ class Ui_MainWindow(QMainWindow):
 
     def check_usb_directory(self, path):
         try:
-            contents = os.listdir(path)
+            os.listdir(path)
             return
         except PermissionError:
             return

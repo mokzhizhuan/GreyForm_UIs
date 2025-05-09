@@ -202,7 +202,7 @@
         <x>10</x>
         <y>10</y>
         <width>781</width>
-        <height>17</height>
+        <height>41</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -210,6 +210,11 @@
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+       </font>
       </property>
       <property name="text">
        <string>Product :</string>
@@ -273,6 +278,11 @@
         <height>61</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+       </font>
+      </property>
       <property name="text">
        <string>Status : Running.....</string>
       </property>
@@ -282,9 +292,14 @@
        <rect>
         <x>230</x>
         <y>310</y>
-        <width>231</width>
-        <height>23</height>
+        <width>291</width>
+        <height>91</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+       </font>
       </property>
       <property name="value">
        <number>0</number>
@@ -434,6 +449,30 @@
       </property>
       <property name="text">
        <string>Choose Model</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="DataButton">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>370</y>
+        <width>641</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>40</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Open Data</string>
       </property>
      </widget>
     </widget>
