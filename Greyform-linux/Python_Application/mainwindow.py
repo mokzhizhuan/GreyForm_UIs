@@ -174,7 +174,6 @@ class Ui_MainWindow(QMainWindow):
         self.button_UI()
         self.setStretch()
 
-    
     def set_treeview_font(self, treeview, size=18):
         font = QFont()
         font.setPointSize(size)
