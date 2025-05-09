@@ -23,7 +23,6 @@ def start_fastapi():
         print("FastAPI server is already running.")
         return
     try:
-        print("Starting FastAPI server...")
         subprocess.Popen(
             ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
         )
