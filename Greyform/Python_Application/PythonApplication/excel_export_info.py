@@ -236,7 +236,6 @@ class Exportexcelinfo(object):
         positionx = row["Position X (mm)"]
         positiony = row["Position Y (mm)"]
         positionz = row["Position Z (mm)"]
-        name = row["Point number/name"]
         center_z = self.centerlinez()
         internaldimensiony = self.floor[1]
         twowall_x = 0
