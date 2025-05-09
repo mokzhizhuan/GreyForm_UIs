@@ -191,7 +191,6 @@ class Ui_MainWindow(QMainWindow):
         return usb_paths
 
     def check_usb_directory(self, path):
-        """Check the folder structure manually to verify visibility."""
         try:
             contents = os.listdir(path)
             return
