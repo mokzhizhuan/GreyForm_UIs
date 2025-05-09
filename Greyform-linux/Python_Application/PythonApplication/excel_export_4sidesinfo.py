@@ -103,7 +103,6 @@ class Exportexcelinfo(object):
         current_x = 0
         max_y = self.floor[1]  # Maximum Y position based on the image
         max_x = self.floor[0]  # Maximum X position based on the image
-
         for wall_id, wall in self.wallformat.items():
             if "pos_y_range" not in wall or wall["pos_y_range"] is None:
                 wall["pos_y_range"] = (0, 0)

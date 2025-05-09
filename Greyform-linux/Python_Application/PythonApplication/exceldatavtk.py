@@ -1,5 +1,4 @@
 import pandas as pd
-import vtk
 
 def exceldataextractor():
     excel_file_path = "exporteddatassss(with TMP)(draft)(tetra).xlsx"

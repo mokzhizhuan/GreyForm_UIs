@@ -5,10 +5,8 @@ import matplotlib.pyplot as plt
 
 def stagecatergorize(ifc_file):
     data = {"Stage 1": [], "Stage 2": [], "Stage 3": []}
-
     def safe_get_name(element):
         return getattr(element, "Name", None)
-
     for element in ifc_file:
         name = safe_get_name(element)
         if element.is_a("IfcFlowSegment"):
@@ -116,14 +114,10 @@ def wall_format(wall, floor, label_map, wall_finishes_height):
 
 def wall_format_finishes(wall):
     heights = []
-
-    # Iterate through the walls to collect heights
     for index, (wall, dims) in enumerate(wall.items(), start=0):
         height = dims.get("height", None)
         if height is not None:
             heights.append(height)
-
-    # Calculate max and min height if heights are collected
     if heights:
         max_height = max(heights)
         min_height = min(heights)

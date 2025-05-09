@@ -110,15 +110,11 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         dialog.exec_()  # Show the dialog
 
     def initialize_wall_tracking(self):
-        """Initialize tracking of walls to ensure all are scanned before moving to the next stage."""
-        self.stagetext = self.stagestorage[self.currentindexstage]  # Get current stage
-        self.remaining_walls_to_scan = set(
-            self.identifier.keys()
-        )  # Get all wall numbers in current stage
-        self.stage_completed = False  # Ensure we track when a stage is finished
+        self.stagetext = self.stagestorage[self.currentindexstage] 
+        self.remaining_walls_to_scan = set(self.identifier.keys()) 
+        self.stage_completed = False  
 
     def find_next_valid_wall(self, wall_keys):
-        """Find the next valid unscanned wall or fallback to 'Floor'."""
         while self.wall_index < len(wall_keys) - 1:
             self.wall_index += 1
             self.wallname = wall_keys[self.wall_index]
