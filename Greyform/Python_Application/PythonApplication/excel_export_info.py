@@ -274,7 +274,7 @@ class Exportexcelinfo(object):
                 if wall["axis"] == "y":
                     if wall_id == len(self.wallformat) and count_minus_y == 2:
                         pos_z = positionz - center_z + (self.floorheight)
-                    elif wall_id == (len(self.wallformat)/3):
+                    elif wall_id == (len(self.wallformat)/3) and count_plus_y == 2:
                         pos_z = positionz - center_z + (self.floorheight)
                     robotposy = positiony - posy
                     robotposx = positionx - thickness
