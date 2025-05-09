@@ -1,7 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QDialog, QVBoxLayout, QLabel, QApplication
 from PyQt5.QtGui import QFont
-import sys
 
 
 # menu dialog to close the app
