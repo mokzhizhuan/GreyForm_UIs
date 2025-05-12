@@ -25,6 +25,7 @@ class loadTMP2:
         small_wall_finishes_height,
         wall_format,
         axis_widths,
+        wall_offset,
     ):
         self.data = data
         self.verts_data = verts_data
@@ -41,6 +42,7 @@ class loadTMP2:
         self.wall_finishes_height = wall_finishes_height
         self.small_wall_finishes_height = small_wall_finishes_height
         self.wall_format = wall_format
+        self.wall_offset = wall_offset
         self.index = 1
         self.axis_widths = axis_widths
         self.x_min, self.x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
@@ -472,7 +474,7 @@ class loadTMP2:
                                     "Point number/name": label,
                                     "Position X (mm)": x,
                                     "Position Y (mm)": y_pos,
-                                    "Position Z (mm)": 0,
+                                    "Position Z (mm)":-abs(self.wall_offset),
                                     "Wall Number": "7",
                                     "Shape type": "",
                                     "Status": "blank",

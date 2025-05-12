@@ -23,7 +23,7 @@ class loadTMP:
         wall_finishes_height,
         small_wall_finishes_height,
         wall_format,
-        axis_widths
+        axis_widths,
     ):
         self.data = data
         self.verts_data = verts_data

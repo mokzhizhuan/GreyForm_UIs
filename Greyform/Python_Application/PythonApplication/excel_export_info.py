@@ -4,6 +4,7 @@ import PythonApplication.arraystorage as storingelement
 import PythonApplication.ifcextractfiles as extractor
 import PythonApplication.loadtmp as tmpinserter
 import PythonApplication.loadtmp2 as tmpinserter2
+import PythonApplication.loadLP as Lpinserter
 
 
 # export excel sheet
@@ -93,8 +94,11 @@ class Exportexcelinfo(object):
                 self.small_wall_height,
                 self.wallformat,
                 self.axis_widths,
+                self.floorheight,
             )
             data = datainserter.addTMP7()
+            datainserterLP = Lpinserter.loadLP(data,verts_data, self.wall_offset)
+            data = datainserterLP.loadLP7()
             attributes = [
                 "Stage",
                 "Marking type",
@@ -156,17 +160,9 @@ class Exportexcelinfo(object):
                 | (dataframe["Position Z (mm)"] <= endingwall)
             ]  # Exclude specific conditions for Wall Number 7
             dataframe = dataframe[dataframe["Position Z (mm)"] < Cellingstorey[2]]
-            dataframe = dataframe[
-                ~(
-                    (dataframe["Position Z (mm)"] < -(self.wall_height / 2))
-                    & (dataframe["Wall Number"] == 7)
-                )
-            ]
             unwanted_names = [
                 "Basic Wall",
                 "BSS.Gate Valve",
-                "LP",
-                "Floor",
                 "Ceiling",
                 "THRESHOLD",
                 "BSS.Shower",
@@ -176,6 +172,12 @@ class Exportexcelinfo(object):
             dataframe = dataframe[
                 ~dataframe["Point number/name"].str.contains(
                     pattern, case=False, na=False
+                )
+            ]
+            dataframe = dataframe[
+               ~(
+                    dataframe["Point number/name"].str.contains("Floor", case=False, na=False) &
+                    (dataframe["Marking type"] == "Tile")
                 )
             ]
             stages = sorted(
@@ -351,7 +353,7 @@ class Exportexcelinfo(object):
                             return pd.Series([robotposy, -abs(robotposx), pos_z])
                         else:
                             return pd.Series([robotposy, abs(robotposx), pos_z])
-        return pd.Series([positionx - thickness, positiony - thickness, positionz])
+        return pd.Series([positionx - thickness, positiony - thickness, 0])
 
     def centerlinez(self):
         return (self.floorheight - (self.flooroffset)) + self.meterline
