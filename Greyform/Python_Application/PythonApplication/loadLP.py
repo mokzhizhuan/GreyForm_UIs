@@ -251,47 +251,55 @@ class loadLP:
         df = df[df["Stage 3"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("LP7S3")]
         df["Base ID"] = df["Pin ID"].str.extract(r"(LP7S3[a-z])", expand=False)
-        grouped = df.groupby("Base ID").first().reset_index()
+        grouped = df.drop_duplicates(subset="Base ID")
+        processed_bases = set()
         for _, row in grouped.iterrows():
-            LP_base = row.get("Base ID", "")
-            label_name = str(row["Penetration/Fitting/Reference Point Name"])
+            LP_base = row["Base ID"]
+            if LP_base in processed_bases:
+                continue  # ✅ skip duplicates
+            processed_bases.add(LP_base)
+            label_name = str(row["Penetration/Fitting/Reference Point Name"]).strip().lower()
             wall_name = self.get_wall_alias_from_excel(LP_base)
             for obj in self.verts_data:
-                raw_name = obj.get("Point number/name", "")
-                if label_name.lower() in raw_name.strip().lower():
+                raw_name = obj.get("Point number/name", "").strip().lower()
+                if label_name in raw_name:
                     xpos = obj.get("Position X (mm)", 0)
                     ypos = obj.get("Position Y (mm)", 0)
                     zpos = obj.get("Position Z (mm)", 0)
                     vert = np.array(obj.get("verticles", []))
-                    self.data = [entry for entry in self.data if label_name.lower() not in str(entry.get("Point number/name", "")).lower()]
-                    if len(vert) > 0:
-                        vert = np.array(vert)
-                        x_min, x_max = vert[:, 0].min(), vert[:, 0].max()
-                        z_min, z_max = vert[:, 2].min(), vert[:, 2].max()
-                        x_offset = (x_max - x_min) // 2
-                        z_offset = (z_max - z_min) // 2
-                        positions = [
-                            ("1", xpos - x_offset, ypos, zpos + z_offset + z_max),  # Upper Left
-                            ("2", xpos + x_offset, ypos, zpos + z_offset + z_max),  # Upper Right
-                            ("3", xpos - x_offset, ypos, zpos - z_offset + z_max),  # Lower Left
-                            ("4", xpos + x_offset, ypos, zpos - z_offset + z_max),  # Lower Right
-                        ]
-                        for suffix, x, y, z in positions:
-                            self.data.append({
-                                "Stage": "Stage 3",
-                                "Marking type": "Fitting",
-                                "Point number/name": f"{LP_base}{suffix}",
-                                "Position X (mm)": int(x),
-                                "Position Y (mm)": int(y),
-                                "Position Z (mm)": int(z),
-                                "Wall Number": wall_name,
-                                "Shape type": "",
-                                "Status": "blank",
-                                "Quadrant": 1,
-                                "Unnamed : 9": "",
-                                "Width": "",
-                                "Height": "",
-                                "Orientation": "",
-                                "Diameter": "",
-                            })
+                    self.data = [
+                        entry for entry in self.data 
+                        if LP_base not in str(entry.get("Point number/name", "")).strip().lower()
+                    ]
+                    if len(vert) == 0:
+                        break
+                    x_min, x_max = vert[:, 0].min(), vert[:, 0].max()
+                    z_min, z_max = vert[:, 2].min(), vert[:, 2].max()
+                    x_offset = (x_max - x_min) // 2
+                    z_offset = (z_max - z_min) // 2
+                    positions = [
+                        ("1", xpos - x_offset, ypos, zpos + z_offset + z_max),
+                        ("2", xpos + x_offset, ypos, zpos + z_offset + z_max),
+                        ("3", xpos - x_offset, ypos, zpos - z_offset + z_max),
+                        ("4", xpos + x_offset, ypos, zpos - z_offset + z_max),
+                    ]
+                    for suffix, x, y, z in positions:
+                        self.data.append({
+                            "Stage": "Stage 3",
+                            "Marking type": "Fitting",
+                            "Point number/name": f"{LP_base}{suffix}",
+                            "Position X (mm)": int(x),
+                            "Position Y (mm)": int(y),
+                            "Position Z (mm)": int(z),
+                            "Wall Number": wall_name,
+                            "Shape type": "",
+                            "Status": "blank",
+                            "Quadrant": 1,
+                            "Unnamed : 9": "",
+                            "Width": "",
+                            "Height": "",
+                            "Orientation": "",
+                            "Diameter": "",
+                        })
+                    break  
         return self.data

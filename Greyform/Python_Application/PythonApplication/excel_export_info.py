@@ -217,6 +217,7 @@ class Exportexcelinfo(object):
                 },
                 inplace=True,
             )
+            dataframe = dataframe.drop_duplicates(subset=["Point number/name"])
             file_name = f"exporteddatassss(with TMP)(draft)(tetra).xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
