@@ -87,7 +87,6 @@ class Exportexcelinfo(object):
                 Cellingstorey,
                 self.thickness,
                 self.wall_height,
-                self.file,
                 self.meterline,
                 self.label_map,
                 self.wall_finishes_height,

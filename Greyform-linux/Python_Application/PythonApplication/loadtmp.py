@@ -7,7 +7,6 @@ import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement
 import math
 import re
-from collections import defaultdict
 
 class loadTMP:
     def __init__(
@@ -72,11 +71,9 @@ class loadTMP:
     
     def get_wall_alias_from_excel(self, pin_id: str) -> str:
         df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
-        # Clean and filter
         df = df[df["Stage 2"].notna()]
         df["Pin ID"] = df["Pin ID"].astype(str)
         df["Pin Base"] = df["Pin ID"].str.extract(r"(TMP\\d+S\\d+[a-z])")
-        # Find matching row by full Pin ID
         match = df[df["Pin ID"] == pin_id]
         if not match.empty:
             wall = match.iloc[0]["Wall"]
@@ -115,19 +112,9 @@ class loadTMP:
         return 600  # default fallback
     
     def get_next_tmp_base(self, current_base: str, index_offset: int = 0):
-        if not isinstance(current_base, str):
-            raise TypeError(f"[FATAL] current_base is not a string: {type(current_base)}")
-        if len(current_base) < 7:
-            raise ValueError(f"[FATAL] Base ID too short: '{current_base}'")
-        if not current_base.startswith("TMP"):
-            raise ValueError(f"[FATAL] Base ID does not start with TMP: '{current_base}'")
         prefix = current_base[:-1]
         last_letter = current_base[-1].lower()
-        if last_letter not in string.ascii_lowercase:
-            raise ValueError(f"[FATAL] Invalid last letter in Base ID: '{last_letter}' from '{current_base}'")
         next_index = string.ascii_lowercase.index(last_letter) + index_offset
-        if next_index >= len(string.ascii_lowercase):
-            raise ValueError(f"[FATAL] Base ID overflow: {current_base} + {index_offset}")
         next_letter = string.ascii_lowercase[next_index]
         return f"{prefix}{next_letter}"
 
