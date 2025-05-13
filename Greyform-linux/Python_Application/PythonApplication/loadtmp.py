@@ -23,7 +23,7 @@ class loadTMP:
         wall_finishes_height,
         small_wall_finishes_height,
         wall_format,
-        axis_widths
+        axis_widths,
     ):
         self.data = data
         self.verts_data = verts_data
@@ -260,7 +260,7 @@ class loadTMP:
                 break
         candidate_objs = sorted(
             [obj for obj in self.verts_data
-            if "Wall Finishes" in str(obj.get("Point number/name", ""))
+             if "Wall Finishes" in str(obj.get("Point number/name", ""))
             and self.is_near_wall(obj, wall_entry_for_b)],
             key=lambda o: o["Position X (mm)"]
         )
@@ -269,67 +269,42 @@ class loadTMP:
             label_name = str(row.get("Penetration/Fitting/Reference Point Name", "")).strip().lower()
             interval = self.get_interval(row)
             matched_obj = None
-            for idx, obj in enumerate(candidate_objs):
+            for obj in candidate_objs:
                 if label_name in str(obj.get("Point number/name", "")).lower():
                     matched_obj = obj
-                if matched_obj is None:
-                    for objs in self.verts_data:
-                        name = objs.get("Point number/name", "").lower()
-                        if label_name in name:
-                            x = objs["Position X (mm)"]
-                            y = int(objs["Position Y (mm)"])
-                            counter = 1
-                            for z in range(self.zreference, ceiling, interval):
-                                self.data.append({
-                                    "Stage": "Stage 2",
-                                    "Marking type": "Tile",
-                                    "Point number/name": f"{tmp_base}{counter}",
-                                    "Position X (mm)": self.thickness,
-                                    "Position Y (mm)": y,
-                                    "Position Z (mm)": z,
-                                    "Wall Number": "",
-                                    "Shape type": "",
-                                    "Status": "blank",
-                                    "Quadrant": 1,
-                                    "Unnamed : 9": "",
-                                    "Width": "",
-                                    "Height": "",
-                                    "Orientation": "",
-                                    "Diameter": "",
-                                })
-                                counter += 1
-                else:
-                    verts = matched_obj["verticles"]
-                    x_values = verts[:, 0]
-                    z_values = verts[:, 2]
-                    non_zero_x = x_values[x_values > 0]
-                    non_zero_z = z_values[z_values > 0]
-                    min_z = int(np.min(non_zero_z)) if non_zero_z.size else 0
-                    lowest_x = int(np.min(non_zero_x)) if non_zero_x.size else 0
-                    total_internal_wall = self.wall_format[self.index]["width"] - (self.thickness * 2)
-                    x_array = [total_internal_wall - lowest_x - interval, total_internal_wall - lowest_x]
-                    for idx, xpos in enumerate(x_array):
-                        tmp_base = self.get_next_tmp_base("TMP2S2a", idx)
-                        counter = 1
-                        for z in range(self.zreference, min_z, interval):
-                            self.data.append({
-                                "Stage": "Stage 2",
-                                "Marking type": "Tile",
-                                "Point number/name": f"{tmp_base}{counter}",
-                                "Position X (mm)": self.thickness,
-                                "Position Y (mm)": xpos,
-                                "Position Z (mm)": z,
-                                "Wall Number": wallname,
-                                "Shape type": "",
-                                "Status": "blank",
-                                "Quadrant": 1,
-                                "Unnamed : 9": "",
-                                "Width": "",
-                                "Height": "",
-                                "Orientation": "",
-                                "Diameter": "",
-                            })
-                            counter += 1
+                    break
+            if matched_obj:
+                verts = matched_obj["verticles"]
+                x_values = verts[:, 0]
+                z_values = verts[:, 2]
+                non_zero_x = x_values[x_values > 0]
+                non_zero_z = z_values[z_values > 0]
+                min_z = int(np.min(non_zero_z)) if non_zero_z.size else 0
+                lowest_x = int(np.min(non_zero_x)) if non_zero_x.size else 0
+                total_internal_wall = self.wall_format[self.index]["width"] - (self.thickness * 2)
+                x_array = [total_internal_wall - lowest_x - interval, total_internal_wall - lowest_x]
+                for idx, xpos in enumerate(x_array):
+                    tmp_base = self.get_next_tmp_base("TMP2S2a", idx)
+                    counter = 1
+                    for z in range(self.zreference, min_z, interval):
+                        self.data.append({
+                            "Stage": "Stage 2",
+                            "Marking type": "Tile",
+                            "Point number/name": f"{tmp_base}{counter}",
+                            "Position X (mm)": self.thickness,
+                            "Position Y (mm)": xpos,
+                            "Position Z (mm)": z,
+                            "Wall Number": wallname,
+                            "Shape type": "",
+                            "Status": "blank",
+                            "Quadrant": 1,
+                            "Unnamed : 9": "",
+                            "Width": "",
+                            "Height": "",
+                            "Orientation": "",
+                            "Diameter": "",
+                        })
+                        counter += 1
         self.index += 1
         self.addTMP3()
 
@@ -352,7 +327,7 @@ class loadTMP:
         x_values = verts[:, 0] if len(verts) else []
         x_max = int(np.max(x_values))
         half_x_max = (x_max - self.thickness) / 2
-        x_array = [half_x_max + self.thickness, x_max]
+        x_array = [half_x_max + self.thickness]
         for i, x in enumerate(x_array):
             tmp_base = self.get_next_tmp_base("TMP3S2a", i)
             match = grouped[grouped["Base ID"] == tmp_base]

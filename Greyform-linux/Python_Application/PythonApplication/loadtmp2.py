@@ -25,6 +25,7 @@ class loadTMP2:
         small_wall_finishes_height,
         wall_format,
         axis_widths,
+        wall_offset,
     ):
         self.data = data
         self.verts_data = verts_data
@@ -41,6 +42,7 @@ class loadTMP2:
         self.wall_finishes_height = wall_finishes_height
         self.small_wall_finishes_height = small_wall_finishes_height
         self.wall_format = wall_format
+        self.wall_offset = wall_offset
         self.index = 1
         self.axis_widths = axis_widths
         self.x_min, self.x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
@@ -159,6 +161,7 @@ class loadTMP2:
         df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
         df["Base ID"] = df["Pin ID"].str.extract(r"(TMP4S2[a-z])")
         grouped = df.groupby("Base ID").first().reset_index()
+        
         wall_entry = None
         wallname = ""
         for entry in self.label_map:
@@ -197,13 +200,13 @@ class loadTMP2:
                 ]
             }
         )
-        x_array = [startingypos, startingypos + (width / 2)]
+        x_array = [startingypos]
         for i, xpos in enumerate(x_array):
             tmp_base = self.get_next_tmp_base("TMP4S2a", i)
             match = grouped[grouped["Base ID"] == tmp_base]
             interval = int(match["Z Interval (mm)"].values[0])
-            counter = 1
-            for z in range(self.zreference, ceiling, interval):
+            z_positions = range(self.zreference, ceiling, interval) 
+            for counter, z in enumerate(z_positions, start=1):
                 self.data.append(
                     {
                         "Stage": "Stage 2",
@@ -229,66 +232,72 @@ class loadTMP2:
         self.addTMP5()
 
     def addTMP5(self):
+        ceiling = int(self.Cellingstoreyz)
         df = pd.read_excel(
             "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
         )
         df = df[df["Stage 2"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("TMP5S2")]
         df["Base ID"] = df["Pin ID"].str.extract(r"(TMP5S2[a-z])")
-        grouped = df.groupby("Base ID").first().reset_index()
-        for i, row in grouped.iterrows():
-            tmp_base = row.get("Base ID", "")
-            label_name = (
-                str(row.get("Penetration/Fitting/Reference Point Name", ""))
-                .strip()
-                .lower()
-            )
-            if not label_name:
-                continue
-            matched_obj = next(
-                (
-                    obj
-                    for obj in self.verts_data
-                    if label_name in str(obj.get("Point number/name", "")).lower()
-                ),
-                None,
-            )
-            xpos = matched_obj.get("Position X (mm)", 0)
-            verts = matched_obj.get("verticles", [])
-            x_values = verts[:, 0]
-            filtered_x = x_values[(x_values > 0) & (x_values % 10 == 0)]
-            unique_x = np.unique(filtered_x)
-            if len(unique_x) >= 2:
-                midpoint = unique_x[0] + unique_x[1]
-                new_x = np.sort(np.append(unique_x, midpoint))
-            else:
-                new_x = np.sort(unique_x)
-            counter = 1
-            for x in new_x:
-                self.data.append(
-                    {
-                        "Stage": "Stage 2",
-                        "Marking type": "Tile",
-                        "Point number/name": f"{tmp_base}{counter}",
-                        "Position X (mm)": x + xpos,
-                        "Position Y (mm)": self.y_max
-                        - self.small_wall_finishes_height
-                        - self.wall_height,
-                        "Position Z (mm)": self.zreference,
-                        "Wall Number": "",
-                        "Shape type": "",
-                        "Status": "blank",
-                        "Quadrant": 1,
-                        "Unnamed : 9": "",
-                        "Width": "",
-                        "Height": "",
-                        "Orientation": "",
-                        "Diameter": "",
-                    }
-                )
-                counter += 1
+        for base_id in df["Base ID"].dropna().unique():
+            if base_id.endswith("a"):
+                self.add_TMP5_by_base(base_id, flat=True)
         self.index += 1
         self.addTMP6()
+
+    def add_TMP5_by_base(self, tmp_base: str, flat: bool):
+        ceiling = int(self.Cellingstoreyz)
+        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = df[df["Stage 2"].notna()]
+        df = df[df["Pin ID"].astype(str).str.startswith("TMP5S2")]
+        df["Base ID"] = df["Pin ID"].str.extract(r"(TMP5S2[a-z])")
+        grouped = df[df["Base ID"] == tmp_base]
+        if grouped.empty:
+            print(f"[WARN] No rows found for base {tmp_base}")
+            return
+        row = grouped.iloc[0]
+        label_name = str(row.get("Penetration/Fitting/Reference Point Name", "")).strip().lower()
+        matched_obj = next(
+            (obj for obj in self.verts_data if label_name in str(obj.get("Point number/name", "")).lower()),
+            None,
+        )
+        if not matched_obj:
+            print(f"[WARN] No matched object for label: {label_name}")
+            return
+        xpos_offset = matched_obj.get("Position X (mm)", 0)
+        verts = matched_obj.get("verticles", [])
+        x_values = verts[:, 0]
+        filtered_x = x_values[(x_values > 0) & (x_values % 10 == 0)]
+        unique_x = np.unique(filtered_x)
+        tile_width = unique_x[0] if len(unique_x) > 0 else 450
+        trimmed_x = unique_x[:-1] if len(unique_x) >= 2 else unique_x
+        third_x = trimmed_x[-1] + tile_width
+        new_x = np.append(trimmed_x, third_x)
+        extra_x = third_x + (tile_width / 2)
+        pin_ids = grouped["Pin ID"].dropna().astype(str)
+        marker_numbers = sorted(
+            int(re.search(rf"{tmp_base}(\d+)", pid.strip()).group(1))
+            for pid in pin_ids if re.search(rf"{tmp_base}(\d+)", pid.strip())
+        )
+        if flat:
+            for x, num in zip(reversed(new_x), marker_numbers[:3]):
+                self.data.append({
+                    "Stage": "Stage 2",
+                    "Marking type": "Tile",
+                    "Point number/name": f"{tmp_base}{num}",
+                    "Position X (mm)": x + xpos_offset,
+                    "Position Y (mm)": self.y_max - self.small_wall_finishes_height - self.wall_height,
+                    "Position Z (mm)": self.zreference,
+                    "Wall Number": "",
+                    "Shape type": "",
+                    "Status": "blank",
+                    "Quadrant": 1,
+                    "Unnamed : 9": "",
+                    "Width": "",
+                    "Height": "",
+                    "Orientation": "",
+                    "Diameter": "",
+                })
 
     def addTMP6(self):
         ceiling = int(self.Cellingstoreyz)
@@ -472,7 +481,7 @@ class loadTMP2:
                                     "Point number/name": label,
                                     "Position X (mm)": x,
                                     "Position Y (mm)": y_pos,
-                                    "Position Z (mm)": 0,
+                                    "Position Z (mm)":-abs(self.wall_offset),
                                     "Wall Number": "7",
                                     "Shape type": "",
                                     "Status": "blank",
