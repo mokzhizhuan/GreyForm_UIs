@@ -2,7 +2,6 @@
 import pandas as pd
 from ifcopenshell.util.placement import get_local_placement, get_axis2placement
 import numpy as np
-import PythonApplication.ifcextractfiles as extractor
 
 class loadLP:
     def __init__(self,data,verts_data,offset):
