@@ -50,6 +50,10 @@ def apply_rotation_to_markers(worksheet, df_class):
             elif marker == "6":
                 new_marker = 6
             worksheet.write(row_idx, marker_col_index + 1, new_marker)
+        else:
+            if marker == "6":
+                new_marker = 6
+            worksheet.write(row_idx, marker_col_index + 1, new_marker)
 
 
 def add_pset_attributes(psets, pset_attributes):
