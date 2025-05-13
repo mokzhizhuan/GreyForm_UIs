@@ -13,11 +13,9 @@ class loadLP:
 
     def get_wall_alias_from_excel(self, pin_id: str) -> str:
         df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
-        # Clean and filter
         df = df[df["Stage 2"].notna()]
         df["Pin ID"] = df["Pin ID"].astype(str)
         df["Pin Base"] = df["Pin ID"].str.extract(r"(TMP\\d+S\\d+[a-z])")
-        # Find matching row by full Pin ID
         match = df[df["Pin ID"] == pin_id]
         if not match.empty:
             wall = match.iloc[0]["Wall"]

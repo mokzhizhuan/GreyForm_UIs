@@ -18,7 +18,6 @@ class loadTMP2:
         Cellingstorey,
         thickness,
         wall_height,
-        ifc_file,
         meterline,
         label_map,
         wall_finishes_height,
@@ -35,9 +34,6 @@ class loadTMP2:
         self.wall_height = wall_height
         self.meterline = meterline
         self.wall_format = wall_format
-        self.ifc_file = ifc_file
-        self.opening = ifc_file.by_type("IfcOpeningElement")
-        self.dataopening = self.addobjects()
         self.label_map = label_map
         self.wall_finishes_height = wall_finishes_height
         self.small_wall_finishes_height = small_wall_finishes_height
@@ -83,7 +79,6 @@ class loadTMP2:
         df = pd.read_excel(
             "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
         )
-        # Clean and filter
         df = df[df["Stage 2"].notna()]
         df["Pin ID"] = df["Pin ID"].astype(str)
         df["Pin Base"] = df["Pin ID"].str.extract(r"(TMP\\d+S\\d+[a-z])")
@@ -126,27 +121,9 @@ class loadTMP2:
         return 600  # default fallback
 
     def get_next_tmp_base(self, current_base: str, index_offset: int = 0):
-        if not isinstance(current_base, str):
-            raise TypeError(
-                f"[FATAL] current_base is not a string: {type(current_base)}"
-            )
-        if len(current_base) < 7:
-            raise ValueError(f"[FATAL] Base ID too short: '{current_base}'")
-        if not current_base.startswith("TMP"):
-            raise ValueError(
-                f"[FATAL] Base ID does not start with TMP: '{current_base}'"
-            )
         prefix = current_base[:-1]
         last_letter = current_base[-1].lower()
-        if last_letter not in string.ascii_lowercase:
-            raise ValueError(
-                f"[FATAL] Invalid last letter in Base ID: '{last_letter}' from '{current_base}'"
-            )
         next_index = string.ascii_lowercase.index(last_letter) + index_offset
-        if next_index >= len(string.ascii_lowercase):
-            raise ValueError(
-                f"[FATAL] Base ID overflow: {current_base} + {index_offset}"
-            )
         next_letter = string.ascii_lowercase[next_index]
         return f"{prefix}{next_letter}"
 
@@ -184,22 +161,6 @@ class loadTMP2:
         xpos = matched_obj["Position X (mm)"]
         ypos = int(matched_obj["Position Y (mm)"])
         startingypos = ypos - self.wall_finishes_height - x_max
-        wall_finish_obj = next(
-            (
-                obj
-                for obj in self.verts_data
-                if "Wall Finishes" in obj.get("Point number/name", "")
-                and self.is_near_wall(obj, wall_entry)
-            ),
-            None,
-        )
-        width = self.get_interval(
-            {
-                "Penetration/Fitting/Reference Point Name": wall_finish_obj[
-                    "Point number/name"
-                ]
-            }
-        )
         x_array = [startingypos]
         for i, xpos in enumerate(x_array):
             tmp_base = self.get_next_tmp_base("TMP4S2a", i)
@@ -232,7 +193,6 @@ class loadTMP2:
         self.addTMP5()
 
     def addTMP5(self):
-        ceiling = int(self.Cellingstoreyz)
         df = pd.read_excel(
             "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
         )
@@ -273,7 +233,6 @@ class loadTMP2:
         trimmed_x = unique_x[:-1] if len(unique_x) >= 2 else unique_x
         third_x = trimmed_x[-1] + tile_width
         new_x = np.append(trimmed_x, third_x)
-        extra_x = third_x + (tile_width / 2)
         pin_ids = grouped["Pin ID"].dropna().astype(str)
         marker_numbers = sorted(
             int(re.search(rf"{tmp_base}(\d+)", pid.strip()).group(1))
@@ -326,7 +285,6 @@ class loadTMP2:
             None,
         )
         xpos = matched_wall_obj.get("Position X (mm)", 0)
-        ypos = matched_wall_obj.get("Position Y (mm)", 0)
         x_values = (
             matched_wall_obj.get("verticles", [])[:, 0]
             if len(matched_wall_obj.get("verticles", []))
@@ -407,7 +365,7 @@ class loadTMP2:
         drain_label = next((n for n in ref_names if "drain" in n.lower()), None)
         found_tece = found_floor150 = found_floor = found_drain = False
         unique_y = []
-        width = height = width150 = height150 = 0
+        width = width150 = height150 = 0
         for obj in self.verts_data:
             name = obj.get("Point number/name", "")
             prefinedType = obj.get("PredefinedType", "")
@@ -434,7 +392,6 @@ class loadTMP2:
                     match = re.search(r"\((\d+)[xX](\d+)mm\)", name)
                     if match:
                         width = int(match.group(1))
-                        height = int(match.group(2))
                     found_floor = True
             if drain_label and drain_label in name:
                 xposdrain = obj["Position X (mm)"]
@@ -495,46 +452,3 @@ class loadTMP2:
                             )
         return self.data
 
-    def addobjects(self):
-        objects_data = []
-        for object in self.opening:
-            x, y, z = (0, 0, 0)
-            if object.ObjectPlacement:
-                placement = object.ObjectPlacement.RelativePlacement
-                if placement and placement.Location:
-                    x, y, z = placement.Location.Coordinates
-                revert_origin = object.Name if object.Name == "CP1:CP1:1433163" else ""
-                scale_factor = 1000.0
-            if object.Representation is not None:
-                settings = ifcopenshell.geom.settings()
-                shape = ifcopenshell.geom.create_shape(settings, object)
-                verts = shape.geometry.verts
-                grouped_verts = [
-                    [verts[i], verts[i + 1], verts[i + 2]]
-                    for i in range(0, len(verts), 3)
-                ]
-                scaled_grouped_verts = np.array(grouped_verts) * scale_factor
-                scaled_grouped_verts = scaled_grouped_verts.astype(int)
-            objects_data.append(
-                {
-                    "ExpressID": object.id(),
-                    "GlobalID": object.GlobalId,
-                    "Class": object.is_a(),
-                    "PredefinedType": Element.get_predefined_type(object),
-                    "Name": object.Name,
-                    "Level": (
-                        Element.get_container(object).Name
-                        if Element.get_container(object)
-                        else ""
-                    ),
-                    "ObjectType": (
-                        Element.get_type(object).Name
-                        if Element.get_type(object)
-                        else ""
-                    ),
-                    "Position": [x, y, z],
-                    "RevertOrigin": revert_origin,
-                    "Vertices": scaled_grouped_verts,
-                }
-            )
-        return objects_data
