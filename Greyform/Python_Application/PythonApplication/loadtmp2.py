@@ -242,8 +242,6 @@ class loadTMP2:
         for base_id in df["Base ID"].dropna().unique():
             if base_id.endswith("a"):
                 self.add_TMP5_by_base(base_id, flat=True)
-            elif base_id.endswith("b"):
-                self.add_TMP5_by_base(base_id, flat=False)
         self.index += 1
         self.addTMP6()
 
@@ -290,27 +288,6 @@ class loadTMP2:
                     "Position X (mm)": x + xpos_offset,
                     "Position Y (mm)": self.y_max - self.small_wall_finishes_height - self.wall_height,
                     "Position Z (mm)": self.zreference,
-                    "Wall Number": "",
-                    "Shape type": "",
-                    "Status": "blank",
-                    "Quadrant": 1,
-                    "Unnamed : 9": "",
-                    "Width": "",
-                    "Height": "",
-                    "Orientation": "",
-                    "Diameter": "",
-                })
-        else:
-            interval = self.get_interval(row)
-            z_positions = list(range(self.zreference, ceiling, interval))
-            for z, num in zip(z_positions, marker_numbers):
-                self.data.append({
-                    "Stage": "Stage 2",
-                    "Marking type": "Tile",
-                    "Point number/name": f"{tmp_base}{num}",
-                    "Position X (mm)": extra_x + xpos_offset,
-                    "Position Y (mm)": self.y_max - self.small_wall_finishes_height - self.wall_height,
-                    "Position Z (mm)": z,
                     "Wall Number": "",
                     "Shape type": "",
                     "Status": "blank",

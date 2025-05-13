@@ -305,30 +305,6 @@ class loadTMP:
                             "Diameter": "",
                         })
                         counter += 1
-                mid_y = int((total_internal_wall - (lowest_x / 2)))
-                tmp2c_variants = [bid for bid in grouped["Base ID"].dropna() if bid.startswith("TMP2S2c")]
-                for j, tmp_base in enumerate(sorted(tmp2c_variants)):
-                    row = grouped[grouped["Base ID"] == tmp_base].iloc[0]
-                    interval = self.get_interval(row)
-                    z_positions = list(range(self.zreference, ceiling, interval))
-                    for counter, z in enumerate(z_positions, start=1):
-                        self.data.append({
-                            "Stage": "Stage 2",
-                            "Marking type": "Tile",
-                            "Point number/name": f"{tmp_base}{counter}",
-                            "Position X (mm)": self.thickness,
-                            "Position Y (mm)": mid_y,
-                            "Position Z (mm)": z,
-                            "Wall Number": wallname,
-                            "Shape type": "",
-                            "Status": "blank",
-                            "Quadrant": 1,
-                            "Unnamed : 9": "",
-                            "Width": "",
-                            "Height": "",
-                            "Orientation": "",
-                            "Diameter": "",
-                        })
         self.index += 1
         self.addTMP3()
 
