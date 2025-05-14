@@ -240,14 +240,11 @@ class Exportexcelinfo(object):
         positionz = row["Position Z (mm)"]
         center_z = self.centerlinez()
         internaldimensiony = self.floor[1]
-        twowall_x = 0
         thickness = self.wall_finishes_height + self.wall_height
         small_thickness = self.small_wall_height + self.wall_height
         internaldimensionx = extractor.calculate_internaldimensionx(
             thickness, small_thickness, self.wallformat
         )
-        x_min, x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
-        y_min, y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
         direction_stack = []
         count_plus_y = 0
         count_minus_y = 0
@@ -255,18 +252,10 @@ class Exportexcelinfo(object):
             direction_stack.append(direction)
             count_minus_y = direction_stack.count("-Y")
             count_plus_y = direction_stack.count("+Y")
-            if count_plus_y >= 2:
-                twowall_x = x_max - (x_max - x_min)
-            elif count_minus_y >= 2:
-                twowall_x = x_max - x_min
         if internaldimensiony != (
             max(self.axis_widths["x"]) - min(self.axis_widths["x"])
         ):
             internaldimensiony = max(self.axis_widths["x"]) - min(self.axis_widths["x"])
-            y_max = max(self.axis_widths["x"]) - min(self.axis_widths["x"])
-            y_min = (max(self.axis_widths["x"]) - min(self.axis_widths["x"])) - (
-                max(self.axis_widths["y"]) - min(self.axis_widths["y"])
-            )
         pos_z = positionz - center_z + (self.floorheight) - (self.wall_height / 2)
         for wall_id, wall in self.wallformat.items():
             center_x = internaldimensionx / 2
@@ -279,80 +268,22 @@ class Exportexcelinfo(object):
                         pos_z = positionz - center_z + (self.floorheight)
                     robotposy = positiony - posy
                     robotposx = positionx - thickness
-                    if (
-                        twowall_x < positionx
-                        and internaldimensionx > positionx
-                        and count_plus_y == 2
-                    ) or (
-                        center_x < positionx
-                        and internaldimensionx > positionx
-                        and count_minus_y == 2
-                    ):
-                        startingrange = wall["pos_y_range"][0]
-                        if (
-                            startingrange > y_max - y_min - thickness
-                            and startingrange < internaldimensiony - thickness
-                        ):
-                            startingrange = internaldimensiony - thickness
-                        endrange = wall["pos_y_range"][1]
-                        if (
-                            endrange - startingrange < internaldimensiony
-                            and endrange - startingrange > y_min
-                            and count_plus_y == 2
-                        ):
-                            endrange = internaldimensiony
-                            robotposx = (x_max - (thickness * 2)) - robotposx
-                        elif count_plus_y == 2:
-                            endrange = internaldimensiony - thickness
-                        robotposy = (
-                            positiony - startingrange - ((endrange - startingrange) / 2)
-                        )
-                        if count_minus_y == 2:
-                            if robotposy > 0:
-                                return pd.Series([robotposx, -abs(robotposy), pos_z])
-                            else:
-                                return pd.Series([robotposx, abs(robotposy), pos_z])
-                        else:
-                            return pd.Series([robotposx, robotposy, pos_z])
-                    else:
-                        endrange = wall["pos_y_range"][1]
-                        if endrange != internaldimensiony:
-                            robotposy = positiony - ((endrange - (thickness * 2)) / 2)
-                        return pd.Series([robotposx, robotposy, pos_z])
+                    if count_plus_y == 2:
+                        if robotposx > 0:
+                            if robotposx >= (internaldimensionx - (thickness*2)) and robotposx < (internaldimensionx):
+                                robotposx = (internaldimensionx - (thickness*2)) - robotposx
+                    return pd.Series([robotposx, robotposy, pos_z])
                 elif wall["axis"] == "x":
                     robotposy = positiony - thickness
                     robotposx = positionx - center_x
-                    if posy < positiony and internaldimensiony > positiony:
-                        startingrange = wall["pos_x_range"][0]
-                        endrange = wall["pos_x_range"][1]
-                        endrangey = wall["pos_y_range"][1]
-                        robotposx = (
-                            positionx - startingrange - ((endrange - startingrange) / 2)
-                        )
-                        if count_minus_y == 2 and (
-                            endrangey == y_max - y_min
-                            or endrangey == y_max - (y_max - y_min)
-                        ):
-                            robotposx = (
-                                positionx
-                                - startingrange
-                                - ((endrange - startingrange) / 2)
-                            )
-                        if count_minus_y == 2:
-                            if robotposx > 0:
-                                return pd.Series([robotposy, -abs(robotposx), pos_z])
-                            else:
-                                return pd.Series([robotposy, abs(robotposx), pos_z])
-                        else:
-                            robotposy = (
-                                internaldimensiony - (thickness * 2)
-                            ) - robotposy
+                    if count_plus_y == 2:
+                        if robotposy > 0:
+                            robotposy = (internaldimensiony - (thickness*2))- robotposy
                             return pd.Series([robotposy, robotposx, pos_z])
+                    if robotposx > 0:
+                        return pd.Series([robotposy, -abs(robotposx), pos_z])
                     else:
-                        if robotposx > 0:
-                            return pd.Series([robotposy, -abs(robotposx), pos_z])
-                        else:
-                            return pd.Series([robotposy, abs(robotposx), pos_z])
+                        return pd.Series([robotposy, abs(robotposx), pos_z])
         return pd.Series([positionx - thickness, positiony - thickness, 0])
 
     def centerlinez(self):
