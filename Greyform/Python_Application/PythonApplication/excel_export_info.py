@@ -173,6 +173,8 @@ class Exportexcelinfo(object):
                 "BSS.MONIC.BIB TAP",
                 "BSS.Bottle Trap",
                 "BSS.GESSI,BM",
+                "BSS.Shallow",
+                "M_Coupling",
             ]
             pattern = "|".join(unwanted_names)
             dataframe = dataframe[

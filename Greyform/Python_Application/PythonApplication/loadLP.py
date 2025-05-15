@@ -1,4 +1,3 @@
-
 import pandas as pd
 from ifcopenshell.util.placement import get_local_placement, get_axis2placement
 import numpy as np
@@ -38,7 +37,6 @@ class loadLP:
                     ypos = obj.get("Position Y (mm)", 0)
                     zpos = obj.get("Position Z (mm)", 0)
                     vert = np.array(obj.get("verticles", []))
-                    self.data = [entry for entry in self.data if label_name.lower() not in str(entry.get("Point number/name", "")).lower()]
                     if len(vert) > 0:
                         vert = np.array(vert)
                         x_min, x_max = vert[:, 0].min(), vert[:, 0].max()
@@ -88,7 +86,6 @@ class loadLP:
                     ypos = obj.get("Position Y (mm)", 0)
                     zpos = obj.get("Position Z (mm)", 0)
                     vert = np.array(obj.get("verticles", []))
-                    self.data = [entry for entry in self.data if label_name.lower() not in str(entry.get("Point number/name", "")).lower()]
                     if len(vert) > 0:
                         vert = np.array(vert)
                         x_min, x_max = vert[:, 0].min(), vert[:, 0].max()
@@ -138,7 +135,6 @@ class loadLP:
                     ypos = obj.get("Position Y (mm)", 0)
                     zpos = obj.get("Position Z (mm)", 0)
                     vert = np.array(obj.get("verticles", []))
-                    self.data = [entry for entry in self.data if label_name.lower() not in str(entry.get("Point number/name", "")).lower()]
                     if len(vert) > 0:
                         vert = np.array(vert)
                         y_min, y_max = vert[:, 1].min(), vert[:, 1].max()
