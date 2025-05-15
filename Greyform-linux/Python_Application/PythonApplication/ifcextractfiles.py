@@ -1,6 +1,7 @@
 import pandas as pd
 import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement, get_axis2placement
+import PythonApplication.arraystorage as storingelement
 import ifcopenshell
 import numpy as np
 
@@ -27,9 +28,13 @@ def get_attribute_value(object_data, attribute):
 
 # convert to other wall number for rotation
 def apply_rotation_to_markers(worksheet, df_class):
-    marker_col_index = df_class.columns.get_loc("Shape type")
+    if "Shape Type" not in df_class.columns:
+        return
+    if df_class.empty:
+        return
+    marker_col_index = df_class.columns.get_loc("Shape Type")
     for row_idx, (name, marker) in enumerate(
-        zip(df_class["Point number/name"], df_class["Shape type"]), start=1
+        zip(df_class["Point Name"], df_class["Shape Type"]), start=1
     ):
         if pd.isna(marker) or marker == "":
             marker = "?"  # default placeholder or leave it as-is
@@ -53,7 +58,6 @@ def apply_rotation_to_markers(worksheet, df_class):
             if marker == "6":
                 new_marker = 6
             worksheet.write(row_idx, marker_col_index + 1, new_marker)
-
 
 
 def add_pset_attributes(psets, pset_attributes):

@@ -95,14 +95,6 @@ class createMesh(QMainWindow):
         self.wallaxis = vtk_data_excel.wall_format(self.wall)
         self.loadStl()
 
-    def show_cancelation_dialog(self, text):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
-        msg.setWindowTitle("Cancellation")
-        msg.setText(text)
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.exec_()
-
     # load stl in vtk frame
     def loadStl(self):
         meshs = mesh.Mesh.from_file(self.polydata)

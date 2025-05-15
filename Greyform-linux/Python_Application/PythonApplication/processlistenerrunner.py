@@ -61,9 +61,9 @@ class ListenerNodeRunner():
         if self.listener_started:
             for data in markingitemsbasedonwallnumber:
                 picked_position = [
-                    int(data["Position X (m)"]),
-                    int(data["Position Y (m)"]),
-                    int(data["Position Z (m)"]),
+                    int(data["Position X"]),
+                    int(data["Position Y"]),
+                    int(data["Position Z"]),
                 ]
                 self.talker_node.publish_file_message(self.file, excel_data)
                 self.talker_node.publish_selection_message(

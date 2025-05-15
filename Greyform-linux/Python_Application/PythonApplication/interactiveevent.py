@@ -64,6 +64,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.progress_dialog = QProgressDialog(
             "Scanning...", "Cancel", 0, self.totalsteps, self.parent
         )
+        self.progress_dialog.setCancelButton(None)
         self.progress_dialog.setWindowTitle("Progress")
         self.progress_dialog.setMinimumDuration(0)
         self.progress_dialog.setAutoClose(True)
@@ -110,9 +111,9 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         dialog.exec_()  # Show the dialog
 
     def initialize_wall_tracking(self):
-        self.stagetext = self.stagestorage[self.currentindexstage] 
-        self.remaining_walls_to_scan = set(self.identifier.keys()) 
-        self.stage_completed = False  
+        self.stagetext = self.stagestorage[self.currentindexstage]
+        self.remaining_walls_to_scan = set(self.identifier.keys())
+        self.stage_completed = False
 
     def find_next_valid_wall(self, wall_keys):
         while self.wall_index < len(wall_keys) - 1:

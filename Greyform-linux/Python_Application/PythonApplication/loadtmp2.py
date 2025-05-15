@@ -138,7 +138,6 @@ class loadTMP2:
         df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
         df["Base ID"] = df["Pin ID"].str.extract(r"(TMP4S2[a-z])")
         grouped = df.groupby("Base ID").first().reset_index()
-        
         wall_entry = None
         wallname = ""
         for entry in self.label_map:
@@ -202,6 +201,8 @@ class loadTMP2:
         for base_id in df["Base ID"].dropna().unique():
             if base_id.endswith("a"):
                 self.add_TMP5_by_base(base_id, flat=True)
+            else:
+                self.add_TMP5_by_base(base_id, flat=False)
         self.index += 1
         self.addTMP6()
 
@@ -212,9 +213,6 @@ class loadTMP2:
         df = df[df["Pin ID"].astype(str).str.startswith("TMP5S2")]
         df["Base ID"] = df["Pin ID"].str.extract(r"(TMP5S2[a-z])")
         grouped = df[df["Base ID"] == tmp_base]
-        if grouped.empty:
-            print(f"[WARN] No rows found for base {tmp_base}")
-            return
         row = grouped.iloc[0]
         label_name = str(row.get("Penetration/Fitting/Reference Point Name", "")).strip().lower()
         matched_obj = next(
@@ -232,6 +230,7 @@ class loadTMP2:
         tile_width = unique_x[0] if len(unique_x) > 0 else 450
         trimmed_x = unique_x[:-1] if len(unique_x) >= 2 else unique_x
         third_x = trimmed_x[-1] + tile_width
+        extra_x = third_x + (tile_width / 2)
         new_x = np.append(trimmed_x, third_x)
         pin_ids = grouped["Pin ID"].dropna().astype(str)
         marker_numbers = sorted(
@@ -257,6 +256,28 @@ class loadTMP2:
                     "Orientation": "",
                     "Diameter": "",
                 })
+        else:
+            interval = self.get_interval(row)
+            z_positions = list(range(self.zreference, ceiling, interval))
+            for z, num in zip(z_positions, marker_numbers):
+                self.data.append({
+                    "Stage": "Stage 2",
+                    "Marking type": "Tile",
+                    "Point number/name": f"{tmp_base}{num}",
+                    "Position X (mm)": extra_x + xpos_offset,
+                    "Position Y (mm)": self.y_max - self.small_wall_finishes_height - self.wall_height,
+                    "Position Z (mm)": z,
+                    "Wall Number": "",
+                    "Shape type": "",
+                    "Status": "blank",
+                    "Quadrant": 1,
+                    "Unnamed : 9": "",
+                    "Width": "",
+                    "Height": "",
+                    "Orientation": "",
+                    "Diameter": "",
+                })
+
 
     def addTMP6(self):
         ceiling = int(self.Cellingstoreyz)
@@ -365,7 +386,8 @@ class loadTMP2:
         drain_label = next((n for n in ref_names if "drain" in n.lower()), None)
         found_tece = found_floor150 = found_floor = found_drain = False
         unique_y = []
-        width = width150 = height150 = 0
+        width = width150 = height150 = max_z_floor_150 = 0
+        max_z_floor_600 = 0
         for obj in self.verts_data:
             name = obj.get("Point number/name", "")
             prefinedType = obj.get("PredefinedType", "")
@@ -381,6 +403,9 @@ class loadTMP2:
                 vertices = np.array(obj.get("verticles", []))
                 if target_name_keyword150 and target_name_keyword150 in name:
                     y_values = vertices[:, 1]
+                    z_values = vertices[:, 2]
+                    unique_z = np.unique(z_values.astype(int))
+                    max_z_floor_150 = max(unique_z)
                     rounded_y = np.ceil(y_values / 10) * 10
                     unique_y = np.unique(rounded_y.astype(int))
                     match = re.search(r"\((\d+)[xX](\d+)mm\)", name)
@@ -390,6 +415,9 @@ class loadTMP2:
                     found_floor150 = True
                 if target_name_keyword600 and target_name_keyword600 in name:
                     match = re.search(r"\((\d+)[xX](\d+)mm\)", name)
+                    z_values = vertices[:, 2]
+                    unique_z = np.unique(z_values.astype(int))
+                    max_z_floor_600 = max(unique_z)
                     if match:
                         width = int(match.group(1))
                     found_floor = True
@@ -424,9 +452,11 @@ class loadTMP2:
                     if step == height150:
                         y_start = unique_y[0] + height150
                         y_end = unique_y[-1]
+                        z_max = max_z_floor_150
                     elif step == width:
                         y_start = unique_y[0] + width
                         y_end = unique_y[-1] + width
+                        z_max = max_z_floor_600
                     y_positions = list(range(y_start, y_end, step))
                     for counter, y_pos in enumerate(y_positions, start=1):
                         label = f"{base}{counter}"
@@ -438,7 +468,7 @@ class loadTMP2:
                                     "Point number/name": label,
                                     "Position X (mm)": x,
                                     "Position Y (mm)": y_pos,
-                                    "Position Z (mm)":-abs(self.wall_offset),
+                                    "Position Z (mm)": z_max,
                                     "Wall Number": "7",
                                     "Shape type": "",
                                     "Status": "blank",
