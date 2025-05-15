@@ -54,6 +54,7 @@ class Exportexcelinfo(object):
             )
         )
         self.thickness = self.wall_height + self.wall_finishes_height
+        self.smallthickness = self.wall_height + self.small_wall_height
         self.wallformat, self.axis_widths = extractor.addranges(
             self.floor,
             self.wall_height,
@@ -151,7 +152,9 @@ class Exportexcelinfo(object):
             dataframe[["Stage", "Marking type"]] = dataframe.apply(
                 self.applystage, axis=1
             )
+            dataframe[["Width","Height"]] = dataframe.apply(self.applyinternalwidth, axis=1)
             dataframe = dataframe[dataframe["Stage"] != "Stage 1"]
+
             startingwall = -abs(self.meterline + (self.wall_height / 2))
             endingwall = -abs(self.centerlinez() + (self.wall_height / 2))
             dataframe = dataframe[
@@ -166,6 +169,10 @@ class Exportexcelinfo(object):
                 "THRESHOLD",
                 "BSS.Shower",
                 "BSS.GESSI.SH",
+                "BSS.Vesbo Tee Fiting",
+                "BSS.MONIC.BIB TAP",
+                "BSS.Bottle Trap",
+                "BSS.GESSI,BM",
             ]
             pattern = "|".join(unwanted_names)
             dataframe = dataframe[
@@ -211,13 +218,15 @@ class Exportexcelinfo(object):
             )
             dataframe.rename(
                 columns={
-                    "Position X (mm)": "Position X (m)",
-                    "Position Y (mm)": "Position Y (m)",
-                    "Position Z (mm)": "Position Z (m)",
+                    "Position X (mm)": "Position X",
+                    "Position Y (mm)": "Position Y",
+                    "Position Z (mm)": "Position Z",
+                    "Point number/name": "Point Name",
+                    "Shape type": "Shape Type"
                 },
                 inplace=True,
             )
-            dataframe = dataframe.drop_duplicates(subset=["Point number/name"])
+            dataframe = dataframe.drop_duplicates(subset=["Point Name"])
             file_name = f"exporteddatassss(with TMP)(draft)(tetra).xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
@@ -232,6 +241,42 @@ class Exportexcelinfo(object):
                     extractor.apply_rotation_to_markers(worksheet, df_class)
         except Exception as e:
             extractor.log_error(f"Failed to write Excel file: {e}")
+
+    def applyinternalwidth(self, row):
+        width = row["Width"]
+        height = row["Height"]
+        wall_num = row["Wall Number"]
+        x_max , x_min = max(self.axis_widths["x"]) , min(self.axis_widths["x"])
+        y_max , y_min = max(self.axis_widths["y"]) , min(self.axis_widths["y"])
+        if width == y_min:
+            if width % 10 != 0 and y_max % 10 != 0 :
+                internal_height = y_max-(self.thickness+self.smallthickness)
+                second_internal_height = y_max - y_min - (self.thickness*2)
+                return pd.Series([internal_height-second_internal_height, height])
+            else:
+                return pd.Series([width, height])
+        if width == x_min:
+            if width % 10 != 0 and y_max % 10 != 0 :
+                internal_height = x_max-(self.thickness+self.smallthickness)
+                second_internal_height = x_max - x_min - (self.thickness*2)
+                return pd.Series([internal_height-second_internal_height, height])
+            else:
+                return pd.Series([width, height])
+        if width % 10 != 0 :
+            return pd.Series([(width-(self.thickness+self.smallthickness)), height])
+        if wall_num == 7:
+            internal_width = 0 
+            internal_height = 0
+            if height % 10 != 0 :
+                internal_height = height-(self.thickness+self.smallthickness)
+            else:
+                internal_height = height-(self.thickness*2)
+            if width % 10 != 0 :
+                internal_width = width-(self.thickness+self.smallthickness)
+            else:
+                internal_width = width -(self.thickness*2)
+            return pd.Series([internal_width, internal_height])
+        return pd.Series([(width-(self.thickness*2)), height])
 
     def applywallpoints(self, row):
         wall_number = row["Wall Number"]
@@ -272,6 +317,11 @@ class Exportexcelinfo(object):
                         if robotposx > 0:
                             if robotposx >= (internaldimensionx - (thickness*2)) and robotposx < (internaldimensionx):
                                 robotposx = (internaldimensionx - (thickness*2)) - robotposx
+                    if count_minus_y == 2:    
+                        if robotposx > 0:
+                            return pd.Series([robotposx, -abs(robotposy), pos_z])
+                        else:
+                            return pd.Series([robotposx, abs(robotposy), pos_z])
                     return pd.Series([robotposx, robotposy, pos_z])
                 elif wall["axis"] == "x":
                     robotposy = positiony - thickness
@@ -284,7 +334,7 @@ class Exportexcelinfo(object):
                         return pd.Series([robotposy, -abs(robotposx), pos_z])
                     else:
                         return pd.Series([robotposy, abs(robotposx), pos_z])
-        return pd.Series([positionx - thickness, positiony - thickness, 0])
+        return pd.Series([positionx-thickness, positiony-thickness, positionz])
 
     def centerlinez(self):
         return (self.floorheight - (self.flooroffset)) + self.meterline

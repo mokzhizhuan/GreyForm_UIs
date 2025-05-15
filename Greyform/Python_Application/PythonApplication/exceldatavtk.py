@@ -17,21 +17,23 @@ def exceldataextractor():
         if "Position X (mm)" in df.columns:
             df.rename(
                 columns={
-                    "Position X (mm)": "Position X (m)",
-                    "Position Y (mm)": "Position Y (m)",
-                    "Position Z (mm)": "Position Z (m)",
+                    "Point number/name": "Point Name",
+                    "Position X (mm)": "Position X",
+                    "Position Y (mm)": "Position Y",
+                    "Position Z (mm)": "Position Z",
+                    "Shape type": "Shape Type"
                 },
                 inplace=True,
             )
         df["Wall Number"] = (df["Wall Number"].astype(str).fillna("Unknown")) 
         df["Wall Number"] = df["Wall Number"].apply(lambda x: int(x) if x.isdigit() else x) 
         wall_numbers_by_sheet[sheet_name] = {
-            "markingidentifiers": df["Point number/name"].astype(str).tolist(),
+            "markingidentifiers": df["Point Name"].astype(str).tolist(),
             "Wall Number": df["Wall Number"].tolist(),
-            "Position X (m)": df["Position X (m)"].tolist(),
-            "Position Y (m)": df["Position Y (m)"].tolist(),
-            "Position Z (m)": df["Position Z (m)"].tolist(),
-            "Shape type": df["Shape type"].tolist(),
+            "Position X": df["Position X"].tolist(),
+            "Position Y": df["Position Y"].tolist(),
+            "Position Z": df["Position Z"].tolist(),
+            "Shape Type": df["Shape Type"].tolist(),
             "width": df["Width"].tolist(),
             "height": df["Height"].tolist(),
             "Status": df["Status"].tolist(),

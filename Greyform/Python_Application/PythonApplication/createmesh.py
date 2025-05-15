@@ -92,24 +92,6 @@ class createMesh(QMainWindow):
         self.wallaxis = vtk_data_excel.wall_format(self.wall)
         self.loadStl()
 
-    def show_cancelation_dialog(self, text):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
-        msg.setWindowTitle("Cancellation")
-        msg.setText(text)
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.exec_()
-
-    def toggle_view(self):
-        if self.showing_camera is True:
-            self.timer.stop()
-            self.stacked_display.setCurrentIndex(0)  # Show VTK
-            self.showing_camera = False
-        else:
-            self.stacked_display.setCurrentIndex(1)  # Show webcam
-            self.timer.start(30)
-            self.showing_camera = True
-
     # load stl in vtk frame
     def loadStl(self):
         meshs = mesh.Mesh.from_file(self.polydata)

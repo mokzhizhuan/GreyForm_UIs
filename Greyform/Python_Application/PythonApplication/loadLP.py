@@ -220,12 +220,20 @@ class loadLP:
                                     ("5", xpos , ypos, zpos + zmax),  # original Position
                                 ]
                         else:
-                            positions = [
-                                ("1", xpos - x_offset, ypos, zpos + z_offset + zmax),  # Upper Left
-                                ("2", xpos + x_offset, ypos, zpos + z_offset + zmax),  # Upper Right
-                                ("3", xpos - x_offset, ypos, zpos - z_offset + zmax),  # Lower Left
-                                ("4", xpos + x_offset, ypos, zpos - z_offset + zmax),  # Lower Right
-                            ]
+                            if "basin" in label_name.lower():
+                                positions = [
+                                    ("1", xpos - (x_offset*3), ypos, zpos + z_offset + zmax),  # Upper Left
+                                    ("2", xpos + x_offset, ypos, zpos + z_offset + zmax),  # Upper Right
+                                    ("3", xpos - (x_offset*3), ypos, zpos - z_offset + zmax),  # Lower Left
+                                    ("4", xpos + x_offset, ypos, zpos - z_offset + zmax),  # Lower Right
+                                ]
+                            else:
+                                positions = [
+                                    ("1", xpos - x_offset, ypos, zpos + z_offset + zmax),  # Upper Left
+                                    ("2", xpos + x_offset, ypos, zpos + z_offset + zmax),  # Upper Right
+                                    ("3", xpos - x_offset, ypos, zpos - z_offset + zmax),  # Lower Left
+                                    ("4", xpos + x_offset, ypos, zpos - z_offset + zmax),  # Lower Right
+                                ]
                         for suffix, x, y, z in positions:
                             self.data.append({
                                 "Stage": "Stage 3",
@@ -274,14 +282,14 @@ class loadLP:
                     if len(vert) == 0:
                         break
                     x_min, x_max = vert[:, 0].min(), vert[:, 0].max()
-                    z_min, z_max = vert[:, 2].min(), vert[:, 2].max()
+                    y_min, y_max = vert[:, 1].min(), vert[:, 1].max()
                     x_offset = (x_max - x_min) // 2
-                    z_offset = (z_max - z_min) // 2
+                    y_offset = (y_max - y_min) // 2
                     positions = [
-                        ("1", xpos - x_offset, ypos, zpos + z_offset + z_max),
-                        ("2", xpos + x_offset, ypos, zpos + z_offset + z_max),
-                        ("3", xpos - x_offset, ypos, zpos - z_offset + z_max),
-                        ("4", xpos + x_offset, ypos, zpos - z_offset + z_max),
+                        ("1", xpos - x_offset, ypos + y_offset, zpos),
+                        ("2", xpos + x_offset, ypos + y_offset, zpos),
+                        ("3", xpos - x_offset, ypos - y_offset, zpos),
+                        ("4", xpos + x_offset, ypos - y_offset, zpos),
                     ]
                     for suffix, x, y, z in positions:
                         self.data.append({
