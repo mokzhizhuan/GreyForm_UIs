@@ -156,7 +156,6 @@ class Exportexcelinfo(object):
                 self.applyinternalwidth, axis=1
             )
             dataframe = dataframe[dataframe["Stage"] != "Stage 1"]
-
             startingwall = -abs(self.meterline + (self.wall_height / 2))
             endingwall = -abs(self.centerlinez() + (self.wall_height / 2))
             dataframe = dataframe[
