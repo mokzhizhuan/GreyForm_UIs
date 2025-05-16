@@ -65,7 +65,7 @@ class ListenerNodeRunner():
                     int(data["Position Y"]),
                     int(data["Position Z"]),
                 ]
-                self.talker_node.publish_file_message(self.file, excel_data)
+                self.talker_node.publish_file_message(self.file , excel_data)
                 self.talker_node.publish_selection_message(
                     wall_number, picked_position, Stagetext , next_wall_number
                 )
@@ -73,10 +73,11 @@ class ListenerNodeRunner():
 
     def _run_process(self):
         env = os.environ.copy()
-        env["ROS_MASTER_URI"] = "http://localhost:11311"
-        env["ROS_IP"] = "172.17.0.3"
-        env["ROS_HOSTNAME"] = "localhost"
-        command = "source /opt/ros/humble/setup.bash && source /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/setup.bash && ros2 run talker_listener listener_node"
+        command = (
+            "source /opt/ros/humble/setup.bash && "
+            "source /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/setup.bash && "
+            "ros2 run talker_listener listener_node"
+        )
         try:
             self.process = subprocess.Popen(
                 ["bash", "-c", command],
@@ -86,10 +87,16 @@ class ListenerNodeRunner():
             )
             self.signals.page_change_signal.emit(4)  
             stdout, stderr = self.process.communicate()
+            stdout_str = stdout.decode("utf-8").strip()
+            stderr_str = stderr.decode("utf-8").strip()
             if self.process.returncode == 0:
+                print("Node started successfully.")
+                print("STDOUT:\n", stdout_str)
                 self.signals.status_signal.emit("Node started successfully.")
                 self.signals.status_signal.emit(stdout.decode("utf-8"))
             else:
+                print("Failed to start node.")
+                print("STDERR:\n", stderr_str)
                 self.signals.status_signal.emit("Failed to start node.")
                 self.signals.status_signal.emit(stderr.decode("utf-8"))
             self.process_finished()

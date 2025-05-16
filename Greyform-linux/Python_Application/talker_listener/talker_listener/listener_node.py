@@ -96,13 +96,9 @@ def run_ros_spin(listenerNode):
 def main(args=None):
     rclpy.init(args=args)
     listenerNode = ListenerNode()
-    try:
-        rclpy.spin(listenerNode)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        listenerNode.destroy_node()
-        rclpy.shutdown()
+    rclpy.spin(listenerNode)
+    listenerNode.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == "__main__":
     main()
