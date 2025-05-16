@@ -20,30 +20,37 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 class FileItemDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
         size = super().sizeHint(option, index)
-        size.setWidth(size.width() + 50)  # Increase the width for better visibility
+        size.setWidth(size.width() + 50)
         return size
 
     def paint(self, painter, option, index):
-        option.displayAlignment = Qt.AlignLeft | Qt.AlignVCenter  # Align text for readability
+        option.displayAlignment = Qt.AlignLeft | Qt.AlignVCenter
         super().paint(painter, option, index)
 
+
+# Proxy model to filter IFC files only
 class FileFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, parent=None):
         super(FileFilterProxyModel, self).__init__(parent)
         self.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.setFilterKeyColumn(0)
+        self.setFilterKeyColumn(0)  # Filter by the file name column
 
     def filterAcceptsRow(self, source_row, source_parent):
         index = self.sourceModel().index(source_row, 0, source_parent)
         if not index.isValid():
             return False
+        # Get the file name and file info
         file_name = self.sourceModel().fileName(index)
         file_info = self.sourceModel().fileInfo(index)
+        # Allow directories to be shown
         if file_info.isDir():
             return True
-        allowed_extensions = {".dxf", ".ifc", ".stl"}
-        return any(file_name.lower().endswith(ext) for ext in allowed_extensions)
-    
+        # Filter to include only .ifc files
+        if file_name.lower().endswith(".ifc"):
+            return True
+        return False
+
+
 # load the mainwindow application
 class Ui_MainWindow(QMainWindow):
     # starting ui
@@ -57,11 +64,21 @@ class Ui_MainWindow(QMainWindow):
         self.file = None
         self.file_path = None
         self.ros_node = ros_node
+        self.apply_shadow_to_labels(self.mainwindow)
         self.mainwindow.showMaximized()
         self.renderer = vtk.vtkRenderer()
         self._translate = QCoreApplication.translate
-        self.stagestoring = ["Stage 1", "Stage 2" , "Stage 3", "Obstacles"]
+        self.stagestoring = ["Stage 1", "Stage 2", "Stage 3", "Obstacles"]
         self.setupUi()
+
+    def apply_shadow_to_labels(self, widget):
+        for child in widget.findChildren(QLabel):
+            shadow = QGraphicsDropShadowEffect()
+            shadow.setBlurRadius(3)
+            shadow.setXOffset(-1)
+            shadow.setYOffset(-1)
+            shadow.setColor(QColor(63, 63, 63))
+            child.setGraphicsEffect(shadow)
 
     # setup UI
     def setupUi(self):
@@ -78,7 +95,7 @@ class Ui_MainWindow(QMainWindow):
                 self.mainwindow.vtkframe
             )
         )
-        usb_path = "/media/ubuntu/DF4A-89D8/"
+        usb_path = "/mnt/usb/"
         self.check_usb_directory(usb_path)
         self.model = QFileSystemModel()
         self.model.setFilter(QDir.AllDirs | QDir.NoDotAndDotDot | QDir.Drives)
@@ -95,12 +112,8 @@ class Ui_MainWindow(QMainWindow):
             QAbstractItemView.SingleSelection
         )
         self.mainwindow.Selectivefiledirectoryview.setHeaderHidden(True)
-        self.mainwindow.Selectivefiledirectoryview.setAnimated(
-            True
-        )  # Smooth folder expansion
-        self.mainwindow.Selectivefiledirectoryview.setIndentation(
-            20
-        )  # Indentation for nested folders
+        self.mainwindow.Selectivefiledirectoryview.setAnimated(True)
+        self.mainwindow.Selectivefiledirectoryview.setIndentation(20)
         self.proxy_model = FileFilterProxyModel()
         self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefilelistview.setModel(self.proxy_model)
@@ -108,58 +121,46 @@ class Ui_MainWindow(QMainWindow):
             self.proxy_model.mapFromSource(self.file_model.index(usb_path))
         )
         self.mainwindow.Selectivefilelistview.setHeaderHidden(False)
-        self.mainwindow.Selectivefilelistview.setSortingEnabled(
-            True
-        )  # Allow sorting by columns
-        self.mainwindow.Selectivefilelistview.setUniformRowHeights(
-            True
-        )  # Optimize performance
-        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(
-            True
-        )  # Better visibility
+        self.mainwindow.Selectivefilelistview.setSortingEnabled(True)
+        self.mainwindow.Selectivefilelistview.setUniformRowHeights(True)
+        self.mainwindow.Selectivefilelistview.setAlternatingRowColors(True)
         self.mainwindow.Selectivefilelistview.setSelectionMode(
             QAbstractItemView.SingleSelection
         )
         header = self.mainwindow.Selectivefilelistview.header()
         header.setSectionResizeMode(QHeaderView.ResizeToContents)
-        header.setStretchLastSection(True)  # Stretch the last column to fill space
+        header.setStretchLastSection(True)
         self.file_model.setHeaderData(0, Qt.Horizontal, "Name")
         self.file_model.setHeaderData(1, Qt.Horizontal, "Size")
         self.file_model.setHeaderData(2, Qt.Horizontal, "Type")
-        self.file_model.setHeaderData(3, Qt.Horizontal, "Date Modified")
-        self.mainwindow.Selectivefilelistview.sortByColumn(
-            0, Qt.AscendingOrder
-        )  # Sort by Name initially
-        self.mainwindow.Selectivefilelistview.setItemsExpandable(
-            False
-        )  # Disable folder expansion
-        self.mainwindow.Selectivefilelistview.setRootIsDecorated(
-            False
-        )  # Hide tree structure in the right panel
-        self.mainwindow.Selectivefilelistview.setColumnWidth(
-            0, 400
-        )  # Minimum width for "Name"
-        self.mainwindow.Selectivefiledirectoryview.setColumnWidth(
-            0, 400
-        )  # Minimum width for "Name"
-        self.mainwindow.Selectivefilelistview.setIconSize(
-            QSize(32, 32)
-        )  # Slightly larger icon size
+        self.mainwindow.Selectivefilelistview.sortByColumn(0, Qt.AscendingOrder)
+        self.mainwindow.Selectivefilelistview.setItemsExpandable(False)
+        self.mainwindow.Selectivefilelistview.setRootIsDecorated(False)
+        self.mainwindow.Selectivefilelistview.setColumnWidth(0, 400)
+        self.mainwindow.Selectivefiledirectoryview.setColumnWidth(0, 400)
+        self.mainwindow.Selectivefilelistview.setIconSize(QSize(32, 32))
+        self.set_treeview_font(self.mainwindow.Selectivefiledirectoryview)
         delegate = FileItemDelegate()
         self.mainwindow.Selectivefilelistview.setItemDelegate(delegate)
         self.mainwindow.Selectivefiledirectoryview.clicked.connect(
             self.on_folder_selected
         )
-        self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
+        self.stacked_display = QStackedWidget()
+        self.stacked_display.addWidget(self.renderWindowInteractor)  # Index 0
         self.mainwindow.horizontalLayout_16.addWidget(self.plotterloader.interactor)
-        self.mainwindow.verticalLayoutframe.addWidget(self.renderWindowInteractor)
+        self.mainwindow.Selectivefilelistview.clicked.connect(self.on_file_selected)
+        self.mainwindow.verticalLayoutframe.addWidget(self.stacked_display)
         self.button_UI()
         self.setStretch()
 
+    def set_treeview_font(self, treeview, size=18):
+        font = QFont()
+        font.setPointSize(size)
+        treeview.setFont(font)
+
     def check_usb_directory(self, path):
-        """Check the folder structure manually to verify visibility."""
         try:
-            contents = os.listdir(path)
+            os.listdir(path)
             return
         except PermissionError:
             return
@@ -169,19 +170,15 @@ class Ui_MainWindow(QMainWindow):
     def on_folder_selected(self, index):
         folder_path = self.model.filePath(index)
         self.file_model.setRootPath(folder_path)
-        if self.mainwindow.Selectivefilelistview.model() != self.proxy_model:
-            self.mainwindow.Selectivefilelistview.setModel(self.proxy_model)
-        if self.proxy_model.sourceModel() != self.file_model:
-            self.proxy_model.setSourceModel(self.file_model)
         source_index = self.file_model.index(folder_path)
         proxy_index = self.proxy_model.mapFromSource(source_index)
         if proxy_index.isValid():
             self.mainwindow.Selectivefilelistview.setRootIndex(proxy_index)
 
-    
+    # File selection function
     def on_file_selected(self, index):
         selected_path = self.file_model.filePath(self.proxy_model.mapToSource(index))
-        if self.file_model.isDir(self.proxy_model.mapToSource(index)):  
+        if self.file_model.isDir(self.proxy_model.mapToSource(index)):
             new_source_index = self.file_model.index(selected_path)
             new_proxy_index = self.proxy_model.mapFromSource(new_source_index)
             if new_proxy_index.isValid():
@@ -195,13 +192,10 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow,
             self.mainwindow.stackedWidget,
             self.mainwindow.menuStartButton,
-            self.mainwindow.menuCloseButton,
             self.mainwindow.NextButton_Page_2,
-            self.mainwindow.BacktoMenuButton,
-            self.mainwindow.BackButton_Page_2,
-            self.mainwindow.ChooseButton,
             self.mainwindow.sendmodelButton,
-            self.mainwindow.CloseButton,
+            self.mainwindow.ChooseButton,
+            self.mainwindow.DataButton,
             self.ros_node,
         )
 
@@ -211,7 +205,7 @@ class Ui_MainWindow(QMainWindow):
         file_path = self.file_model.filePath(source_index)
         self.file_path = file_path
         if self.file_path in self.selected_files:
-            self.selected_files.remove(self.file_path) 
+            self.selected_files.remove(self.file_path)
         else:
             self.selected_files.append(self.file_path)
         file = self.mainwindow.Selectivefilelistview.model().itemData(index)[0]
@@ -226,15 +220,17 @@ class Ui_MainWindow(QMainWindow):
             self.stagestoring,
             self.mainwindow.labelstatus,
             self.mainwindow.scanprogressBar,
-            self.mainwindow.walllabel
+            self.mainwindow.walllabel,
         ]
         self.mainwindow.Itemlabel.setText(f"Model Product : {file}")
         fileselectionmesh.FileSelectionMesh(
-            file, mainwindowforfileselection, self.mainwindow , self.mainwindow.stackedWidget
+            self.file_path,
+            mainwindowforfileselection,
+            self.mainwindow,
+            self.mainwindow.stackedWidget,
         )
         self.show_completion_message()
         self.file_list_selected = True
-
 
     # main window layout
     def setStretch(self):
@@ -247,6 +243,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.layoutWidget,
             self.mainwindow.horizontalLayout,
             self.mainwindow.mainmenu,
+            self.mainwindow.filelabel,
             self.mainwindow.horizontalLayoutWidgetPage2,
             self.mainwindow.buttonpage2layoutWidget,
             self.mainwindow.page,
@@ -261,8 +258,8 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.horizontalLayoutWidgetpage4,
             self.mainwindow.page_3,
             self.mainwindow.sendmodelButton,
-            self.mainwindow.CloseButton,
             self.mainwindow.ChooseButton,
+            self.mainwindow.DataButton,
             self.mainwindow.page_4,
         )
 
@@ -287,22 +284,19 @@ class Ui_MainWindow(QMainWindow):
         self.renderWindowInteractor.GetRenderWindow().GetInteractor().TerminateApp()
         event.accept()
 
-
     def show_completion_message(self):
         msg_box = QMessageBox()
         msg_box.setStyleSheet(
-            """
-        QMessageBox {
-            font-family: Helvetica;
-            font-size: 20px;
-            color: blue;
+            """QMessageBox {
+                font-family: Helvetica;
+                font-size: 20px;
+                color: blue;
             }
-        QPushButton {
-            font-family: Helvetica;
-            font-size: 20px;
-            padding: 5px;
-            }
-            """
+            QPushButton {
+                font-family: Helvetica;
+                font-size: 20px;
+                padding: 5px;
+            }"""
         )
         msg_box.setIcon(QMessageBox.Information)
         msg_box.setWindowTitle("3d Objects file initialize")
@@ -321,6 +315,25 @@ if __name__ == "__main__":
     rospy.init_node("talker_node", anonymous=True)
     talker_node = RosPublisher.TalkerNode()
     app = QApplication(sys.argv)
+    app.setStyleSheet(
+        """
+        QPushButton {
+            background-color: #e0e0e0;
+            border: 2px solid #a9a9a9;
+            border-top-color: #ffffff;     /* highlight on top */
+            border-left-color: #ffffff;
+            border-bottom-color: #888888;  /* shadow on bottom */
+            border-right-color: #888888;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 20px;
+        }
+        QPushButton:pressed {
+            background-color: #d0d0d0;
+            border-style: inset;
+        }
+        """
+    )
     main_window = Ui_MainWindow(talker_node)
     main_window.show()
     timer = rospy.Timer(rospy.Duration(0.1), lambda event: None)

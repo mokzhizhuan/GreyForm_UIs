@@ -39,9 +39,9 @@ class ListenerNodeRunner():
         if self.listener_started:
             for data in markingitemsbasedonwallnumber:
                 picked_position = [
-                    int(data["Position X (mm)"]),
-                    int(data["Position Y (mm)"]),
-                    int(data["Position Z (mm)"]),
+                    int(data["Position X"]),
+                    int(data["Position Y"]),
+                    int(data["Position Z"]),
                 ]
                 self.talker_node.publish_file_message(self.file, excel_data)
                 self.talker_node.publish_selection_message(
@@ -52,9 +52,9 @@ class ListenerNodeRunner():
     def _run_process(self):
         env = os.environ.copy()
         env["ROS_MASTER_URI"] = "http://localhost:11311"
-        env["ROS_IP"] = "172.17.0.3"
+        env["ROS_IP"] = "172.17.0.1"
         env["ROS_HOSTNAME"] = "localhost"
-        command = "source /opt/ros/noetic/setup.bash && source /root/catkin_ws/src/Python_Application/devel/setup.bash && rosrun talker_listener listener_node.py"
+        command = "source /opt/ros/noetic/setup.bash && source /root/catkin_ws/src/Greyform-linux-ros1/Python_Application/devel/setup.bash && rosrun talker_listener listener_node.py"
         try:
             process = subprocess.Popen(
                 ["bash", "-c", command],
@@ -66,9 +66,13 @@ class ListenerNodeRunner():
             stdout, stderr = process.communicate()
             # Debugging: Print output
             if process.returncode == 0:
+                print("Node started successfully.")
+                print("STDERR:", stdout.decode("utf-8"))
                 self.signals.status_signal.emit("Node started successfully.")
                 self.signals.status_signal.emit(stdout.decode("utf-8"))
             else:
+                print("Failed to start node.")
+                print("STDERR:", stderr.decode("utf-8"))
                 self.signals.status_signal.emit("Failed to start node.")
                 self.signals.status_signal.emit(stderr.decode("utf-8"))
             self.process_finished()

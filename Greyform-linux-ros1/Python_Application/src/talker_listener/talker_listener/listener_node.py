@@ -6,11 +6,8 @@ import pandas as pd
 import numpy as np
 
 class ListenerNode:
-    """ A single instance of ListenerNode that runs without any GUI """
-
     def __init__(self):
         rospy.init_node("listener_node", anonymous=True)  # ✅ Initialize ROS in the main thread
-
         self.file_subscription_ = rospy.Subscriber(
             "file_extraction_topic",
             FileExtractionMessage,
@@ -23,12 +20,22 @@ class ListenerNode:
             self.selection_listener_callback,
             queue_size=10,
         )
-
         self.log_buffer = []  # Store logs until Excel processing
+        self.file_callback = None
+        self.selection_callback = None
+        self.wallselection = None
+        self.typeselection = None
+        self.sectionselection = None
+        self.picked_position = []
+        self.message = ""
+        self.spacing = "\n"
+        self.title = "Listener Node"
+        self.log_buffer = []
 
     def file_listener_callback(self, msg):
         """ Process STL and Excel file messages but DO NOT show logs yet """
         try:
+            # Process the Excel file
             self.process_excel_data(msg.excelfile)
         except Exception as e:
             self.log_buffer.append(f"❌ Error processing STL file: {e}")
@@ -40,7 +47,6 @@ class ListenerNode:
         self.picked_position = msg.picked_position
 
     def process_excel_data(self, excel_filepath):
-        """ Process Excel data and update all matching walls and stages """
         self.excelitems = pd.read_excel(excel_filepath, sheet_name=None)
         processed_data = {}
         for stage, data in self.excelitems.items():
@@ -56,12 +62,9 @@ class ListenerNode:
             for sheet_name, df in processed_data.items():
                 df.to_excel(writer, sheet_name=sheet_name, index=False)
         self.log_buffer.clear()
+
         
-
-
-
 def main():
-    """ Main function to run ROS without GUI """
     listener = ListenerNode()
     rospy.spin()  # ✅ Run ROS event loop normally
 

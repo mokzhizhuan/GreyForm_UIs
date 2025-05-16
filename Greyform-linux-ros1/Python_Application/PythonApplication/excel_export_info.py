@@ -2,6 +2,9 @@ import pandas as pd
 from ifcopenshell.util.placement import get_local_placement, get_axis2placement
 import PythonApplication.arraystorage as storingelement
 import PythonApplication.ifcextractfiles as extractor
+import PythonApplication.loadtmp as tmpinserter
+import PythonApplication.loadtmp2 as tmpinserter2
+import PythonApplication.loadLP as Lpinserter
 
 
 # export excel sheet
@@ -20,6 +23,7 @@ class Exportexcelinfo(object):
         wall_offset,
         label_map,
         directional_axes_axis,
+        Cellingstorey,
     ):
         # starting initialize
         super().__init__()
@@ -49,6 +53,8 @@ class Exportexcelinfo(object):
                 self.wall_finishes_height,
             )
         )
+        self.thickness = self.wall_height + self.wall_finishes_height
+        self.smallthickness = self.wall_height + self.small_wall_height
         self.wallformat, self.axis_widths = extractor.addranges(
             self.floor,
             self.wall_height,
@@ -61,7 +67,38 @@ class Exportexcelinfo(object):
         self.meterline = 1000
         self.wallformat = dict(sorted(self.wallformat.items()))
         try:
-            data = extractor.get_objects_data_by_class(file, class_type)
+            data, verts_data = extractor.get_objects_data_by_class(file, class_type)
+            tmpinserter.loadTMP(
+                data,
+                verts_data,
+                Cellingstorey,
+                self.thickness,
+                self.wall_height,
+                self.file,
+                self.meterline,
+                self.label_map,
+                self.wall_finishes_height,
+                self.small_wall_height,
+                self.wallformat,
+                self.axis_widths,
+            )
+            datainserter = tmpinserter2.loadTMP2(
+                data,
+                verts_data,
+                Cellingstorey,
+                self.thickness,
+                self.wall_height,
+                self.meterline,
+                self.label_map,
+                self.wall_finishes_height,
+                self.small_wall_height,
+                self.wallformat,
+                self.axis_widths,
+                self.floorheight,
+            )
+            data = datainserter.addTMP7()
+            datainserterLP = Lpinserter.loadLP(data, verts_data, self.wall_offset)
+            data = datainserterLP.loadLP7()
             attributes = [
                 "Stage",
                 "Marking type",
@@ -95,14 +132,11 @@ class Exportexcelinfo(object):
                     row.append(value)
                 pandas_data.append(tuple(row))
             dataframe = pd.DataFrame.from_records(pandas_data, columns=attributes)
-            dataframe["Wall Number"] = dataframe.apply(
-                self.determine_wall_number, axis=1
-            )
-            dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
             dataframe["Wall Number"] = dataframe.apply(self.itemposition, axis=1)
             dataframe["Wall Number"] = dataframe.apply(
                 self.determine_wall_number, axis=1
             )
+            dataframe["Shape type"] = dataframe.apply(self.add_markers, axis=1)
             dataframe[
                 [
                     "Width",
@@ -118,6 +152,9 @@ class Exportexcelinfo(object):
             dataframe[["Stage", "Marking type"]] = dataframe.apply(
                 self.applystage, axis=1
             )
+            dataframe[["Width", "Height"]] = dataframe.apply(
+                self.applyinternalwidth, axis=1
+            )
             dataframe = dataframe[dataframe["Stage"] != "Stage 1"]
             startingwall = -abs(self.meterline + (self.wall_height / 2))
             endingwall = -abs(self.centerlinez() + (self.wall_height / 2))
@@ -125,29 +162,33 @@ class Exportexcelinfo(object):
                 (dataframe["Position Z (mm)"] >= startingwall)
                 | (dataframe["Position Z (mm)"] <= endingwall)
             ]  # Exclude specific conditions for Wall Number 7
-            dataframe = dataframe[
-                ~(
-                    (dataframe["Position Z (mm)"] < -(self.wall_height / 2))
-                    & (dataframe["Wall Number"] == 7)
-                )
-            ]
+            dataframe = dataframe[dataframe["Position Z (mm)"] < Cellingstorey[2]]
             unwanted_names = [
                 "Basic Wall",
-                "BSS.Shower",
-                "M_Coupling",
-                "BSS.TECE.CONCEALED",
                 "BSS.Gate Valve",
-                "LP",
-                "Floor",
-                "Vesbo",
-                "Chrome",
                 "Ceiling",
                 "THRESHOLD",
+                "BSS.Shower",
+                "BSS.GESSI.SH",
+                "BSS.Vesbo Tee Fiting",
+                "BSS.MONIC.BIB TAP",
+                "BSS.Bottle Trap",
+                "BSS.GESSI,BM",
+                "Shallow",
+                "M_Coupling",
             ]
             pattern = "|".join(unwanted_names)
             dataframe = dataframe[
                 ~dataframe["Point number/name"].str.contains(
                     pattern, case=False, na=False
+                )
+            ]
+            dataframe = dataframe[
+                ~(
+                    dataframe["Point number/name"].str.contains(
+                        "Floor", case=False, na=False
+                    )
+                    & (dataframe["Marking type"] == "Tile")
                 )
             ]
             stages = sorted(
@@ -160,12 +201,37 @@ class Exportexcelinfo(object):
                 by="Wall Number"
             )
             dataframe.loc[dataframe["Wall Number"] == 7, "Wall Number"] = "F"
-            dataframe[["Position X (mm)", "Position Y (mm)", "Position Z (mm)", "Width", "Height"]] = dataframe[["Position X (mm)", "Position Y (mm)", "Position Z (mm)", "Width", "Height"]] / 1000
-            dataframe.rename(columns={
-                "Position X (mm)": "Position X (m)",
-                "Position Y (mm)": "Position Y (m)",
-                "Position Z (mm)": "Position Z (m)",
-            }, inplace=True)
+            dataframe[
+                [
+                    "Position X (mm)",
+                    "Position Y (mm)",
+                    "Position Z (mm)",
+                    "Width",
+                    "Height",
+                ]
+            ] = (
+                dataframe[
+                    [
+                        "Position X (mm)",
+                        "Position Y (mm)",
+                        "Position Z (mm)",
+                        "Width",
+                        "Height",
+                    ]
+                ]
+                / 1000
+            )
+            dataframe.rename(
+                columns={
+                    "Position X (mm)": "Position X",
+                    "Position Y (mm)": "Position Y",
+                    "Position Z (mm)": "Position Z",
+                    "Point number/name": "Point Name",
+                    "Shape type": "Shape Type",
+                },
+                inplace=True,
+            )
+            dataframe = dataframe.drop_duplicates(subset=["Point Name"])
             file_name = f"exporteddatassss(with TMP)(draft)(tetra).xlsx"
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
@@ -181,6 +247,42 @@ class Exportexcelinfo(object):
         except Exception as e:
             extractor.log_error(f"Failed to write Excel file: {e}")
 
+    def applyinternalwidth(self, row):
+        width = row["Width"]
+        height = row["Height"]
+        wall_num = row["Wall Number"]
+        x_max, x_min = max(self.axis_widths["x"]), min(self.axis_widths["x"])
+        y_max, y_min = max(self.axis_widths["y"]), min(self.axis_widths["y"])
+        if width == y_min:
+            if width % 10 != 0 and y_max % 10 != 0:
+                internal_height = y_max - (self.thickness + self.smallthickness)
+                second_internal_height = y_max - y_min - (self.thickness * 2)
+                return pd.Series([internal_height - second_internal_height, height])
+            else:
+                return pd.Series([width, height])
+        if width == x_min:
+            if width % 10 != 0 and y_max % 10 != 0:
+                internal_height = x_max - (self.thickness + self.smallthickness)
+                second_internal_height = x_max - x_min - (self.thickness * 2)
+                return pd.Series([internal_height - second_internal_height, height])
+            else:
+                return pd.Series([width, height])
+        if width % 10 != 0:
+            return pd.Series([(width - (self.thickness + self.smallthickness)), height])
+        if wall_num == 7:
+            internal_width = 0
+            internal_height = 0
+            if height % 10 != 0:
+                internal_height = height - (self.thickness + self.smallthickness)
+            else:
+                internal_height = height - (self.thickness * 2)
+            if width % 10 != 0:
+                internal_width = width - (self.thickness + self.smallthickness)
+            else:
+                internal_width = width - (self.thickness * 2)
+            return pd.Series([internal_width, internal_height])
+        return pd.Series([(width - (self.thickness * 2)), height])
+
     def applywallpoints(self, row):
         wall_number = row["Wall Number"]
         positionx = row["Position X (mm)"]
@@ -188,14 +290,11 @@ class Exportexcelinfo(object):
         positionz = row["Position Z (mm)"]
         center_z = self.centerlinez()
         internaldimensiony = self.floor[1]
-        twowall_x = 0
         thickness = self.wall_finishes_height + self.wall_height
         small_thickness = self.small_wall_height + self.wall_height
         internaldimensionx = extractor.calculate_internaldimensionx(
             thickness, small_thickness, self.wallformat
         )
-        x_min, x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
-        y_min, y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
         direction_stack = []
         count_plus_y = 0
         count_minus_y = 0
@@ -203,101 +302,49 @@ class Exportexcelinfo(object):
             direction_stack.append(direction)
             count_minus_y = direction_stack.count("-Y")
             count_plus_y = direction_stack.count("+Y")
-            if count_plus_y >= 2:
-                twowall_x = x_max - (x_max - x_min)
-            elif count_minus_y >= 2:
-                twowall_x = x_max - x_min
         if internaldimensiony != (
             max(self.axis_widths["x"]) - min(self.axis_widths["x"])
         ):
             internaldimensiony = max(self.axis_widths["x"]) - min(self.axis_widths["x"])
-            y_max = max(self.axis_widths["x"]) - min(self.axis_widths["x"])
-            y_min = (max(self.axis_widths["x"]) - min(self.axis_widths["x"])) - (
-                max(self.axis_widths["y"]) - min(self.axis_widths["y"])
-            )
         pos_z = positionz - center_z + (self.floorheight) - (self.wall_height / 2)
         for wall_id, wall in self.wallformat.items():
             center_x = internaldimensionx / 2
             posy = internaldimensiony / 2
             if wall_number == wall_id:
                 if wall["axis"] == "y":
-                    if wall_id == len(self.wallformat):
+                    if wall_id == len(self.wallformat) and count_minus_y == 2:
+                        pos_z = positionz - center_z + (self.floorheight)
+                    elif wall_id == (len(self.wallformat) / 3) and count_plus_y == 2:
                         pos_z = positionz - center_z + (self.floorheight)
                     robotposy = positiony - posy
                     robotposx = positionx - thickness
-                    if (
-                        twowall_x < positionx
-                        and internaldimensionx > positionx
-                        and count_plus_y == 2
-                    ) or (
-                        center_x < positionx
-                        and internaldimensionx > positionx
-                        and count_minus_y == 2
-                    ):
-                        startingrange = wall["pos_y_range"][0]
-                        if (
-                            startingrange > y_max - y_min - thickness
-                            and startingrange < internaldimensiony - thickness
-                        ):
-                            startingrange = internaldimensiony - thickness
-                        endrange = wall["pos_y_range"][1]
-                        if (
-                            endrange - startingrange < internaldimensiony
-                            and endrange - startingrange > y_min
-                            and count_plus_y == 2
-                        ):
-                            endrange = internaldimensiony
-                        elif count_plus_y == 2:
-                            endrange = internaldimensiony - thickness
-                        robotposx = (x_max-(thickness*2)) - robotposx
-                        robotposy = (
-                            positiony - startingrange - ((endrange - startingrange) / 2)
-                        )
-                        if count_minus_y == 2:
-                            if robotposy > 0:
-                                return pd.Series([robotposx, -abs(robotposy), pos_z])
-                            else:
-                                return pd.Series([robotposx, abs(robotposy), pos_z])
+                    if count_plus_y == 2:
+                        if robotposx > 0:
+                            if robotposx >= (
+                                internaldimensionx - (thickness * 2)
+                            ) and robotposx < (internaldimensionx):
+                                robotposx = (
+                                    internaldimensionx - (thickness * 2)
+                                ) - robotposx
+                    if count_minus_y == 2:
+                        if robotposx > 0:
+                            return pd.Series([robotposx, -abs(robotposy), pos_z])
                         else:
-                            return pd.Series([robotposx, robotposy, pos_z])
-                    else:
-                        endrange = wall["pos_y_range"][1]
-                        if endrange != internaldimensiony:
-                            robotposy = positiony - (endrange / 2)
-                        if count_plus_y == 2:
-                            robotposx = internaldimensionx - (thickness * 2)
-                        return pd.Series([robotposx, robotposy, pos_z])
+                            return pd.Series([robotposx, abs(robotposy), pos_z])
+                    return pd.Series([robotposx, robotposy, pos_z])
                 elif wall["axis"] == "x":
                     robotposy = positiony - thickness
                     robotposx = positionx - center_x
-                    if posy < positiony and internaldimensiony > positiony:
-                        startingrange = wall["pos_x_range"][0]
-                        endrange = wall["pos_x_range"][1]
-                        endrangey = wall["pos_y_range"][1]
-                        robotposx = (
-                            positionx - startingrange - ((endrange - startingrange) / 2)
-                        )
-                        if count_minus_y == 2 and (
-                            endrangey == y_max - y_min
-                            or endrangey == y_max - (y_max - y_min)
-                        ):
-                            robotposx = (
-                                positionx
-                                - startingrange
-                                - ((endrange - startingrange) / 2)
-                            )
-                        if count_minus_y == 2:
-                            if robotposx > 0:
-                                return pd.Series([robotposy, -abs(robotposx), pos_z])
-                            else:
-                                return pd.Series([robotposy, abs(robotposx), pos_z])
-                        else:
+                    if count_plus_y == 2:
+                        if robotposy > 0:
+                            robotposy = (
+                                internaldimensiony - (thickness * 2)
+                            ) - robotposy
                             return pd.Series([robotposy, robotposx, pos_z])
+                    if robotposx > 0:
+                        return pd.Series([robotposy, -abs(robotposx), pos_z])
                     else:
-                        if robotposx > 0:
-                            return pd.Series([robotposy, -abs(robotposx), pos_z])
-                        else:
-                            return pd.Series([robotposy, abs(robotposx), pos_z])
+                        return pd.Series([robotposy, abs(robotposx), pos_z])
         return pd.Series([positionx - thickness, positiony - thickness, positionz])
 
     def centerlinez(self):
@@ -392,12 +439,14 @@ class Exportexcelinfo(object):
 
     # add marker and store it in the excel data
     def add_markers(self, row):
-        if pd.isnull(row["Point number/name"]):
+        name = row.get("Point number/name")
+        if pd.isnull(name):
             return "6"
-        if row["Point number/name"] and row["Point number/name"].startswith("TMP"):
+        if isinstance(name, str) and name.startswith("TMP"):
             if (
-                any(char in row["Point number/name"] for char in ["a", "b", "c"])
-                and row["Point number/name"][8] == "s"
+                len(name) > 8
+                and name[8] == "s"
+                and any(c in name for c in ["a", "b", "c"])
             ):
                 return "T"
             else:

@@ -32,39 +32,6 @@ class TalkerNode:
         self.active_dialog = None
         self.listener_started = False
 
-    #run normally with no dialog
-    def run_listernernode(
-        self,
-        file,
-        exceldata,
-        wall_number,
-        sectionnumber,
-        picked_position,
-        Stagelabel,
-        cube_actor,
-    ):
-        if not self.listener_started:
-            try:
-                subprocess.Popen(
-                    ["rosrun", "talker_listener", "listener_node.py"],
-                )
-                self.listener_started = True
-            except Exception as e:
-                error_dialog = logs.LogDialog(
-                    f"Failed to run ListenerNode: {str(e)}", "Error", log_type="error"
-                )
-                error_dialog.exec_()
-        else:
-            self.publish_file_message(file, exceldata)
-            self.publish_selection_message(
-                wall_number,
-                sectionnumber,
-                picked_position,
-                Stagelabel,
-                cube_actor,
-            )
-
-     # show dialog
     def showdialog(self):
         if self.message != "":
             self.show_info_dialog(self.message)
@@ -118,7 +85,7 @@ class TalkerNode:
         msg.data = f"Hello everyone {self.count}"
         self.publisher_.publish(msg)
         self.count += 1
-        rospy.loginfo(f"Publishing {msg.data}")
+        rclpy.loginfo(f"Publishing {msg.data}")
 
     def show_info_dialog(self, message):
         if self.active_dialog:

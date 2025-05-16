@@ -1,7 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QDialog, QVBoxLayout, QLabel, QApplication
 from PyQt5.QtGui import QFont
-import sys
 
 
 # menu dialog to close the app
@@ -32,13 +31,12 @@ class Ui_Dialog_Confirm(QMainWindow):
         buttonBox.setGeometry(QtCore.QRect(30, 240, 341, 100))
         buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
         buttonBox.setStandardButtons(
-            QtWidgets.QDialogButtonBox.StandardButton.Cancel
-            | QtWidgets.QDialogButtonBox.StandardButton.Ok
+            QtWidgets.QDialogButtonBox.StandardButton.Ok
+            | QtWidgets.QDialogButtonBox.StandardButton.Cancel
         )
         buttonBox.setObjectName("buttonBox")
         buttonBox.accepted.connect(dialog.close)
         buttonBox.accepted.connect(self.close)
-        #jus close only , Will configure some robot interaction for this later
         dialog_layout.addWidget(buttonBox)
         dialog.exec_()
 

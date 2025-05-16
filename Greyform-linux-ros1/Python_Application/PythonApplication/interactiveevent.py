@@ -2,10 +2,9 @@ from PyQt5.QtCore import *
 from vtk import *
 import tkinter as tk
 from tkinter import messagebox
-import time, re
+import re
 from PyQt5.QtWidgets import (
     QProgressDialog,
-    QApplication,
     QDialog,
     QPushButton,
     QVBoxLayout,
@@ -35,6 +34,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.stacked_widget = setcamerainteraction[17]
         self.walllabel = setcamerainteraction[18]
         self.listenerdialog = setcamerainteraction[19]
+        self.label_map = setcamerainteraction[20]
         self.cameraactors = cameraactors
         match = re.search(r"\d+", self.wallname)
         self.wall_number = int(match.group())
@@ -64,6 +64,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.progress_dialog = QProgressDialog(
             "Scanning...", "Cancel", 0, self.totalsteps, self.parent
         )
+        self.progress_dialog.setCancelButton(None)
         self.progress_dialog.setWindowTitle("Progress")
         self.progress_dialog.setMinimumDuration(0)
         self.progress_dialog.setAutoClose(True)
@@ -110,15 +111,11 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         dialog.exec_()  # Show the dialog
 
     def initialize_wall_tracking(self):
-        """Initialize tracking of walls to ensure all are scanned before moving to the next stage."""
-        self.stagetext = self.stagestorage[self.currentindexstage]  # Get current stage
-        self.remaining_walls_to_scan = set(
-            self.identifier.keys()
-        )  # Get all wall numbers in current stage
-        self.stage_completed = False  # Ensure we track when a stage is finished
+        self.stagetext = self.stagestorage[self.currentindexstage]
+        self.remaining_walls_to_scan = set(self.identifier.keys())
+        self.stage_completed = False
 
     def find_next_valid_wall(self, wall_keys):
-        """Find the next valid unscanned wall or fallback to 'Floor'."""
         while self.wall_index < len(wall_keys) - 1:
             self.wall_index += 1
             self.wallname = wall_keys[self.wall_index]
@@ -179,6 +176,11 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 self.show_message(
                     "✅ All walls and Floor in Stage 2 & 3 are completed. Moving to the finalization page.."
                 )
+                self.stagetext = "Stage 2"
+                self.Stagelabel.setText(f"Stage : {self.stagetext}")
+                self.wallname = "Wall 1"
+                self.walllabel.setText(f"Wall : {self.wallname}")
+                self.wall_number = 1
                 self.stacked_widget.setCurrentIndex(5)
                 return
             self.refresh()
@@ -196,6 +198,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 self.render,
                 self.walllabel,
                 self.cameraactors,
+                self.label_map,
             )
         )
         self.show_message(
@@ -208,9 +211,11 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         match = re.search(r"\d+", self.wallname)
         self.wall_number = int(match.group())
         self.stage_completed = False
+        self.refresh()
         self.initialize_wall_tracking()
 
     def refresh(self):
+        self.render.ResetCamera()
         self.render.ResetCameraClippingRange()
         self.renderwindowinteractor.GetRenderWindow().Render()
 

@@ -100,27 +100,6 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QPushButton" name="menuCloseButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>15</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Exit</string>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
     </widget>
@@ -186,20 +165,28 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QPushButton" name="BacktoMenuButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Back </string>
-         </property>
-        </widget>
-       </item>
       </layout>
+     </widget>
+     <widget class="QLabel" name="filelabel">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>0</y>
+        <width>261</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Please put your File.</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="page_2">
@@ -215,7 +202,7 @@
         <x>10</x>
         <y>10</y>
         <width>781</width>
-        <height>17</height>
+        <height>41</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -223,6 +210,11 @@
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+       </font>
       </property>
       <property name="text">
        <string>Product :</string>
@@ -273,19 +265,6 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QPushButton" name="BackButton_Page_2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Back</string>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
     </widget>
@@ -299,6 +278,11 @@
         <height>61</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+       </font>
+      </property>
       <property name="text">
        <string>Status : Running.....</string>
       </property>
@@ -308,9 +292,14 @@
        <rect>
         <x>230</x>
         <y>310</y>
-        <width>231</width>
-        <height>23</height>
+        <width>291</width>
+        <height>91</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+       </font>
       </property>
       <property name="value">
        <number>0</number>
@@ -350,7 +339,7 @@
               <widget class="QLabel" name="walllabel">
                <property name="font">
                 <font>
-                 <pointsize>16</pointsize>
+                 <pointsize>20</pointsize>
                 </font>
                </property>
                <property name="text">
@@ -360,6 +349,11 @@
              </item>
              <item>
               <widget class="QLabel" name="Stagelabel">
+               <property name="font">
+                <font>
+                 <pointsize>20</pointsize>
+                </font>
+               </property>
                <property name="text">
                 <string>Stage</string>
                </property>
@@ -433,30 +427,6 @@
        <string>Send Model</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="CloseButton">
-      <property name="geometry">
-       <rect>
-        <x>60</x>
-        <y>350</y>
-        <width>621</width>
-        <height>181</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>40</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Abort/Close</string>
-      </property>
-     </widget>
      <widget class="QPushButton" name="ChooseButton">
       <property name="geometry">
        <rect>
@@ -479,6 +449,30 @@
       </property>
       <property name="text">
        <string>Choose Model</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="DataButton">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>370</y>
+        <width>641</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>40</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Open Data</string>
       </property>
      </widget>
     </widget>

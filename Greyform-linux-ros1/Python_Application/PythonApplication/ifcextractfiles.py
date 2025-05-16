@@ -25,35 +25,34 @@ def get_attribute_value(object_data, attribute):
     else:
         return None
 
-
 # convert to other wall number for rotation
 def apply_rotation_to_markers(worksheet, df_class):
-    marker_col_index = df_class.columns.get_loc("Shape type")
-    for row_idx, (name, marker) in enumerate(
-        zip(
-            df_class["Point number/name"],
-            df_class["Shape type"],
-        ),
-        start=1,
-    ):
-        if name and name.startswith("TMP") and name[8] == "s" and name[3] == "7":
-            print(f"Rotating marker for row {row_idx}: {marker}")
-            if "b" in name:
-                marker = 4
-                worksheet.write(row_idx, marker_col_index + 1, marker)
-            else:
-                marker = 3
-                worksheet.write(row_idx, marker_col_index + 1, marker)
-        else:
-            if marker == "T":
-                marker = 2
-                worksheet.write(row_idx, marker_col_index + 1, marker)
+    if "Shape Type" not in df_class.columns or df_class.empty:
+        return
+    marker_col_index = df_class.columns.get_loc("Shape Type")
+    for row_idx, (name, marker) in enumerate(zip(df_class["Point Name"], df_class["Shape Type"]), start=1):
+        if pd.isna(marker) or marker == "":
+            marker = "?"  # default placeholder
+        new_marker = marker  # fallback
+        if isinstance(name, str) and name.startswith("TMP"):
+            is_tmp7 = name[3:4] == "7"
+            is_subtype = name[8:9] == "s"
+            if is_tmp7 and is_subtype:
+                if "b" in name:
+                    new_marker = 4
+                else:
+                    new_marker = 3
+            elif marker == "T":
+                new_marker = 2
             elif marker == "+":
-                marker = 1
-                worksheet.write(row_idx, marker_col_index + 1, marker)
+                new_marker = 1
             elif marker == "6":
-                marker = 6
-                worksheet.write(row_idx, marker_col_index + 1, marker)
+                new_marker = 6
+        else:
+            if marker == "6":
+                new_marker = 6
+        worksheet.cell(row=row_idx + 1, column=marker_col_index + 2, value=new_marker)
+
 
 
 def add_pset_attributes(psets, pset_attributes):
@@ -75,6 +74,7 @@ def log_text(message):
 
 def get_objects_data_by_class(file, class_type):
     objects_data = []
+    verts_data = []
     pset_attributes = set()
     objects = file.by_type(class_type)
     for object in objects:
@@ -93,6 +93,16 @@ def get_objects_data_by_class(file, class_type):
                 placement = object.ObjectPlacement.RelativePlacement
                 if placement and placement.Location:
                     x, y, z = placement.Location.Coordinates
+            scale_factor = 1000.0
+            if object.Representation is not None:
+                settings = ifcopenshell.geom.settings()
+                shape = ifcopenshell.geom.create_shape(settings, object)
+                verts = shape.geometry.verts
+                grouped_verts = [[verts[i], verts[i + 1], verts[i + 2]] for i in range(0, len(verts), 3)]
+                scaled_grouped_verts = np.array(grouped_verts) * scale_factor
+                scaled_grouped_verts = scaled_grouped_verts.astype(int)
+            else:
+                scaled_grouped_verts = []
             for rel in object.ContainedInStructure:
                 if rel.RelatingStructure.is_a("IfcBuildingStorey"):
                     storey = rel.RelatingStructure
@@ -119,7 +129,18 @@ def get_objects_data_by_class(file, class_type):
                     "Diameter": "",
                 }
             )
-    return objects_data
+            verts_data.append(
+                {
+                    "Point number/name": name,
+                    "verticles" : scaled_grouped_verts,
+                    "Position X (mm)": int(round(x)),
+                    "Position Y (mm)": int(round(y)),
+                    "Position Z (mm)": int(round(z)),
+                    "PredefinedType" : Element.get_predefined_type(object),
+                    "Level" : Element.get_container(object).Name if Element.get_container(object) else "",
+                }
+            )
+    return objects_data , verts_data
 
 
 def stagenumber(name):
@@ -207,7 +228,7 @@ def addranges(floor , wall_height, wall_finishes_height, label_map, wallformat, 
     thickness = wall_height + wall_finishes_height
     direction_widths = {}
     direction_axes = {}
-    for index, (label, wall_data, direction, axis) in enumerate(
+    for index, (label, wall_data, direction, axis, ____) in enumerate(
         label_map, start=1
     ):
         wall_width = wallformat[index]["width"]
@@ -237,7 +258,7 @@ def addranges(floor , wall_height, wall_finishes_height, label_map, wallformat, 
     directional_signs = {
         label: sign for label, _, sign in directional_axes_axis
     }
-    for index, (_, _, direction, _) in enumerate(label_map, start=1):
+    for index, (_, _, direction, _, _) in enumerate(label_map, start=1):
         wall = wallformat[index]
         wall_width = wall["width"]
         axis = direction_axes[direction]

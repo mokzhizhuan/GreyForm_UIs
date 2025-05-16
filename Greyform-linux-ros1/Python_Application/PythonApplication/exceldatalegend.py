@@ -75,9 +75,6 @@ class Exportexcelinfolegend(object):
             self.index += 1
             return None
         name = str(name)
-        if self.index == 117:
-            self.index += 1
-            return None
         if self.wall_name in name:
             if self.indexwall < len(self.wall_600x600mm):
                 wallnum = self.stagenumber(
