@@ -3,10 +3,12 @@ from ifcopenshell.util.placement import get_local_placement, get_axis2placement
 import numpy as np
 
 class loadLP:
-    def __init__(self,data,verts_data,offset):
+    def __init__(self,data, verts_data, offset, count_minus_y,count_plus_y):
         self.data = data
         self.verts_data = verts_data
         self.offset = offset
+        self.count_minus_y = count_minus_y
+        self.count_plus_y = count_plus_y
         self.loadLP1()
 
     def get_wall_alias_from_excel(self, pin_id: str) -> str:
@@ -67,7 +69,10 @@ class loadLP:
                                 "Orientation": "",
                                 "Diameter": "",
                             })
-        self.loadLP3()
+        if self.count_plus_y == 2:
+            self.loadLP3()
+        else:
+            self.loadLP5()
     
     def loadLP3(self):
         df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
@@ -116,7 +121,11 @@ class loadLP:
                                 "Orientation": "",
                                 "Diameter": "",
                             })
-        self.loadLP4()
+        if self.count_plus_y == 2:
+            self.loadLP4()
+        else:
+            self.loadLP7()
+
 
     def loadLP4(self):
         df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
@@ -161,7 +170,10 @@ class loadLP:
                                 "Orientation": "",
                                 "Diameter": "",
                             })
-        self.loadLP5()
+        if self.count_plus_y == 2:
+            self.loadLP5()
+        else:
+            self.loadLP3()
 
     def loadLP5(self):
         df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
@@ -248,7 +260,10 @@ class loadLP:
                                 "Orientation": "",
                                 "Diameter": "",
                             })
-        self.loadLP7()
+        if self.count_plus_y == 2:
+            self.loadLP7()
+        else:
+            self.loadLP4()
 
     def loadLP7(self):
         df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")

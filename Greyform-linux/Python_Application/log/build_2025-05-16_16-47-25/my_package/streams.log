@@ -1,0 +1,46 @@
+[1.960s] Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener:/opt/ros/humble /usr/bin/cmake /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_package -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package
+[2.341s] -- The C compiler identification is GNU 11.4.0
+[2.833s] -- The CXX compiler identification is GNU 11.4.0
+[2.878s] -- Detecting C compiler ABI info
+[3.250s] -- Detecting C compiler ABI info - done
+[3.282s] -- Check for working C compiler: /usr/bin/cc - skipped
+[3.285s] -- Detecting C compile features
+[3.286s] -- Detecting C compile features - done
+[3.297s] -- Detecting CXX compiler ABI info
+[3.727s] -- Detecting CXX compiler ABI info - done
+[3.786s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[3.787s] -- Detecting CXX compile features
+[3.794s] -- Detecting CXX compile features - done
+[3.803s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[5.111s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[5.445s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[5.560s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[5.991s] -- Added test 'flake8' to check Python code syntax and style conventions
+[6.005s] -- Added test 'lint_cmake' to check CMake code style
+[6.006s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[6.018s] -- Added test 'xmllint' to check XML markup files
+[6.021s] -- Configuring done
+[6.059s] -- Generating done
+[6.067s] -- Build files have been written to: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package
+[6.191s] Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener:/opt/ros/humble /usr/bin/cmake /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/my_package -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package
+[6.220s] Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package -- -j8 -l8
+[6.658s] Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener:/opt/ros/humble /usr/bin/cmake --build /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package -- -j8 -l8
+[6.745s] Invoking command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener:/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package
+[6.790s] -- Install configuration: ""
+[6.796s] -- Execute custom install script
+[6.799s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/ament_index/resource_index/package_run_dependencies/my_package
+[6.844s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/ament_index/resource_index/parent_prefix_path/my_package
+[6.890s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/ament_prefix_path.sh
+[6.935s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/ament_prefix_path.dsv
+[6.990s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/path.sh
+[7.034s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/environment/path.dsv
+[7.072s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.bash
+[7.120s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.sh
+[7.187s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.zsh
+[7.242s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/local_setup.dsv
+[7.297s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.dsv
+[7.364s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/ament_index/resource_index/packages/my_package
+[7.435s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/cmake/my_packageConfig.cmake
+[7.488s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/cmake/my_packageConfig-version.cmake
+[7.530s] -- Symlinking: /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/my_package/share/my_package/package.xml
+[7.595s] Invoked command in '/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/talker_listener:/opt/ros/humble /usr/bin/cmake --install /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_package

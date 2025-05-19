@@ -8,6 +8,8 @@ from ifcopenshell.util.placement import get_local_placement
 import math
 import re
 from collections import defaultdict
+import PythonApplication.loadtmp as tmpinserter
+import PythonApplication.loadtmpFloor as FloorTMP
 
 
 class loadTMP2:
@@ -24,7 +26,8 @@ class loadTMP2:
         small_wall_finishes_height,
         wall_format,
         axis_widths,
-        wall_offset,
+        count_minus_y,
+        count_plus_y
     ):
         self.data = data
         self.verts_data = verts_data
@@ -33,17 +36,19 @@ class loadTMP2:
         self.thickness = thickness
         self.wall_height = wall_height
         self.meterline = meterline
-        self.wall_format = wall_format
         self.label_map = label_map
         self.wall_finishes_height = wall_finishes_height
         self.small_wall_finishes_height = small_wall_finishes_height
         self.wall_format = wall_format
-        self.wall_offset = wall_offset
-        self.index = 1
         self.axis_widths = axis_widths
+        self.count_minus_y = count_minus_y
+        self.count_plus_y = count_plus_y
         self.x_min, self.x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
         self.y_min, self.y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
-        self.addTMP4()
+        if self.count_plus_y == 2:
+            self.addTMP4()
+        elif self.count_minus_y == 2:
+            self.addTMP6()
 
     def get_tmp_label_from_excel(
         self, name: str, z_ref: int = 225, tolerance: int = 5, default="TMP??"
@@ -188,30 +193,55 @@ class loadTMP2:
                     }
                 )
                 counter += 1
-        self.index += 1
-        self.addTMP5()
+        if self.count_plus_y == 2:
+            self.addTMP5()
+        else:
+            datainseter = tmpinserter.loadTMP(
+                self.data,
+                self.verts_data,
+                self.Cellingstorey,
+                self.thickness,
+                self.wall_height,
+                self.meterline,
+                self.label_map,
+                self.wall_finishes_height,
+                self.small_wall_finishes_height,
+                self.wall_format,
+                self.axis_widths,
+                self.count_minus_y,
+                self.count_plus_y
+            )
+            datainseter.addTMP3()
 
     def addTMP5(self):
         df = pd.read_excel(
             "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
         )
         df = df[df["Stage 2"].notna()]
-        df = df[df["Pin ID"].astype(str).str.startswith("TMP5S2")]
-        df["Base ID"] = df["Pin ID"].str.extract(r"(TMP5S2[a-z])")
+        if self.count_plus_y == 2:
+            df = df[df["Pin ID"].astype(str).str.startswith("TMP5S2")]
+            df["Base ID"] = df["Pin ID"].str.extract(r"(TMP5S2[a-z])")
+        else:
+            df = df[df["Pin ID"].astype(str).str.startswith("TMP2S2")]
+            df["Base ID"] = df["Pin ID"].str.extract(r"(TMP2S2[a-z])")
         for base_id in df["Base ID"].dropna().unique():
             if base_id.endswith("a"):
                 self.add_TMP5_by_base(base_id, flat=True)
             else:
                 self.add_TMP5_by_base(base_id, flat=False)
-        self.index += 1
         self.addTMP6()
 
     def add_TMP5_by_base(self, tmp_base: str, flat: bool):
         ceiling = int(self.Cellingstoreyz)
+        self.zreference = self.find_first_z_reference(225)
         df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
         df = df[df["Stage 2"].notna()]
-        df = df[df["Pin ID"].astype(str).str.startswith("TMP5S2")]
-        df["Base ID"] = df["Pin ID"].str.extract(r"(TMP5S2[a-z])")
+        if self.count_plus_y == 2:
+            df = df[df["Pin ID"].astype(str).str.startswith("TMP5S2")]
+            df["Base ID"] = df["Pin ID"].str.extract(r"(TMP5S2[a-z])")
+        else:
+            df = df[df["Pin ID"].astype(str).str.startswith("TMP2S2")]
+            df["Base ID"] = df["Pin ID"].str.extract(r"(TMP2S2[a-z])")
         grouped = df[df["Base ID"] == tmp_base]
         row = grouped.iloc[0]
         label_name = str(row.get("Penetration/Fitting/Reference Point Name", "")).strip().lower()
@@ -281,19 +311,28 @@ class loadTMP2:
 
     def addTMP6(self):
         ceiling = int(self.Cellingstoreyz)
+        self.zreference = self.find_first_z_reference(225)
         df = pd.read_excel(
             "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
         )
         df = df[df["Stage 2"].notna()]
-        df = df[df["Pin ID"].astype(str).str.startswith("TMP6S2")]
-        df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
-        df["Base ID"] = df["Pin ID"].str.extract(r"(TMP6S2[a-z])")
+        target_letter = ""
+        if self.count_plus_y == 2:
+            df = df[df["Pin ID"].astype(str).str.startswith("TMP6S2")]
+            df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
+            df["Base ID"] = df["Pin ID"].str.extract(r"(TMP6S2[a-z])")
+            target_letter = "F"
+        else:
+            df = df[df["Pin ID"].astype(str).str.startswith("TMP2S2")]
+            df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
+            df["Base ID"] = df["Pin ID"].str.extract(r"(TMP2S2[a-z])")
+            target_letter = "B"
         grouped = df.groupby("Base ID").first().reset_index()
         wall_entry = None
         wallname = ""
         for entry in self.label_map:
             letter, wall, *_ = entry
-            if letter == "F":
+            if letter == target_letter:
                 wall_entry = entry
                 wallname = wall["name"]
                 break
@@ -330,7 +369,10 @@ class loadTMP2:
         )
         x_array = [x_max - width, x_max - (width * 2)]
         for i, xpos in enumerate(x_array):
-            tmp_base = self.get_next_tmp_base("TMP6S2a", i)
+            if self.count_plus_y == 2:
+                tmp_base = self.get_next_tmp_base("TMP6S2a", i)
+            else:
+                tmp_base = self.get_next_tmp_base("TMP2S2a", i)
             match = grouped[grouped["Base ID"] == tmp_base]
             interval = int(match.iloc[0]["Z Interval (mm)"]) if not match.empty else 600
             counter = 1
@@ -355,130 +397,20 @@ class loadTMP2:
                     }
                 )
                 counter += 1
-        self.index += 1
-        self.addTMP7()
-
-    def addTMP7(self):
-        df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
-        )
-        df = df[df["Stage 2"].notna()]
-        df = df[df["Pin ID"].astype(str).str.startswith("TMP7S2")]
-        base_groups = defaultdict(list)
-        for pid in df["Pin ID"].dropna().astype(str):
-            match = re.fullmatch(r"TMP7S2([a-z])(\d+)", pid)
-            if match:
-                letter, number = match.groups()
-                base = f"TMP7S2{letter}"
-                base_groups[base].append(int(number))
-        ref_names = (
-            df["Penetration/Fitting/Reference Point Name"].dropna().astype(str).unique()
-        )
-        target_name_keyword150 = next(
-            (n for n in ref_names if "150mm" in n.lower() and "floor" in n.lower()),
-            None,
-        )
-        target_name_keyword600 = next(
-            (n for n in ref_names if "600mm" in n.lower() and "floor" in n.lower()),
-            None,
-        )
-        tece_label = next((n for n in ref_names if "tece" in n.lower()), None)
-        drain_label = next((n for n in ref_names if "drain" in n.lower()), None)
-        found_tece = found_floor150 = found_floor = found_drain = False
-        unique_y = []
-        width = width150 = height150 = max_z_floor_150 = 0
-        max_z_floor_600 = 0
-        for obj in self.verts_data:
-            name = obj.get("Point number/name", "")
-            prefinedType = obj.get("PredefinedType", "")
-            level = obj.get("Level", "")
-            if tece_label and tece_label in name:
-                xpostece = obj["Position X (mm)"]
-                found_tece = True
-            if (
-                "floor" in name.lower()
-                and "floor" in prefinedType.lower()
-                and "bedroom" in level.lower()
-            ):
-                vertices = np.array(obj.get("verticles", []))
-                if target_name_keyword150 and target_name_keyword150 in name:
-                    y_values = vertices[:, 1]
-                    z_values = vertices[:, 2]
-                    unique_z = np.unique(z_values.astype(int))
-                    max_z_floor_150 = max(unique_z)
-                    rounded_y = np.ceil(y_values / 10) * 10
-                    unique_y = np.unique(rounded_y.astype(int))
-                    match = re.search(r"\((\d+)[xX](\d+)mm\)", name)
-                    if match:
-                        width150 = int(match.group(1))
-                        height150 = int(match.group(2))
-                    found_floor150 = True
-                if target_name_keyword600 and target_name_keyword600 in name:
-                    match = re.search(r"\((\d+)[xX](\d+)mm\)", name)
-                    z_values = vertices[:, 2]
-                    unique_z = np.unique(z_values.astype(int))
-                    max_z_floor_600 = max(unique_z)
-                    if match:
-                        width = int(match.group(1))
-                    found_floor = True
-            if drain_label and drain_label in name:
-                xposdrain = obj["Position X (mm)"]
-                vertices = np.array(obj.get("verticles", []))
-                x_max = np.max(vertices[:, 0])
-                xposdrain += x_max
-                found_drain = True
-            if (
-                all([found_tece, found_drain, found_floor150, found_floor])
-                and len(unique_y) >= 2
-            ):
-                floor_small_x = [xposdrain - width150, xposdrain]
-                floor_large_x = [xpostece, xpostece + width, xpostece + (width * 2)]
-                min_step = min(height150, width)
-                max_required_rows = (unique_y[-1] - unique_y[0]) // min_step
-                base_keys = sorted(base_groups.keys())
-                for base in base_keys:
-                    max_counter = max(base_groups[base], default=0)
-                    if max_counter < max_required_rows:
-                        additional = list(range(max_counter + 1, max_required_rows + 1))
-                        base_groups[base].extend(additional)
-                all_x_positions = floor_small_x + floor_large_x
-                tile_steps = [height150] * len(floor_small_x) + [width] * len(
-                    floor_large_x
-                )
-                base_list = sorted(base_groups.keys())
-                for i, base in enumerate(base_list):
-                    x = all_x_positions[i]
-                    step = tile_steps[i]
-                    if step == height150:
-                        y_start = unique_y[0] + height150
-                        y_end = unique_y[-1]
-                        z_max = max_z_floor_150
-                    elif step == width:
-                        y_start = unique_y[0] + width
-                        y_end = unique_y[-1] + width
-                        z_max = max_z_floor_600
-                    y_positions = list(range(y_start, y_end, step))
-                    for counter, y_pos in enumerate(y_positions, start=1):
-                        label = f"{base}{counter}"
-                        if not any(d["Point number/name"] == label for d in self.data):
-                            self.data.append(
-                                {
-                                    "Stage": "Stage 2",
-                                    "Marking type": "Tile",
-                                    "Point number/name": label,
-                                    "Position X (mm)": x,
-                                    "Position Y (mm)": y_pos,
-                                    "Position Z (mm)": z_max,
-                                    "Wall Number": "7",
-                                    "Shape type": "",
-                                    "Status": "blank",
-                                    "Quadrant": 1,
-                                    "Unnamed : 9": "",
-                                    "Width": "",
-                                    "Height": "",
-                                    "Orientation": "",
-                                    "Diameter": "",
-                                }
-                            )
-        return self.data
+        if self.count_plus_y == 2:
+            FloorTMP.loadTMPFloor(
+                self.data,
+                self.verts_data,
+                self.Cellingstorey,
+                self.thickness,
+                self.wall_height,
+                self.meterline,
+                self.label_map,
+                self.wall_finishes_height,
+                self.small_wall_finishes_height,
+                self.wall_format,
+                self.axis_widths,
+            )
+        elif self.count_minus_y == 2:
+            self.addTMP5()
 
