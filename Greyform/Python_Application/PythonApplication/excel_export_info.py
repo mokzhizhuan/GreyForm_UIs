@@ -2,8 +2,8 @@ import pandas as pd
 from ifcopenshell.util.placement import get_local_placement, get_axis2placement
 import PythonApplication.arraystorage as storingelement
 import PythonApplication.ifcextractfiles as extractor
-import PythonApplication.loadtmp as tmpinserter
-import PythonApplication.loadtmp2 as tmpinserter2
+import PythonApplication.loadmaintmp as loadTmpMain
+import PythonApplication.loadtmpFloor as FloorTMP
 import PythonApplication.loadLP as Lpinserter
 
 
@@ -66,9 +66,16 @@ class Exportexcelinfo(object):
         )
         self.meterline = 1000
         self.wallformat = dict(sorted(self.wallformat.items()))
+        self.direction_stack = []
+        self.count_plus_y = 0
+        self.count_minus_y = 0
+        for index, (start, end, direction) in enumerate(self.directional_axes_axis):
+            self.direction_stack.append(direction)
+            self.count_minus_y = self.direction_stack.count("-Y")
+            self.count_plus_y = self.direction_stack.count("+Y")
         try:
             data, verts_data = extractor.get_objects_data_by_class(file, class_type)
-            tmpinserter.loadTMP(
+            loadTmpMain.loadmainTMP(
                 data,
                 verts_data,
                 Cellingstorey,
@@ -81,8 +88,10 @@ class Exportexcelinfo(object):
                 self.small_wall_height,
                 self.wallformat,
                 self.axis_widths,
+                self.count_minus_y,
+                self.count_plus_y,
             )
-            datainserter = tmpinserter2.loadTMP2(
+            datainserter = FloorTMP.loadTMPFloor(
                 data,
                 verts_data,
                 Cellingstorey,
@@ -94,10 +103,15 @@ class Exportexcelinfo(object):
                 self.small_wall_height,
                 self.wallformat,
                 self.axis_widths,
-                self.floorheight,
             )
             data = datainserter.addTMP7()
-            datainserterLP = Lpinserter.loadLP(data,verts_data, self.wall_offset)
+            datainserterLP = Lpinserter.loadLP(
+                data,
+                verts_data,
+                self.wall_offset,
+                self.count_minus_y,
+                self.count_plus_y,
+            )
             data = datainserterLP.loadLP7()
             attributes = [
                 "Stage",
@@ -152,7 +166,9 @@ class Exportexcelinfo(object):
             dataframe[["Stage", "Marking type"]] = dataframe.apply(
                 self.applystage, axis=1
             )
-            dataframe[["Width","Height"]] = dataframe.apply(self.applyinternalwidth, axis=1)
+            dataframe[["Width", "Height"]] = dataframe.apply(
+                self.applyinternalwidth, axis=1
+            )
             dataframe = dataframe[dataframe["Stage"] != "Stage 1"]
             startingwall = -abs(self.meterline + (self.wall_height / 2))
             endingwall = -abs(self.centerlinez() + (self.wall_height / 2))
@@ -182,9 +198,11 @@ class Exportexcelinfo(object):
                 )
             ]
             dataframe = dataframe[
-               ~(
-                    dataframe["Point number/name"].str.contains("Floor", case=False, na=False) &
-                    (dataframe["Marking type"] == "Tile")
+                ~(
+                    dataframe["Point number/name"].str.contains(
+                        "Floor", case=False, na=False
+                    )
+                    & (dataframe["Marking type"] == "Tile")
                 )
             ]
             stages = sorted(
@@ -223,7 +241,7 @@ class Exportexcelinfo(object):
                     "Position Y (mm)": "Position Y",
                     "Position Z (mm)": "Position Z",
                     "Point number/name": "Point Name",
-                    "Shape type": "Shape Type"
+                    "Shape type": "Shape Type",
                 },
                 inplace=True,
             )
@@ -247,37 +265,45 @@ class Exportexcelinfo(object):
         width = row["Width"]
         height = row["Height"]
         wall_num = row["Wall Number"]
-        x_max , x_min = max(self.axis_widths["x"]) , min(self.axis_widths["x"])
-        y_max , y_min = max(self.axis_widths["y"]) , min(self.axis_widths["y"])
+        x_max, x_min = max(self.axis_widths["x"]), min(self.axis_widths["x"])
+        y_max, y_min = max(self.axis_widths["y"]), min(self.axis_widths["y"])
         if width == y_min:
-            if width % 10 != 0 and y_max % 10 != 0 :
-                internal_height = y_max-(self.thickness+self.smallthickness)
-                second_internal_height = y_max - y_min - (self.thickness*2)
-                return pd.Series([internal_height-second_internal_height, height])
+            if (
+                width % 10 != 0
+                and y_max % 10 != 0
+                or (self.small_wall_height <= (self.wall_finishes_height / 2))
+            ):
+                internal_height = y_max - (self.thickness + self.smallthickness)
+                second_internal_height = y_max - y_min - (self.thickness * 2)
+                return pd.Series([internal_height - second_internal_height, height])
             else:
                 return pd.Series([width, height])
         if width == x_min:
-            if width % 10 != 0 and y_max % 10 != 0 :
-                internal_height = x_max-(self.thickness+self.smallthickness)
-                second_internal_height = x_max - x_min - (self.thickness*2)
-                return pd.Series([internal_height-second_internal_height, height])
+            if (
+                width % 10 != 0
+                and y_max % 10 != 0
+                or (self.small_wall_height <= (self.wall_finishes_height / 2))
+            ):
+                internal_height = x_max - (self.thickness + self.smallthickness)
+                second_internal_height = x_max - x_min - (self.thickness * 2)
+                return pd.Series([internal_height - second_internal_height, height])
             else:
                 return pd.Series([width, height])
-        if width % 10 != 0 :
-            return pd.Series([(width-(self.thickness+self.smallthickness)), height])
+        if width % 10 != 0:
+            return pd.Series([(width - (self.thickness + self.smallthickness)), height])
         if wall_num == 7:
-            internal_width = 0 
+            internal_width = 0
             internal_height = 0
-            if height % 10 != 0 :
-                internal_height = height-(self.thickness+self.smallthickness)
+            if height % 10 != 0:
+                internal_height = height - (self.thickness + self.smallthickness)
             else:
-                internal_height = height-(self.thickness*2)
-            if width % 10 != 0 :
-                internal_width = width-(self.thickness+self.smallthickness)
+                internal_height = height - (self.thickness * 2)
+            if width % 10 != 0:
+                internal_width = width - (self.thickness + self.smallthickness)
             else:
-                internal_width = width -(self.thickness*2)
+                internal_width = width - (self.thickness * 2)
             return pd.Series([internal_width, internal_height])
-        return pd.Series([(width-(self.thickness*2)), height])
+        return pd.Series([(width - (self.thickness * 2)), height])
 
     def applywallpoints(self, row):
         wall_number = row["Wall Number"]
@@ -291,13 +317,6 @@ class Exportexcelinfo(object):
         internaldimensionx = extractor.calculate_internaldimensionx(
             thickness, small_thickness, self.wallformat
         )
-        direction_stack = []
-        count_plus_y = 0
-        count_minus_y = 0
-        for index, (start, end, direction) in enumerate(self.directional_axes_axis):
-            direction_stack.append(direction)
-            count_minus_y = direction_stack.count("-Y")
-            count_plus_y = direction_stack.count("+Y")
         if internaldimensiony != (
             max(self.axis_widths["x"]) - min(self.axis_widths["x"])
         ):
@@ -308,17 +327,23 @@ class Exportexcelinfo(object):
             posy = internaldimensiony / 2
             if wall_number == wall_id:
                 if wall["axis"] == "y":
-                    if wall_id == len(self.wallformat) and count_minus_y == 2:
+                    if wall_id == len(self.wallformat) and self.count_minus_y == 2:
                         pos_z = positionz - center_z + (self.floorheight)
-                    elif wall_id == (len(self.wallformat) / 3) and count_plus_y == 2:
+                    elif (
+                        wall_id == (len(self.wallformat) / 3) and self.count_plus_y == 2
+                    ):
                         pos_z = positionz - center_z + (self.floorheight)
                     robotposy = positiony - posy
                     robotposx = positionx - thickness
-                    if count_plus_y == 2:
+                    if self.count_plus_y == 2:
                         if robotposx > 0:
-                            if robotposx >= (internaldimensionx - (thickness*2)) and robotposx < (internaldimensionx):
-                                robotposx = (internaldimensionx - (thickness*2)) - robotposx
-                    if count_minus_y == 2:    
+                            if robotposx >= (
+                                internaldimensionx - (thickness * 2)
+                            ) and robotposx < (internaldimensionx):
+                                robotposx = (
+                                    internaldimensionx - (thickness * 2)
+                                ) - robotposx
+                    if self.count_minus_y == 2:
                         if robotposx > 0:
                             return pd.Series([robotposx, -abs(robotposy), pos_z])
                         else:
@@ -327,15 +352,17 @@ class Exportexcelinfo(object):
                 elif wall["axis"] == "x":
                     robotposy = positiony - thickness
                     robotposx = positionx - center_x
-                    if count_plus_y == 2:
+                    if self.count_plus_y == 2:
                         if robotposy > 0:
-                            robotposy = (internaldimensiony - (thickness*2))- robotposy
+                            robotposy = (
+                                internaldimensiony - (thickness * 2)
+                            ) - robotposy
                             return pd.Series([robotposy, robotposx, pos_z])
                     if robotposx > 0:
                         return pd.Series([robotposy, -abs(robotposx), pos_z])
                     else:
                         return pd.Series([robotposy, abs(robotposx), pos_z])
-        return pd.Series([positionx-thickness, positiony-thickness, positionz])
+        return pd.Series([positionx - thickness, positiony - thickness, positionz])
 
     def centerlinez(self):
         return (self.floorheight - (self.flooroffset)) + self.meterline
