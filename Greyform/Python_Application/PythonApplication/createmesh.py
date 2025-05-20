@@ -13,6 +13,7 @@ import PythonApplication.exceldatavtk as vtk_data_excel
 import PythonApplication.actors as createactorvtk
 import PythonApplication.arraystorage as storingelement
 import PythonApplication.ifcextractfiles as extractor
+import PythonApplication.robotplacementrobot as robotplacemats
 
 
 # create the imported stl mesh in vtk frame
@@ -85,6 +86,13 @@ class createMesh(QMainWindow):
             self.axis_widths,
             self.directional_axes_axis,
         )
+        self.direction_stack = []
+        self.count_plus_y = 0
+        self.count_minus_y = 0
+        for index, (start, end, direction) in enumerate(self.directional_axes_axis):
+            self.direction_stack.append(direction)
+            self.count_minus_y = self.direction_stack.count("-Y")
+            self.count_plus_y = self.direction_stack.count("+Y")
         self.stagetext = self.stagestorage[self.currentindexstage]
         self.timer = QTimer()
         self.timer.timeout.connect(lambda: self.update_frame())
@@ -115,6 +123,10 @@ class createMesh(QMainWindow):
             (self.meshbounds[2] + self.meshbounds[3]) / 2,
             (self.meshbounds[4] + self.meshbounds[5]) / 2,
         ]
+        robotplacement = robotplacemats.robotplacement(
+            self.count_plus_y, self.count_minus_y, self.meshbounds
+        )
+        objectrobot = [500,500,500]
         self.wall7 = [self.meshbounds[1], self.meshbounds[3]]
         self.walls = {}
         self.walls, self.cameraactors = createactorvtk.initialize_walls(
@@ -155,7 +167,7 @@ class createMesh(QMainWindow):
             self.identifier,
             self.stacked_widget,
             self.walllabel,
-            self.label_map
+            self.label_map,
         ]
         camera = events.myInteractorStyle(setcamerainteraction, self.cameraactors)
         self.renderwindowinteractor.SetInteractorStyle(camera)

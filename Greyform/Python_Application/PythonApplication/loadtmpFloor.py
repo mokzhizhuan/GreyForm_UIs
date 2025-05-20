@@ -24,6 +24,7 @@ class loadTMPFloor:
         small_wall_finishes_height,
         wall_format,
         axis_widths,
+        flooroffset,
     ):
         self.data = data
         self.verts_data = verts_data
@@ -36,7 +37,7 @@ class loadTMPFloor:
         self.wall_finishes_height = wall_finishes_height
         self.small_wall_finishes_height = small_wall_finishes_height
         self.wall_format = wall_format
-        self.index = 1
+        self.floor_offset = flooroffset
         self.axis_widths = axis_widths
         self.x_min, self.x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
         self.y_min, self.y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
@@ -153,7 +154,7 @@ class loadTMPFloor:
         found_tece = found_floor150 = found_floor = found_drain = False
         unique_y = []
         width = width150 = height150 = max_z_floor_150 = 0
-        max_z_floor_600 = 0
+        max_z_floor_600 = min_z_floor_600 = 0
         for obj in self.verts_data:
             name = obj.get("Point number/name", "")
             prefinedType = obj.get("PredefinedType", "")
@@ -184,6 +185,7 @@ class loadTMPFloor:
                     z_values = vertices[:, 2]
                     unique_z = np.unique(z_values.astype(int))
                     max_z_floor_600 = max(unique_z)
+                    min_z_floor_600 = min(unique_z)
                     if match:
                         width = int(match.group(1))
                     found_floor = True
@@ -218,7 +220,7 @@ class loadTMPFloor:
                     if step == height150:
                         y_start = unique_y[0] + height150
                         y_end = unique_y[-1]
-                        z_max = max_z_floor_150
+                        z_max = min_z_floor_600
                     elif step == width:
                         y_start = unique_y[0] + width
                         y_end = unique_y[-1] + width
@@ -227,6 +229,7 @@ class loadTMPFloor:
                     for counter, y_pos in enumerate(y_positions, start=1):
                         label = f"{base}{counter}"
                         if not any(d["Point number/name"] == label for d in self.data):
+                            depth = z_max + self.floor_offset
                             self.data.append(
                                 {
                                     "Stage": "Stage 2",
@@ -234,7 +237,7 @@ class loadTMPFloor:
                                     "Point number/name": label,
                                     "Position X (mm)": x,
                                     "Position Y (mm)": y_pos,
-                                    "Position Z (mm)": z_max,
+                                    "Position Z (mm)": depth,
                                     "Wall Number": "7",
                                     "Shape type": "",
                                     "Status": "blank",

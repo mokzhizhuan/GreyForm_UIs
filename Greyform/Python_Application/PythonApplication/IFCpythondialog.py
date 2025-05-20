@@ -14,6 +14,7 @@ import PythonApplication.excel_export_4sidesinfo as bim4sideinfo
 import PythonApplication.processloader as Thread
 import PythonApplication.processlistenerrunner as process
 import PythonApplication.ifcextractmaterials as ifcmaterials
+import PythonApplication.robotplacementrobot as robotplacemats
 import numpy as np
 import ifcopenshell.util.element as Element
 import re
@@ -388,9 +389,21 @@ class ProgressBarDialogIFC(QDialog):
         cells = [("triangle", np.array(data["cells"]))]
         self.stl_file = "output.stl"
         mesh = meshio.Mesh(points=points, cells=cells)
+        self.direction_stack = []
+        self.count_plus_y = 0
+        self.count_minus_y = 0
+        for index, (start, end, direction) in enumerate(self.directions):
+            self.direction_stack.append(direction)
+            self.count_minus_y = self.direction_stack.count("-Y")
+            self.count_plus_y = self.direction_stack.count("+Y")
         mesh.cell_data["triangle"] = [np.array(data["material_ids"])]
         meshio.write(self.stl_file, mesh)
         self.meshsplot = pv.read(self.stlwalls[0])
+        self.meshbounds = self.meshsplot.bounds
+        robotplacement = robotplacemats.robotplacement(
+            self.count_plus_y, self.count_minus_y, self.meshbounds
+        )
+        objectrobot = [500,500,500]
         loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
 
     def loadexcel(self):
