@@ -5,6 +5,7 @@ import PythonApplication.ifcextractfiles as extractor
 import PythonApplication.loadmaintmp as loadTmpMain
 import PythonApplication.loadtmpFloor as FloorTMP
 import PythonApplication.loadLP as Lpinserter
+import numpy as np
 
 
 # export excel sheet
@@ -90,6 +91,7 @@ class Exportexcelinfo(object):
                 self.axis_widths,
                 self.count_minus_y,
                 self.count_plus_y,
+                self.flooroffset,
             )
             datainserter = FloorTMP.loadTMPFloor(
                 data,
@@ -103,6 +105,7 @@ class Exportexcelinfo(object):
                 self.small_wall_height,
                 self.wallformat,
                 self.axis_widths,
+                self.flooroffset,
             )
             data = datainserter.addTMP7()
             datainserterLP = Lpinserter.loadLP(
@@ -170,12 +173,20 @@ class Exportexcelinfo(object):
                 self.applyinternalwidth, axis=1
             )
             dataframe = dataframe[dataframe["Stage"] != "Stage 1"]
-            startingwall = -abs(self.meterline + (self.wall_height / 2))
-            endingwall = -abs(self.centerlinez() + (self.wall_height / 2))
+            startingwall = -abs(self.meterline + (self.flooroffset))
+            endingwall = -abs(self.centerlinez() + (self.flooroffset))
             dataframe = dataframe[
-                (dataframe["Position Z (mm)"] >= startingwall)
-                | (dataframe["Position Z (mm)"] <= endingwall)
-            ]  # Exclude specific conditions for Wall Number 7
+                (
+                    (dataframe["Wall Number"] == 7)
+                ) |
+                (
+                    (dataframe["Wall Number"] != 7) &
+                    (
+                        (dataframe["Position Z (mm)"] >= startingwall) |
+                        (dataframe["Position Z (mm)"] <= endingwall)
+                    )
+                )
+            ]
             dataframe = dataframe[dataframe["Position Z (mm)"] < Cellingstorey[2]]
             unwanted_names = [
                 "Basic Wall",
@@ -321,7 +332,7 @@ class Exportexcelinfo(object):
             max(self.axis_widths["x"]) - min(self.axis_widths["x"])
         ):
             internaldimensiony = max(self.axis_widths["x"]) - min(self.axis_widths["x"])
-        pos_z = positionz - center_z + (self.floorheight) - (self.wall_height / 2)
+        pos_z = positionz - center_z + (self.floorheight) - (self.flooroffset)
         for wall_id, wall in self.wallformat.items():
             center_x = internaldimensionx / 2
             posy = internaldimensiony / 2
@@ -336,19 +347,26 @@ class Exportexcelinfo(object):
                     robotposy = positiony - posy
                     robotposx = positionx - thickness
                     if self.count_plus_y == 2:
-                        if robotposx > 0:
+                        if robotposx > center_x:
                             if robotposx >= (
                                 internaldimensionx - (thickness * 2)
                             ) and robotposx < (internaldimensionx):
                                 robotposx = (
                                     internaldimensionx - (thickness * 2)
                                 ) - robotposx
-                    if self.count_minus_y == 2:
+                                return pd.Series([robotposy, robotposx, pos_z])
                         if robotposx > 0:
-                            return pd.Series([robotposx, -abs(robotposy), pos_z])
+                            return pd.Series([-abs(robotposy), robotposx, pos_z])
                         else:
-                            return pd.Series([robotposx, abs(robotposy), pos_z])
-                    return pd.Series([robotposx, robotposy, pos_z])
+                            return pd.Series([abs(robotposy), robotposx, pos_z])
+                    else:
+                        if robotposx > center_x:
+                            return pd.Series([robotposy, robotposx, pos_z])
+                        if robotposx > 0:
+                            return pd.Series([-abs(robotposy), robotposx, pos_z])
+                        else:
+                            return pd.Series([abs(robotposy), robotposx, pos_z])
+                    return pd.Series([robotposy, robotposx, pos_z])
                 elif wall["axis"] == "x":
                     robotposy = positiony - thickness
                     robotposx = positionx - center_x
@@ -357,12 +375,28 @@ class Exportexcelinfo(object):
                             robotposy = (
                                 internaldimensiony - (thickness * 2)
                             ) - robotposy
-                            return pd.Series([robotposy, robotposx, pos_z])
-                    if robotposx > 0:
-                        return pd.Series([robotposy, -abs(robotposx), pos_z])
+                            if robotposx > 0:
+                                return pd.Series([-abs(robotposx), robotposy, pos_z])
+                            else:
+                                return pd.Series([abs(robotposx), robotposy, pos_z])
+                        return pd.Series([robotposx, robotposy, pos_z])
                     else:
-                        return pd.Series([robotposy, abs(robotposx), pos_z])
-        return pd.Series([positionx - thickness, positiony - thickness, positionz])
+                        if robotposy > 0:
+                            robotposy = (
+                                internaldimensiony - (thickness * 2)
+                            ) - robotposy
+                            return pd.Series([robotposx, robotposy, pos_z])
+                        if robotposx > 0:
+                            return pd.Series([-abs(robotposx), robotposy, pos_z])
+                        else:
+                            return pd.Series([abs(robotposx), robotposy, pos_z])
+        return pd.Series(
+            [
+                (positionx - thickness) / 2,
+                (positiony - thickness) / 2,
+                positionz - self.meterline,
+            ]
+        )
 
     def centerlinez(self):
         return (self.floorheight - (self.flooroffset)) + self.meterline

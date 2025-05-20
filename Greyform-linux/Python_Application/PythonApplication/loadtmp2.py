@@ -27,7 +27,8 @@ class loadTMP2:
         wall_format,
         axis_widths,
         count_minus_y,
-        count_plus_y
+        count_plus_y,
+        floor_offset
     ):
         self.data = data
         self.verts_data = verts_data
@@ -43,6 +44,7 @@ class loadTMP2:
         self.axis_widths = axis_widths
         self.count_minus_y = count_minus_y
         self.count_plus_y = count_plus_y
+        self.floor_offset = floor_offset
         self.x_min, self.x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
         self.y_min, self.y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
         if self.count_plus_y == 2:
@@ -209,7 +211,8 @@ class loadTMP2:
                 self.wall_format,
                 self.axis_widths,
                 self.count_minus_y,
-                self.count_plus_y
+                self.count_plus_y,
+                self.floor_offset
             )
             datainseter.addTMP3()
 
@@ -410,6 +413,7 @@ class loadTMP2:
                 self.small_wall_finishes_height,
                 self.wall_format,
                 self.axis_widths,
+                self.floor_offset
             )
         elif self.count_minus_y == 2:
             self.addTMP5()
