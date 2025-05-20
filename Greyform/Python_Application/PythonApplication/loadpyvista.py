@@ -22,6 +22,4 @@ class StLloaderpyvista(object):
             opacity=1.0,
         )
         self.loader.add_mesh(self.robot_cube, color="blue")
-        print("STL bounds:", self.meshsplot.bounds)
-        print("Cube bounds:", self.robot_cube.bounds)
         self.loader.show()
