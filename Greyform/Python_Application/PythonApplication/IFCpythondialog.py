@@ -217,7 +217,11 @@ class ProgressBarDialogIFC(QDialog):
                             shape = ifcopenshell.geom.create_shape(settings, floor)
                             verts = np.array(shape.geometry.verts).reshape(-1, 3)
                             faces = np.array(shape.geometry.faces).reshape(-1, 3)
-                            all_floor_points.append(verts)
+                            scaled_grouped_verts = (
+                                np.array(verts) * self.scale_factor
+                            )
+                            scaled_grouped_verts[:, 2] -= scaled_grouped_verts[:, 2].min()
+                            all_floor_points.append(scaled_grouped_verts)
                             adjusted_faces = faces + point_offset
                             all_floor_faces.append(adjusted_faces)
                             point_offset += verts.shape[0]
@@ -398,13 +402,26 @@ class ProgressBarDialogIFC(QDialog):
             self.count_plus_y = self.direction_stack.count("+Y")
         mesh.cell_data["triangle"] = [np.array(data["material_ids"])]
         meshio.write(self.stl_file, mesh)
-        self.meshsplot = pv.read(self.stlwalls[0])
+        self.meshsplot = pv.read(self.stl_file)
         self.meshbounds = self.meshsplot.bounds
         robotplacement = robotplacemats.robotplacement(
             self.count_plus_y, self.count_minus_y, self.meshbounds
         )
         objectrobot = [500,500,500]
-        loadingstl.StLloaderpyvista(self.meshsplot, self.loader)
+        wall1_position = robotplacement[0]["Wall 1"]
+        cube_center = [
+            wall1_position[0],
+            wall1_position[1],
+            wall1_position[2] + objectrobot[2] / 2
+        ]
+        robot_cube = pv.Cube(
+            center=cube_center,
+            x_length=objectrobot[0],
+            y_length=objectrobot[1],
+            z_length=objectrobot[2]
+        )
+        self.meshsplots = pv.read("floor.stl")
+        loadingstl.StLloaderpyvista(self.meshsplots, self.loader, robot_cube, wall1_position)
 
     def loadexcel(self):
         biminfo.Exportexcelinfo(

@@ -4,8 +4,8 @@ def robotplacement(count_plus_y, count_minus_y, meshbounds):
         robotplacements.append(
             {
                 "Wall 1": [
-                    (meshbounds[0] + meshbounds[1]) / 4 * 3,
-                    (meshbounds[2] + meshbounds[3]) / 2,
+                    (meshbounds[0] + meshbounds[1]) / 4,
+                    (meshbounds[2] + meshbounds[3]) / 4,
                     50,
                 ],
                 "Wall 2": [
