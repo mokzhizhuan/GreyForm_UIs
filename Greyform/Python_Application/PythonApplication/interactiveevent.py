@@ -162,12 +162,19 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                 wall_keys = sorted(self.walls.keys())
                 next_wall_number = self.find_next_valid_wall(wall_keys)
                 self.wall_number = next_wall_number
+                """self.listenerdialog.run_execution(
+                    self.scan,
+                    self.wall_number,
+                    self.stagetext,
+                    self.excelfiletext,
+                    next_wall_number,
+                )"""
                 if next_wall_number is not None:
                     self.wallname = (
                         "Floor" if next_wall_number == "F" else f"Wall {next_wall_number}"
                     )
                     if self.wallname == "Floor":
-                        self.wall_actors["Floor"][self.currentindex].VisibilityOn()
+                        self.wall_actors[self.wallname][self.currentindex].VisibilityOn()
                         createactorvtk.switch_to_robot_view(
                             self.wallname,
                             self.render,
