@@ -104,8 +104,8 @@ def setupactors(
                                 offset_pos = [pos[0], pos[1], pos[2] + (i * 200)]  # e.g., separate in Z
                                 actor = create_robot_actor(
                                     name=f"Floor_{i+1}",
-                                    position=pos,
-                                    size=(100, 100, 100),
+                                    position=offset_pos,
+                                    size=objectrobot,
                                     color=(0.3, 0.6, 0.9),
                                     rotation=(0, 0, 0),
                                 )
