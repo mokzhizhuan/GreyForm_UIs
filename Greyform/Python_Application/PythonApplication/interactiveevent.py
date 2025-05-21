@@ -16,7 +16,7 @@ import PythonApplication.actors as createactorvtk
 
 
 class myInteractorStyle(vtkInteractorStyleTrackballCamera):
-    def __init__(self, setcamerainteraction, cameraactors, parent=None):
+    def __init__(self, setcamerainteraction, parent=None):
         # starting initialize
         super().__init__()
         self.render = setcamerainteraction[0]
@@ -35,7 +35,9 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.stacked_widget = setcamerainteraction[17]
         self.walllabel = setcamerainteraction[18]
         self.label_map = setcamerainteraction[19]
-        self.cameraactors = cameraactors
+        self.robotplacement = setcamerainteraction[20]
+        self.objectrobot = setcamerainteraction[21]
+        self.verts_data = setcamerainteraction[22]
         match = re.search(r"\d+", self.wallname)
         self.wall_number = int(match.group())
         self.scan = self.identifier[self.wall_number]
@@ -47,6 +49,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             if self.wallname in self.walls
             else None
         )
+        self.currentindex = 0
         camera = self.render.GetActiveCamera()
         self._translate = QCoreApplication.translate
         self.parent = parent
@@ -110,15 +113,11 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         dialog.exec_()  # Show the dialog
 
     def initialize_wall_tracking(self):
-        """Initialize tracking of walls to ensure all are scanned before moving to the next stage."""
         self.stagetext = self.stagestorage[self.currentindexstage]  # Get current stage
-        self.remaining_walls_to_scan = set(
-            self.identifier.keys()
-        )  # Get all wall numbers in current stage
+        self.remaining_walls_to_scan = set(self.identifier.keys())
         self.stage_completed = False  # Ensure we track when a stage is finished
 
     def find_next_valid_wall(self, wall_keys):
-        """Find the next valid unscanned wall or fallback to 'Floor'."""
         while self.wall_index < len(wall_keys) - 1:
             self.wall_index += 1
             self.wallname = wall_keys[self.wall_index]
@@ -136,69 +135,98 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         return None
 
     def changewall(self):
-        self.wall_actors[self.wallname].VisibilityOff()
+        if self.wallname == "Floor":
+            self.wall_actors["Floor"][self.currentindex].VisibilityOff()
+            if self.currentindex >= len(self.wall_actors["Floor"]) - 1:
+                self.remaining_walls_to_scan.discard("F")
+                self.currentindex = 0  # reset for future use
+            else:
+                self.currentindex += 1
+                self.wall_actors["Floor"][self.currentindex].VisibilityOn()
+                createactorvtk.switch_to_robot_view(
+                    self.wallname,
+                    self.render,
+                    self.wall_actors,
+                    self.renderwindowinteractor,
+                    index=self.currentindex,
+                )
+                self.walllabel.setText(f"Wall : Floor")
+                self.refresh()
+                return  # ❗ Stop here — no wall switch
+        else:
+            self.wall_actors[self.wallname].VisibilityOff()
+            self.remaining_walls_to_scan.discard(self.wall_number)
         if self.wall_number:
             if self.wall_number in self.identifier:
                 self.scan = self.identifier[self.wall_number]
-                self.remaining_walls_to_scan.discard(self.wall_number)
                 wall_keys = sorted(self.walls.keys())
                 next_wall_number = self.find_next_valid_wall(wall_keys)
-                # self.listenerdialog.run_execution(self.scan, self.wall_number, self.stagetext, self.excelfiletext, next_wall_number)
                 self.wall_number = next_wall_number
                 if next_wall_number is not None:
                     self.wallname = (
-                        "Floor" if next_wall_number == "F" else self.wallname
+                        "Floor" if next_wall_number == "F" else f"Wall {next_wall_number}"
                     )
-                    self.wall_actors[self.wallname].VisibilityOn()
-                    createactorvtk.switch_hidden_camera(
-                        self.wallname,
-                        self.render,
-                        self.cameraactors,
-                        self.renderwindowinteractor,
-                    )
-            self.walllabel.setText(f"Wall : {self.wallname}")
-            if (
-                not self.remaining_walls_to_scan
-                and self.stagetext == "Stage 2"
-                and next_wall_number is None
-            ):
-                self.stage_completed = True
-                self.goto_next_stage_or_page()
-                return
-            if (
-                not self.remaining_walls_to_scan
-                and self.stagetext == "Stage 3"
-                and not self.stage_completed
-            ):
-                self.show_message(
-                    "✅ All walls and Floor in Stage 2 & 3 are completed. Moving to the finalization page.."
-                )
-                self.stacked_widget.setCurrentIndex(5)
-                return
-            self.refresh()
+                    if self.wallname == "Floor":
+                        self.wall_actors["Floor"][self.currentindex].VisibilityOn()
+                        createactorvtk.switch_to_robot_view(
+                            self.wallname,
+                            self.render,
+                            self.wall_actors,
+                            self.renderwindowinteractor,
+                            index=self.currentindex,
+                        )
+                    else:
+                        self.wall_actors[self.wallname].VisibilityOn()
+                        createactorvtk.switch_to_robot_view(
+                            self.wallname,
+                            self.render,
+                            self.wall_actors,
+                            self.renderwindowinteractor,
+                        )
+        self.walllabel.setText(f"Wall : {self.wallname}")
+        if (
+            not self.remaining_walls_to_scan
+            and self.stagetext == "Stage 2"
+            and self.wall_number is None
+        ):
+            self.stage_completed = True
+            self.goto_next_stage_or_page()
+            return
+        if (
+            not self.remaining_walls_to_scan
+            and self.stagetext == "Stage 3"
+            and not self.stage_completed
+        ):
+            self.show_message(
+                "✅ All walls and Floor in Stage 2 & 3 are completed. Moving to the finalization page.."
+            )
+            self.stacked_widget.setCurrentIndex(5)
+            return
+        self.refresh()
+
 
     def goto_next_stage_or_page(self):
         self.currentindexstage += 1
         self.wall_index = 0
+        self.currentindex = 0
         self.stagetext = self.stagestorage[self.currentindexstage]
         self.Stagelabel.setText(f"Stage : {self.stagetext}")
-        self.wall_actors, self.identifier, self.wallname, self.cameraactors = (
-            createactorvtk.setupactors(
-                self.walls,
-                self.stagetext,
-                self.wall_identifiers,
-                self.render,
-                self.walllabel,
-                self.cameraactors,
-                self.label_map,
-            )
+        self.wall_actors, self.identifier, self.wallname = createactorvtk.setupactors(
+            self.walls,
+            self.stagetext,
+            self.wall_identifiers,
+            self.render,
+            self.walllabel,
+            self.robotplacement,
+            self.objectrobot,
+            self.verts_data,
         )
         self.show_message(
             f"Stage 2 is completed. Please Move in to {self.wallname} for Stage 3 process"
         )
         self.wall_actors[self.wallname].VisibilityOn()
-        createactorvtk.switch_hidden_camera(
-            self.wallname, self.render, self.cameraactors, self.renderwindowinteractor
+        createactorvtk.switch_to_robot_view(
+            self.wallname, self.render, self.wall_actors, self.renderwindowinteractor
         )
         match = re.search(r"\d+", self.wallname)
         self.wall_number = int(match.group())
