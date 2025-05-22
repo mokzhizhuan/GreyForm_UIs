@@ -178,11 +178,17 @@ class createMesh(QMainWindow):
         ]
         camera = events.myInteractorStyle(setcamerainteraction)
         self.renderwindowinteractor.SetInteractorStyle(camera)
-        self.ren.GetActiveCamera().SetPosition(0, -1, 0)
-        self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
-        self.ren.GetActiveCamera().SetViewUp(0, 0, 1)
+        cameramain = vtk.vtkCamera()
+        x_center = (self.meshbounds[0] + self.meshbounds[1]) / 2
+        y_center = (self.meshbounds[2] + self.meshbounds[3]) / 2
+        z_center = (self.meshbounds[4] + self.meshbounds[5]) / 2
+        cameramain.SetPosition(x_center, y_center, z_center + 50)  # top-down view
+        cameramain.SetFocalPoint(x_center, y_center, z_center)
+        cameramain.SetViewUp(0, 1, 0)
+        cameramain.ParallelProjectionOn()
+        cameramain.SetParallelScale((self.meshbounds[3] - self.meshbounds[2]))
+        self.ren.SetActiveCamera(cameramain)
         self.ren.ResetCameraClippingRange()
-        self.ren.ResetCamera()
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Expanding
