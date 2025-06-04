@@ -33,6 +33,8 @@ class createMesh(QMainWindow):
         wall_finishes_dimensions,
         label_map,
         directional_axes_axis,
+        file,
+        class_type,
     ):
         # starting initialize
         super().__init__()
@@ -98,6 +100,7 @@ class createMesh(QMainWindow):
         self.timer.timeout.connect(lambda: self.update_frame())
         Stagelabel.setText(f"Stage : {self.stagetext}")
         self.wallaxis = vtk_data_excel.wall_format(self.wall)
+        self.data, self.verts_data = extractor.get_objects_data_by_class(file, class_type)
         self.loadStl()
 
     # load stl in vtk frame
@@ -123,24 +126,25 @@ class createMesh(QMainWindow):
             (self.meshbounds[2] + self.meshbounds[3]) / 2,
             (self.meshbounds[4] + self.meshbounds[5]) / 2,
         ]
-        robotplacement = robotplacemats.robotplacement(
+        self.robotplacement = robotplacemats.robotplacement(
             self.count_plus_y, self.count_minus_y, self.meshbounds
         )
-        objectrobot = [500,500,500]
+        self.objectrobot = [500,500,500]
         self.wall7 = [self.meshbounds[1], self.meshbounds[3]]
         self.walls = {}
         self.walls, self.cameraactors = createactorvtk.initialize_walls(
             self.wallformat, self.axis_widths, self.walls
         )
-        self.wall_actors, self.identifier, self.wallname, self.cameraactors = (
+        self.wall_actors, self.identifier, self.wallname = (
             createactorvtk.setupactors(
                 self.walls,
                 self.stagetext,
                 self.wall_identifiers,
                 self.ren,
                 self.walllabel,
-                self.cameraactors,
-                self.label_map,
+                self.robotplacement,
+                self.objectrobot,
+                self.verts_data
             )
         )
         self.setupvtkframe()
@@ -168,14 +172,23 @@ class createMesh(QMainWindow):
             self.stacked_widget,
             self.walllabel,
             self.label_map,
+            self.robotplacement,
+            self.objectrobot,
+            self.verts_data
         ]
-        camera = events.myInteractorStyle(setcamerainteraction, self.cameraactors)
+        camera = events.myInteractorStyle(setcamerainteraction)
         self.renderwindowinteractor.SetInteractorStyle(camera)
-        self.ren.GetActiveCamera().SetPosition(0, -1, 0)
-        self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
-        self.ren.GetActiveCamera().SetViewUp(0, 0, 1)
+        cameramain = vtk.vtkCamera()
+        x_center = (self.meshbounds[0] + self.meshbounds[1]) / 2
+        y_center = (self.meshbounds[2] + self.meshbounds[3]) / 2
+        z_center = (self.meshbounds[4] + self.meshbounds[5]) / 2
+        cameramain.SetPosition(x_center, y_center, z_center + 50)  # top-down view
+        cameramain.SetFocalPoint(x_center, y_center, z_center)
+        cameramain.SetViewUp(0, 1, 0)
+        cameramain.ParallelProjectionOn()
+        cameramain.SetParallelScale((self.meshbounds[3] - self.meshbounds[2]))
+        self.ren.SetActiveCamera(cameramain)
         self.ren.ResetCameraClippingRange()
-        self.ren.ResetCamera()
         self.renderwindowinteractor.GetRenderWindow().Render()
         self.renderwindowinteractor.setSizePolicy(
             QSizePolicy.Expanding, QSizePolicy.Expanding

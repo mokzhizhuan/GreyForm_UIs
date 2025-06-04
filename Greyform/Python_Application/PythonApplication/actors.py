@@ -14,10 +14,18 @@ import re
 from stl import mesh
 
 
-def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actors, label_map):
+def setupactors(
+    walls,
+    stagetext,
+    wall_identifiers,
+    ren,
+    walllabel,
+    robotplacement,
+    objectrobot,
+    verts_data
+):
     identifier = {}
     wall_actors = {}
-    camera_actors_set = {}
     wallname = None  # Initialize wallname to ensure valid return
     for wall, properties in walls.items():
         if wall == "Floor":
@@ -29,14 +37,12 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
             continue
         sheet_data = wall_identifiers[stagetext]
         if wall_number == "F":
-            indexes = [
-                i for i, wn in enumerate(sheet_data["Wall Number"]) if wn == "F"
-            ]
+            indexes = [i for i, wn in enumerate(sheet_data["Wall Number"]) if wn == "F"]
         else:
             indexes = [
                 i for i, wn in enumerate(sheet_data["Wall Number"]) if wn == wall_number
             ]
-        if not indexes: 
+        if not indexes:
             continue
         for idx in indexes:
             if (
@@ -66,67 +72,52 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
                     }
                 )
         if wall not in wall_actors:
-            for label, wall_data, orientation, axis , wall_name in label_map:
-                real_name = wall_data["name"]
-                if wall == wall_name:
-                    actor = create_wall_actor(
-                        name=wall,
-                        position=properties["position"],
-                        size=properties["size"],
-                        color=properties["color"],
-                        rotation=properties["rotation"],
-                        real_name=real_name
+            for wall, properties in walls.items():
+                if wall not in wall_actors:
+                    actor = None
+                    floor_properties = walls["Floor"]
+                    floor_actor = create_floor_actor(
+                        name="FloorPlaceholder",
+                        position=floor_properties["position"],
+                        points_list=floor_properties["points"],
+                        color=floor_properties["color"],
+                        rotation=floor_properties["rotation"],
                     )
-                    # Create camera actor if the camera key exists
-                    camera_key = f"Camera_{wall_number}"
-                    if camera_key not in camera_actors:
-                        if "position" in properties and "size" in properties:
-                            view_up = (0, 0, 1)  # Horizontal walls (sideways)
-                            camera_position = (
-                                properties["position"][0] - properties["size"][0] * 1.5, 
-                                    properties["position"][1], 
-                                    properties["position"][2] + properties["size"][0] / 2
-                                )
-                            camera_actor = create_camera_actor(
-                                position=camera_position,
-                                focal_point=properties["position"],
-                                view_up=view_up,
-                                height=properties["size"][1],
-                                width=properties["size"][0],
+                    ren.AddActor(floor_actor)
+                    position_map = robotplacement[0]
+                    for wall_name in position_map:
+                        if wall_name != "Floor":
+                            position = position_map[wall_name]
+                            actor = create_robot_actor(
+                                name=wall_name,
+                                position=position,
+                                size=objectrobot,
+                                color=(0.8, 0.2, 0.2),
+                                rotation=(0, 0, 0),
                             )
-                            camera_actors[camera_key] = {
-                                "position": camera_position,
-                                "focal_point": properties["position"],
-                                "view_up": view_up,
-                            }
+                            wall_actors[wall_name] = actor
+                            ren.AddActor(actor)
                         else:
-                            continue
-                    else:
-                        camera_actor = create_camera_actor(
-                            position=camera_actors[camera_key]["position"],
-                            focal_point=camera_actors[camera_key]["focal_point"],
-                            view_up=camera_actors[camera_key]["view_up"],
-                            height=properties["size"][1],
-                            width=properties["size"][0],
-                        )      
-                        camera_actors_set[wall] = camera_actor
-                elif wall == "Floor":
-                    actor = create_floor_actor(
-                        name=wall,
-                        position=properties["position"],
-                        points_list=properties["points"],
-                        color=properties["color"],
-                        rotation=properties["rotation"],
-                    )
-            if actor is not None:  # <- ADD THIS CHECK
-                wall_actors[wall] = actor
-                ren.AddActor(actor)
+                            floor_positions = robotplacement[0].get("Floor", [])
+                            wall_actors["Floor"] = []  # initialize as list
+                            for i, pos in enumerate(floor_positions):
+                                offset_pos = [pos[0], pos[1], pos[2] + (i * 200)]  # e.g., separate in Z
+                                actor = create_robot_actor(
+                                    name=f"Floor_{i+1}",
+                                    position=offset_pos,
+                                    size=objectrobot,
+                                    color=(0.3, 0.6, 0.9),
+                                    rotation=(0, 0, 0),
+                                )
+                                actor.VisibilityOff()  # only show one later
+                                wall_actors["Floor"].append(actor)
+                                ren.AddActor(actor)
     if identifier:
         first_wall_number = min(identifier.keys(), key=lambda x: (x == "F", x))
         for wall_name in wall_actors:
             match = re.search(r"\d+", wall_name)
             wall_number = (
-                int(match.group()) if match else "F" if wall_name == "Floor" else None
+                int(match.group()) if match else "F" if  wall_name == "Floor" else None
             )
             if wall_number == first_wall_number:
                 wall_actors[wall_name].VisibilityOn()
@@ -136,59 +127,28 @@ def setupactors(walls, stagetext, wall_identifiers, ren, walllabel, camera_actor
         if identifier:
             first_wall_number = min(identifier.keys(), key=lambda x: (x == "F", x))
             wallname = f"Wall {first_wall_number}"
-    return wall_actors, identifier, wallname, camera_actors_set
-
-def create_camera_actor(position, focal_point, view_up, height, width):
-    camera = vtk.vtkCamera()
-    distance_factor = 1.5 
-    is_vertical = abs(focal_point[0] - position[0]) > abs(focal_point[1] - position[1])
-    if is_vertical:
-        view_up = (0, 1, 0)  # Upright orientation for vertical walls
-        camera_position = (
-            focal_point[0],
-            focal_point[1] - distance_factor * width,
-            focal_point[2] + height / 2,
-        )
-    else:
-        view_up = (0, 0, 1)  # Sideways orientation for horizontal walls
-        camera_position = (
-            focal_point[0] - distance_factor * width,
-            focal_point[1],
-            focal_point[2] + height / 2,
-        )
-    camera.SetPosition(*camera_position)
-    camera.SetFocalPoint(*focal_point)
-    camera.SetViewUp(*view_up)
-    camera.SetViewAngle(75)  # Moderate angle to cover the full wall
-    camera_actor = vtk.vtkCameraActor()
-    camera_actor.SetCamera(camera)
-    return camera_actor
+    return wall_actors, identifier, wallname
 
 
-def create_wall_actor(name, position, size, color, rotation, real_name):
-    """Creates a wall (rectangular plane) at a given position, size, and color."""
-    safe_wall_name = real_name.replace(":", "_").replace(" ", "_")
-    stlpath = f"{safe_wall_name}.stl"
-    reader = vtk.vtkPolyData()
-    meshs = mesh.Mesh.from_file(stlpath)
-    points = meshs.points.reshape(-1, 3)
-    faces = np.arange(points.shape[0]).reshape(-1, 3)
-    vtk_points = vtk.vtkPoints()
-    for vertex in points:
-        vtk_points.InsertNextPoint(vertex)
-    vtk_faces = vtk.vtkCellArray()
-    for face in faces:
-        polygon = vtk.vtkPolygon()
-        for vertex_index in face:
-            polygon.GetPointIds().InsertNextId(vertex_index)
-        vtk_faces.InsertNextCell(polygon)
-    reader.SetPoints(vtk_points)
-    reader.SetPolys(vtk_faces)
-    actor = polyDataToActor(reader)
+def create_robot_actor(name, position, size, color, rotation=(0, 0, 0)):
+    cube = vtk.vtkCubeSource()
+    cube.SetXLength(size[0])
+    cube.SetYLength(size[1])
+    cube.SetZLength(size[2])
+    cube.Update()
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(cube.GetOutputPort())
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
     actor.GetProperty().SetColor(color)
+    actor.SetPosition(position)
+    actor.RotateX(rotation[0])
+    actor.RotateY(rotation[1])
+    actor.RotateZ(rotation[2])
     actor.name = name
     actor.VisibilityOff()
-    return actor 
+    return actor
+
 
 def setactor(mapper):
     actor = vtk.vtkActor()
@@ -204,6 +164,7 @@ def setactor(mapper):
     actor.GetProperty().BackfaceCullingOn()
     actor.GetProperty().FrontfaceCullingOn()
     return actor
+
 
 def polyDataToActor(reader):
     mapper = vtk.vtkPolyDataMapper()
@@ -224,18 +185,37 @@ def create_floor_actor(name, position, points_list, color, rotation):
     actor = vtk.vtkActor()
     actor.SetMapper(mapper)
     actor.GetProperty().SetColor(color)
-    # Attach metadata
     actor.name = name
-    actor.VisibilityOff()
+    actor.VisibilityOn()
     return actor
 
-def switch_hidden_camera(wall_name, ren, camera_actors, renderwindowinteractor):
-    if wall_name not in camera_actors:
+
+def switch_to_robot_view(robot_name, ren, wall_actors, renderwindowinteractor, index=0):
+    actor_entry = wall_actors.get(robot_name)
+    if actor_entry is None:
+        print(f"[Warning] No actor found for: {robot_name}")
         return
-    hidden_camera = camera_actors[wall_name]
-    ren.SetActiveCamera(hidden_camera.GetCamera())
+    if isinstance(actor_entry, list):
+        if index >= len(actor_entry):
+            print(f"[Warning] Index {index} out of range for actor list: {robot_name}")
+            return
+        actor = actor_entry[index]
+    else:
+        actor = actor_entry
+    bounds = actor.GetBounds()
+    x_center = (bounds[0] + bounds[1]) / 2
+    y_center = (bounds[2] + bounds[3]) / 2
+    z_center = (bounds[4] + bounds[5]) / 2
+    camera = vtk.vtkCamera()
+    camera.SetPosition(x_center, y_center, z_center + 1000)  # top-down view
+    camera.SetFocalPoint(x_center, y_center, z_center)
+    camera.SetViewUp(0, 1, 0)
+    camera.ParallelProjectionOn()
+    camera.SetParallelScale((bounds[3] - bounds[2]) * 2)
+    ren.SetActiveCamera(camera)
     ren.ResetCameraClippingRange()
     renderwindowinteractor.GetRenderWindow().Render()
+
 
 def initialize_walls(wallformat, axis_widths, walls):
     color_map = [

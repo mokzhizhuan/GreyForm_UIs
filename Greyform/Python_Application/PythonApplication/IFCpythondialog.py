@@ -470,4 +470,6 @@ class ProgressBarDialogIFC(QDialog):
             self.wall_finishes_dimensions,
             self.label_map,
             self.directions,
+            self.ifc_file,
+            "IfcElement",
         )
