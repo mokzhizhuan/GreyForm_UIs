@@ -1,5 +1,6 @@
 from PyQt5.QtCore import *
 from vtk import *
+import numpy as np
 import tkinter as tk
 from tkinter import messagebox
 import re
@@ -15,7 +16,7 @@ import PythonApplication.actors as createactorvtk
 
 
 class myInteractorStyle(vtkInteractorStyleTrackballCamera):
-    def __init__(self, setcamerainteraction, cameraactors, parent=None):
+    def __init__(self, setcamerainteraction, parent=None):
         # starting initialize
         super().__init__()
         self.render = setcamerainteraction[0]
@@ -35,8 +36,12 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.walllabel = setcamerainteraction[18]
         self.listenerdialog = setcamerainteraction[19]
         self.label_map = setcamerainteraction[20]
-        self.cameraactors = cameraactors
+        self.robotplacement = setcamerainteraction[21]
+        self.objectrobot = setcamerainteraction[22]
+        self.verts_data = setcamerainteraction[23]
+        self.meshbounds = setcamerainteraction[24]
         match = re.search(r"\d+", self.wallname)
+        self.currentindex = 0
         self.wall_number = int(match.group())
         self.scan = self.identifier[self.wall_number]
         self.show_message(
@@ -133,83 +138,136 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         return None
 
     def changewall(self):
-        self.wall_actors[self.wallname].VisibilityOff()
+        target_actor = None
+        if self.wallname == "Floor":
+            self.scans = [] 
+            self.wall_actors["Floor"][self.currentindex].VisibilityOff()
+            target_actor = self.wall_actors["Floor"][self.currentindex]
+            if self.currentindex >= len(self.wall_actors["Floor"]) - 1:
+                self.remaining_walls_to_scan.discard("F")
+                self.currentindex = 0  # reset for future use
+            else:
+                self.currentindex += 1
+                self.wall_actors[self.wallname][self.currentindex].VisibilityOn()
+                createactorvtk.switch_to_robot_view(
+                    self.wallname,
+                    self.render,
+                    self.wall_actors,
+                    self.renderwindowinteractor,
+                    index=self.currentindex,
+                )
+                self.walllabel.setText(f"Wall : {self.wallname}")
+                self.show_message(
+                    f"The marking process has finished successfully! Please move in to Wall: {self.wallname} 2nd Location"
+                )
+                self.refresh()
+        else:
+            self.wall_actors[self.wallname].VisibilityOff()
+            self.remaining_walls_to_scan.discard(self.wall_number)
         if self.wall_number:
             if self.wall_number in self.identifier:
-                self.scan = self.identifier[self.wall_number]
-                self.remaining_walls_to_scan.discard(self.wall_number)
+                if self.wall_number == "F":
+                    for entry in self.identifier[self.wall_number]:
+                        position_z = entry.get("Position Z")
+                        if position_z == "-1" and self.currentindex == 1:
+                            self.scans.append(entry)
+                        else:
+                            self.scans.append(entry)
+                else:
+                    self.scan = self.identifier[self.wall_number] 
                 wall_keys = sorted(self.walls.keys())
-                next_wall_number = self.find_next_valid_wall(wall_keys)
-                self.listenerdialog.run_execution(
-                    self.scan,
-                    self.wall_number,
-                    self.stagetext,
-                    self.excelfiletext,
-                    next_wall_number,
-                )
-                self.wall_number = next_wall_number
+                if self.wall_number == "F":
+                    next_wall_number = self.find_next_valid_wall(wall_keys)
+                    self.listenerdialog.run_execution(
+                        self.scans,
+                        self.wall_number,
+                        self.stagetext,
+                        self.excelfiletext,
+                        next_wall_number,
+                    )
+                    self.wall_number = next_wall_number
+                    return
+                else:
+                    next_wall_number = self.find_next_valid_wall(wall_keys)
+                    self.listenerdialog.run_execution(
+                        self.scan,
+                        self.wall_number,
+                        self.stagetext,
+                        self.excelfiletext,
+                        next_wall_number,
+                    )
+                    self.wall_number = next_wall_number
                 if next_wall_number is not None:
                     self.wallname = (
-                        "Floor" if next_wall_number == "F" else self.wallname
+                        "Floor"
+                        if next_wall_number == "F"
+                        else f"Wall {next_wall_number}"
                     )
-                    self.wall_actors[self.wallname].VisibilityOn()
-                    createactorvtk.switch_hidden_camera(
-                        self.wallname,
-                        self.render,
-                        self.cameraactors,
-                        self.renderwindowinteractor,
-                    )
-            self.walllabel.setText(f"Wall : {self.wallname}")
-            if (
-                not self.remaining_walls_to_scan
-                and self.stagetext == "Stage 2"
-                and next_wall_number is None
-            ):
-                self.stage_completed = True
-                self.goto_next_stage_or_page()
-                return
-            if (
-                not self.remaining_walls_to_scan
-                and self.stagetext == "Stage 3"
-                and not self.stage_completed
-            ):
-                self.show_message(
-                    "✅ All walls and Floor in Stage 2 & 3 are completed. Moving to the finalization page.."
-                )
-                self.stagetext = "Stage 2"
-                self.Stagelabel.setText(f"Stage : {self.stagetext}")
-                self.wallname = "Wall 1"
-                self.walllabel.setText(f"Wall : {self.wallname}")
-                self.wall_number = 1
-                self.stacked_widget.setCurrentIndex(5)
-                return
-            self.refresh()
+                    if self.wallname == "Floor":
+                        self.wall_actors[self.wallname][
+                            self.currentindex
+                        ].VisibilityOn()
+                        createactorvtk.switch_to_robot_view(
+                            self.wallname,
+                            self.render,
+                            self.wall_actors,
+                            self.renderwindowinteractor,
+                            index=self.currentindex,
+                        )
+                    else:
+                        self.wall_actors[self.wallname].VisibilityOn()
+                        createactorvtk.switch_to_robot_view(
+                            self.wallname,
+                            self.render,
+                            self.wall_actors,
+                            self.renderwindowinteractor,
+                        )
+        self.walllabel.setText(f"Wall : {self.wallname}")
+        if (
+            not self.remaining_walls_to_scan
+            and self.stagetext == "Stage 2"
+            and self.wall_number is None
+        ):
+            self.stage_completed = True
+            self.goto_next_stage_or_page()
+            return
+        if (
+            not self.remaining_walls_to_scan
+            and self.stagetext == "Stage 3"
+            and not self.stage_completed
+        ):
+            self.show_message(
+                "✅ All walls and Floor in Stage 2 & 3 are completed. Moving to the finalization page.."
+            )
+            self.stacked_widget.setCurrentIndex(5)
+            return
+        self.refresh()
 
     def goto_next_stage_or_page(self):
         self.currentindexstage += 1
         self.wall_index = 0
+        self.currentindex = 0
         self.stagetext = self.stagestorage[self.currentindexstage]
         self.Stagelabel.setText(f"Stage : {self.stagetext}")
-        self.wall_actors, self.identifier, self.wallname, self.cameraactors = (
-            createactorvtk.setupactors(
-                self.walls,
-                self.stagetext,
-                self.wall_identifiers,
-                self.render,
-                self.walllabel,
-                self.cameraactors,
-                self.label_map,
-            )
+        self.wall_actors, self.identifier, self.wallname = createactorvtk.setupactors(
+            self.walls,
+            self.stagetext,
+            self.wall_identifiers,
+            self.render,
+            self.walllabel,
+            self.robotplacement,
+            self.objectrobot,
         )
         self.show_message(
             f"Stage 2 is completed. Please Move in to {self.wallname} for Stage 3 process"
         )
         self.wall_actors[self.wallname].VisibilityOn()
-        createactorvtk.switch_hidden_camera(
-            self.wallname, self.render, self.cameraactors, self.renderwindowinteractor
+        createactorvtk.switch_to_robot_view(
+            self.wallname, self.render, self.wall_actors, self.renderwindowinteractor
         )
         match = re.search(r"\d+", self.wallname)
         self.wall_number = int(match.group())
+        self.scan = self.identifier[self.wall_number]
         self.stage_completed = False
         self.refresh()
         self.initialize_wall_tracking()

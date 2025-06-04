@@ -333,9 +333,9 @@ class Exportexcelinfo(object):
         ):
             internaldimensiony = max(self.axis_widths["x"]) - min(self.axis_widths["x"])
         pos_z = positionz - center_z + (self.floorheight) - (self.flooroffset)
+        center_x = internaldimensionx / 2
+        posy = internaldimensiony / 2
         for wall_id, wall in self.wallformat.items():
-            center_x = internaldimensionx / 2
-            posy = internaldimensiony / 2
             if wall_number == wall_id:
                 if wall["axis"] == "y":
                     if wall_id == len(self.wallformat) and self.count_minus_y == 2:
@@ -392,8 +392,8 @@ class Exportexcelinfo(object):
                             return pd.Series([abs(robotposx), robotposy, pos_z])
         return pd.Series(
             [
-                (positionx - thickness) / 2,
-                (positiony - thickness) / 2,
+                positionx - center_x,
+                positiony - posy,
                 positionz - self.meterline,
             ]
         )

@@ -69,7 +69,9 @@ class TalkerNode(Node):
             msg.picked_position = list(picked_position) 
             self.selection_publisher_.publish(msg)
             if next_wall_number is not None:
-                self.message = f"The process has finished successfully! Please move in to Wall: {next_wall_number}"
+                if next_wall_number == "F":
+                    self.message = f"The marking process has finished successfully! Please move in to Wall: {next_wall_number} 1st Location"
+                self.message = f"The marking process has finished successfully! Please move in to Wall: {next_wall_number}"
             else:
                 self.message = ""
         except Exception as e:
