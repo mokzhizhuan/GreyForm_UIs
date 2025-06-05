@@ -1,16 +1,14 @@
-from PyQt5.QtCore import pyqtSignal, QObject, QMetaObject, Qt, Q_ARG, QTimer
+from PyQt5.QtCore import pyqtSignal, QObject, QMetaObject , Qt , Q_ARG , QTimer
 from PyQt5.QtWidgets import QStackedWidget
 import threading
 import subprocess
 import os
 
-
 class StatusSignals(QObject):
     status_signal = pyqtSignal(str)
     page_change_signal = pyqtSignal(int)
 
-
-class ListenerNodeRunner:
+class ListenerNodeRunner():
     def __init__(
         self,
         talker_node,
@@ -47,6 +45,7 @@ class ListenerNodeRunner:
             except Exception as e:
                 self.signals.status_signal.emit(f"Status: Error - {str(e)}")
 
+
     def stop_listener_node(self):
         if self.process and self.process.poll() is None:
             self.process.terminate()
@@ -58,33 +57,27 @@ class ListenerNodeRunner:
                 self.signals.status_signal.emit("Extracting Excel File....")
         self.process = None
 
-    def run_execution(
-        self,
-        markingitemsbasedonwallnumber,
-        wall_number,
-        Stagetext,
-        excel_data,
-        next_wall_number,
-    ):
+    def run_execution(self , markingitemsbasedonwallnumber , wall_number, Stagetext, excel_data, next_wall_number):
         if self.listener_started:
             for data in markingitemsbasedonwallnumber:
                 picked_position = [
-                    int(data["Position X (m)"]),
-                    int(data["Position Y (m)"]),
-                    int(data["Position Z (m)"]),
+                    int(data["Position X"]),
+                    int(data["Position Y"]),
+                    int(data["Position Z"]),
                 ]
-                self.talker_node.publish_file_message(self.file, excel_data)
+                self.talker_node.publish_file_message(self.file , excel_data)
                 self.talker_node.publish_selection_message(
-                    wall_number, picked_position, Stagetext, next_wall_number
+                    wall_number, picked_position, Stagetext , next_wall_number
                 )
             self.talker_node.showdialog()
 
     def _run_process(self):
         env = os.environ.copy()
-        env["ROS_MASTER_URI"] = "http://localhost:11311"
-        env["ROS_IP"] = "172.17.0.3"
-        env["ROS_HOSTNAME"] = "localhost"
-        command = "source /opt/ros/humble/setup.bash && source /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/setup.bash && ros2 run talker_listener listener_node"
+        command = (
+            "source /opt/ros/humble/setup.bash && "
+            "source /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/setup.bash && "
+            "ros2 run talker_listener listener_node"
+        )
         try:
             self.process = subprocess.Popen(
                 ["bash", "-c", command],
@@ -92,12 +85,18 @@ class ListenerNodeRunner:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            self.signals.page_change_signal.emit(4)
+            self.signals.page_change_signal.emit(4)  
             stdout, stderr = self.process.communicate()
+            stdout_str = stdout.decode("utf-8").strip()
+            stderr_str = stderr.decode("utf-8").strip()
             if self.process.returncode == 0:
+                print("Node started successfully.")
+                print("STDOUT:\n", stdout_str)
                 self.signals.status_signal.emit("Node started successfully.")
                 self.signals.status_signal.emit(stdout.decode("utf-8"))
             else:
+                print("Failed to start node.")
+                print("STDERR:\n", stderr_str)
                 self.signals.status_signal.emit("Failed to start node.")
                 self.signals.status_signal.emit(stderr.decode("utf-8"))
             self.process_finished()
@@ -105,6 +104,7 @@ class ListenerNodeRunner:
             self.signals.status_signal.emit(f"Process failed: {str(e)}")
 
     def process_finished(self):
+        print("Process finished.")
         self.signals.status_signal.emit("Status: Completed")
         self.listener_started = True
 
