@@ -105,7 +105,6 @@ class ListenerNodeRunner:
             self.signals.status_signal.emit(f"Process failed: {str(e)}")
 
     def process_finished(self):
-        print("Process finished.")
         self.signals.status_signal.emit("Status: Completed")
         self.listener_started = True
 

@@ -1,11 +1,11 @@
 from PyQt5.QtCore import *
 from vtk import *
+import numpy as np
 import tkinter as tk
 from tkinter import messagebox
-import time, re
+import re
 from PyQt5.QtWidgets import (
     QProgressDialog,
-    QApplication,
     QDialog,
     QPushButton,
     QVBoxLayout,
@@ -22,34 +22,33 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.render = setcamerainteraction[0]
         self.renderwindowinteractor = setcamerainteraction[1]
         self.meshbound = setcamerainteraction[2]
-        self.excelfiletext = setcamerainteraction[4]
+        self.excelfiletext = setcamerainteraction[3]
         self.stagetext = setcamerainteraction[6]
-        self.wall_identifiers = setcamerainteraction[9]
-        self.stagestorage = setcamerainteraction[10]
-        self.currentindexstage = setcamerainteraction[11]
-        self.Stagelabel = setcamerainteraction[12]
-        self.walls = setcamerainteraction[13]
-        self.wall_actors = setcamerainteraction[14]
-        self.wallname = setcamerainteraction[15]
-        self.identifier = setcamerainteraction[16]
-        self.stacked_widget = setcamerainteraction[17]
-        self.walllabel = setcamerainteraction[18]
-        self.label_map = setcamerainteraction[19]
-        self.robotplacement = setcamerainteraction[20]
-        self.objectrobot = setcamerainteraction[21]
-        self.verts_data = setcamerainteraction[22]
+        self.wall_identifiers = setcamerainteraction[8]
+        self.stagestorage = setcamerainteraction[9]
+        self.currentindexstage = setcamerainteraction[10]
+        self.Stagelabel = setcamerainteraction[11]
+        self.walls = setcamerainteraction[12]
+        self.wall_actors = setcamerainteraction[13]
+        self.wallname = setcamerainteraction[14]
+        self.identifier = setcamerainteraction[15]
+        self.stacked_widget = setcamerainteraction[16]
+        self.walllabel = setcamerainteraction[17]
+        self.robotplacement = setcamerainteraction[18]
+        self.objectrobot = setcamerainteraction[19]
         match = re.search(r"\d+", self.wallname)
+        self.currentindex = 0
         self.wall_number = int(match.group())
         self.scan = self.identifier[self.wall_number]
         self.show_message(
             f"Scanning Completed. Please move your machine to wall {self.wall_number}"
         )
+        self.stacked_widget.setCurrentIndex(4)
         self.wall_index = (
             list(self.walls.keys()).index(self.wallname)
             if self.wallname in self.walls
             else None
         )
-        self.currentindex = 0
         camera = self.render.GetActiveCamera()
         self._translate = QCoreApplication.translate
         self.parent = parent
@@ -67,6 +66,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.progress_dialog = QProgressDialog(
             "Scanning...", "Cancel", 0, self.totalsteps, self.parent
         )
+        self.progress_dialog.setCancelButton(None)
         self.progress_dialog.setWindowTitle("Progress")
         self.progress_dialog.setMinimumDuration(0)
         self.progress_dialog.setAutoClose(True)
@@ -113,9 +113,9 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         dialog.exec_()  # Show the dialog
 
     def initialize_wall_tracking(self):
-        self.stagetext = self.stagestorage[self.currentindexstage]  # Get current stage
+        self.stagetext = self.stagestorage[self.currentindexstage]
         self.remaining_walls_to_scan = set(self.identifier.keys())
-        self.stage_completed = False  # Ensure we track when a stage is finished
+        self.stage_completed = False
 
     def find_next_valid_wall(self, wall_keys):
         while self.wall_index < len(wall_keys) - 1:
@@ -135,14 +135,17 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         return None
 
     def changewall(self):
+        target_actor = None
         if self.wallname == "Floor":
+            self.scans = [] 
             self.wall_actors["Floor"][self.currentindex].VisibilityOff()
+            target_actor = self.wall_actors["Floor"][self.currentindex]
             if self.currentindex >= len(self.wall_actors["Floor"]) - 1:
                 self.remaining_walls_to_scan.discard("F")
                 self.currentindex = 0  # reset for future use
             else:
                 self.currentindex += 1
-                self.wall_actors["Floor"][self.currentindex].VisibilityOn()
+                self.wall_actors[self.wallname][self.currentindex].VisibilityOn()
                 createactorvtk.switch_to_robot_view(
                     self.wallname,
                     self.render,
@@ -150,31 +153,57 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                     self.renderwindowinteractor,
                     index=self.currentindex,
                 )
-                self.walllabel.setText(f"Wall : Floor")
+                self.walllabel.setText(f"Wall : {self.wallname}")
+                self.show_message(
+                    f"The marking process has finished successfully! Please move in to Wall: {self.wallname} 2nd Location"
+                )
                 self.refresh()
-                return  # ❗ Stop here — no wall switch
         else:
             self.wall_actors[self.wallname].VisibilityOff()
             self.remaining_walls_to_scan.discard(self.wall_number)
         if self.wall_number:
             if self.wall_number in self.identifier:
-                self.scan = self.identifier[self.wall_number]
+                if self.wall_number == "F":
+                    for entry in self.identifier[self.wall_number]:
+                        position_z = entry.get("Position Z")
+                        if position_z == "-1" and self.currentindex == 1:
+                            self.scans.append(entry)
+                        else:
+                            self.scans.append(entry)
+                else:
+                    self.scan = self.identifier[self.wall_number] 
                 wall_keys = sorted(self.walls.keys())
-                next_wall_number = self.find_next_valid_wall(wall_keys)
-                self.wall_number = next_wall_number
-                """self.listenerdialog.run_execution(
-                    self.scan,
-                    self.wall_number,
-                    self.stagetext,
-                    self.excelfiletext,
-                    next_wall_number,
-                )"""
+                if self.wall_number == "F":
+                    next_wall_number = self.find_next_valid_wall(wall_keys)
+                    """self.listenerdialog.run_execution(
+                        self.scans,
+                        self.wall_number,
+                        self.stagetext,
+                        self.excelfiletext,
+                        next_wall_number,
+                    )"""
+                    self.wall_number = next_wall_number
+                    return
+                else:
+                    next_wall_number = self.find_next_valid_wall(wall_keys)
+                    """self.listenerdialog.run_execution(
+                        self.scan,
+                        self.wall_number,
+                        self.stagetext,
+                        self.excelfiletext,
+                        next_wall_number,
+                    )"""
+                    self.wall_number = next_wall_number
                 if next_wall_number is not None:
                     self.wallname = (
-                        "Floor" if next_wall_number == "F" else f"Wall {next_wall_number}"
+                        "Floor"
+                        if next_wall_number == "F"
+                        else f"Wall {next_wall_number}"
                     )
                     if self.wallname == "Floor":
-                        self.wall_actors[self.wallname][self.currentindex].VisibilityOn()
+                        self.wall_actors[self.wallname][
+                            self.currentindex
+                        ].VisibilityOn()
                         createactorvtk.switch_to_robot_view(
                             self.wallname,
                             self.render,
@@ -211,22 +240,22 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             return
         self.refresh()
 
-
     def goto_next_stage_or_page(self):
         self.currentindexstage += 1
         self.wall_index = 0
         self.currentindex = 0
         self.stagetext = self.stagestorage[self.currentindexstage]
         self.Stagelabel.setText(f"Stage : {self.stagetext}")
-        self.wall_actors, self.identifier, self.wallname = createactorvtk.setupactors(
-            self.walls,
-            self.stagetext,
-            self.wall_identifiers,
-            self.render,
-            self.walllabel,
-            self.robotplacement,
-            self.objectrobot,
-            self.verts_data,
+        self.wall_actors, self.identifier, self.wallname = (
+            createactorvtk.setupactors(
+                self.walls,
+                self.stagetext,
+                self.wall_identifiers,
+                self.render,
+                self.walllabel,
+                self.robotplacement,
+                self.objectrobot,
+            )
         )
         self.show_message(
             f"Stage 2 is completed. Please Move in to {self.wallname} for Stage 3 process"
@@ -237,6 +266,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         )
         match = re.search(r"\d+", self.wallname)
         self.wall_number = int(match.group())
+        self.scan = self.identifier[self.wall_number]
         self.stage_completed = False
         self.refresh()
         self.initialize_wall_tracking()
@@ -251,7 +281,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         root.withdraw()
         tk.messagebox.showinfo("Message", message)
         root.destroy()
-        self.stacked_widget.setCurrentIndex(4)
 
     def set_progress_bar(self, progress_bar):
         self.progress_bar = progress_bar

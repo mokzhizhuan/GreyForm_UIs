@@ -319,7 +319,7 @@ class loadmainTMP:
                 if placement and placement.Location:
                     x, y, z = placement.Location.Coordinates
                 revert_origin = object.Name if object.Name == "CP1:CP1:1433163" else ""
-                scale_factor = 1000.0
+            scale_factor = 1000.0
             if object.Representation is not None:
                 settings = ifcopenshell.geom.settings()
                 shape = ifcopenshell.geom.create_shape(settings, object)

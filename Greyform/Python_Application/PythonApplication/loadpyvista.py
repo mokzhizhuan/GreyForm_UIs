@@ -11,6 +11,7 @@ class StLloaderpyvista(object):
 
     #load frame implementation
     def loadstl(self):
+        self.loader.clear()  # This removes all actors from the scene
         bounds = self.meshsplot.bounds  # same format as VTK: (xmin, xmax, ymin, ymax, zmin, zmax)
         x_center = (bounds[0] + bounds[1]) / 2
         y_center = (bounds[2] + bounds[3]) / 2

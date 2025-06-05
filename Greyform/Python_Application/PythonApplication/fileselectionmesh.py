@@ -26,7 +26,6 @@ class FileSelectionMesh():
             dxfload.dxfloader(self.file_path, self.mainwindowforfileselection, gdf , self.mainwindow, self.stackedWidget)
         elif ".ifc" in self.file_path:
             try:
-                print(self.file_path)
                 ifc_file = ifcopenshell.open(self.file_path)
             except Exception as e:
                 self.log_error(f"Failed to open IFC file: {e}")

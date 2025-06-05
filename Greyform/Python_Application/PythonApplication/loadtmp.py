@@ -156,7 +156,7 @@ class loadTMP:
         self.zreference = self.find_first_z_reference(225)
         wallname = ""
         wall_entry_for_b = None
-        target_letter = ""
+        wall_label = ""
         index = 0
         df = pd.read_excel(
             "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
@@ -166,27 +166,28 @@ class loadTMP:
             df = df[df["Pin ID"].astype(str).str.startswith("TMP2S2")]
             df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
             df["Base ID"] = df["Pin ID"].str.extract(r"(TMP2S2[a-z])")
-            target_letter = "B"
-            index = 2
+            wall_label = "Wall 2"
         else:
             df = df[df["Pin ID"].astype(str).str.startswith("TMP6S2")]
             df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
             df["Base ID"] = df["Pin ID"].str.extract(r"(TMP6S2[a-z])")
-            target_letter = "F"
-            index = 6
+            wall_label = "Wall 6"
         grouped = df.groupby("Base ID").first().reset_index()
+        wall_entry = None
+        wallname = ""
         for entry in self.label_map:
-            letter, wall, *_ = entry
-            if letter == target_letter:
+            label = list(entry.keys())[0]  
+            wall = entry[label]          
+            if label == wall_label:
+                wall_entry = entry
                 wallname = wall["name"]
-                wall_entry_for_b = entry
                 break
         candidate_objs = sorted(
             [
                 obj
                 for obj in self.verts_data
                 if "Wall Finishes" in str(obj.get("Point number/name", ""))
-                and self.is_near_wall(obj, wall_entry_for_b)
+                and self.is_near_wall(obj, wall_entry)
             ],
             key=lambda o: o["Position X (mm)"],
         )
@@ -270,22 +271,24 @@ class loadTMP:
             "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
         )
         df = df[df["Stage 2"].notna()]
-        target_letter = ""
+        wall_label = ""
         if self.count_plus_y == 2:
             df = df[df["Pin ID"].astype(str).str.startswith("TMP3S2")]
             df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
             df["Base ID"] = df["Pin ID"].str.extract(r"(TMP3S2[a-z])")
-            target_letter = "C"
+            wall_label = "Wall 3"
         else:
             df = df[df["Pin ID"].astype(str).str.startswith("TMP5S2")]
             df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
             df["Base ID"] = df["Pin ID"].str.extract(r"(TMP5S2[a-z])")
-            target_letter = "E"
+            wall_label = "Wall 5"
         grouped = df.groupby("Base ID").first().reset_index()
         wallname = None
         for entry in self.label_map:
-            letter, wall, direction, axis, wall_alias = entry
-            if letter == target_letter:
+            label = list(entry.keys())[0]  
+            wall = entry[label]          
+            if label == wall_label:
+                wall_entry = entry
                 wallname = wall["name"]
                 break
         target_obj = next(

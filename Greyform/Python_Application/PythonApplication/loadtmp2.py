@@ -148,8 +148,9 @@ class loadTMP2:
         wall_entry = None
         wallname = ""
         for entry in self.label_map:
-            letter, wall, direction, axis, wall_alias = entry
-            if letter == "D":
+            label = list(entry.keys())[0]  
+            wall = entry[label]          
+            if 4 in label:
                 wall_entry = entry
                 wallname = wall["name"]
                 break

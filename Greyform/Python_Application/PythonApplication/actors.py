@@ -6,12 +6,7 @@ from PyQt5.QtGui import *
 import vtk
 from vtk import *
 from vtkmodules.vtkCommonColor import vtkNamedColors
-import numpy as np
-from stl import mesh
-import PythonApplication.interactiveevent as events
-import PythonApplication.exceldatavtk as vtk_data_excel
 import re
-from stl import mesh
 
 
 def setupactors(
@@ -22,7 +17,6 @@ def setupactors(
     walllabel,
     robotplacement,
     objectrobot,
-    verts_data
 ):
     identifier = {}
     wall_actors = {}
@@ -226,7 +220,7 @@ def initialize_walls(wallformat, axis_widths, walls):
         (0, 0.5, 0.5),
         (0, 1, 0),
     ]
-    rotation_map = {"x": (90, 0, 90), "y": (0, 90, 90)}
+    rotation_map = {"X": (90, 0, 90), "Y": (0, 90, 90)}
     camera_actors = {}
     for wall_id, wall_data in wallformat.items():
         axis = wall_data["axis"]
@@ -243,8 +237,8 @@ def initialize_walls(wallformat, axis_widths, walls):
         color = color_map[(wall_id - 1) % len(color_map)]
         rotation = rotation_map[axis]
         camera_position = (
-            position[0] + 100 if axis == "x" else position[0],
-            position[1] + 100 if axis == "y" else position[1],
+            position[0] + 100 if axis == "X" else position[0],
+            position[1] + 100 if axis == "Y" else position[1],
             height / 2,
         )
         camera_actors[f"Camera_{wall_id}"] = {
