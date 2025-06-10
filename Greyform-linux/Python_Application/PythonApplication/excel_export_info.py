@@ -5,8 +5,6 @@ import PythonApplication.ifcextractfiles as extractor
 import PythonApplication.loadmaintmp as loadTmpMain
 import PythonApplication.loadtmpFloor as FloorTMP
 import PythonApplication.loadLP as Lpinserter
-import numpy as np
-
 
 # export excel sheet
 class Exportexcelinfo(object):
@@ -25,10 +23,12 @@ class Exportexcelinfo(object):
         label_map,
         directional_axes_axis,
         Cellingstorey,
+        args
     ):
         # starting initialize
         super().__init__()
         self.file = file
+        self.args = args
         self.wall_dimensions = wall_dimensions
         self.floor = floor
         self.floorheight = offset
@@ -92,6 +92,7 @@ class Exportexcelinfo(object):
                 self.count_minus_y,
                 self.count_plus_y,
                 self.flooroffset,
+                self.args
             )
             datainserter = FloorTMP.loadTMPFloor(
                 data,
@@ -106,6 +107,7 @@ class Exportexcelinfo(object):
                 self.wallformat,
                 self.axis_widths,
                 self.flooroffset,
+                self.args
             )
             data = datainserter.addTMP7()
             datainserterLP = Lpinserter.loadLP(
@@ -114,6 +116,7 @@ class Exportexcelinfo(object):
                 self.wall_offset,
                 self.count_minus_y,
                 self.count_plus_y,
+                self.args
             )
             data = datainserterLP.loadLP7()
             attributes = [
@@ -140,7 +143,7 @@ class Exportexcelinfo(object):
                 self.wall_600x600mm,
                 self.wall_name,
                 self.indexwall,
-            ) = storingelement.add_legends()
+            ) = storingelement.add_legends(self.args)
             pandas_data = []
             for object_data in data:
                 row = []
@@ -257,7 +260,7 @@ class Exportexcelinfo(object):
                 inplace=True,
             )
             dataframe = dataframe.drop_duplicates(subset=["Point Name"])
-            file_name = f"exporteddatassss(with TMP)(draft)(tetra).xlsx"
+            file_name = self.args.output_excel
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
                 for object_class in stages:

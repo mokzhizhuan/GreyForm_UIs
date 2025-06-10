@@ -1,7 +1,6 @@
 import pandas as pd
 import ifcopenshell.util.element as Element
 from ifcopenshell.util.placement import get_local_placement, get_axis2placement
-import PythonApplication.arraystorage as storingelement
 import ifcopenshell
 import numpy as np
 

@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
+  <name>talker_listener</name>
+  <version>0.0.0</version>
+  <description>TODO: Package description</description>
+  <maintainer email="ubuntu@todo.todo">ubuntu</maintainer>
+  <license>TODO: License declaration</license>
+
+ 
+  <!-- Dependencies required at build time -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies required at build time -->
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>my_robot_wallinterfaces</build_depend>
+
+  <!-- Dependencies required at runtime -->
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>my_robot_wallinterfaces</exec_depend>
+
+  <!-- Test dependencies -->
+  <test_depend>rostest</test_depend>
+  <test_depend>roslint</test_depend>
+
+  <export>
+  </export>
+</package>

@@ -2,9 +2,8 @@ import pandas as pd
 import vtk
 
 
-def exceldataextractor():
-    excel_file_path = "exporteddatassss(with TMP)(draft)(tetra).xlsx"
-    all_sheets = pd.read_excel(excel_file_path, sheet_name=None)
+def exceldataextractor(args):
+    all_sheets = pd.read_excel(args.output_excel, sheet_name=None)
     wall_numbers_by_sheet = {}
     unique_wall_numbers_by_sheet = {}
     unique_width_height_dict = {}  # Moved outside the loop to persist across sheets
@@ -70,7 +69,7 @@ def exceldataextractor():
     return (
         wall_numbers_by_sheet,
         wall_list,
-        excel_file_path,
+        args.output_excel,
         unique_wall_numbers_by_sheet,
         column_names,
     )
