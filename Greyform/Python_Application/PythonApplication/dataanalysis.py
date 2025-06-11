@@ -17,6 +17,14 @@ class data_draft(object):
         all_walls = ifc_findings.process_elements(
             self.ifc_file.by_type("IfcWallStandardCase"), "basic wall:bss"
         )
+        site = self.ifc_file.by_type("IfcSite")[0]  # Usually only one site
+        placement = site.ObjectPlacement
+        while hasattr(placement, "PlacementRelTo") and placement.PlacementRelTo:
+            placement = placement.PlacementRelTo
+        loc = placement.RelativePlacement.Location
+        origin_x , origin_y , ____ = loc.Coordinates
+        origin_x = round(origin_x)
+        origin_y = round(origin_y)
         # indicating the width and height
         walls_bss50 = [w for w in all_walls if "basic wall:bss.50" in w["name"].lower()]
         walls_bss20 = [w for w in all_walls if "basic wall:bss.20" in w["name"].lower()]
@@ -136,8 +144,8 @@ class data_draft(object):
                 {
                     "Marking Type": "Tile",
                     "Point Name": list(wall_dict.keys())[0],
-                    "Position X": list(wall_dict.values())[0]["x"],
-                    "Position Y": list(wall_dict.values())[0]["y"],
+                    "Position X": list(wall_dict.values())[0]["x"] + origin_x,
+                    "Position Y": list(wall_dict.values())[0]["y"] + origin_y,
                     "Position Z": list(wall_dict.values())[0]["z"],
                     "Wall Number": i + 1,
                     "Shape Type": 6,
@@ -213,8 +221,8 @@ class data_draft(object):
                 {
                     "Marking Type": "Tile",
                     "Point Name": floor_obj["name"],
-                    "Position X": floor_obj["x"],
-                    "Position Y": floor_obj["y"],
+                    "Position X": floor_obj["x"] + origin_x,
+                    "Position Y": floor_obj["y"] + origin_y,
                     "Position Z": floor_obj["z"],
                     "Wall Number": "F",
                     "Shape Type": 6,
@@ -300,6 +308,8 @@ class data_draft(object):
             count_minus_y,
             count_plus_y,
             centerpoint_rows,
+            origin_x,
+            origin_y    
         )
         self.centerpoint_rows = centerpoint_rows
         fitting_stage3.sort(
