@@ -1,0 +1,8 @@
+# MoveCamera.action
+geometry_msgs/PointStamped target
+---
+# Result
+bool success
+---
+# Feedback
+float64 progress
