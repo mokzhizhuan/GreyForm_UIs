@@ -12,6 +12,8 @@ def assign_nearest_fitting(
     count_minus_y,
     count_plus_y,
     centerpoint_rows,
+    origin_x,
+    origin_y,
 ):
     stage3_results = []
     top_twofloor_z = heapq.nlargest(2, (f["z"] for f in floor))
@@ -43,11 +45,15 @@ def assign_nearest_fitting(
                 if count_minus_y == 2 and i > 0 and wx < glass_x_pos:
                     for row in centerpoint_rows:
                         if row["Wall Number"] == i + 1:
-                            row["floortileheight"] = 1000 + lowest_floor + top_twofloor_z[0]
+                            row["floortileheight"] = (
+                                1000 + lowest_floor + top_twofloor_z[0]
+                            )
                 elif count_plus_y == 2 and i > 0 and wx > glass_x_pos:
                     for row in centerpoint_rows:
                         if row["Wall Number"] == i + 1:
-                            row["floortileheight"] = 1000 + lowest_floor + top_twofloor_z[0]
+                            row["floortileheight"] = (
+                                1000 + lowest_floor + top_twofloor_z[0]
+                            )
                 if (
                     count_minus_y == 2
                     and i > 0
@@ -86,10 +92,10 @@ def assign_nearest_fitting(
             height = match["Height"]
         stage3_results.append(
             {
-                "Marking Type" : "Tile",
+                "Marking Type": "Tile",
                 "Point Name": fitting["name"],
-                "Position X": fx,
-                "Position Y": fy,
+                "Position X": fx + origin_x,
+                "Position Y": fy + origin_y,
                 "Position Z": fz,
                 "Wall Number": nearestwallindex,
                 "Shape Type": 6,
@@ -98,7 +104,7 @@ def assign_nearest_fitting(
                 "Unamed : 9": "",
                 "Width": width,
                 "Height": height,
-                "Orientation" : "",
+                "Orientation": "",
                 "Diameter": "",
                 "Remark": Remark,
             }
@@ -131,29 +137,30 @@ def compare_width_y(walls_facing_y, internal_y_width, count_plus_y, count_minus_
                 return internal_y_width
             else:
                 return internal_y_width
-            
+
+
 def get_internal_width(walls, startingwall, wall20, wall12, axis_widths):
-    xwidths, ywidths, wall_range = [], [] ,{}
+    xwidths, ywidths, wall_range = [], [], {}
     for i, wall in enumerate(walls):
         area = wall["area"]
         axis = wall["axis"]
         width, height, depth = area
         if axis == "X":
             xwidths.append(width)
-            wall_range[i+1] = {
-                "axis" : axis,
-                "width" : width,
-                "height" : depth,
-                "thickness" : height,
+            wall_range[i + 1] = {
+                "axis": axis,
+                "width": width,
+                "height": depth,
+                "thickness": height,
             }
             axis_widths[axis.lower()].append(width)
         else:
             ywidths.append(width)
-            wall_range[i+1] = {
-                "axis" : axis,
-                "width" : width,
-                "height" : depth,
-                "thickness" : height,
+            wall_range[i + 1] = {
+                "axis": axis,
+                "width": width,
+                "height": depth,
+                "thickness": height,
             }
             axis_widths[axis.lower()].append(width)
     internalx_width, internaly_width = 0, 0
@@ -162,7 +169,7 @@ def get_internal_width(walls, startingwall, wall20, wall12, axis_widths):
     internal_x_width, internal_y_width = [], []
     if max(xwidths) > max(ywidths):
         starting_area = startingwall["area"]
-        xstarting , height50, ___ = starting_area
+        xstarting, height50, ___ = starting_area
         if xstarting >= max(xwidths):
             internaly_width = max(xwidths)
         else:
@@ -184,7 +191,7 @@ def get_internal_width(walls, startingwall, wall20, wall12, axis_widths):
     elif max(ywidths) > max(xwidths):
         starting_area = startingwall["area"]
         height = max(w["area"][1] for w in wall20)
-        y_starting , height50, ___ = starting_area
+        y_starting, height50, ___ = starting_area
         if y_starting >= max(ywidths):
             internaly_width = max(ywidths)
         else:
@@ -209,8 +216,9 @@ def get_internal_width(walls, startingwall, wall20, wall12, axis_widths):
         internal_x_width,
         internal_y_width,
         wall_range,
-        axis_widths
+        axis_widths,
     )
+
 
 def identifyinternal(
     wall20,
@@ -242,6 +250,7 @@ def identifyinternal(
         internal_x_width = [round(internalx_width * 2)]
         internal_y_width = [round(internaly_width * 2)]
     return internal_x_width, internal_y_width
+
 
 def identifywall12(wall12, wall20, maxwidth, height50):
     if wall12:
