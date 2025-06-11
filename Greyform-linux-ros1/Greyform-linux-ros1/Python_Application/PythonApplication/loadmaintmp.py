@@ -29,7 +29,8 @@ class loadmainTMP:
         axis_widths,
         count_minus_y,
         count_plus_y,
-        floor_offset
+        floor_offset,
+        args
     ):
         self.data = data
         self.verts_data = verts_data
@@ -50,6 +51,7 @@ class loadmainTMP:
         self.count_minus_y = count_minus_y
         self.count_plus_y = count_plus_y
         self.floor_offset = floor_offset
+        self.args = args
         self.x_min, self.x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
         self.y_min, self.y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
         self.addTMP1()
@@ -159,7 +161,7 @@ class loadmainTMP:
         ceiling = int(self.Cellingstoreyz)
         self.zreference = self.find_first_z_reference(225)
         df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+            self.args.excel_file_checklist, skiprows=2, engine="openpyxl"
         )
         df = df[df["Stage 2"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("TMP1S2")]
@@ -289,7 +291,8 @@ class loadmainTMP:
                 self.axis_widths,
                 self.count_minus_y,
                 self.count_plus_y,
-                self.floor_offset
+                self.floor_offset,
+                self.args
             )
         elif self.count_minus_y == 2:
             datainserter = tmpinserter2.loadTMP2(
@@ -306,7 +309,8 @@ class loadmainTMP:
                 self.axis_widths,
                 self.count_minus_y,
                 self.count_plus_y,
-                self.floor_offset
+                self.floor_offset,
+                aelf.args
             )
             datainserter.addTMP6()
 

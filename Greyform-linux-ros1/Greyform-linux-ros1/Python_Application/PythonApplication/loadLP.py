@@ -3,16 +3,17 @@ from ifcopenshell.util.placement import get_local_placement, get_axis2placement
 import numpy as np
 
 class loadLP:
-    def __init__(self,data, verts_data, offset, count_minus_y,count_plus_y):
+    def __init__(self,data, verts_data, offset, count_minus_y,count_plus_y,args):
         self.data = data
         self.verts_data = verts_data
         self.offset = offset
         self.count_minus_y = count_minus_y
         self.count_plus_y = count_plus_y
+        self.args = args
         self.loadLP1()
 
     def get_wall_alias_from_excel(self, pin_id: str) -> str:
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(self.args.excel_file_checklist, skiprows=2, engine="openpyxl")
         df = df[df["Stage 2"].notna()]
         df["Pin ID"] = df["Pin ID"].astype(str)
         df["Pin Base"] = df["Pin ID"].str.extract(r"(TMP\\d+S\\d+[a-z])")
@@ -23,7 +24,7 @@ class loadLP:
         return "Unknown"
 
     def loadLP1(self):
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(self.args.excel_file_checklist, skiprows=2, engine="openpyxl")
         df = df[df["Stage 3"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("LP1S3")]
         df["Base ID"] = df["Pin ID"].str.extract(r"(LP1S3[a-z])", expand=False)
@@ -75,7 +76,7 @@ class loadLP:
             self.loadLP5()
     
     def loadLP3(self):
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(self.args.excel_file_checklist, skiprows=2, engine="openpyxl")
         df = df[df["Stage 3"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("LP3S3")]
         df["Base ID"] = df["Pin ID"].str.extract(r"(LP3S3[a-z])", expand=False)
@@ -128,7 +129,7 @@ class loadLP:
 
 
     def loadLP4(self):
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(self.args.excel_file_checklist, skiprows=2, engine="openpyxl")
         df = df[df["Stage 3"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("LP4S3")]
         df["Base ID"] = df["Pin ID"].str.extract(r"(LP4S3[a-z])", expand=False)
@@ -176,7 +177,7 @@ class loadLP:
             self.loadLP3()
 
     def loadLP5(self):
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(self.args.excel_file_checklist, skiprows=2, engine="openpyxl")
         df = df[df["Stage 3"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("LP5S3")]
         df["Base ID"] = df["Pin ID"].str.extract(r"(LP5S3[a-z])", expand=False)
@@ -266,7 +267,7 @@ class loadLP:
             self.loadLP4()
 
     def loadLP7(self):
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(self.args.excel_file_checklist, skiprows=2, engine="openpyxl")
         df = df[df["Stage 3"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("LP7S3")]
         df["Base ID"] = df["Pin ID"].str.extract(r"(LP7S3[a-z])", expand=False)

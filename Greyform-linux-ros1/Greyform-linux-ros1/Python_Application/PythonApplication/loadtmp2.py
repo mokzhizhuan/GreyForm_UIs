@@ -28,7 +28,8 @@ class loadTMP2:
         axis_widths,
         count_minus_y,
         count_plus_y,
-        floor_offset
+        floor_offset,
+        args
     ):
         self.data = data
         self.verts_data = verts_data
@@ -45,6 +46,7 @@ class loadTMP2:
         self.count_minus_y = count_minus_y
         self.count_plus_y = count_plus_y
         self.floor_offset = floor_offset
+        self.args = args
         self.x_min, self.x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
         self.y_min, self.y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
         if self.count_plus_y == 2:
@@ -56,7 +58,7 @@ class loadTMP2:
         self, name: str, z_ref: int = 225, tolerance: int = 5, default="TMP??"
     ) -> str:
         df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+            self.args.excel_file_checklist, skiprows=2, engine="openpyxl"
         )
         df = df[df["Stage 2"].notna()]
         df["Name_clean"] = (
@@ -84,7 +86,7 @@ class loadTMP2:
 
     def get_wall_alias_from_excel(self, pin_id: str) -> str:
         df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+            self.args.excel_file_checklist, skiprows=2, engine="openpyxl"
         )
         df = df[df["Stage 2"].notna()]
         df["Pin ID"] = df["Pin ID"].astype(str)
@@ -138,7 +140,7 @@ class loadTMP2:
         ceiling = int(self.Cellingstoreyz)
         self.zreference = self.find_first_z_reference(225)
         df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+            self.args.excel_file_checklist, skiprows=2, engine="openpyxl"
         )
         df = df[df["Stage 2"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("TMP4S2")]
@@ -212,7 +214,8 @@ class loadTMP2:
                 self.axis_widths,
                 self.count_minus_y,
                 self.count_plus_y,
-                self.floor_offset
+                self.floor_offset,
+                self.args
             )
             datainseter.addTMP3()
 
@@ -237,7 +240,7 @@ class loadTMP2:
     def add_TMP5_by_base(self, tmp_base: str, flat: bool):
         ceiling = int(self.Cellingstoreyz)
         self.zreference = self.find_first_z_reference(225)
-        df = pd.read_excel("PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl")
+        df = pd.read_excel(self.args.excel_file_checklist, skiprows=2, engine="openpyxl")
         df = df[df["Stage 2"].notna()]
         if self.count_plus_y == 2:
             df = df[df["Pin ID"].astype(str).str.startswith("TMP5S2")]
@@ -413,7 +416,8 @@ class loadTMP2:
                 self.small_wall_finishes_height,
                 self.wall_format,
                 self.axis_widths,
-                self.floor_offset
+                self.floor_offset,
+                self.args
             )
         elif self.count_minus_y == 2:
             self.addTMP5()

@@ -15,6 +15,7 @@ from src.talker_listener.talker_listener import talker_node as RosPublisher
 import pyvista as pv
 import rospy
 import warnings
+import PythonApplication.argsfiles as fileimport
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 class FileItemDelegate(QStyledItemDelegate):
@@ -82,6 +83,7 @@ class Ui_MainWindow(QMainWindow):
 
     # setup UI
     def setupUi(self):
+        self.args = fileimport.parse_args()
         self.plotterloader = QtInteractor(
             self.mainwindow.pyvistaframe,
             line_smoothing=True,
@@ -95,19 +97,18 @@ class Ui_MainWindow(QMainWindow):
                 self.mainwindow.vtkframe
             )
         )
-        usb_path = "/mnt/usb/"
-        self.check_usb_directory(usb_path)
+        self.check_usb_directory(self.args.usb_path)
         self.model = QFileSystemModel()
         self.model.setFilter(QDir.AllDirs | QDir.NoDotAndDotDot | QDir.Drives)
-        self.model.setRootPath(usb_path)
+        self.model.setRootPath(self.args.usb_path)
         self.mainwindow.Selectivefiledirectoryview.setModel(self.model)
-        root_index = self.model.index(usb_path)
+        root_index = self.model.index(self.args.usb_path)
         self.mainwindow.Selectivefiledirectoryview.setRootIndex(
             root_index
         )  # Now safe to set
         self.file_model = QFileSystemModel()
         self.file_model.setFilter(QDir.Files | QDir.NoDotAndDotDot)
-        self.file_model.setRootPath(usb_path)
+        self.file_model.setRootPath(self.args.usb_path)
         self.mainwindow.Selectivefiledirectoryview.setSelectionMode(
             QAbstractItemView.SingleSelection
         )
@@ -118,7 +119,7 @@ class Ui_MainWindow(QMainWindow):
         self.proxy_model.setSourceModel(self.file_model)
         self.mainwindow.Selectivefilelistview.setModel(self.proxy_model)
         self.mainwindow.Selectivefilelistview.setRootIndex(
-            self.proxy_model.mapFromSource(self.file_model.index(usb_path))
+            self.proxy_model.mapFromSource(self.file_model.index(self.args.usb_path))
         )
         self.mainwindow.Selectivefilelistview.setHeaderHidden(False)
         self.mainwindow.Selectivefilelistview.setSortingEnabled(True)
@@ -221,6 +222,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.labelstatus,
             self.mainwindow.scanprogressBar,
             self.mainwindow.walllabel,
+            self.args
         ]
         self.mainwindow.Itemlabel.setText(f"Model Product : {file}")
         fileselectionmesh.FileSelectionMesh(

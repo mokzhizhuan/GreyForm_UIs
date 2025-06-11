@@ -37,6 +37,7 @@ class createMesh(QMainWindow):
         directional_axes_axis,
         file,
         class_type,
+        args,
     ):
         # starting initialize
         super().__init__()
@@ -46,6 +47,7 @@ class createMesh(QMainWindow):
         self.polydata = polydata
         self.wall_dimensions = wall_dimensions
         self.floor = floor
+        self.args = args
         self.label_map = label_map
         self.directional_axes_axis = directional_axes_axis
         self.ren = ren
@@ -70,7 +72,7 @@ class createMesh(QMainWindow):
             self.excelfiletext,
             self.stagewallnum,
             self.stagestorage,
-        ) = vtk_data_excel.exceldataextractor()
+        ) = vtk_data_excel.exceldataextractor(self.args)
         self.wall_finishes_height, self.small_wall_height = (
             storingelement.wall_format_finishes(self.wall_finishes_dimensions)
         )
@@ -178,7 +180,7 @@ class createMesh(QMainWindow):
             self.robotplacement,
             self.objectrobot,
             self.verts_data,
-            self.meshbounds
+            self.meshbounds,
         ]
         camera = events.myInteractorStyle(setcamerainteraction)
         self.renderwindowinteractor.SetInteractorStyle(camera)

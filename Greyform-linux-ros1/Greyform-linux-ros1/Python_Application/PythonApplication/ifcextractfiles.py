@@ -54,7 +54,6 @@ def apply_rotation_to_markers(worksheet, df_class):
                 new_marker = 6
         worksheet.cell(row=row_idx + 1, column=marker_col_index + 2, value=new_marker)
 
-
 def add_pset_attributes(psets, pset_attributes):
     for pset_name, pset_data in psets.items():
         for property_name in pset_data.keys():

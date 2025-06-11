@@ -18,8 +18,6 @@ import numpy as np
 import ifcopenshell.util.element as Element
 import PythonApplication.robotplacementrobot as robotplacemats
 import re
-import traceback
-import sys
 
 
 # ifc loader
@@ -52,6 +50,7 @@ class ProgressBarDialogIFC(QDialog):
         self.labelstatus = mainwindowforfileselection[8]
         self.scanprogressBar = mainwindowforfileselection[9]
         self.walllabel = mainwindowforfileselection[10]
+        self.args = mainwindowforfileselection[11]
         self.spacing = "\n"
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFont(QFont("Arial", 30))
@@ -253,7 +252,7 @@ class ProgressBarDialogIFC(QDialog):
                     floor_mesh = meshio.Mesh(
                         points=all_floor_points, cells=[("triangle", all_floor_faces)]
                     )
-                    meshio.write("floor.stl", floor_mesh)
+                    meshio.write(self.args.floor_stl, floor_mesh)
                     storeys = self.ifc_file.by_type("IfcBuildingStorey")
                     for storey in storeys:
                         object_type = storey.ObjectType
@@ -293,13 +292,9 @@ class ProgressBarDialogIFC(QDialog):
                 )
                 self.buttonlocalize.clicked.connect(lambda: self.start_scan())
         except Exception as e:
-            tb = traceback.extract_tb(sys.exc_info()[2])
-            filename, lineno, func, text = tb[-1]  # Get last traceback entry
             ifcmaterials.log_error(
                 f"Failed to initialize IFC geometry settings or iterator: {str(e)}"
             )
-            ifcmaterials.log_error(f"Occurred in file: {filename}, line: {lineno}, in function: {func}")
-            ifcmaterials.log_error(f"Code: {text}")
         self.close()
 
     def validate_and_fix_wall_finishes(self, wall_finishes_dimensions):
@@ -423,7 +418,7 @@ class ProgressBarDialogIFC(QDialog):
     def convertStl(self, data):
         points = np.array(data["points"])
         cells = [("triangle", np.array(data["cells"]))]
-        self.stl_file = "output.stl"
+        self.stl_file = self.args.output_stl
         mesh = meshio.Mesh(points=points, cells=cells)
         self.direction_stack = []
         self.count_plus_y = 0
@@ -452,7 +447,7 @@ class ProgressBarDialogIFC(QDialog):
             y_length=objectrobot[1],
             z_length=objectrobot[2]
         )
-        self.meshsplots = pv.read("floor.stl")
+        self.meshsplots = pv.read(self.args.floor_stl)
         loadingstl.StLloaderpyvista(self.meshsplots, self.loader, robot_cube, wall1_position)
 
     def loadexcel(self):
@@ -470,6 +465,7 @@ class ProgressBarDialogIFC(QDialog):
             self.label_map,
             self.directions,
             self.Cellingstorey,
+            self.args
         )
 
     def loadexcel4sides(self):
@@ -506,4 +502,5 @@ class ProgressBarDialogIFC(QDialog):
             self.directions,
             self.ifc_file,
             "IfcElement",
+            self.args
         )

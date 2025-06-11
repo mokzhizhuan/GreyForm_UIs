@@ -252,7 +252,7 @@ class ProgressBarDialogIFC(QDialog):
                     floor_mesh = meshio.Mesh(
                         points=all_floor_points, cells=[("triangle", all_floor_faces)]
                     )
-                    meshio.write("floor.stl", floor_mesh)
+                    meshio.write(self.args.floor_stl, floor_mesh)
                     storeys = self.ifc_file.by_type("IfcBuildingStorey")
                     for storey in storeys:
                         object_type = storey.ObjectType
@@ -418,7 +418,7 @@ class ProgressBarDialogIFC(QDialog):
     def convertStl(self, data):
         points = np.array(data["points"])
         cells = [("triangle", np.array(data["cells"]))]
-        self.stl_file = "output.stl"
+        self.stl_file = self.args.output_stl
         mesh = meshio.Mesh(points=points, cells=cells)
         self.direction_stack = []
         self.count_plus_y = 0
@@ -447,7 +447,7 @@ class ProgressBarDialogIFC(QDialog):
             y_length=objectrobot[1],
             z_length=objectrobot[2]
         )
-        self.meshsplots = pv.read("floor.stl")
+        self.meshsplots = pv.read(self.args.floor_stl)
         loadingstl.StLloaderpyvista(self.meshsplots, self.loader, robot_cube, wall1_position)
 
     def loadexcel(self):

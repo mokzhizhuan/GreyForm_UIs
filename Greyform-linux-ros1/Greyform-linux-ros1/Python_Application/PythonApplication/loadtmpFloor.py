@@ -25,6 +25,7 @@ class loadTMPFloor:
         wall_format,
         axis_widths,
         flooroffset,
+        args
     ):
         self.data = data
         self.verts_data = verts_data
@@ -39,6 +40,7 @@ class loadTMPFloor:
         self.wall_format = wall_format
         self.floor_offset = flooroffset
         self.axis_widths = axis_widths
+        self.args = args
         self.x_min, self.x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
         self.y_min, self.y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
         self.addTMP7()
@@ -47,7 +49,7 @@ class loadTMPFloor:
         self, name: str, z_ref: int = 225, tolerance: int = 5, default="TMP??"
     ) -> str:
         df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+            self.args.excel_file_checklist, skiprows=2, engine="openpyxl"
         )
         df = df[df["Stage 2"].notna()]
         df["Name_clean"] = (
@@ -75,7 +77,7 @@ class loadTMPFloor:
 
     def get_wall_alias_from_excel(self, pin_id: str) -> str:
         df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+            self.args.excel_file_checklist, skiprows=2, engine="openpyxl"
         )
         df = df[df["Stage 2"].notna()]
         df["Pin ID"] = df["Pin ID"].astype(str)
@@ -127,7 +129,7 @@ class loadTMPFloor:
 
     def addTMP7(self):
         df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
+            self.args.excel_file_checklist, skiprows=2, engine="openpyxl"
         )
         df = df[df["Stage 2"].notna()]
         df = df[df["Pin ID"].astype(str).str.startswith("TMP7S2")]

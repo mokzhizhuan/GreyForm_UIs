@@ -5,8 +5,8 @@ import PythonApplication.ifcextractfiles as extractor
 import PythonApplication.loadmaintmp as loadTmpMain
 import PythonApplication.loadtmpFloor as FloorTMP
 import PythonApplication.loadLP as Lpinserter
-import numpy as np
-
+import traceback
+import sys
 
 # export excel sheet
 class Exportexcelinfo(object):
@@ -25,10 +25,12 @@ class Exportexcelinfo(object):
         label_map,
         directional_axes_axis,
         Cellingstorey,
+        args
     ):
         # starting initialize
         super().__init__()
         self.file = file
+        self.args = args
         self.wall_dimensions = wall_dimensions
         self.floor = floor
         self.floorheight = offset
@@ -92,6 +94,7 @@ class Exportexcelinfo(object):
                 self.count_minus_y,
                 self.count_plus_y,
                 self.flooroffset,
+                self.args
             )
             datainserter = FloorTMP.loadTMPFloor(
                 data,
@@ -106,6 +109,7 @@ class Exportexcelinfo(object):
                 self.wallformat,
                 self.axis_widths,
                 self.flooroffset,
+                self.args
             )
             data = datainserter.addTMP7()
             datainserterLP = Lpinserter.loadLP(
@@ -114,6 +118,7 @@ class Exportexcelinfo(object):
                 self.wall_offset,
                 self.count_minus_y,
                 self.count_plus_y,
+                self.args
             )
             data = datainserterLP.loadLP7()
             attributes = [
@@ -140,7 +145,7 @@ class Exportexcelinfo(object):
                 self.wall_600x600mm,
                 self.wall_name,
                 self.indexwall,
-            ) = storingelement.add_legends()
+            ) = storingelement.add_legends(self.args)
             pandas_data = []
             for object_data in data:
                 row = []
@@ -257,7 +262,7 @@ class Exportexcelinfo(object):
                 inplace=True,
             )
             dataframe = dataframe.drop_duplicates(subset=["Point Name"])
-            file_name = f"exporteddatassss(with TMP)(draft)(tetra).xlsx"
+            file_name = self.args.output_excel
             with pd.ExcelWriter(file_name) as writer:
                 "stage 1, stage 2 , stage 3 , obstacle"
                 for object_class in stages:
@@ -270,7 +275,12 @@ class Exportexcelinfo(object):
                     worksheet = writer.sheets[object_class]
                     extractor.apply_rotation_to_markers(worksheet, df_class)
         except Exception as e:
-            extractor.log_error(f"Failed to write Excel file: {e}")
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            tb = traceback.extract_tb(exc_tb)
+            filename, lineno, funcname, text = tb[-1]  # Get the last error line
+            extractor.log_error(
+                f"[ERROR] {e} at {filename}, line {lineno} in {funcname}:\n  → {text}"
+            )
 
     def applyinternalwidth(self, row):
         width = row["Width"]

@@ -21,7 +21,7 @@ def parse_args():
         dest="usb_path",
         type=str,
         default="/media/ubuntu/",
-        help="Path to the mounted USB directory",
+        help="Path to the mounted USB directory"
     )
     parser.add_argument("output_stl", type=lambda p: validate_file(p, ".stl"))
     parser.add_argument("floor_stl", type=lambda p: validate_file(p, ".stl"))
