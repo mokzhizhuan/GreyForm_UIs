@@ -13,6 +13,7 @@ import vtk
 import os
 import psutil
 import platform
+import PythonApplication.argsfiles as fileimport
 """import talker_listener.talker_node as RosPublisher
 import rclpy
 from rclpy.executors import MultiThreadedExecutor
@@ -58,7 +59,8 @@ class Ui_MainWindow(QMainWindow):
     def __init__(self, ):
         # starting initialize
         super(Ui_MainWindow, self).__init__()
-        self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
+        self.args = fileimport.parse_args()
+        self.mainwindow = uic.loadUi(self.args.mainui, self)
         self.mainwindow.setMouseTracking(False)
         self.selected_files = []
         self.filepaths = os.getcwd()
@@ -226,6 +228,7 @@ class Ui_MainWindow(QMainWindow):
             self.mainwindow.labelstatus,
             self.mainwindow.scanprogressBar,
             self.mainwindow.walllabel,
+            self.args
         ]
         self.mainwindow.Itemlabel.setText(f"Model Product : {file}")
         fileselectionmesh.FileSelectionMesh(

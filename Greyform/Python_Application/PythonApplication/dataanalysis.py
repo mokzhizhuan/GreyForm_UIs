@@ -8,11 +8,11 @@ import heapq
 
 
 class data_draft(object):
-    def __init__(self, ifc_file):
+    def __init__(self, ifc_file , args):
         self.ifc_file = ifc_file
+        self.args = args
 
     def analysis(self):
-        args = ifc_findings.parse_args()
         # get the data  wall , opening , floor
         all_walls = ifc_findings.process_elements(
             self.ifc_file.by_type("IfcWallStandardCase"), "basic wall:bss"
@@ -259,7 +259,7 @@ class data_draft(object):
                     }
                 )
         # stage 3
-        df = pd.read_excel(args.excel_file, header=1)
+        df = pd.read_excel(self.args.excel_file, header=1)
         df["Stage"] = df["Name"].apply(ifc_findings.assign_stage)
         stage3_names = set(
             name.lower()
@@ -326,13 +326,13 @@ class data_draft(object):
         df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
             self.applywallpoints, axis=1
         )
-        with pd.ExcelWriter(args.output_excel, engine="openpyxl") as writer:
+        with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
             df_visited.to_excel(writer, index=False, sheet_name="Stage 2")
             df_fitting.to_excel(writer, index=False, sheet_name="Stage 3")
         return (
             count_plus_y,
             count_minus_y,
-            args.output_excel,
+            self.args.output_excel,
             wall_format,
             self.axis_widths,
         )

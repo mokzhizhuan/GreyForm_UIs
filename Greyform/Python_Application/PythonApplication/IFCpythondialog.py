@@ -49,6 +49,7 @@ class ProgressBarDialogIFC(QDialog):
         self.labelstatus = mainwindowforfileselection[7]
         self.scanprogressBar = mainwindowforfileselection[8]
         self.walllabel = mainwindowforfileselection[9]
+        self.args = mainwindowforfileselection[10]
         self.spacing = "\n"
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setFont(QFont("Arial", 30))
@@ -164,10 +165,10 @@ class ProgressBarDialogIFC(QDialog):
                             points=all_floor_points,
                             cells=[("triangle", all_floor_faces)],
                         )
-                        meshio.write("floor.stl", floor_mesh)
+                        meshio.write(self.args.floor_stl, floor_mesh)
                 except Exception as e:
                     ifcmaterials.log_error(f"Error while processing IFC shapes: {e}")
-                datadrafter = datadraft.data_draft(self.ifc_file)
+                datadrafter = datadraft.data_draft(self.ifc_file, self.args)
                 (
                     self.count_plus_y,
                     self.count_minus_y,
@@ -207,7 +208,7 @@ class ProgressBarDialogIFC(QDialog):
     def convertStl(self, data):
         points = np.array(data["points"])
         cells = [("triangle", np.array(data["cells"]))]
-        self.stl_file = "output.stl"
+        self.stl_file = self.args.output_stl
         mesh = meshio.Mesh(points=points, cells=cells)
         mesh.cell_data["triangle"] = [np.array(data["material_ids"])]
         meshio.write(self.stl_file, mesh)
@@ -229,7 +230,7 @@ class ProgressBarDialogIFC(QDialog):
             y_length=objectrobot[1],
             z_length=objectrobot[2],
         )
-        self.meshsplots = pv.read("floor.stl")
+        self.meshsplots = pv.read(self.args.floor_stl)
         loadingstl.StLloaderpyvista(
             self.meshsplots, self.loader, robot_cube, wall1_position
         )
