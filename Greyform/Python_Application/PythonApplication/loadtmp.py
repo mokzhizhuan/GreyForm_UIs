@@ -1,357 +1,370 @@
-import string
-import pandas as pd
-from openpyxl.utils import get_column_letter
-import numpy as np
-import ifcopenshell
-import ifcopenshell.util.element as Element
-from ifcopenshell.util.placement import get_local_placement
-import math
 import re
-import PythonApplication.loadtmp2 as tmpinserter2
-import PythonApplication.loadtmpFloor as FloorTMP
-from collections import defaultdict
+import methodifcfindings as ifc_findings
+import string
+import numpy as np
 
 
-class loadTMP:
+class loadmainTMP:
     def __init__(
         self,
-        data,
-        verts_data,
-        Cellingstorey,
-        thickness,
-        wall_height,
-        meterline,
-        label_map,
-        wall_finishes_height,
-        small_wall_finishes_height,
-        wall_format,
-        axis_widths,
-        count_minus_y,
-        count_plus_y,
-        flooroffset
+        all_objs,
+        dooropening,
+        stage2_rows,
+        df,
+        walls,
+        stage3_results,
+        wall_bss20,
+        wall_bss12,
+        origin_x,
+        origin_y,
+        floor,
+        storeys,
     ):
-        self.data = data
-        self.verts_data = verts_data
-        self.Cellingstorey = Cellingstorey
-        self.Cellingstoreyz = Cellingstorey[2]
-        self.thickness = thickness
-        self.wall_height = wall_height
-        self.meterline = meterline
-        self.label_map = label_map
-        self.wall_finishes_height = wall_finishes_height
-        self.small_wall_finishes_height = small_wall_finishes_height
-        self.wall_format = wall_format
-        self.axis_widths = axis_widths
-        self.count_minus_y = count_minus_y
-        self.count_plus_y = count_plus_y
-        self.floor_offset = flooroffset
-        self.x_min, self.x_max = min(self.axis_widths["x"]), max(self.axis_widths["x"])
-        self.y_min, self.y_max = min(self.axis_widths["y"]), max(self.axis_widths["y"])
-        if count_plus_y == 2:
-            self.addTMP2()
+        self.all_objs = all_objs
+        self.dooropening = dooropening
+        self.stage2_rows = stage2_rows
+        self.df = df
+        self.walls = walls
+        self.stage3_results = stage3_results
+        self.wall_bss20 = wall_bss20
+        self.wall_bss12 = wall_bss12
+        self.origin_x = origin_x
+        self.origin_y = origin_y
+        self.floor = floor
+        self.storey_min_height = min(
+            storeys, key=lambda s: s["elevation"], default={"elevation": 0}
+        )["elevation"]
+        self.index = 0
+        self.tmptemp = []
+        self.addTMP1()
 
-    def get_tmp_label_from_excel(
-        self, name: str, z_ref: int = 225, tolerance: int = 5, default="TMP??"
-    ) -> str:
-        df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
-        )
-        df = df[df["Stage 2"].notna()]
-        df["Name_clean"] = (
-            df["Penetration/Fitting/Reference Point Name"].astype(str).str.strip()
-        )
-        for _, row in df.iterrows():
-            if name.strip() in row["Name_clean"]:
-                pin_id = str(row["Pin ID"]).strip()
-                if pin_id and pin_id[-1].isdigit():
-                    return pin_id[:-1]
-                return pin_id
-        return default
-
-    def find_first_z_reference(self, z_target=225, tolerance=0):
-        for obj in self.verts_data:
-            name = obj.get("Point number/name", "")
-            pos_z = obj.get("Position Z (mm)", 0)
-            vertices = obj.get("verticles", [])
-            if len(vertices) > 0:
-                z_vals = vertices[:, 2]
-                for z in z_vals:
-                    if abs(z - z_target) <= tolerance:
-                        return int(z)
-        return z_target
-
-    def get_wall_alias_from_excel(self, pin_id: str) -> str:
-        df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
-        )
-        # Clean and filter
-        df = df[df["Stage 2"].notna()]
-        df["Pin ID"] = df["Pin ID"].astype(str)
-        df["Pin Base"] = df["Pin ID"].str.extract(r"(TMP\\d+S\\d+[a-z])")
-        # Find matching row by full Pin ID
-        match = df[df["Pin ID"] == pin_id]
-        if not match.empty:
-            wall = match.iloc[0]["Wall"]
-            return str(wall).strip() if pd.notna(wall) else "Unknown"
-        return "Unknown"
-
-    def get_width_heights_intervals(self, row):
-        name = str(row["Penetration/Fitting/Reference Point Name"])
+    def get_width_heights_intervals(self, next_w):
+        name = next_w["name"]
         match = re.search(r"\((\d+)[xX](\d+)mm\)", name)
         if match:
-            try:
-                width, height = int(match.group(1)), int(match.group(2))
-                return width, height
-            except:
-                pass
-        return 600, 600  # fallback if parsing fails
+            width, height = int(match.group(1)), int(match.group(2))
+            return width, height
 
-    def is_near_wall(self, obj, wall_entry, threshold=300):
-        wall_data = wall_entry[1]
-        wall_position = None
-        for objs in self.verts_data:
-            if objs.get("Point number/name", "") == wall_data["name"]:
-                wall_position = (objs["Position X (mm)"], objs["Position Y (mm)"])
-                break
-        ox, oy = obj["Position X (mm)"], obj["Position Y (mm)"]
-        wx, wy = wall_position
-        distance = math.sqrt((ox - wx) ** 2 + (oy - wy) ** 2)
-        return distance < threshold
-
-    def get_interval(self, row):
-        name = str(row["Penetration/Fitting/Reference Point Name"])
-        match = re.search(r"\\((\\d+)[xX](\\d+)\\)", name)
-        if match:
-            _, height = match.groups()
-            return int(height)
-        return 600  # default fallback
-
-    def get_next_tmp_base(self, current_base: str, index_offset: int = 0):
-        if not isinstance(current_base, str):
-            raise TypeError(
-                f"[FATAL] current_base is not a string: {type(current_base)}"
-            )
-        if len(current_base) < 7:
-            raise ValueError(f"[FATAL] Base ID too short: '{current_base}'")
-        if not current_base.startswith("TMP"):
-            raise ValueError(
-                f"[FATAL] Base ID does not start with TMP: '{current_base}'"
-            )
-        prefix = current_base[:-1]
-        last_letter = current_base[-1].lower()
-        if last_letter not in string.ascii_lowercase:
-            raise ValueError(
-                f"[FATAL] Invalid last letter in Base ID: '{last_letter}' from '{current_base}'"
-            )
-        next_index = string.ascii_lowercase.index(last_letter) + index_offset
-        if next_index >= len(string.ascii_lowercase):
-            raise ValueError(
-                f"[FATAL] Base ID overflow: {current_base} + {index_offset}"
-            )
-        next_letter = string.ascii_lowercase[next_index]
-        return f"{prefix}{next_letter}"
+    def addTMP1(self):
+        for i, wall_dict in enumerate(self.walls):
+            if i == self.index:
+                first_w, _ = ifc_findings.find_closest_wall(
+                    list(wall_dict.values())[0], self.wall_bss20
+                )
+                second_w, _ = ifc_findings.find_closest_wall(first_w, self.wall_bss20)
+                width, height = self.get_width_heights_intervals(first_w)
+                geeshi = [
+                    obj for obj in self.all_objs if "gessi.sh" in obj["name"].lower()
+                ]
+                flushplate = [
+                    obj for obj in self.all_objs if "flush plate" in obj["name"].lower()
+                ]
+                first_w_x = first_w["x"]
+                second_w_x = second_w["x"]
+                geeshi_x = geeshi[0]["x"]
+                flushplate_x = flushplate[0]["x"]
+                tiles = [geeshi_x, first_w_x, second_w_x, flushplate_x]
+                repeatcount = (
+                    int(
+                        (self.storey_min_height - (self.wall_bss12[0]["z"] - height))
+                        / height
+                    )
+                    + 1
+                )
+                for count, xpos in enumerate(tiles):
+                    alphabet_string = string.ascii_lowercase
+                    alphabet_list = list(alphabet_string)
+                    alpha = ""
+                    for index, item in enumerate(alphabet_list):
+                        if index == (count):
+                            alpha = item
+                    for i in range(repeatcount):
+                        z = (self.wall_bss12[0]["z"] - height) + height * i
+                        self.tmptemp.append(
+                            {
+                                "Wall Number": self.index + 1,
+                                "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                                "Position X": xpos,
+                                "Position Y": list(wall_dict.values())[0]["y"],
+                                "Position Z": z,
+                            }
+                        )
+        self.index += 1
+        self.addTMP2()
 
     def addTMP2(self):
-        ceiling = int(self.Cellingstoreyz)
-        self.zreference = self.find_first_z_reference(225)
-        wallname = ""
-        wall_entry_for_b = None
-        wall_label = ""
-        index = 0
-        df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
-        )
-        df = df[df["Stage 2"].notna()]
-        if self.count_plus_y == 2:
-            df = df[df["Pin ID"].astype(str).str.startswith("TMP2S2")]
-            df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
-            df["Base ID"] = df["Pin ID"].str.extract(r"(TMP2S2[a-z])")
-            wall_label = "Wall 2"
-        else:
-            df = df[df["Pin ID"].astype(str).str.startswith("TMP6S2")]
-            df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
-            df["Base ID"] = df["Pin ID"].str.extract(r"(TMP6S2[a-z])")
-            wall_label = "Wall 6"
-        grouped = df.groupby("Base ID").first().reset_index()
-        wall_entry = None
-        wallname = ""
-        for entry in self.label_map:
-            label = list(entry.keys())[0]  
-            wall = entry[label]          
-            if label == wall_label:
-                wall_entry = entry
-                wallname = wall["name"]
-                break
-        candidate_objs = sorted(
-            [
-                obj
-                for obj in self.verts_data
-                if "Wall Finishes" in str(obj.get("Point number/name", ""))
-                and self.is_near_wall(obj, wall_entry)
-            ],
-            key=lambda o: o["Position X (mm)"],
-        )
-        for i, row in grouped.iterrows():
-            tmp_base = row.get("Base ID", "")
-            label_name = (
-                str(row.get("Penetration/Fitting/Reference Point Name", ""))
-                .strip()
-                .lower()
-            )
-            interval = self.get_interval(row)
-            matched_obj = None
-            for obj in candidate_objs:
-                if label_name in str(obj.get("Point number/name", "")).lower():
-                    matched_obj = obj
-                    break
-            if matched_obj:
-                verts = matched_obj["verticles"]
+        for i, wall_dict in enumerate(self.walls):
+            if i == self.index:
+                next_w, _ = ifc_findings.find_closest_wall(
+                    list(wall_dict.values())[0], self.wall_bss20
+                )
+                width, height = self.get_width_heights_intervals(next_w)
+                verts = next_w["vertices"]
                 x_values = verts[:, 0]
                 z_values = verts[:, 2]
                 non_zero_x = x_values[x_values > 0]
-                non_zero_z = z_values[z_values > 0]
-                min_z = int(np.min(non_zero_z)) if non_zero_z.size else 0
                 lowest_x = int(np.min(non_zero_x)) if non_zero_x.size else 0
-                total_internal_wall = self.wall_format[index]["width"] - (
-                    self.thickness * 2
-                )
-                x_array = [
-                    total_internal_wall - lowest_x - interval + self.thickness,
-                    total_internal_wall - lowest_x + self.thickness,
+                highest_x = int(np.max(non_zero_x)) if non_zero_x.size else 0
+                tiles = [
+                    (highest_x - next_w["area"][1] - lowest_x - width),
+                    (highest_x - next_w["area"][1] - lowest_x),
                 ]
-                for idx, xpos in enumerate(x_array):
-                    if self.count_plus_y == 2:
-                        tmp_base = self.get_next_tmp_base("TMP2S2a", idx)
-                    else:
-                        tmp_base = self.get_next_tmp_base("TMP6S2a", idx)
-                    counter = 1
-                    for z in range(self.zreference, min_z, interval):
-                        self.data.append(
+                repeatcount = (
+                    int(
+                        (self.storey_min_height - (self.wall_bss12[0]["z"] - height))
+                        / height
+                    )
+                    + 1
+                )
+                for count, ypos in enumerate(tiles):
+                    alphabet_string = string.ascii_lowercase
+                    alphabet_list = list(alphabet_string)
+                    alpha = ""
+                    for index, item in enumerate(alphabet_list):
+                        if index == (count):
+                            alpha = item
+                    for i in range(repeatcount):
+                        z = (self.wall_bss12[0]["z"] - height) + height * i
+                        self.tmptemp.append(
                             {
-                                "Stage": "Stage 2",
-                                "Marking type": "Tile",
-                                "Point number/name": f"{tmp_base}{counter}",
-                                "Position X (mm)": self.thickness,
-                                "Position Y (mm)": xpos,
-                                "Position Z (mm)": z,
-                                "Wall Number": wallname,
-                                "Shape type": "",
-                                "Status": "blank",
-                                "Quadrant": 1,
-                                "Unnamed : 9": "",
-                                "Width": "",
-                                "Height": "",
-                                "Orientation": "",
-                                "Diameter": "",
+                                "Wall Number": self.index + 1,
+                                "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                                "Position X": list(wall_dict.values())[0]["x"],
+                                "Position Y": ypos,
+                                "Position Z": z,
                             }
                         )
-                        counter += 1
-        if self.count_plus_y == 2:
-            self.addTMP3()
-        else:
-            FloorTMP.loadTMPFloor(
-                self.data,
-                self.verts_data,
-                self.Cellingstorey,
-                self.thickness,
-                self.wall_height,
-                self.meterline,
-                self.label_map,
-                self.wall_finishes_height,
-                self.small_wall_finishes_height,
-                self.wall_format,
-                self.axis_widths,
-                self.floor_offset
-            )
+        self.index += 1
+        self.addTMP3()
 
     def addTMP3(self):
-        ceiling = int(self.Cellingstoreyz)
-        self.zreference = self.find_first_z_reference(225)
-        df = pd.read_excel(
-            "PinAllocationBOMforPBU_T1am.xlsx", skiprows=2, engine="openpyxl"
-        )
-        df = df[df["Stage 2"].notna()]
-        wall_label = ""
-        if self.count_plus_y == 2:
-            df = df[df["Pin ID"].astype(str).str.startswith("TMP3S2")]
-            df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
-            df["Base ID"] = df["Pin ID"].str.extract(r"(TMP3S2[a-z])")
-            wall_label = "Wall 3"
-        else:
-            df = df[df["Pin ID"].astype(str).str.startswith("TMP5S2")]
-            df["Z Interval (mm)"] = df.apply(self.get_interval, axis=1)
-            df["Base ID"] = df["Pin ID"].str.extract(r"(TMP5S2[a-z])")
-            wall_label = "Wall 5"
-        grouped = df.groupby("Base ID").first().reset_index()
-        wallname = None
-        for entry in self.label_map:
-            label = list(entry.keys())[0]  
-            wall = entry[label]          
-            if label == wall_label:
-                wall_entry = entry
-                wallname = wall["name"]
-                break
-        target_obj = next(
-            (
-                obj
-                for obj in self.verts_data
-                if wallname in obj.get("Point number/name", "")
-            ),
-            None,
-        )
-        verts = target_obj.get("verticles", [])
-        x_values = verts[:, 0] if len(verts) else []
-        x_max = int(np.max(x_values))
-        half_x_max = (x_max - self.thickness) / 2
-        x_array = [half_x_max + self.thickness]
-        for i, x in enumerate(x_array):
-            if self.count_plus_y == 2:
-                tmp_base = self.get_next_tmp_base("TMP3S2a", i)
-            else:
-                tmp_base = self.get_next_tmp_base("TMP5S2a", i)
-            match = grouped[grouped["Base ID"] == tmp_base]
-            interval = int(match["Z Interval (mm)"].values[0])
-            counter = 1
-            for z in range(self.zreference, ceiling, interval):
-                self.data.append(
-                    {
-                        "Stage": "Stage 2",
-                        "Marking type": "Tile",
-                        "Point number/name": f"{tmp_base}{counter}",
-                        "Position X (mm)": x,
-                        "Position Y (mm)": self.y_max - self.y_min - self.thickness,
-                        "Position Z (mm)": z,
-                        "Wall Number": wallname,
-                        "Shape type": "",
-                        "Status": "blank",
-                        "Quadrant": 1,
-                        "Unnamed : 9": "",
-                        "Width": "",
-                        "Height": "",
-                        "Orientation": "",
-                        "Diameter": "",
-                    }
+        for i, wall_dict in enumerate(self.walls):
+            if i == self.index:
+                next_w, _ = ifc_findings.find_closest_wall(
+                    list(wall_dict.values())[0], self.wall_bss20
                 )
-                counter += 1
-        if self.count_minus_y == 2:
-            self.addTMP2()
-        elif self.count_plus_y == 2:
-            tmpinserter2.loadTMP2(
-                self.data,
-                self.verts_data,
-                self.Cellingstorey,
-                self.thickness,
-                self.wall_height,
-                self.meterline,
-                self.label_map,
-                self.wall_finishes_height,
-                self.small_wall_finishes_height,
-                self.wall_format,
-                self.axis_widths,
-                self.count_minus_y,
-                self.count_plus_y,
-                self.floor_offset
-            )
+                width, height = self.get_width_heights_intervals(next_w)
+                geeshi = [
+                    obj for obj in self.all_objs if "gessi.sh" in obj["name"].lower()
+                ]
+                tiles = [geeshi[0]["x"]]
+                repeatcount = (
+                    int(
+                        (self.storey_min_height - (self.wall_bss12[0]["z"] - height))
+                        / height
+                    )
+                    + 1
+                )
+                for count, xpos in enumerate(tiles):
+                    alphabet_string = string.ascii_lowercase
+                    alphabet_list = list(alphabet_string)
+                    alpha = ""
+                    for index, item in enumerate(alphabet_list):
+                        if index == (count):
+                            alpha = item
+                    for i in range(repeatcount):
+                        z = (self.wall_bss12[0]["z"] - height) + height * i
+                        self.tmptemp.append(
+                            {
+                                "Wall Number": self.index + 1,
+                                "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                                "Position X": xpos,
+                                "Position Y": list(wall_dict.values())[0]["y"],
+                                "Position Z": z,
+                            }
+                        )
+        self.index += 1
+        self.addTMP4()
 
+    def addTMP4(self):
+        for i, wall_dict in enumerate(self.walls):
+            if i == self.index:
+                next_w, _ = ifc_findings.find_closest_wall(
+                    list(wall_dict.values())[0], self.wall_bss20
+                )
+                width, height = self.get_width_heights_intervals(next_w)
+                tiles = [next_w["y"] - next_w["area"][0]]
+                repeatcount = (
+                    int(
+                        (self.storey_min_height - (self.wall_bss12[0]["z"] - height))
+                        / height
+                    )
+                    + 1
+                )
+                for count, ypos in enumerate(tiles):
+                    alphabet_string = string.ascii_lowercase
+                    alphabet_list = list(alphabet_string)
+                    alpha = ""
+                    for index, item in enumerate(alphabet_list):
+                        if index == (count):
+                            alpha = item
+                    for i in range(repeatcount):
+                        z = (self.wall_bss12[0]["z"] - height) + height * i
+                        self.tmptemp.append(
+                            {
+                                "Wall Number": self.index + 1,
+                                "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                                "Position X": list(wall_dict.values())[0]["x"],
+                                "Position Y": ypos,
+                                "Position Z": z,
+                            }
+                        )
+        self.index += 1
+        self.addTMP5()
 
+    def addTMP5(self):
+        for i, wall_dict in enumerate(self.walls):
+            if i == self.index:
+                next_w, _ = ifc_findings.find_closest_wall(
+                    list(wall_dict.values())[0], self.wall_bss20
+                )
+                width, height = self.get_width_heights_intervals(next_w)
+                flushplate = [
+                    obj for obj in self.all_objs if "flush plate" in obj["name"].lower()
+                ]
+                flushplate_x = flushplate[0]["x"]
+                repeatcount = (
+                    int((list(wall_dict.values())[0]["x"] - flushplate_x) / width) + 1
+                )
+                for i in range(repeatcount):
+                    x = flushplate_x + width * i
+                    self.tmptemp.append(
+                        {
+                            "Wall Number": self.index + 1,
+                            "Point Name": f"TMP{self.index + 1}S2a{i+1}",
+                            "Position X": x,
+                            "Position Y": list(wall_dict.values())[0]["y"],
+                            "Position Z": self.wall_bss12[0]["z"] - height,
+                        }
+                    )
+        self.index += 1
+        self.addTMP6()
 
+    def addTMP6(self):
+        for i, wall_dict in enumerate(self.walls):
+            if i == self.index:
+                next_w, _ = ifc_findings.find_closest_wall(
+                    list(wall_dict.values())[0], self.wall_bss20
+                )
+                width, height = self.get_width_heights_intervals(next_w)
+                tiles = [
+                    (next_w["y"] + next_w["area"][1] + width),
+                    (next_w["y"] + next_w["area"][1] + (width * 2)),
+                ]
+                repeatcount = (
+                    int(
+                        (self.storey_min_height - (self.wall_bss12[0]["z"] - height))
+                        / height
+                    )
+                    + 1
+                )
+                for count, ypos in enumerate(tiles):
+                    alphabet_string = string.ascii_lowercase
+                    alphabet_list = list(alphabet_string)
+                    alpha = ""
+                    for index, item in enumerate(alphabet_list):
+                        if index == (count):
+                            alpha = item
+                    for i in range(repeatcount):
+                        z = (self.wall_bss12[0]["z"] - height) + height * i
+                        self.tmptemp.append(
+                            {
+                                "Wall Number": self.index + 1,
+                                "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                                "Position X": list(wall_dict.values())[0]["x"],
+                                "Position Y": ypos,
+                                "Position Z": z,
+                            }
+                        )
+        self.index += 1
+        self.getTMPFloor()
+
+    def getTMPFloor(self):
+        floor_finishes = sorted(
+            [
+                obj
+                for obj in self.floor
+                if "floor finishes" in obj["name"].lower()
+                and obj.get("area") != (0, 0, 0)
+            ],
+            key=lambda obj: obj["x"],
+        )
+        floor_area = {}
+        for floor in floor_finishes:
+            width, height = self.get_width_heights_intervals(floor)
+            floor_area[floor["name"]] = {"Width": width, "Height": height}
+        flushplate = [
+            obj for obj in self.all_objs if "flush plate" in obj["name"].lower()
+        ]
+        drain = [obj for obj in self.all_objs if "drain_150" in obj["name"].lower()]
+        floor600, _ = ifc_findings.find_closest_wall(flushplate[0], floor_finishes)
+        floor150, _ = ifc_findings.find_closest_wall(drain[0], floor_finishes)
+        counter = 0
+        for floor in floor_finishes:
+            if floor["name"] == floor150["name"]:
+                area_info = floor_area[floor150["name"]]
+                floortiles = [
+                    floor150["x"] - (area_info["Width"] / 2),
+                    floor150["x"] + (area_info["Width"] / 2),
+                ]
+                repeatcount = int(
+                    (floor["vertices"][:, 1].max() - floor["vertices"][:, 1].min())
+                    / area_info["Height"]
+                )
+                for count, xpos in enumerate(floortiles):
+                    alphabet_string = string.ascii_lowercase
+                    alphabet_list = list(alphabet_string)
+                    alpha = ""
+                    for index, item in enumerate(alphabet_list):
+                        if index == (count):
+                            alpha = item
+                    for i in range(repeatcount):
+                        ypos = floor["vertices"][:, 1].min() + area_info["Height"] * (
+                            i + 1
+                        )
+                        self.tmptemp.append(
+                            {
+                                "Wall Number": self.index + 1,
+                                "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                                "Position X": xpos,
+                                "Position Y": ypos,
+                                "Position Z": floor["z"],
+                            }
+                        )
+                    counter += 1
+            else:
+                area_info = floor_area[floor600["name"]]
+                max_width_repeat_count = (
+                    int(
+                        (floor["vertices"][:, 0].max() - flushplate[0]["x"])
+                        / area_info["Width"]
+                    )
+                    + 1
+                )
+                repeatcount = int(
+                    (floor["vertices"][:, 1].max() - floor["vertices"][:, 1].min())
+                    / area_info["Height"]
+                )
+                floor90 = [
+                    obj for obj in self.floor if "floor:bss.90" in obj["name"].lower()
+                ]
+                for count in range(max_width_repeat_count):
+                    alphabet_string = string.ascii_lowercase
+                    alphabet_list = list(alphabet_string)
+                    alpha = ""
+                    xpos = flushplate[0]["x"] + (area_info["Width"] * count)
+                    for index, item in enumerate(alphabet_list):
+                        if index == (count + counter):
+                            alpha = item
+                    for i in range(repeatcount):
+                        ypos = floor90[0]["y"] + area_info["Height"] * i
+                        self.tmptemp.append(
+                            {
+                                "Wall Number": self.index + 1,
+                                "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                                "Position X": xpos,
+                                "Position Y": ypos,
+                                "Position Z": floor["z"],
+                            }
+                        )
+                    counter += 1

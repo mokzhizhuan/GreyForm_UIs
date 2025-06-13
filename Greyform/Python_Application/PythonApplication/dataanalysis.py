@@ -3,6 +3,8 @@ import ifcopenshell
 import PythonApplication.methodifcfindings as ifc_findings
 import PythonApplication.fitting_width as fitting
 from ifcopenshell.util.placement import get_local_placement
+import PythonApplication.gettmps as tmps
+import PythonApplication.loadmaintmp as tmps6sides
 import re
 import heapq
 
@@ -326,6 +328,33 @@ class data_draft(object):
         df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
             self.applywallpoints, axis=1
         )
+        if len(visited) == 4:
+            tmps.getTMP(
+                all_objs,
+                stage2_rows,
+                df,
+                visited,
+                fitting_stage3,
+                walls_bss20,
+                origin_x,
+                origin_y,
+                floor,
+            )
+        else:
+            tmps6sides.loadmainTMP(
+                all_objs,
+                start,
+                stage2_rows,
+                df,
+                visited,
+                fitting_stage3,
+                walls_bss20,
+                walls_bss12,
+                origin_x,
+                origin_y,
+                floor,
+                storeys
+            )   
         with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
             df_visited.to_excel(writer, index=False, sheet_name="Stage 2")
             df_fitting.to_excel(writer, index=False, sheet_name="Stage 3")

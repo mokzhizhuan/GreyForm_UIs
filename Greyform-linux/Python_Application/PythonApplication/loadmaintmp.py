@@ -310,7 +310,7 @@ class loadmainTMP:
                 self.count_minus_y,
                 self.count_plus_y,
                 self.floor_offset,
-                aelf.args
+                self.args
             )
             datainserter.addTMP6()
 
