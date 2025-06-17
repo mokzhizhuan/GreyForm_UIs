@@ -261,3 +261,55 @@ def identifywall12(wall12, wall20, maxwidth, height50):
         height20 = max(w["area"][1] for w in wall20)
         maxwidth = maxwidth / 2 - height50 - height20
     return maxwidth
+
+def oppsidespositionwall(distance ,fittings , walls, count_minus_y):
+    results = []
+    max_x_widths = []
+    max_y_widths = []
+    min_abs_dist = min(abs(d["Distance"]) for d in distance)
+    wall_info_map = {}
+    for d in distance:
+        wall_number = d["Wall Number"]
+        axis = d["Axis"]
+        max_width = d["Max_Width"]
+        dist = abs(d["Distance"])
+        if axis == "X":
+            max_x_widths.append(max_width)
+        elif axis == "Y":
+            max_y_widths.append(max_width)
+        wall_info_map[wall_number] = {
+            "axis": axis,
+            "max_width": max_width,
+            "dist": dist
+        }
+    max_x_width = max(max_x_widths)
+    max_y_width = max(max_y_widths)
+    for wall_dict in walls:
+        wall_name, wall_data = list(wall_dict.items())[0]
+        for wall_number in wall_info_map:
+            if wall_info_map[wall_number].get("area") is None:
+                wall_info_map[wall_number]["area"] = wall_data["area"]
+    for fit in fittings:
+        wall_number = fit["Wall Number"]
+        if wall_number not in wall_info_map:
+            continue
+        wall_info = wall_info_map[wall_number]
+        axis = wall_info["axis"]
+        max_width = max_y_width if axis == "X" else max_x_width
+        dist = wall_info["dist"]
+        area = wall_info["area"]
+        fitting_pos = fit["Position Y"] if axis == "X" else fit["Position X"]
+        if abs(dist) <= min_abs_dist:
+            corrected_pos = -abs(fitting_pos - area[1]) 
+        else:
+            corrected_pos = fitting_pos - max_width
+            if len(walls) == 6 and count_minus_y == 2:
+                if wall_number == 4:
+                    corrected_pos = -abs(max_width + corrected_pos)
+        results.append({
+            "Wall Number": wall_number,
+            "Point Name" : fit["Point Name"] ,
+            "Position X" : fit["Position X"] if axis == "X" else corrected_pos,
+            "Position Y" : fit["Position Y"] if axis == "Y" else corrected_pos,
+            "Position Z" : fit["Position Z"] - 1000
+        })

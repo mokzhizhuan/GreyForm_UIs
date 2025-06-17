@@ -181,10 +181,15 @@ class ProgressBarDialogIFC(QDialog):
                     self.rosnode, self.stl_file, self.labelstatus, self.stackedWidget
                 )"""
                 self.buttonlocalize.clicked.connect(lambda: self.start_scan())
-        except Exception as e:
-            ifcmaterials.log_error(
-                f"Failed to initialize IFC geometry settings or iterator: {str(e)}"
-            )
+        except Exception as e: 
+            import traceback
+            import sys
+            tb = traceback.extract_tb(e.__traceback__)
+            if tb:
+                filename, lineno, funcname, _ = tb[-1]  # get last frame (where exception occurred)
+                ifcmaterials.log_error(f"[{filename}:{lineno}] Failed to initialize IFC geometry settings or iterator: {str(e)}")
+            else:
+                ifcmaterials.log_error(f"Failed to initialize IFC geometry settings or iterator: {str(e)}")
         self.close()
 
     def start_scan(self):

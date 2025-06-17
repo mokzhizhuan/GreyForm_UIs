@@ -1,5 +1,5 @@
 import re
-import methodifcfindings as ifc_findings
+import PythonApplication.methodifcfindings as ifc_findings
 import string
 
 
@@ -15,18 +15,22 @@ class getTMP(object):
         origin_x,
         origin_y,
         floor,
+        centerpoint_rows
     ):
         self.all_objs = all_objs
         self.stage2_rows = stage2_rows
         self.df = df
         self.walls = walls
         self.stage3_results = stage3_results
+        self.centerpoint_rows = centerpoint_rows
         self.wall_bss20 = wall_bss20
         self.origin_x = origin_x
         self.origin_y = origin_y
         self.floor = floor
         self.index = 0
         self.tmptemp = []
+        self.dist_neededarray = []
+        self.maxwidths = []
         self.getTMP1()
 
     def getTMP1(self):
@@ -53,6 +57,16 @@ class getTMP(object):
                     wc_paper_holder_y - width / 2,
                     wc_paper_holder_y + width / 2,
                 ]
+                dist_needed = 0 - (list(wall_dict.values())[0]["x"] + self.origin_x)
+                x_wallsurface = (list(wall_dict.values())[0]["x"] + self.origin_x) + dist_needed
+                self.dist_neededarray.append(
+                    {
+                        "Wall Number" : self.index + 1,
+                        "Distance" : dist_needed ,
+                        "Axis": list(wall_dict.values())[0]["axis"],
+                        "Max_Width" : list(wall_dict.values())[0]["area"][0] + (list(wall_dict.values())[0]["area"][1]*2)
+                    }
+                )
                 for count, ypos in enumerate(wc_paper_holder_tiles):
                     alphabet_string = string.ascii_lowercase
                     alphabet_list = list(alphabet_string)
@@ -66,8 +80,7 @@ class getTMP(object):
                             {
                                 "Wall Number": self.index + 1,
                                 "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
-                                "Position X": list(wall_dict.values())[0]["x"]
-                                + self.origin_x,
+                                "Position X": x_wallsurface,
                                 "Position Y": ypos,
                                 "Position Z": z,
                             }
@@ -99,6 +112,16 @@ class getTMP(object):
                 ]
                 wczheight = wc_obj[0]["z"] + wc_obj[0]["vertices"][:, 2].max()
                 repeatcount = int((ceilingzstart - wczheight) / width)
+                dist_needed = 0 - (list(wall_dict.values())[0]["y"] + self.origin_y)
+                y_wallsurface = (list(wall_dict.values())[0]["y"] + self.origin_y) + dist_needed
+                self.dist_neededarray.append(
+                    {
+                        "Wall Number" : self.index + 1,
+                        "Distance" : dist_needed ,
+                        "Axis": list(wall_dict.values())[0]["axis"],
+                        "Max_Width" : list(wall_dict.values())[0]["area"][0]
+                    }
+                )
                 for count, xpos in enumerate(wc_tiles):
                     alphabet_string = string.ascii_lowercase
                     alphabet_list = list(alphabet_string)
@@ -113,8 +136,7 @@ class getTMP(object):
                                 "Wall Number": self.index + 1,
                                 "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
                                 "Position X": xpos,
-                                "Position Y": list(wall_dict.values())[0]["y"]
-                                + self.origin_y,
+                                "Position Y": y_wallsurface,
                                 "Position Z": z,
                             }
                         )
@@ -169,6 +191,16 @@ class getTMP(object):
                     heightrange.append(z)
                 max_width = next_w["y"] + self.origin_y + next_w["vertices"][:, 0].max()
                 max_width_repeat_count = int((max_width - min_y) / width) + 1
+                dist_needed = 0 - (list(wall_dict.values())[0]["x"] + self.origin_x)
+                x_wallsurface = (list(wall_dict.values())[0]["x"] + self.origin_x) + dist_needed
+                self.dist_neededarray.append(
+                    {
+                        "Wall Number" : self.index + 1,
+                        "Distance" : dist_needed ,
+                        "Axis": list(wall_dict.values())[0]["axis"],
+                        "Max_Width" : list(wall_dict.values())[0]["area"][0] + list(wall_dict.values())[0]["area"][1]
+                    }
+                )
                 for j, height in enumerate(heightrange):
                     alphabet_string = string.ascii_lowercase
                     alphabet_list = list(alphabet_string)
@@ -195,8 +227,7 @@ class getTMP(object):
                             {
                                 "Wall Number": self.index + 1,
                                 "Point Name": f"TMP{self.index + 1}S2{alpha}{counter+1}",
-                                "Position X": list(wall_dict.values())[0]["x"]
-                                + self.origin_x,
+                                "Position X": x_wallsurface,
                                 "Position Y": ypos,
                                 "Position Z": height,
                             }
@@ -228,6 +259,16 @@ class getTMP(object):
                 )
                 repeatcount = int((ceilingzstart) / width)
                 tiles = [wc_basin_x, wc_basin_x + width]
+                dist_needed = 0 - (list(wall_dict.values())[0]["y"] + self.origin_y)
+                y_wallsurface = (list(wall_dict.values())[0]["y"] + self.origin_y) + dist_needed
+                self.dist_neededarray.append(
+                    {
+                        "Wall Number" : self.index + 1,
+                        "Distance" : dist_needed ,
+                        "Axis": list(wall_dict.values())[0]["axis"],
+                        "Max_Width" : list(wall_dict.values())[0]["area"][0] + list(wall_dict.values())[0]["area"][1]
+                    }
+                )
                 for count, xpos in enumerate(tiles):
                     alphabet_string = string.ascii_lowercase
                     alphabet_list = list(alphabet_string)
@@ -242,8 +283,7 @@ class getTMP(object):
                                 "Wall Number": self.index + 1,
                                 "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
                                 "Position X": xpos,
-                                "Position Y": list(wall_dict.values())[0]["y"]
-                                + self.origin_y,
+                                "Position Y": y_wallsurface,
                                 "Position Z": z,
                             }
                         )
@@ -276,9 +316,10 @@ class getTMP(object):
                     "Point Name": f"TMP{self.index + 1}S2a{i+1}",
                     "Position X": floormarkermax_x,
                     "Position Y": ypos,
-                    "Position Z": lowest_floor,
+                    "Position Z": lowest_floor-1000,
                 }
             )
+        return self.tmptemp , self.dist_neededarray
 
     def get_width_heights_intervals(self, next_w):
         name = next_w["name"]

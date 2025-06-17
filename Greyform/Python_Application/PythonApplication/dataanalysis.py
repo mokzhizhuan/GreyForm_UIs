@@ -328,8 +328,9 @@ class data_draft(object):
         df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
             self.applywallpoints, axis=1
         )
+        tmptemp , distance = [] , []
         if len(visited) == 4:
-            tmps.getTMP(
+            Tmpholder = tmps.getTMP(
                 all_objs,
                 stage2_rows,
                 df,
@@ -339,9 +340,11 @@ class data_draft(object):
                 origin_x,
                 origin_y,
                 floor,
+                centerpoint_rows,
             )
+            tmptemp , distance = Tmpholder.getTMPFloor()
         else:
-            tmps6sides.loadmainTMP(
+            Tmpholder = tmps6sides.loadmainTMP(
                 all_objs,
                 start,
                 stage2_rows,
@@ -353,8 +356,11 @@ class data_draft(object):
                 origin_x,
                 origin_y,
                 floor,
-                storeys
-            )   
+                storeys,
+                centerpoint_rows,
+            )
+            tmptemp , distance = Tmpholder.getTMPFloor()
+        fitting.oppsidespositionwall(distance, fitting_stage3, visited , count_minus_y)
         with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
             df_visited.to_excel(writer, index=False, sheet_name="Stage 2")
             df_fitting.to_excel(writer, index=False, sheet_name="Stage 3")
