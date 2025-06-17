@@ -313,3 +313,4 @@ def oppsidespositionwall(distance ,fittings , walls, count_minus_y):
             "Position Y" : fit["Position Y"] if axis == "Y" else corrected_pos,
             "Position Z" : fit["Position Z"] - 1000
         })
+    return results

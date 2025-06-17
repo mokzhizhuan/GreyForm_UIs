@@ -5,12 +5,13 @@ import PythonApplication.fitting_width as fitting
 from ifcopenshell.util.placement import get_local_placement
 import PythonApplication.gettmps as tmps
 import PythonApplication.loadmaintmp as tmps6sides
+import PythonApplication.stage2walls as loadwallsstage2
 import re
 import heapq
 
 
 class data_draft(object):
-    def __init__(self, ifc_file , args):
+    def __init__(self, ifc_file, args):
         self.ifc_file = ifc_file
         self.args = args
 
@@ -24,7 +25,7 @@ class data_draft(object):
         while hasattr(placement, "PlacementRelTo") and placement.PlacementRelTo:
             placement = placement.PlacementRelTo
         loc = placement.RelativePlacement.Location
-        origin_x , origin_y , ____ = loc.Coordinates
+        origin_x, origin_y, ____ = loc.Coordinates
         origin_x = round(origin_x)
         origin_y = round(origin_y)
         # indicating the width and height
@@ -95,8 +96,6 @@ class data_draft(object):
         # store the finalized rows in stage 2
         if len(visited) == 6:
             top_twofloor_z = heapq.nlargest(2, (f["z"] for f in floor))
-        counters, countersxy, width = 0, 0, 0
-        stage2_rows, centerpoint_rows = [], []
         walls_facing_plus_y = [
             list(wall.values())[0]
             for wall in visited
@@ -122,144 +121,23 @@ class data_draft(object):
             internal_y_width = fitting.compare_width_y(
                 walls_facing_minus_y, internal_y_width, count_plus_y, count_minus_y
             )
-        for i, wall_dict in enumerate(visited):
-            wall = wall_format[i + 1]
-            if len(walls_bss50) == 6:
-                if list(wall_dict.values())[0]["axis"] == "X":
-                    width = internal_x_width[counters]
-                    countersxy += 1
-                    if countersxy == 2:
-                        countersxy = 0
-                        counters += 1
-                elif list(wall_dict.values())[0]["axis"] == "Y":
-                    width = internal_y_width[counters]
-                    countersxy += 1
-                    if countersxy == 2:
-                        countersxy = 0
-                        counters += 1
-            elif len(walls_bss50) == 4:
-                if list(wall_dict.values())[0]["axis"] == "X":
-                    width = internal_x_width[counters]
-                else:
-                    width = internal_y_width[counters]
-            stage2_rows.append(
-                {
-                    "Marking Type": "Tile",
-                    "Point Name": list(wall_dict.keys())[0],
-                    "Position X": list(wall_dict.values())[0]["x"] + origin_x,
-                    "Position Y": list(wall_dict.values())[0]["y"] + origin_y,
-                    "Position Z": list(wall_dict.values())[0]["z"],
-                    "Wall Number": i + 1,
-                    "Shape Type": 6,
-                    "Status": "",
-                    "Quadrant": 1,
-                    "Unamed : 9": "",
-                    "Width": width,
-                    "Height": list(wall_dict.values())[0]["area"][2],
-                    "Orientation": "",
-                    "Diameter": "",
-                }
-            )
-            if list(wall_dict.values())[0]["axis"] == "X":
-                centerpoint_rows.append(
-                    {
-                        "Wall Number": i + 1,
-                        "Wall": list(wall_dict.keys())[0],
-                        "centerpointwidth": internalx_width,
-                        "centerpointheight": 1000,  # manual m line based on the formula
-                        "floortileheight": 1000 + offset,
-                        "AxisDirection": list(wall_dict.values())[0]["facingaxis"],
-                    }
-                )
-                if list(wall_dict.values())[0]["facingaxis"] == "+X":
-                    wall["pos_x_range"] = (
-                        list(wall_dict.values())[0]["x"],
-                        list(wall_dict.values())[0]["x"] + wall["width"],
-                    )
-                    wall["pos_y_range"] = (
-                        list(wall_dict.values())[0]["y"],
-                        list(wall_dict.values())[0]["y"] + wall["thickness"],
-                    )
-                else:
-                    wall["pos_x_range"] = (
-                        list(wall_dict.values())[0]["x"] - wall["width"],
-                        list(wall_dict.values())[0]["x"],
-                    )
-                    wall["pos_y_range"] = (
-                        list(wall_dict.values())[0]["y"] - wall["thickness"],
-                        list(wall_dict.values())[0]["y"],
-                    )
-            elif list(wall_dict.values())[0]["axis"] == "Y":
-                centerpoint_rows.append(
-                    {
-                        "Wall Number": i + 1,
-                        "Wall": list(wall_dict.keys())[0],
-                        "centerpointwidth": internaly_width,
-                        "centerpointheight": 1000,  # manual m line based on the formula
-                        "floortileheight": 1000 + offset,
-                        "AxisDirection": list(wall_dict.values())[0]["facingaxis"],
-                    }
-                )
-                if list(wall_dict.values())[0]["facingaxis"] == "+Y":
-                    wall["pos_x_range"] = (
-                        list(wall_dict.values())[0]["x"] - wall["thickness"],
-                        list(wall_dict.values())[0]["x"],
-                    )
-                    wall["pos_y_range"] = (
-                        list(wall_dict.values())[0]["y"],
-                        list(wall_dict.values())[0]["y"] + wall["width"],
-                    )
-                else:
-                    wall["pos_x_range"] = (
-                        list(wall_dict.values())[0]["x"],
-                        list(wall_dict.values())[0]["x"] + wall["thickness"],
-                    )
-                    wall["pos_y_range"] = (
-                        list(wall_dict.values())[0]["y"] - wall["width"],
-                        list(wall_dict.values())[0]["y"],
-                    )
-        for floor_obj in floor:
-            stage2_rows.append(
-                {
-                    "Marking Type": "Tile",
-                    "Point Name": floor_obj["name"],
-                    "Position X": floor_obj["x"] + origin_x,
-                    "Position Y": floor_obj["y"] + origin_y,
-                    "Position Z": floor_obj["z"],
-                    "Wall Number": "F",
-                    "Shape Type": 6,
-                    "Status": "",
-                    "Quadrant": 1,
-                    "Unamed : 9": "",
-                    "Width": internalxmax_width,
-                    "Height": internalymax_width,
-                    "Orientation": "",
-                    "Diameter": "",
-                }
-            )
-            if len(visited) == 6:
-                centerpoint_rows.append(
-                    {
-                        "Wall Number": "F",
-                        "Wall": floor_obj["name"],
-                        "centerpointwidth": internalx_width,
-                        "centerpointheight": internaly_width,
-                        "floortileheight": [
-                            1000 + abs(top_twofloor_z[0]),
-                            1000 + abs(top_twofloor_z[1]),
-                        ],
-                    }
-                )
-            else:
-                centerpoint_rows.append(
-                    {
-                        "Wall Number": "F",
-                        "Wall": floor_obj["name"],
-                        "centerpointwidth": internalx_width,
-                        "centerpointheight": internaly_width,
-                        "floortileheight": [1000 + abs(floor_offset)],
-                    }
-                )
+        stage2_rows, centerpoint_rows, wall_format = loadwallsstage2.getstage2(
+            visited,
+            wall_format,
+            walls_bss50,
+            floor,
+            internal_x_width,
+            internal_y_width,
+            offset,
+            origin_x,
+            origin_y,
+            internalx_width,
+            internaly_width,
+            internalxmax_width,
+            internalymax_width,
+            top_twofloor_z,
+            floor_offset,
+        )
         # stage 3
         df = pd.read_excel(self.args.excel_file, header=1)
         df["Stage"] = df["Name"].apply(ifc_findings.assign_stage)
@@ -311,7 +189,7 @@ class data_draft(object):
             count_plus_y,
             centerpoint_rows,
             origin_x,
-            origin_y    
+            origin_y,
         )
         self.centerpoint_rows = centerpoint_rows
         fitting_stage3.sort(
@@ -328,7 +206,7 @@ class data_draft(object):
         df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
             self.applywallpoints, axis=1
         )
-        tmptemp , distance = [] , []
+        tmptemp, distance = [], []
         if len(visited) == 4:
             Tmpholder = tmps.getTMP(
                 all_objs,
@@ -342,7 +220,7 @@ class data_draft(object):
                 floor,
                 centerpoint_rows,
             )
-            tmptemp , distance = Tmpholder.getTMPFloor()
+            tmptemp, distance = Tmpholder.getTMPFloor()
         else:
             Tmpholder = tmps6sides.loadmainTMP(
                 all_objs,
@@ -359,8 +237,8 @@ class data_draft(object):
                 storeys,
                 centerpoint_rows,
             )
-            tmptemp , distance = Tmpholder.getTMPFloor()
-        fitting.oppsidespositionwall(distance, fitting_stage3, visited , count_minus_y)
+            tmptemp, distance = Tmpholder.getTMPFloor()
+        fitting_results_temp = fitting.oppsidespositionwall(distance, fitting_stage3, visited, count_minus_y)
         with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
             df_visited.to_excel(writer, index=False, sheet_name="Stage 2")
             df_fitting.to_excel(writer, index=False, sheet_name="Stage 3")
