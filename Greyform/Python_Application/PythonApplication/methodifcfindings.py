@@ -4,19 +4,25 @@ import numpy as np
 import ifcopenshell
 import heapq
 import ifcopenshell.util.element as Element
+import ifcopenshell
+import ifcopenshell.util.placement
+import ifcopenshell.util.element
 
 SCALE = 1000.0
+
 
 def validate_file(path, ext):
     if not path.lower().endswith(ext) or not os.path.exists(path):
         raise argparse.ArgumentTypeError(f"Invalid or missing file: {path}")
     return path
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("excel_file", type=lambda p: validate_file(p, ".xlsx"))
+    parser.add_argument("ifc_file", type=lambda p: validate_file(p, ".ifc"))
     parser.add_argument("output_excel", type=str)
     return parser.parse_args()
+
 
 def get_vertices(obj):
     if obj.Representation:
@@ -29,17 +35,17 @@ def get_vertices(obj):
         return (grouped * SCALE).astype(int)
     return 0
 
+
 def get_posxyz(obj):
     if obj.ObjectPlacement and obj.ObjectPlacement.RelativePlacement:
         placement = obj.ObjectPlacement.RelativePlacement
         loc = getattr(placement, "Location", None)
         ref_dir = getattr(placement, "RefDirection", None)
         origin = tuple(loc.Coordinates) if loc else None
-        direction = (
-            tuple(ref_dir.DirectionRatios) if ref_dir else (1.0, 0.0, 0.0)
-        )  # default X+
+        direction = tuple(ref_dir.DirectionRatios) if ref_dir else (1.0, 0.0, 0.0)
         return origin, direction
     return None, None, None
+
 
 def classify_direction(direction_vector):
     dx, dy, dz = direction_vector
@@ -50,6 +56,7 @@ def classify_direction(direction_vector):
     elif abs(dz) == 1.0 and dx == 0.0 and dy == 0.0:
         return ("Z", "")
     return ("Unknown", "")
+
 
 def transform_from_operator(operator):
     scale = getattr(operator, "Scale", 1.0) or 1.0
@@ -76,6 +83,7 @@ def transform_from_operator(operator):
     matrix[0:3, 3] = origin
     return matrix
 
+
 def axis2placement3d_to_matrix(placement):
     location = np.array(placement.Location.Coordinates)
     z_axis = (
@@ -96,38 +104,32 @@ def axis2placement3d_to_matrix(placement):
     matrix[0:3, 3] = location
     return matrix
 
-def get_proxy_geometry_position(obj):
-    if not obj.Representation:
-        return (0.0, 0.0, 0.0)
-    for rep in obj.Representation.Representations:
-        for item in rep.Items:
-            if item.is_a("IfcMappedItem"):
-                operator = item.MappingTarget
-                mapping_matrix = transform_from_operator(operator)
-                origin = item.MappingSource.MappingOrigin
-                origin_matrix = axis2placement3d_to_matrix(origin)
-                combined = np.dot(mapping_matrix, origin_matrix)
-                for shape in item.MappingSource.MappedRepresentation.Items:
-                    if shape.is_a("IfcExtrudedAreaSolid"):
-                        solid_offset = axis2placement3d_to_matrix(shape.Position)
-                        combined = np.dot(combined, solid_offset)
-                        x, y, z = combined[0, 3], combined[1, 3], combined[2, 3]
-                        return (x, y, z)
-
 def process_elements(elements, name_filter):
     data = []
+    brep_z = []
+    brep_z_data = []
+    furnishing_pos = []
+    getfurnishing_pos = []
     for obj in elements:
         name = getattr(obj, "Name", "")
         if name_filter in name.lower():
-            if obj.is_a("IfcBuildingElementProxy"):
+            if obj.is_a("IfcBuildingElementProxy") and "mirror" not in name.lower():
                 origin, dir = get_posxyz(obj)
-                origin = get_proxy_geometry_position(obj)
+                origin = change_z(origin, obj)
             elif obj.is_a("IFCSlab"):
                 if get_storey_name(obj) != "ceiling level":
                     origin, dir = get_posxyz(obj)
                     origin = get_floorpos(obj)
                 else:
                     continue
+            elif obj.is_a("IfcFurnishingElement") and "bin" not in name.lower():
+                origin, dir = get_posxyz(obj)
+                getfurnishing_pos , base_stats = get_furnishing_y(obj)
+                origin = change_z(origin, obj)
+            elif obj.is_a("IfcFlowTerminal") and "floor" not in name.lower():
+                origin, dir = get_posxyz(obj)
+                brep_z = get_brep(obj)
+                origin = change_z(origin, obj)
             else:
                 origin, dir = get_posxyz(obj)
             if origin == None:
@@ -135,20 +137,203 @@ def process_elements(elements, name_filter):
             area = get_area(obj)  # for centerpoint
             axis = "Unknown"
             if axis:
-                axis , facing_axis = classify_direction(dir)
+                axis, facing_axis = classify_direction(dir)
+            if get_storey_name(obj) == "ceiling level" or get_storey_name(obj) is None:
+                continue
             data.append(
                 {
                     "name": name,
+                    "type": obj.is_a(),
                     "x": round(origin[0]),
                     "y": round(origin[1]),
                     "z": round(origin[2]),
                     "axis": axis,
-                    "facingaxis" : facing_axis,
+                    "facingaxis": facing_axis,
                     "area": area,
                     "vertices": get_vertices(obj),
                 }
             )
-    return data
+            if brep_z:
+                brep_z_data.append(
+                    {
+                        "name": name,
+                        "type": obj.is_a(),
+                        "z_min": round(brep_z[0]),
+                        "z_max": round(brep_z[1]),
+                    }
+                )
+            if getfurnishing_pos:
+                furnishing_pos.append(
+                    {
+                        "name": name,
+                        "type": obj.is_a(),
+                        "furnishing_y_pos": round(getfurnishing_pos[1]),
+                        "width": round(base_stats["width"]),
+                        "height": round(base_stats["height"]),
+                    }
+                )
+    return data , brep_z_data , furnishing_pos
+
+
+def change_z(origin, obj):
+    if len(origin) == 3 and round(origin[2]) <= 0.0:
+        placement = obj.ObjectPlacement
+        while hasattr(placement, "PlacementRelTo") and placement.PlacementRelTo:
+            placement = placement.PlacementRelTo
+        shape = obj.Representation
+        for item in shape.Representations:
+            for mapped in item.Items:
+                if mapped.is_a("IfcMappedItem"):
+                    mapping_source = mapped.MappingSource
+                    for subitem in mapping_source.MappedRepresentation.Items:
+                        if subitem.is_a("IfcExtrudedAreaSolid"):
+                            z_corrected = extract_z_from_shape_item(subitem)
+                            origin = set_origin_z(origin, z_corrected , subitem)
+                            return origin
+                        elif subitem.is_a("IfcFacetedBrep"):
+                            z_corrected = extract_z_from_shape_item(subitem)
+                            origin = set_origin_z(origin, z_corrected , subitem)
+                            return origin
+                        elif subitem.is_a("IfcFaceBasedSurfaceModel"):
+                            z_corrected = extract_z_from_shape_item(subitem)
+                            origin = set_origin_z(origin, z_corrected , subitem)
+                            return origin
+    return origin
+
+def get_furnishing_y(obj):
+    based_curve_points, base_stats = [] , {}
+    coords = None
+    placement = obj.ObjectPlacement
+    while hasattr(placement, "PlacementRelTo") and placement.PlacementRelTo:
+        placement = placement.PlacementRelTo
+    shape = obj.Representation
+    for item in shape.Representations:
+        for mapped in item.Items:
+            if mapped.is_a("IfcMappedItem"):
+                mapping_source = mapped.MappingSource
+                for subitem in mapping_source.MappedRepresentation.Items:
+                    if subitem.is_a("IfcExtrudedAreaSolid"):
+                        profile = subitem.SweptArea
+                        if profile.is_a("IfcArbitraryClosedProfileDef"):
+                            outer_curve = profile.OuterCurve
+                            base_pts, _ = get_rail_points(outer_curve)
+                            based_curve_points.extend(base_pts)
+                            base_stats = compute_width_height(based_curve_points)
+                            coords = subitem.Position.Location.Coordinates
+                            return coords , base_stats
+    return coords , base_stats
+
+def compute_width_height(points_3d):
+    xs, ys = [], []
+    for pt in points_3d:
+        # Flatten excessive dimensions
+        if isinstance(pt, tuple) and len(pt) >= 2:
+            x, y = float(pt[0]), float(pt[1])
+            xs.append(x)
+            ys.append(y)
+    if not xs or not ys:
+        raise ValueError("No valid 2D or 3D points in input")
+    min_x, max_x = min(xs), max(xs)
+    min_y, max_y = min(ys), max(ys)
+    width = max_x - min_x
+    height = max_y - min_y  
+    return {
+        "min_x": min_x,
+        "max_x": max_x,
+        "min_y": min_y,
+        "max_y": max_y,
+        "width": width,
+        "height": height
+    }
+
+
+def extract_composite_curve_points(composite_curve, arc_resolution=10):
+    points = []
+    if composite_curve.is_a("IfcCompositeCurve"):
+        for segment in composite_curve.Segments:
+            subcurve = segment.ParentCurve
+            points.extend(extract_composite_curve_points(subcurve))
+    elif composite_curve.is_a("IfcPolyline"):
+        points.extend([to_3d(pt.Coordinates) for pt in composite_curve.Points])
+    elif composite_curve.is_a("IfcTrimmedCurve"):
+        base = composite_curve.BasisCurve
+        if base.is_a("IfcCircle"):
+            center = base.Position.Location.Coordinates
+            radius = base.Radius
+            start_angle = composite_curve.Trim1[0].wrappedValue
+            end_angle = composite_curve.Trim2[0].wrappedValue
+            for i in range(arc_resolution + 1):
+                angle_deg = start_angle + i * (end_angle - start_angle) / arc_resolution
+                angle_rad = math.radians(angle_deg)
+                x = center[0] + radius * math.cos(angle_rad)
+                y = center[1] + radius * math.sin(angle_rad)
+                points.append((x, y, 0.0))
+    else:
+        print("⚠️ Unhandled segment type:", composite_curve.is_a())
+    return points
+
+def to_3d(coords, z=0.0):
+    return tuple(list(coords) + [0.0] * (3 - len(coords[:-1])) + [z])
+
+def get_rail_points(outer_curve_entity, extrusion_height=60.0):
+    base_profile = extract_composite_curve_points(outer_curve_entity)
+    top_profile = [(pt[0], pt[1], extrusion_height) for pt in base_profile]
+    return base_profile, top_profile             
+
+def get_brep(obj):
+    placement = obj.ObjectPlacement
+    while hasattr(placement, "PlacementRelTo") and placement.PlacementRelTo:
+        placement = placement.PlacementRelTo
+    shape = obj.Representation
+    for item in shape.Representations:
+        for mapped in item.Items:
+            if mapped.is_a("IfcMappedItem"):
+                mapping_source = mapped.MappingSource
+                for subitem in mapping_source.MappedRepresentation.Items:
+                    if subitem.is_a("IfcFacetedBrep"):
+                        min_z , max_z = extract_z_from_shape_item_face(subitem)
+                        brep_z = [min_z, max_z]
+                        return brep_z
+
+def set_origin_z(origin, new_z, shape_item):
+    if round(origin[2]) < 0.0 and shape_item.is_a("IfcExtrudedAreaSolid"):
+        point = (origin[0], origin[1], origin[2] + new_z)
+    else:
+        point = (origin[0], origin[1], new_z)
+    return point
+
+def extract_z_from_shape_item_face(shape_item):
+    if shape_item.is_a("IfcFacetedBrep"):
+        all_z = []
+        for face in shape_item.Outer.CfsFaces:
+            for bound in face.Bounds:
+                for pt in bound.Bound.Polygon:
+                    z = pt.Coordinates[2]
+                    all_z.append(z)
+        return min(all_z) , max(all_z)
+
+def extract_z_from_shape_item(shape_item):
+    if shape_item.is_a("IfcExtrudedAreaSolid"):
+        return shape_item.Position.Location.Coordinates[2]
+    elif shape_item.is_a("IfcFacetedBrep"):
+        all_z = []
+        for face in shape_item.Outer.CfsFaces:
+            for bound in face.Bounds:
+                for pt in bound.Bound.Polygon:
+                    z = pt.Coordinates[2]
+                    all_z.append(z)
+            if all_z:
+                return min(all_z) 
+    elif shape_item.is_a("IfcFaceBasedSurfaceModel"):
+        all_z , pts = [], []
+        for connected in shape_item.FbsmFaces:
+            for face in connected.CfsFaces:
+                for bound in face.Bounds:
+                    for pt in bound.Bound.Polygon:
+                        all_z.append(pt.Coordinates[2])
+        return min(all_z) if all_z else None
+    return None
+
 
 def get_area(obj):
     width, height, extrusion_depth = 0, 0, 0
@@ -175,6 +360,7 @@ def get_area(obj):
                             height = profile.YDim
     return (round(width), round(height), round(extrusion_depth))
 
+
 def get_floorpos(obj):
     origin = (0, 0, 0)
     if obj.Representation:
@@ -189,6 +375,7 @@ def get_floorpos(obj):
         return tuple(point)
     return origin
 
+
 def find_closest_wall(current, pool):
     cx, cy = float(current["x"]), float(current["y"])
     return min(
@@ -201,11 +388,25 @@ def find_closest_wall(current, pool):
         default=(None, float("inf")),
     )
 
+def find_closest_wall_rotation(current, pool):
+    cx, cy = float(current["x"]), float(current["y"])
+    return min(
+        (
+            (w, math.hypot(w["x"] - cx, w["y"] - cy))
+            for w in pool
+            if w["name"] != current["name"] and w["axis"] == current["axis"]
+        ),
+        key=lambda x: x[1],
+        default=(None, float("inf")),
+    )
+
+
 def compute_area(area_tuple):
     if area_tuple and len(area_tuple) >= 2:
         x, y = area_tuple[0], area_tuple[1]
         return x * y
     return 0
+
 
 def get_storey_name(obj):
     if hasattr(obj, "ContainedInStructure"):
@@ -216,18 +417,6 @@ def get_storey_name(obj):
                     return storey.Name.strip().lower()
     return None
 
-def assign_stage(name):
-    name = str(name).lower()
-    return (
-        "Stage 1"
-        if "pipe" in name
-        else (
-            "Stage 2"
-            if "wall" in name or "floor" in name and "drain" not in name
-            else "Stage 3"
-        )
-    )
-            
 def extract_storeys(ifc_file):
     storeys, ground = [], []
     for storey in ifc_file.by_type("IfcBuildingStorey"):
@@ -237,4 +426,3 @@ def extract_storeys(ifc_file):
         if any(k in name.upper() for k in ["BEDROOM", "FLOOR", "GROUND"]):
             ground.append({"name": name, "elevation": elevation})
     return storeys, ground
-
