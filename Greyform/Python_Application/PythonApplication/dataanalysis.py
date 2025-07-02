@@ -5,7 +5,6 @@ import PythonApplication.fitting_width as fitting
 from ifcopenshell.util.placement import get_local_placement
 import PythonApplication.gettmps as tmps
 import PythonApplication.loadmaintmp as tmps6sides
-import PythonApplication.stage2walls as loadwallsstage2
 import re
 import heapq
 
