@@ -6,6 +6,8 @@ from ifcopenshell.util.placement import get_local_placement
 import PythonApplication.gettmps as tmps
 import PythonApplication.loadmaintmp as tmps6sides
 import re
+import PythonApplication.robot_pos as setuprobot
+import PythonApplication.fitting_pointbox as pointbox
 import heapq
 
 
@@ -23,18 +25,26 @@ class data_draft(object):
         placement = site.ObjectPlacement
         while hasattr(placement, "PlacementRelTo") and placement.PlacementRelTo:
             placement = placement.PlacementRelTo
-            loc = placement.RelativePlacement.Location
-            origin_x, origin_y, ____ = loc.Coordinates
-            origin_x = round(origin_x)
-            origin_y = round(origin_y)
+        loc = placement.RelativePlacement.Location
+        origin_x, origin_y, ____ = loc.Coordinates
+        origin_x = round(origin_x)
+        origin_y = round(origin_y)
         # indicating the width and height
         walls_bss50 = [w for w in all_walls if "basic wall:bss.50" in w["name"].lower()]
-        walls_bss20 = [w for w in all_walls if "basic wall:bss.50" not in w["name"].lower()]
-        walls_bss12 = [
+        tile_pattern = re.compile(r"\d+x\d+mm")
+        walls_bss20 = [
             w
             for w in all_walls
-            if re.search(r"basic wall:bss\.(1[0-9])", w["name"].lower())
+            if "basic wall:bss.50" not in w["name"].lower()
+            and tile_pattern.search(w["name"])
             and "glass" not in w["name"].lower()
+        ]
+        walls_bss_no_tile = [
+            w
+            for w in all_walls
+            if not tile_pattern.search(w["name"])
+            and "glass" not in w["name"].lower()
+            and "basic wall:bss.50" not in w["name"].lower()
         ]
         openings, brep_z_data, furnishing_pos = ifc_findings.process_elements(
             self.ifc_file.by_type("IfcOpeningElement"), "basic wall:bss.50"
@@ -42,46 +52,56 @@ class data_draft(object):
         door, brep_z_data, furnishing_pos = ifc_findings.process_elements(
             self.ifc_file.by_type("IfcDoor"), "opening"
         )
-        floor, brep_z_data, furnishing_pos = ifc_findings.process_elements(
+        floors, brep_z_data, furnishing_pos = ifc_findings.process_elements(
             self.ifc_file.by_type("IfcSlab"), "floor"
         )
+        unique_floors = []
+        seen_names = set()
+        for floor in floors:
+            if floor["name"] not in seen_names:
+                seen_names.add(floor["name"])
+                unique_floors.append(floor)
+        floors = unique_floors
+        floor_bss_60 = [f for f in floors if "floor:bss.60" in f["name"].lower()]
+        other_floor = [f for f in floors if "floor:bss.60" not in f["name"].lower()]
         all_objs, brep_z_data, furnishing_pos = ifc_findings.process_elements(
             self.ifc_file.by_type("IfcElement"), ""
         )
-        used_names = set(w["name"] for w in all_walls + openings + door + floor)
+        box_up = ifc_findings.process_elements(self.ifc_file.by_type("IfcWall"), "box")
+        """used_names = set(w["name"] for w in all_walls + openings + door + floors)
         excluded_types = {
             "IfcFlowController",
             "IfcFlowSegment",
             "IfcCovering",
             "IfcDoor",
             "IfcFlowFitting",
+            "IfcOpeningElement", 
+            "IfcCovering",
         }
         remaining_objs = [
             obj
             for obj in all_objs
-            if obj["name"] not in used_names and obj["type"] not in excluded_types
-        ]
-        seen_names = set()
-        floor = [
-            f
-            for f in floor  
-            if (f["name"] not in seen_names and not seen_names.add(f["name"]))
-        ]
+            if obj["name"] not in used_names
+            and obj["type"] not in excluded_types
+            and "floor:bss.60" not in obj["name"].lower()
+            and "basic wall:bss.20" not in obj["name"].lower()
+        ]"""
         # storeys for the minimum ceiling
         storeys, ground = ifc_findings.extract_storeys(self.ifc_file)
         # wallformula
-        same = {}
-        for doors in door:
-            closest_wall, distance = ifc_findings.find_closest_wall(doors, walls_bss50)
-            if closest_wall:
-                same[closest_wall["name"]] = closest_wall  # overwrite if already exists
-            else:
-                # fallback logic: openings
-                fallback = [
-                    o for o in openings if any(o["name"] in w["name"] for w in walls_bss50)
-                ]
-                if fallback:
-                    max_opening = max(
+        same , fallback = {} , []
+        if door:
+            for doors in door:
+                closest_wall, distance = ifc_findings.find_closest_wall(doors, walls_bss50)
+                if closest_wall:
+                    same[closest_wall["name"]] = closest_wall  # overwrite if already exists
+        else:
+            # fallback logic: openings
+            fallback = [
+                o for o in openings if any(o["name"] in w["name"] for w in walls_bss50)
+            ]
+            if fallback:
+                max_opening = max(
                     fallback, key=lambda o: ifc_findings.compute_area(o["area"])
                 )
                 same[max_opening["name"]] = max_opening
@@ -106,15 +126,19 @@ class data_draft(object):
             visited = [{start["name"]: start_wall}]
             (
                 internalx_width,  # centerpoint x
-                    internaly_width,  # centerpoint y
+                internaly_width,  # centerpoint y
                 internalxmax_width,
                 internalymax_width,
-               internal_x_width,
+                internal_x_width,
                 internal_y_width,
+                externalxmax_width,
+                externalymax_width,
+                xmaxwidths,
+                ymaxwidths,
             ) = fitting.get_internal_width(
-                walls_bss50, start_wall, walls_bss20, walls_bss12
+                walls_bss50, start_wall, walls_bss20, walls_bss_no_tile
             )
-            floor_offset = max(floor, key=lambda f: f["z"], default={"z": 0})["z"]
+            floor_offset = max(floors, key=lambda f: f["z"], default={"z": 0})["z"]
             floor_offset = abs(floor_offset) if floor_offset else 0
             offset = abs(start["z"])
             curr = start
@@ -127,19 +151,19 @@ class data_draft(object):
                 curr = next_w
         # store the finalized rows in stage 2
         if len(visited) == 6:
-            top_twofloor_z = heapq.nlargest(2, (f["z"] for f in floor))
+            top_twofloor_z = heapq.nlargest(2, (f["z"] for f in floors))
         counters, countersxy, width = 0, 0, 0
-        stage2_rows, self.centerpoint_rows = [], []
+        stage2_rows, centerpoint_rows, box_up_rows = [], [], []
         walls_facing_plus_y = [
             list(wall.values())[0]
             for wall in visited
             if list(wall.values())[0]["facingaxis"] == "+Y"
-        ]   
+        ]
         walls_facing_minus_y = [
             list(wall.values())[0]
             for wall in visited
             if list(wall.values())[0]["facingaxis"] == "-Y"
-        ]
+        ]   
         count_plus_y = len(walls_facing_plus_y)
         count_minus_y = len(walls_facing_minus_y)
         if count_minus_y == 2:
@@ -151,10 +175,31 @@ class data_draft(object):
             internal_y_width = fitting.compare_width_y(
                 walls_facing_minus_y, internal_y_width, count_plus_y, count_minus_y
             )
+            ymaxwidths.sort()
+            ymaxwidths[0], ymaxwidths[1] = (ymaxwidths[1], ymaxwidths[0])
+            xmaxwidths[-2], xmaxwidths[-1] = (
+                xmaxwidths[-1],
+                xmaxwidths[-2],
+            )   
         elif count_plus_y == 2:
             internal_y_width = fitting.compare_width_y(
                 walls_facing_minus_y, internal_y_width, count_plus_y, count_minus_y
             )
+        floor_z = max(f["z"] for f in other_floor) if other_floor else 0
+        box_up = box_up[0][0]
+        box_up_rows.append(
+            {
+                "name": box_up["name"],
+                "type": box_up["type"],
+                "x": box_up["x"],
+                "y": box_up["y"],
+                "z": box_up["z"],
+                "axis": box_up["axis"],
+                "facingaxis": box_up["facingaxis"],
+                "area": box_up["area"],
+                "vertices": box_up["vertices"],
+            }
+        )
         for i, wall_dict in enumerate(visited):
             if len(walls_bss50) == 6:
                 if list(wall_dict.values())[0]["axis"] == "X":
@@ -192,25 +237,14 @@ class data_draft(object):
                     {
                         "Wall Number": i + 1,
                         "Wall": f"CP{i + 1}S2",
-                        "Position X": width / 2,
+                        "Position X": externalxmax_width / 2,
                         "Position Y": y_wallsurface,
-                        "Position Z": 1000,
+                        "Position Z": 1000 + floor_z,
                         "Width": width,
                         "Height": list(wall_dict.values())[0]["area"][2],
                     }
                 )
-                stage2_rows.append(
-                    {
-                        "Wall Number": i + 1,
-                        "Wall": f"TMP{i + 1}S2a1",
-                        "Position X": -abs(width / 2),
-                        "Position Y": y_wallsurface,
-                        "Position Z": -1000,
-                        "Width": width,
-                        "Height": list(wall_dict.values())[0]["area"][2],
-                    }
-                )
-                self.centerpoint_rows.append(
+                centerpoint_rows.append(
                     {
                         "Wall Number": i + 1,
                         "Wall": list(wall_dict.keys())[0],
@@ -228,24 +262,13 @@ class data_draft(object):
                         "Wall Number": i + 1,
                         "Wall": f"CP{i + 1}S2",
                         "Position X": x_wallsurface,
-                        "Position Y": width / 2,
-                        "Position Z": 1000,
+                        "Position Y": externalymax_width / 2,
+                        "Position Z": 1000 + floor_z,
                         "Width": width,
                         "Height": list(wall_dict.values())[0]["area"][2],
                     }
                 )
-                stage2_rows.append(
-                    {
-                        "Wall Number": i + 1,
-                        "Wall": f"TMP{i + 1}S2a1",
-                        "Position X": -abs(width / 2),
-                        "Position Y": x_wallsurface,
-                        "Position Z": -1000,
-                        "Width": width,
-                        "Height": list(wall_dict.values())[0]["area"][2],
-                    }
-                )
-                self.centerpoint_rows.append(
+                centerpoint_rows.append(
                     {
                         "Wall Number": i + 1,
                         "Wall": list(wall_dict.keys())[0],
@@ -255,7 +278,7 @@ class data_draft(object):
                         "AxisDirection": list(wall_dict.values())[0]["facingaxis"],
                     }
                 )
-        for floor_obj in floor:
+        for floor_obj in other_floor:
             stage2_rows.append(
                 {
                     "Wall Number": "F",
@@ -268,7 +291,7 @@ class data_draft(object):
                 }
             )
             if len(visited) == 6:
-                self.centerpoint_rows.append(
+                centerpoint_rows.append(
                     {
                         "Wall Number": "F",
                         "Wall": floor_obj["name"],
@@ -282,7 +305,7 @@ class data_draft(object):
                     }
                 )
             else:
-                self.centerpoint_rows.append(
+                centerpoint_rows.append(
                     {
                         "Wall Number": "F",
                         "Wall": floor_obj["name"],
@@ -292,14 +315,13 @@ class data_draft(object):
                         "AxisDirection": floor_obj["facingaxis"],
                     }
                 )
-        floor_z = abs(max(f["z"] for f in floor) if floor else 0)
-        floor_z = floor_z - 1000
+        floor_z_off = floor_z - 1000
         stage2_rows.append(
             {
                 "Wall Number": "F",
                 "Wall": f"CP{len(visited) + 1}S2",
-                "Position X": internalx_width,
-                "Position Y": internaly_width,
+                "Position X": externalxmax_width / 2,
+                "Position Y": externalymax_width / 2,
                 "Position Z": floor_z,
                 "Width": internalxmax_width,
                 "Height": internalymax_width,
@@ -307,17 +329,33 @@ class data_draft(object):
         )
         # stage 3
         stage3_objects = []
-        for obj in remaining_objs:
-            stage3_objects.append(
-                {
-                    "name": obj["name"],
-                    "x": obj["x"],
-                    "y": obj["y"],
-                    "z": obj["z"],
-                }
-            )
-        glass_walls = [obj for obj in all_objs if "glass" in obj["name"].lower()]
-        df_visited = pd.DataFrame(stage2_rows)
+        checklist_file = pd.ExcelFile(self.args.excel_checklist)
+        df_checklist = checklist_file.parse("Sheet1")
+        item_names = df_checklist.iloc[1:, 3].dropna().unique().tolist()
+        filtered_item_names = [
+            name
+            for name in item_names
+            if "bss.10 glass" not in name.lower()
+            and "wall finishes" not in name.lower()
+            and "floor finishes" not in name.lower()
+        ]
+        for obj in all_objs:
+            if any(f_item in obj["name"] for f_item in filtered_item_names):
+                stage3_objects.append(
+                    {
+                        "name": obj["name"],
+                        "x": obj["x"],
+                        "y": obj["y"],
+                        "z": obj["z"],
+                    }
+                )   
+        glass_walls = [
+            obj
+            for obj in all_objs
+            if "glass" in obj["name"].lower()
+            and not (obj.get("x", 0) == 0 and obj.get("y", 0) == 0 and obj.get("z", 0) == 0)
+        ]
+        df_checklist.columns = df_checklist.iloc[0]
         # assign fittings
         wall_info = [
             {
@@ -332,20 +370,36 @@ class data_draft(object):
             visited,
             stage3_objects,
             storeys,
-            floor,
+            other_floor,
             wall_info,
             ground,
             glass_walls,
             count_minus_y,
             count_plus_y,
-            self.centerpoint_rows,
+            centerpoint_rows,
+            origin_x,
+            origin_y,
+            walls_bss20,
+            walls_bss_no_tile
+        )
+        boxup = fitting.assign_nearest_fitting_rotation(
+            visited,
+            box_up_rows,
+            storeys,
+            other_floor,
+            wall_info,
+            ground,
+            glass_walls,
+            count_minus_y,
+            count_plus_y,
+            centerpoint_rows,
             origin_x,
             origin_y,
         )
         fitting_stage3.sort(
             key=lambda x: (
                 int(x["Wall Number"]) if str(x["Wall Number"]).isdigit() else float("inf")
-            )
+            )   
         )
         df_fitting = pd.DataFrame(fitting_stage3)
         tmptemp, distance = [], []
@@ -358,39 +412,78 @@ class data_draft(object):
                 walls_bss20,
                 origin_x,
                 origin_y,
-                floor,
-                self.centerpoint_rows,
+                other_floor,
+                centerpoint_rows,
                 storeys,
                 brep_z_data,
                 furnishing_pos,
             )
-            tmptemp, distance = Tmpholder.getTMPFloor()
+            # tmptemp, distance = Tmpholder.addTMP2()
         else:
             Tmpholder = tmps6sides.loadmainTMP(
                 all_objs,
-                start,
                 stage2_rows,
                 visited,
                 fitting_stage3,
                 walls_bss20,
-                walls_bss12,
+                walls_bss_no_tile,
                 origin_x,
                 origin_y,
-                floor,
+                other_floor,
                 storeys,
-                self.centerpoint_rows,
+                centerpoint_rows,
+                fallback,
+                boxup,
+                glass_walls,
             )
-            tmptemp, distance = Tmpholder.getTMPFloor()
-        """df_tmptemp = pd.DataFrame(tmptemp)
-        processor = tmpprocesses.TMPProcessor(centerpoint_rows , walls_bss20 , walls_bss50)
-        df_tmptemp[["Position X", "Position Y", "Position Z"]] = df_tmptemp.apply(processor.applywallpoints, axis=1)
+            tmptemp, distance = Tmpholder.returnalltmps()
+        df_tmptemp = pd.DataFrame(tmptemp)
+        df_visited = pd.DataFrame(stage2_rows)
         df_combined = pd.concat([df_tmptemp, df_visited], ignore_index=True)
-        df_combined["Wall Number Sort"] = pd.to_numeric(df_combined["Wall Number"], errors='coerce')
-        df_combined = df_combined.sort_values(by=["Wall Number Sort", "Point Name"]).drop(columns="Wall Number Sort")
+        df_combined["Wall Number Sort"] = pd.to_numeric(
+            df_combined["Wall Number"], errors="coerce"
+        )
+        df_combined = df_combined.sort_values(by=["Wall Number Sort", "Point Name"]).drop(
+            columns="Wall Number Sort"
+        )
         df_combined = df_combined.reset_index(drop=True)
         df_combined.index = df_combined.index + 1
-        df_fitting.index = df_fitting.index + 1"""
-        # fitting.oppsidespositionwall(distance, fitting_stage3, visited , count_minus_y)
+        df_fitting.index = df_fitting.index + 1
+        df_combined[["Width", "Height"]] = df_combined.apply(
+            lambda row: fitting.applyexternal(
+                row, ymaxwidths, xmaxwidths, visited, walls_bss50
+            ),
+            axis=1,
+        )
+        df_combined["Point Name"] = df_combined.apply(
+            lambda row: (
+                row["Wall"]
+                if pd.isna(row["Point Name"]) or row["Point Name"] == ""
+                else row["Point Name"]
+            ),
+            axis=1,
+        )
+        df_combined = df_combined[
+            ~df_combined["Wall"].str.contains("Basic Wall|Floor", na=False)
+        ]
+        df_combined.drop(columns=["Wall"], inplace=True)
+        fittingbox = pointbox.boundingboxpoint(fitting_stage3, all_objs)
+        fittingboundingbox = fittingbox.returnallfitting()
+        df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
+            lambda row: setuprobot.setupfittingrequirement(
+                row, all_objs, fittingboundingbox , df_checklist
+            ),
+            axis=1,
+        )
+        #robot tiling dont use it
+        df_combined[["Position X", "Position Y", "Position Z"]] = df_combined.apply(
+            lambda row: setuprobot.setuprobotposition(row, stage2_rows , visited, externalxmax_width , externalymax_width),
+            axis=1
+        ) 
+        df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
+            lambda row: setuprobot.setuprobotposition_fitting(row, stage2_rows , visited , externalymax_width , externalymax_width),
+            axis=1
+        )
         with pd.ExcelWriter(self.output_excel, engine="openpyxl") as writer:
             df_visited.to_excel(writer, index=True, sheet_name="Stage 2")  # Include index
             df_fitting.to_excel(writer, index=True, sheet_name="Stage 3")   # Include index

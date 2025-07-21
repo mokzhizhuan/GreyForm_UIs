@@ -20,6 +20,7 @@ def validate_file(path, ext):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("ifc_file", type=lambda p: validate_file(p, ".ifc"))
+    parser.add_argument("excel_checklist", type=lambda p: validate_file(p, ".xlsx"))
     parser.add_argument("output_excel", type=str)
     return parser.parse_args()
 
@@ -116,8 +117,8 @@ def process_elements(elements, name_filter):
             if obj.is_a("IfcBuildingElementProxy") and "mirror" not in name.lower():
                 origin, dir = get_posxyz(obj)
                 origin = change_z(origin, obj)
-            elif obj.is_a("IFCSlab"):
-                if get_storey_name(obj) != "ceiling level":
+            elif obj.is_a("IFCSlab") and "notdefined" not in obj.PredefinedType.lower():
+                if "notdefined" not in obj.PredefinedType.lower():
                     origin, dir = get_posxyz(obj)
                     origin = get_floorpos(obj)
                 else:
@@ -138,8 +139,6 @@ def process_elements(elements, name_filter):
             axis = "Unknown"
             if axis:
                 axis, facing_axis = classify_direction(dir)
-            if get_storey_name(obj) == "ceiling level" or get_storey_name(obj) is None:
-                continue
             data.append(
                 {
                     "name": name,
@@ -426,3 +425,8 @@ def extract_storeys(ifc_file):
         if any(k in name.upper() for k in ["BEDROOM", "FLOOR", "GROUND"]):
             ground.append({"name": name, "elevation": elevation})
     return storeys, ground
+
+def log_info(message):
+    with open("log.txt", "a") as log_file:
+        log_file.write(message + "\n")
+
