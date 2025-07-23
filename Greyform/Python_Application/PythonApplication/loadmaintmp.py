@@ -172,6 +172,7 @@ class loadmainTMP:
                     if w in self.shower_walls:
                         axis = w.get("axis")
                         distance = 0
+                        facing_axis = w.get("facingaxis")
                         if axis in "X":
                             next_w_x = w.get("x", 0)
                             distance = next_w_x - self.thickness
@@ -182,15 +183,29 @@ class loadmainTMP:
                             area = w.get("area")
                             if axis in "X":
                                 if area[0] % width != 0:
-                                    x_val = (
-                                        area[0] - self.thickness
-                                    ) / 2 + self.thickness
+                                    if "-X" in facing_axis:
+                                        x_val = (
+                                            area[0] - self.thickness
+                                        ) / 2 + self.thickness
+                                    else:
+                                        x_val = (
+                                            x_val
+                                            + ((area[0] - self.thickness) / 2)
+                                            + self.thickness
+                                        )
                                     tiles_x.append({"x": x_val, "z": z_val})
                             else:
                                 if area[0] % width != 0:
-                                    y_val = (
-                                        area[0] - self.thickness
-                                    ) / 2 + self.thickness
+                                    if "-Y" in facing_axis:
+                                        y_val = (
+                                            area[0] - self.thickness
+                                        ) / 2 + self.thickness
+                                    else:
+                                        y_val = (
+                                            y_val
+                                            + ((area[0] - self.thickness) / 2)
+                                            + self.thickness
+                                        )
                                     tiles_y.append({"y": y_val, "z": z_val})
                     else:
                         vertices = self.boxup[0]["vertices"]
@@ -298,11 +313,11 @@ class loadmainTMP:
                 tiles_x, tiles_y = [], []
                 w = next_w
                 x_val, y_val, area = w.get("x", 0), w.get("y", 0), w.get("area")
-                wall_width = area[0]
-                z_val = self.wall_bss12[0]["z"]
+                wall_width, z_val = area[0], self.wall_bss12[0]["z"]
                 if next_w in self.shower_walls:
                     axis = next_w.get("axis")
                     distance = 0
+                    facing_axis = next_w.get("facingaxis")
                     if axis in "X":
                         next_w_x = next_w.get("x", 0)
                         distance = next_w_x - self.thickness
@@ -313,10 +328,28 @@ class loadmainTMP:
                         area = next_w.get("area")
                         if axis in "X":
                             if area[0] % width != 0:
-                                x_val = (area[0] - self.thickness) / 2 + self.thickness
+                                if "-X" in facing_axis:
+                                    x_val = (
+                                        (area[0] - self.thickness) / 2
+                                    ) + self.thickness
+                                else:
+                                    x_val = (
+                                        x_val
+                                        + ((area[0] - self.thickness) / 2)
+                                        + self.thickness
+                                    )
                         else:
                             if area[0] % width != 0:
-                                y_val = (area[0] - self.thickness) / 2 + self.thickness
+                                if "-Y" in facing_axis:
+                                    y_val = (
+                                        area[0] - self.thickness
+                                    ) / 2 + self.thickness
+                                else:
+                                    y_val = (
+                                        y_val
+                                        + ((area[0] - self.thickness) / 2)
+                                        + self.thickness
+                                    )
                 if self.index + 1 == self.boxup[0]["Wall Number"]:
                     x_val = self.boxup[0]["Position X"]
                     vertices = self.boxup[0]["vertices"]
