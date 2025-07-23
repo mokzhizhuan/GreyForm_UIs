@@ -1,5 +1,5 @@
 import re
-import PythonApplication.methodifcfindings as ifc_findings
+import methodifcfindings as ifc_findings
 import string
 import numpy as np
 import math
@@ -64,7 +64,6 @@ class loadmainTMP:
         self.storey_min_height = min(
             storeys, key=lambda s: s["elevation"], default={"elevation": 0}
         )["elevation"]
-        self.dist_neededarray = []
         self.index = 0
         self.tmptemp = []
         self.addTMP1()
@@ -171,8 +170,8 @@ class loadmainTMP:
                         tiles_y.append({"x": x_val, "z": z_val})
                     if w in self.shower_walls:
                         axis = w.get("axis")
-                        distance = 0
                         facing_axis = w.get("facingaxis")
+                        distance = 0
                         if axis in "X":
                             next_w_x = w.get("x", 0)
                             distance = next_w_x - self.thickness
@@ -188,11 +187,7 @@ class loadmainTMP:
                                             area[0] - self.thickness
                                         ) / 2 + self.thickness
                                     else:
-                                        x_val = (
-                                            x_val
-                                            + ((area[0] - self.thickness) / 2)
-                                            + self.thickness
-                                        )
+                                        x_val = x_val + ((area[0] - self.thickness) / 2 )+ self.thickness
                                     tiles_x.append({"x": x_val, "z": z_val})
                             else:
                                 if area[0] % width != 0:
@@ -201,11 +196,7 @@ class loadmainTMP:
                                             area[0] - self.thickness
                                         ) / 2 + self.thickness
                                     else:
-                                        y_val = (
-                                            y_val
-                                            + ((area[0] - self.thickness) / 2)
-                                            + self.thickness
-                                        )
+                                        y_val = y_val + ((area[0] - self.thickness) / 2 )+ self.thickness
                                     tiles_y.append({"y": y_val, "z": z_val})
                     else:
                         vertices = self.boxup[0]["vertices"]
@@ -238,14 +229,6 @@ class loadmainTMP:
                 else:
                     dist_needed = 0 - wall_obj["x"]
                     x_wallsurface = wall_obj["x"] + dist_needed
-                self.dist_neededarray.append(
-                    {
-                        "Wall Number": self.index + 1,
-                        "Distance": dist_needed,
-                        "Axis": axis,
-                        "Max_Width": wall_obj["area"][0] + wall_obj["area"][1] * 2,
-                    }
-                )
                 alphabet_list = list(self.alphabet_string)
                 counter = 0
                 for count, pos in enumerate(tile_list):
@@ -313,7 +296,7 @@ class loadmainTMP:
                 tiles_x, tiles_y = [], []
                 w = next_w
                 x_val, y_val, area = w.get("x", 0), w.get("y", 0), w.get("area")
-                wall_width, z_val = area[0], self.wall_bss12[0]["z"]
+                wall_width , z_val = area[0] , self.wall_bss12[0]["z"]
                 if next_w in self.shower_walls:
                     axis = next_w.get("axis")
                     distance = 0
@@ -329,27 +312,15 @@ class loadmainTMP:
                         if axis in "X":
                             if area[0] % width != 0:
                                 if "-X" in facing_axis:
-                                    x_val = (
-                                        (area[0] - self.thickness) / 2
-                                    ) + self.thickness
+                                    x_val = ((area[0] - self.thickness) / 2) + self.thickness
                                 else:
-                                    x_val = (
-                                        x_val
-                                        + ((area[0] - self.thickness) / 2)
-                                        + self.thickness
-                                    )
+                                    x_val = x_val + ((area[0] - self.thickness) / 2 )+ self.thickness
                         else:
                             if area[0] % width != 0:
                                 if "-Y" in facing_axis:
-                                    y_val = (
-                                        area[0] - self.thickness
-                                    ) / 2 + self.thickness
+                                    y_val = (area[0] - self.thickness) / 2 + self.thickness
                                 else:
-                                    y_val = (
-                                        y_val
-                                        + ((area[0] - self.thickness) / 2)
-                                        + self.thickness
-                                    )
+                                    y_val = y_val + ((area[0] - self.thickness) / 2 )+ self.thickness
                 if self.index + 1 == self.boxup[0]["Wall Number"]:
                     x_val = self.boxup[0]["Position X"]
                     vertices = self.boxup[0]["vertices"]
@@ -419,7 +390,7 @@ class loadmainTMP:
                             x_values = vertices[:, 0]
                             unique_x = np.unique(x_values)
                             unique_x = unique_x[unique_x != 0]
-                            min_x, max_x = min(unique_x), max(unique_x)
+                            min_x , max_x = min(unique_x) , max(unique_x)
                             current = y_val - min_x
                             end = y_val - max_x
                             while current > end:
@@ -454,14 +425,6 @@ class loadmainTMP:
                 else:
                     dist_needed = 0 - wall_obj["x"]
                     x_wallsurface = wall_obj["x"] + dist_needed
-                self.dist_neededarray.append(
-                    {
-                        "Wall Number": self.index + 1,
-                        "Distance": dist_needed,
-                        "Axis": axis,
-                        "Max_Width": wall_obj["area"][0] + wall_obj["area"][1] * 2,
-                    }
-                )
                 alphabet_list = list(self.alphabet_string)
                 z_min_limit, z_max_limit = 0, 0
                 y_min_limit, y_max_limit = 0, 0
@@ -470,8 +433,8 @@ class loadmainTMP:
                     if vertices is not None and len(vertices) > 0:
                         y_coords = np.array(vertices)[:, 1]  # get all Y values
                         z_coords = np.array(vertices)[:, 2]  # get all Z values
-                        y_min_limit, y_max_limit = y_coords.min(), y_coords.max()
-                        z_min_limit, z_max_limit = z_coords.min(), z_coords.max()
+                        y_min_limit , y_max_limit = y_coords.min() , y_coords.max()
+                        z_min_limit , z_max_limit = z_coords.min() , z_coords.max()
                 repeatcount = int((self.storey_min_height - z_val) / height) + 1
                 for count, pos in enumerate(tile_list):
                     alpha = ""
@@ -523,7 +486,7 @@ class loadmainTMP:
             "y"
         ]
         counters = 0  # global X-letter index
-        tmpfloor, distance_needed = [], []
+        tmpfloor , distance_needed  = [] , []
         for floor in floor_finishes:
             distance_needed.append(
                 {
@@ -581,9 +544,7 @@ class loadmainTMP:
                 current += height
             for xpos in tiles_x:
                 alpha = (
-                    self.alphabet_string[counters]
-                    if counters < len(self.alphabet_string)
-                    else f"z{counters}"
+                    self.alphabet_string[counters] if counters < len(self.alphabet_string) else f"z{counters}"
                 )
                 for count_y, ypos in enumerate(tiles_y):
                     tmpfloor.append(
@@ -600,4 +561,4 @@ class loadmainTMP:
         self.returnalltmps()
 
     def returnalltmps(self):
-        return self.tmptemp, self.dist_neededarray
+        return self.tmptemp
