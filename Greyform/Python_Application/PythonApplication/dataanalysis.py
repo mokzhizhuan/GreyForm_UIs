@@ -438,7 +438,7 @@ class data_draft(object):
                 boxup,
                 glass_walls,
             )
-            tmptemp Tmpholder.returnalltmps()
+            tmptemp = Tmpholder.returnalltmps()
         df_tmptemp = pd.DataFrame(tmptemp)
         df_visited = pd.DataFrame(stage2_rows)
         df_combined = pd.concat([df_tmptemp, df_visited], ignore_index=True)
