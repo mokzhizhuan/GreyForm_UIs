@@ -149,9 +149,8 @@ class loadmainTMP:
                 first_w, _ = ifc_findings.find_closest_wall(wall_obj, self.wall_bss20)
                 second_w, _ = ifc_findings.find_closest_wall(first_w, self.wall_bss20)
                 width, height = self.get_width_heights_intervals(first_w)
-                tiles_x, tiles_y = [], []
+                tiles_x, tiles_y, dist_needed = [], [], []
                 x_min_limit = 0
-                dist_needed = []
                 for w in [first_w, second_w]:
                     if opening_match:
                         vertices = opening_match.get("vertices")
@@ -387,7 +386,7 @@ class loadmainTMP:
                             x_values = vertices[:, 0]
                             unique_x = np.unique(x_values)
                             unique_x = unique_x[unique_x != 0]
-                            min_x , max_x = min(unique_x) , max(unique_x)
+                            min_x, max_x = min(unique_x), max(unique_x)
                             current = y_val - min_x
                             end = y_val - max_x
                             while current > end:
@@ -438,8 +437,8 @@ class loadmainTMP:
                     if vertices is not None and len(vertices) > 0:
                         y_coords = np.array(vertices)[:, 1]  # get all Y values
                         z_coords = np.array(vertices)[:, 2]  # get all Z values
-                        y_min_limit , y_max_limit = y_coords.min() , y_coords.max()
-                        z_min_limit , z_max_limit = z_coords.min() , z_coords.max()
+                        y_min_limit, y_max_limit = y_coords.min(), y_coords.max()
+                        z_min_limit, z_max_limit = z_coords.min(), z_coords.max()
                 repeatcount = int((self.storey_min_height - z_val) / height) + 1
                 for count, pos in enumerate(tile_list):
                     alpha = ""
@@ -491,7 +490,7 @@ class loadmainTMP:
             "y"
         ]
         counters = 0  # global X-letter index
-        tmpfloor , distance_needed  = [] , []
+        tmpfloor, distance_needed = [], []
         for floor in floor_finishes:
             distance_needed.append(
                 {
@@ -549,7 +548,9 @@ class loadmainTMP:
                 current += height
             for xpos in tiles_x:
                 alpha = (
-                    self.alphabet_string[counters] if counters < len(self.alphabet_string) else f"z{counters}"
+                    self.alphabet_string[counters]
+                    if counters < len(self.alphabet_string)
+                    else f"z{counters}"
                 )
                 for count_y, ypos in enumerate(tiles_y):
                     tmpfloor.append(
