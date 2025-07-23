@@ -182,8 +182,14 @@ class ProgressBarDialogIFC(QDialog):
                 )"""
                 self.buttonlocalize.clicked.connect(lambda: self.start_scan())
         except Exception as e: 
+            import traceback
+            import inspect
+            frame = inspect.currentframe()
+            filename = inspect.getfile(frame)
+            lineno = frame.f_lineno
             ifcmaterials.log_error(
-                f"Failed to initialize IFC geometry settings or iterator: {str(e)}"
+                f"Failed to initialize IFC geometry settings or iterator: {str(e)} "
+                f"(File \"{filename}\", Line {lineno})"
             )
         self.close()
 

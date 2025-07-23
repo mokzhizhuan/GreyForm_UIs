@@ -1,6 +1,6 @@
 import heapq
 import pandas as pd
-import methodifcfindings as ifc_findings
+import PythonApplication.methodifcfindings as ifc_findings
 
 def assign_nearest_fitting(
     walls,
@@ -309,6 +309,7 @@ def get_internal_width(walls, startingwall, wall20, wall12):
         xwidths_sorted[1] += height50
         ywidths_sorted[1] += height50
         ywidths_sorted[0] += height50 * 2
+    axis_width = {"x": [xwidths_sorted], "y": [ywidths_sorted]}
     return (
         round(internalx_width),
         round(internaly_width),
@@ -320,6 +321,7 @@ def get_internal_width(walls, startingwall, wall20, wall12):
         external_y_width,
         xwidths_sorted,
         ywidths_sorted,
+        axis_width
     )
 
 

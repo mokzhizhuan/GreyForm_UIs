@@ -20,34 +20,41 @@ def setupactors(
 ):
     identifier = {}
     wall_actors = {}
-    wallname = None  # Initialize wallname to ensure valid return
+    wallname = None
+    if stagetext not in wall_identifiers:
+        return wall_actors, identifier, wallname
+    sheet_data = wall_identifiers[stagetext]
+    wall_numbers_sheet = sheet_data["Wall Number"]
+    wall_numbers_sheet = [
+        1 if w == "F" else int(w) if isinstance(w, (int, str)) and str(w).isdigit() else None
+        for w in wall_numbers_sheet
+    ]
     for wall, properties in walls.items():
         if wall == "Floor":
-            wall_number = "F"  # Special case for Floor
+            wall_number = 1  # Treat Floor as Wall 1
         else:
             match = re.search(r"\d+", wall)
             wall_number = int(match.group()) if match else None
-        if wall_number is None or stagetext not in wall_identifiers:
+        if wall_number is None:
             continue
-        sheet_data = wall_identifiers[stagetext]
-        if wall_number == "F":
-            indexes = [i for i, wn in enumerate(sheet_data["Wall Number"]) if wn == "F"]
-        else:
-            indexes = [
-                i for i, wn in enumerate(sheet_data["Wall Number"]) if wn == wall_number
-            ]
+        indexes = [
+            i for i, wn in enumerate(wall_numbers_sheet) if wn == wall_number
+        ]
         if not indexes:
             continue
         for idx in indexes:
-            if (
-                0 <= idx < len(sheet_data["markingidentifiers"])
-                and 0 <= idx < len(sheet_data["Position X"])
-                and 0 <= idx < len(sheet_data["Position Y"])
-                and 0 <= idx < len(sheet_data["Position Z"])
-                and 0 <= idx < len(sheet_data["Shape Type"])
-                and 0 <= idx < len(sheet_data["width"])
-                and 0 <= idx < len(sheet_data["height"])
-                and 0 <= idx < len(sheet_data["Status"])
+            if all(
+                0 <= idx < len(sheet_data[key])
+                for key in [
+                    "markingidentifiers",
+                    "Position X",
+                    "Position Y",
+                    "Position Z",
+                    "Shape Type",
+                    "width",
+                    "height",
+                    "Status",
+                ]
             ):
                 if wall_number not in identifier:
                     identifier[wall_number] = []
@@ -65,63 +72,66 @@ def setupactors(
                         "Status": sheet_data["Status"][idx],
                     }
                 )
-        if wall not in wall_actors:
-            for wall, properties in walls.items():
-                if wall not in wall_actors:
-                    actor = None
-                    floor_properties = walls["Floor"]
-                    floor_actor = create_floor_actor(
-                        name="FloorPlaceholder",
-                        position=floor_properties["position"],
-                        points_list=floor_properties["points"],
-                        color=floor_properties["color"],
-                        rotation=floor_properties["rotation"],
-                    )
-                    ren.AddActor(floor_actor)
-                    position_map = robotplacement[0]
-                    for wall_name in position_map:
-                        if wall_name != "Floor":
-                            position = position_map[wall_name]
-                            actor = create_robot_actor(
-                                name=wall_name,
-                                position=position,
-                                size=objectrobot,
-                                color=(0.8, 0.2, 0.2),
-                                rotation=(0, 0, 0),
-                            )
-                            wall_actors[wall_name] = actor
-                            ren.AddActor(actor)
-                        else:
-                            floor_positions = robotplacement[0].get("Floor", [])
-                            wall_actors["Floor"] = []  # initialize as list
-                            for i, pos in enumerate(floor_positions):
-                                offset_pos = [pos[0], pos[1], pos[2] + (i * 200)]  # e.g., separate in Z
-                                actor = create_robot_actor(
-                                    name=f"Floor_{i+1}",
-                                    position=offset_pos,
-                                    size=objectrobot,
-                                    color=(0.3, 0.6, 0.9),
-                                    rotation=(0, 0, 0),
-                                )
-                                actor.VisibilityOff()  # only show one later
-                                wall_actors["Floor"].append(actor)
-                                ren.AddActor(actor)
+    if "Floor" in walls:
+        floor_properties = walls["Floor"]
+        floor_actor = create_floor_actor(
+            name="FloorPlaceholder",
+            position=floor_properties["position"],
+            points_list=floor_properties["points"],
+            color=floor_properties["color"],
+            rotation=floor_properties["rotation"],
+        )
+        ren.AddActor(floor_actor)
+    position_map = robotplacement[0]
+    for wall_name in position_map:
+        if wall_name != "Floor":
+            position = position_map[wall_name]
+            actor = create_robot_actor(
+                name=wall_name,
+                position=position,
+                size=objectrobot,
+                color=(0.8, 0.2, 0.2),
+                rotation=(0, 0, 0),
+            )
+            wall_actors[wall_name] = actor
+            ren.AddActor(actor)
+        else:
+            floor_positions = position_map.get("Floor", [])
+            wall_actors["Floor"] = []
+            for i, pos in enumerate(floor_positions):
+                offset_pos = [pos[0], pos[1], pos[2] + (i * 200)]
+                actor = create_robot_actor(
+                    name=f"Floor_{i+1}",
+                    position=offset_pos,
+                    size=objectrobot,
+                    color=(0.3, 0.6, 0.9),
+                    rotation=(0, 0, 0),
+                )
+                actor.VisibilityOff()
+                wall_actors["Floor"].append(actor)
+                ren.AddActor(actor)
     if identifier:
         first_wall_number = min(identifier.keys(), key=lambda x: (x == "F", x))
-        for wall_name in wall_actors:
-            match = re.search(r"\d+", wall_name)
-            wall_number = (
-                int(match.group()) if match else "F" if  wall_name == "Floor" else None
-            )
+        for wall_name, actor_obj in wall_actors.items():
+            if wall_name == "Floor":
+                wall_number = 1
+            else:
+                match = re.search(r"\d+", wall_name)
+                wall_number = int(match.group()) if match else None
             if wall_number == first_wall_number:
-                wall_actors[wall_name].VisibilityOn()
-                wallname = wall_name  # Set the valid wallname
+                if isinstance(actor_obj, list):
+                    for i, floor_actor in enumerate(actor_obj):
+                        floor_actor.VisibilityOn() if i == 0 else floor_actor.VisibilityOff()
+                else:
+                    actor_obj.VisibilityOn()
+                wallname = "Floor" if wall_number == 1 and wall_name == "Floor" else f"Wall {wall_number}"
                 walllabel.setText(f"Wall : {wallname}")
-    if wallname is None:
-        if identifier:
-            first_wall_number = min(identifier.keys(), key=lambda x: (x == "F", x))
-            wallname = f"Wall {first_wall_number}"
+                break
+    if wallname is None and identifier:
+        first_wall_number = min(identifier.keys(), key=lambda x: (x == "F", x))
+        wallname = f"Wall {first_wall_number}"
     return wall_actors, identifier, wallname
+
 
 
 def create_robot_actor(name, position, size, color, rotation=(0, 0, 0)):
@@ -222,36 +232,38 @@ def initialize_walls(wallformat, axis_widths, walls):
     ]
     rotation_map = {"X": (90, 0, 90), "Y": (0, 90, 90)}
     camera_actors = {}
-    for wall_id, wall_data in wallformat.items():
-        axis = wall_data["axis"]
-        width = wall_data["width"]
-        height = wall_data["height"]
-        pos_x_range = wall_data["pos_x_range"]
-        pos_y_range = wall_data["pos_y_range"]
-        position = (
-            (pos_x_range[0] + pos_x_range[1]) / 2,
-            (pos_y_range[0] + pos_y_range[1]) / 2,
-            0,
-        )
-        size = (width, height)
-        color = color_map[(wall_id - 1) % len(color_map)]
-        rotation = rotation_map[axis]
-        camera_position = (
-            position[0] + 100 if axis == "X" else position[0],
-            position[1] + 100 if axis == "Y" else position[1],
-            height / 2,
-        )
-        camera_actors[f"Camera_{wall_id}"] = {
-            "position": camera_position,
-            "focal_point": position,
-            "view_up": (0, 0, 1),
-        }
-        walls[f"Wall {wall_id}"] = {
-            "position": position,
-            "size": size,
-            "color": color,
-            "rotation": rotation,
-        }
+    for i, wall_dict in enumerate(wallformat):  # i will be used as numeric color index
+        for wall_id, wall_data in wall_dict.items():
+            axis = wall_data["axis"]
+            width = wall_data["area"][0]  # safer to use actual area width
+            height = wall_data["area"][2]  # use actual height
+            pos_x_range = wall_data.get("pos_x_range", [wall_data["x"], wall_data["x"] + width])
+            pos_y_range = wall_data.get("pos_y_range", [wall_data["y"], wall_data["y"] + width])
+
+            position = (
+                (pos_x_range[0] + pos_x_range[1]) / 2,
+                (pos_y_range[0] + pos_y_range[1]) / 2,
+                0,
+            )
+            size = (width, height)
+            color = color_map[i % len(color_map)]
+            rotation = rotation_map.get(axis, (0, 0, 0))
+            camera_position = (
+                position[0] + 100 if axis == "X" else position[0],
+                position[1] + 100 if axis == "Y" else position[1],
+                height / 2,
+            )
+            camera_actors[f"Camera_{wall_id}"] = {
+                "position": camera_position,
+                "focal_point": position,
+                "view_up": (0, 0, 1),
+            }
+            walls[wall_id] = {
+                "position": position,
+                "size": size,
+                "color": color,
+                "rotation": rotation,
+            }
     walls["Floor"] = {
         "position": (0, 0, -100),
         "points": [
@@ -264,3 +276,4 @@ def initialize_walls(wallformat, axis_widths, walls):
         "rotation": (0, 0, 0),
     }
     return walls, camera_actors
+

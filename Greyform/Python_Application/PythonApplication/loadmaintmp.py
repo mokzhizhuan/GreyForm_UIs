@@ -1,5 +1,5 @@
 import re
-import methodifcfindings as ifc_findings
+import PythonApplication.methodifcfindings as ifc_findings
 import string
 import numpy as np
 import math
@@ -245,7 +245,7 @@ class loadmainTMP:
                         self.tmptemp.append(
                             {
                                 "Wall Number": self.index + 1,
-                                "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                                "Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
                                 "Position X": pos if axis == "X" else x_wallsurface,
                                 "Position Y": y_wallsurface if axis == "X" else pos,
                                 "Position Z": z,
@@ -261,7 +261,7 @@ class loadmainTMP:
                     self.tmptemp.append(
                         {
                             "Wall Number": self.index + 1,
-                            "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                            "Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
                             "Position X": x_min_limit if axis == "X" else x_wallsurface,
                             "Position Y": y_wallsurface if axis == "X" else x_min_limit,
                             "Position Z": z,
@@ -276,7 +276,7 @@ class loadmainTMP:
                     self.tmptemp.append(
                         {
                             "Wall Number": self.index + 1,
-                            "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                            "Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
                             "Position X": x_max_limit if axis == "X" else x_wallsurface,
                             "Position Y": y_wallsurface if axis == "X" else x_max_limit,
                             "Position Z": z,
@@ -328,6 +328,8 @@ class loadmainTMP:
                     max_x = int(np.max(x_values))
                     factors = self.get_factors(max_x, x_values)
                     tiles_width = min(factors)
+                    if self.boxup[0]["Position X"] <= self.thickness:
+                        tiles_width = width - tiles_width
                     z_val = self.wall_bss12[0]["z"] - height
                     while z_val - height > 0:
                         z_val -= height
@@ -463,7 +465,7 @@ class loadmainTMP:
                             self.tmptemp.append(
                                 {
                                     "Wall Number": self.index + 1,
-                                    "Point Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                                    "Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
                                     "Position X": pos if axis == "X" else x_wallsurface,
                                     "Position Y": y_wallsurface if axis == "X" else pos,
                                     "Position Z": z,
@@ -473,7 +475,7 @@ class loadmainTMP:
                         self.tmptemp.append(
                             {
                                 "Wall Number": self.index + 1,
-                                "Point Name": f"TMP{self.index + 1}S2{alpha}1",
+                                "Name": f"TMP{self.index + 1}S2{alpha}1",
                                 "Position X": pos if axis == "X" else x_wallsurface,
                                 "Position Y": y_wallsurface if axis == "X" else pos,
                                 "Position Z": z_base,
@@ -560,7 +562,7 @@ class loadmainTMP:
                     tmpfloor.append(
                         {
                             "Wall Number": "F",
-                            "Point Name": f"TMP{self.index + 1}S2{alpha}{count_y+1}",
+                            "Name": f"TMP{self.index + 1}S2{alpha}{count_y+1}",
                             "Position X": xpos["x"],
                             "Position Y": ypos["y"],
                             "Position Z": floor["z"],

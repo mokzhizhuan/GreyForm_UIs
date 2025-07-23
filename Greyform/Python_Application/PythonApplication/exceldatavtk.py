@@ -16,7 +16,7 @@ def exceldataextractor(excel_file):
         df["Wall Number"] = (df["Wall Number"].astype(str).fillna("Unknown")) 
         df["Wall Number"] = df["Wall Number"].apply(lambda x: int(x) if x.isdigit() else x) 
         wall_numbers_by_sheet[sheet_name] = {
-            "markingidentifiers": df["Point Name"].astype(str).tolist(),
+            "markingidentifiers": df["Name"].astype(str).tolist(),
             "Wall Number": df["Wall Number"].tolist(),
             "Position X": df["Position X"].tolist(),
             "Position Y": df["Position Y"].tolist(),

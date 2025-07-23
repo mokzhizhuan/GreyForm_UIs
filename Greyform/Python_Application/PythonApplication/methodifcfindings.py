@@ -17,14 +17,6 @@ def validate_file(path, ext):
     return path
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("ifc_file", type=lambda p: validate_file(p, ".ifc"))
-    parser.add_argument("excel_checklist", type=lambda p: validate_file(p, ".xlsx"))
-    parser.add_argument("output_excel", type=str)
-    return parser.parse_args()
-
-
 def get_vertices(obj):
     if obj.Representation:
         settings = ifcopenshell.geom.settings()

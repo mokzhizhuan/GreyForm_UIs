@@ -115,6 +115,7 @@ class data_draft(object):
         internalxmax_width, internalymax_width = 0, 0
         internal_x_width, internal_y_width = [], []
         # algorithmns for euclean distance
+        self.axis_widths = {"x": [], "y": []}
         if start:
             if isinstance(start, list):
                 if len(start) == 1:
@@ -135,6 +136,7 @@ class data_draft(object):
                 externalymax_width,
                 xmaxwidths,
                 ymaxwidths,
+                self.axis_widths
             ) = fitting.get_internal_width(
                 walls_bss50, start_wall, walls_bss20, walls_bss_no_tile
             )
@@ -329,7 +331,7 @@ class data_draft(object):
         )
         # stage 3
         stage3_objects = []
-        checklist_file = pd.ExcelFile(self.args.excel_checklist)
+        checklist_file = pd.ExcelFile(self.args.excel_file)
         df_checklist = checklist_file.parse("Sheet1")
         item_names = df_checklist.iloc[1:, 3].dropna().unique().tolist()
         filtered_item_names = [
@@ -443,7 +445,7 @@ class data_draft(object):
         df_combined["Wall Number Sort"] = pd.to_numeric(
             df_combined["Wall Number"], errors="coerce"
         )
-        df_combined = df_combined.sort_values(by=["Wall Number Sort", "Point Name"]).drop(
+        df_combined = df_combined.sort_values(by=["Wall Number Sort", "Name"]).drop(
             columns="Wall Number Sort"
         )
         df_combined = df_combined.reset_index(drop=True)
@@ -455,11 +457,11 @@ class data_draft(object):
             ),
             axis=1,
         )
-        df_combined["Point Name"] = df_combined.apply(
+        df_combined["Name"] = df_combined.apply(
             lambda row: (
                 row["Wall"]
-                if pd.isna(row["Point Name"]) or row["Point Name"] == ""
-                else row["Point Name"]
+                if pd.isna(row["Name"]) or row["Name"] == ""
+                else row["Name"]
             ),
             axis=1,
         )
@@ -484,85 +486,23 @@ class data_draft(object):
             lambda row: setuprobot.setuprobotposition_fitting(row, stage2_rows , visited , externalymax_width , externalymax_width),
             axis=1
         )
-        with pd.ExcelWriter(self.output_excel, engine="openpyxl") as writer:
-            df_visited.to_excel(writer, index=True, sheet_name="Stage 2")  # Include index
+        for df in (df_combined, df_fitting):
+            if "Name" not in df.columns:
+                raise ValueError("'Name' column missing in DataFrame.")
+            if "Shape Type" not in df.columns:
+                idx = df.columns.get_loc("Name") + 1
+                df.insert(idx, "Shape Type", "")
+            if "Status" not in df.columns:
+                df.insert(len(df.columns), "Status", "blank") 
+        df_combined = setuprobot.apply_rotation_to_markers(df_combined)
+        df_fitting = setuprobot.apply_rotation_to_markers(df_fitting)
+        with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
+            df_combined.to_excel(writer, index=True, sheet_name="Stage 2")  # Include index
             df_fitting.to_excel(writer, index=True, sheet_name="Stage 3")   # Include index
         return (
             count_plus_y,
             count_minus_y,
             self.args.output_excel,
-            #wall_format,
+            visited,
             self.axis_widths,
         )
-
-    def applywallpoints(self, row):
-        wall_number = row["Wall Number"]
-        positionx = row["Position X"]
-        positiony = row["Position Y"]
-        positionz = row["Position Z"]
-        for wall in self.centerpoint_rows:
-            if wall_number == wall["Wall Number"]:
-                floortile_offset = wall["floortileheight"]
-                if wall["AxisDirection"] == "+X":
-                    positionx = positionx - wall["centerpointwidth"]
-                    return pd.Series(
-                        [
-                            positionx,
-                            positiony,
-                            positionz - floortile_offset,
-                        ]
-                    )
-                elif wall["AxisDirection"] == "-X":
-                    positionx = positionx - wall["centerpointwidth"]
-                    if positionx > 0:
-                        return pd.Series(
-                            [
-                                -abs(positionx),
-                                positiony,
-                                positionz - floortile_offset,
-                            ]
-                        )
-                    else:
-                        return pd.Series(
-                            [
-                                abs(positionx),
-                                positiony,
-                                positionz - floortile_offset,
-                            ]
-                        )
-                elif wall["AxisDirection"] == "+Y":
-                    positiony = positiony - wall["centerpointwidth"]
-                    return pd.Series(
-                        [
-                            positionx,
-                            positiony,
-                            positionz - floortile_offset,
-                        ]
-                    )
-                elif wall["AxisDirection"] == "-Y":
-                    positiony = positiony - wall["centerpointwidth"]
-                    if positionx > 0:
-                        return pd.Series(
-                            [
-                                -abs(positiony),
-                                positionx,
-                                positionz - floortile_offset,
-                            ]
-                        )
-                    else:
-                        return pd.Series(
-                            [
-                                abs(positiony),
-                                positionx,
-                                positionz - floortile_offset,
-                            ]
-                        )
-            if wall_number == "F":
-                if wall_number == wall["Wall Number"]:
-                    return pd.Series(
-                        [
-                            positionx - wall["centerpointwidth"],
-                            positiony - wall["centerpointheight"],
-                            positionz - 1000,
-                        ]
-                    )
