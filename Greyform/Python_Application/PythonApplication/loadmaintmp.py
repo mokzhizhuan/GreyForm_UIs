@@ -187,7 +187,11 @@ class loadmainTMP:
                                             area[0] - self.thickness
                                         ) / 2 + self.thickness
                                     else:
-                                        x_val = x_val + ((area[0] - self.thickness) / 2 )+ self.thickness
+                                        x_val = (
+                                            x_val
+                                            + ((area[0] - self.thickness) / 2)
+                                            + self.thickness
+                                        )
                                     tiles_x.append({"x": x_val, "z": z_val})
                             else:
                                 if area[0] % width != 0:
@@ -196,7 +200,11 @@ class loadmainTMP:
                                             area[0] - self.thickness
                                         ) / 2 + self.thickness
                                     else:
-                                        y_val = y_val + ((area[0] - self.thickness) / 2 )+ self.thickness
+                                        y_val = (
+                                            y_val
+                                            + ((area[0] - self.thickness) / 2)
+                                            + self.thickness
+                                        )
                                     tiles_y.append({"y": y_val, "z": z_val})
                     else:
                         vertices = self.boxup[0]["vertices"]
@@ -293,10 +301,11 @@ class loadmainTMP:
                 )
                 opening_match = self.find_opening_by_name(wall_obj["name"])
                 width, height = self.get_width_heights_intervals(next_w)
-                tiles_x, tiles_y = [], []
+                tiles_x, tiles_y, factors = [], [], []
                 w = next_w
                 x_val, y_val, area = w.get("x", 0), w.get("y", 0), w.get("area")
-                wall_width , z_val = area[0] , self.wall_bss12[0]["z"]
+                wall_width, z_val = area[0], self.wall_bss12[0]["z"]
+                z_max = 0
                 if next_w in self.shower_walls:
                     axis = next_w.get("axis")
                     distance = 0
@@ -312,20 +321,32 @@ class loadmainTMP:
                         if axis in "X":
                             if area[0] % width != 0:
                                 if "-X" in facing_axis:
-                                    x_val = ((area[0] - self.thickness) / 2) + self.thickness
+                                    x_val = (
+                                        (area[0] - self.thickness) / 2
+                                    ) + self.thickness
                                 else:
-                                    x_val = x_val + ((area[0] - self.thickness) / 2 )+ self.thickness
+                                    x_val = (
+                                        x_val
+                                        + ((area[0] - self.thickness) / 2)
+                                        + self.thickness
+                                    )
                         else:
                             if area[0] % width != 0:
                                 if "-Y" in facing_axis:
-                                    y_val = (area[0] - self.thickness) / 2 + self.thickness
+                                    y_val = (
+                                        area[0] - self.thickness
+                                    ) / 2 + self.thickness
                                 else:
-                                    y_val = y_val + ((area[0] - self.thickness) / 2 )+ self.thickness
+                                    y_val = (
+                                        y_val
+                                        + ((area[0] - self.thickness) / 2)
+                                        + self.thickness
+                                    )
                 if self.index + 1 == self.boxup[0]["Wall Number"]:
                     x_val = self.boxup[0]["Position X"]
                     vertices = self.boxup[0]["vertices"]
-                    x_values = vertices[:, 0]
-                    max_x = int(np.max(x_values))
+                    x_values, z_values = vertices[:, 0], vertices[:, 2]
+                    max_x, max_z = int(np.max(x_values)), int(np.max(z_values))
                     factors = self.get_factors(max_x, x_values)
                     tiles_width = min(factors)
                     if self.boxup[0]["Position X"] <= self.thickness:
@@ -334,6 +355,7 @@ class loadmainTMP:
                     while z_val - height > 0:
                         z_val -= height
                     x_val += tiles_width
+                    z_max = self.boxup[0]["Position Z"] + max_z
                 elif next_w in self.shower_walls or self.index + 1 == len(self.walls):
                     z_val = self.wall_bss12[0]["z"] - height
                     while z_val - height > 0:
@@ -390,7 +412,7 @@ class loadmainTMP:
                             x_values = vertices[:, 0]
                             unique_x = np.unique(x_values)
                             unique_x = unique_x[unique_x != 0]
-                            min_x , max_x = min(unique_x) , max(unique_x)
+                            min_x, max_x = min(unique_x), max(unique_x)
                             current = y_val - min_x
                             end = y_val - max_x
                             while current > end:
@@ -433,40 +455,39 @@ class loadmainTMP:
                     if vertices is not None and len(vertices) > 0:
                         y_coords = np.array(vertices)[:, 1]  # get all Y values
                         z_coords = np.array(vertices)[:, 2]  # get all Z values
-                        y_min_limit , y_max_limit = y_coords.min() , y_coords.max()
-                        z_min_limit , z_max_limit = z_coords.min() , z_coords.max()
+                        y_min_limit, y_max_limit = y_coords.min(), y_coords.max()
+                        z_min_limit, z_max_limit = z_coords.min(), z_coords.max()
                 repeatcount = int((self.storey_min_height - z_val) / height) + 1
                 for count, pos in enumerate(tile_list):
                     alpha = ""
                     for index, item in enumerate(alphabet_list):
                         if index == (count):
                             alpha = item
-                    if self.index + 1 != self.boxup[0]["Wall Number"]:
-                        for i in range(repeatcount):
-                            z = z_base + height * i
-                            if opening_match:
-                                if (
-                                    y_min_limit <= pos <= y_max_limit
-                                    and z_min_limit <= z <= z_max_limit
-                                ):
-                                    continue
-                            self.tmptemp.append(
-                                {
-                                    "Wall Number": self.index + 1,
-                                    "Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
-                                    "Position X": pos if axis == "X" else x_wallsurface,
-                                    "Position Y": y_wallsurface if axis == "X" else pos,
-                                    "Position Z": z,
-                                }
-                            )
-                    else:
+                    for i in range(repeatcount):
+                        z = z_base + height * i
+                        if opening_match:
+                            if (
+                                y_min_limit <= pos <= y_max_limit
+                                and z_min_limit <= z <= z_max_limit
+                            ):
+                                continue
+                        if self.index + 1 == self.boxup[0]["Wall Number"]:
+                            if (
+                                z_max <= z
+                                and self.boxup[0]["Position X"]
+                                <= pos
+                                <= self.boxup[0]["Position X"] + factors[1]
+                            ):
+                                continue
+                            elif z_base < z:
+                                continue
                         self.tmptemp.append(
                             {
                                 "Wall Number": self.index + 1,
-                                "Name": f"TMP{self.index + 1}S2{alpha}1",
+                                "Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
                                 "Position X": pos if axis == "X" else x_wallsurface,
                                 "Position Y": y_wallsurface if axis == "X" else pos,
-                                "Position Z": z_base,
+                                "Position Z": z,
                             }
                         )
                 self.index += 1
@@ -486,7 +507,7 @@ class loadmainTMP:
             "y"
         ]
         counters = 0  # global X-letter index
-        tmpfloor , distance_needed  = [] , []
+        tmpfloor, distance_needed = [], []
         for floor in floor_finishes:
             distance_needed.append(
                 {
@@ -544,7 +565,9 @@ class loadmainTMP:
                 current += height
             for xpos in tiles_x:
                 alpha = (
-                    self.alphabet_string[counters] if counters < len(self.alphabet_string) else f"z{counters}"
+                    self.alphabet_string[counters]
+                    if counters < len(self.alphabet_string)
+                    else f"z{counters}"
                 )
                 for count_y, ypos in enumerate(tiles_y):
                     tmpfloor.append(
