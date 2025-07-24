@@ -1,5 +1,5 @@
 import re
-import methodifcfindings as ifc_findings
+import PythonApplication.methodifcfindings as ifc_findings
 import string
 import numpy as np
 import math

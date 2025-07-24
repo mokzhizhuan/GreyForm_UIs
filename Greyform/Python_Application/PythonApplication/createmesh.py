@@ -63,6 +63,7 @@ class createMesh(QMainWindow):
             self.stagewallnum,
             self.stagestorage,
         ) = vtk_data_excel.exceldataextractor(self.excel_file)
+
         self.stagetext = self.stagestorage[self.currentindexstage]
         Stagelabel.setText(f"Stage : {self.stagetext}")
         self.loadStl()

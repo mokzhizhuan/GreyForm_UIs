@@ -22,7 +22,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.render = setcamerainteraction[0]
         self.renderwindowinteractor = setcamerainteraction[1]
         self.meshbound = setcamerainteraction[2]
-        self.excelfiletext = setcamerainteraction[3]
+        self.excelfiletext = setcamerainteraction[4]
         self.stagetext = setcamerainteraction[6]
         self.wall_identifiers = setcamerainteraction[8]
         self.stagestorage = setcamerainteraction[9]
@@ -37,35 +37,17 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.robotplacement = setcamerainteraction[18]
         self.objectrobot = setcamerainteraction[19]
         match = re.search(r"\d+", self.wallname)
-        raw_wall_names = sorted([k for k in self.walls.keys() if k != "Floor"])
-        self.wall_lookup = {
-            name: f"Wall {i + 1}" for i, name in enumerate(raw_wall_names)
-        }
-        self.wall_lookup["Floor"] = "Floor"
-        self.wall_reverse_lookup = {v: k for k, v in self.wall_lookup.items()}
         self.currentindex = 0
-        if self.wallname == "Floor":
-            self.wallname = "Wall 1"  # override
-            self.wall_number = 1
-        elif match:
-            self.wall_number = int(match.group())
-        else:
-            self.wall_number = None  # fallback
+        self.wall_number = int(match.group())
         self.scan = self.identifier[self.wall_number]
         self.show_message(
             f"Scanning Completed. Please move your machine to wall {self.wall_number}"
         )
-        self.stacked_widget.setCurrentIndex(4)
-        raw_wallname = self.wall_reverse_lookup.get(self.wallname)
-        if raw_wallname in self.wall_lookup:
-            logical_wallname = self.wall_lookup[raw_wallname]  # e.g., "Wall 1"
-            wall_keys = list(self.wall_actors.keys())
-            if logical_wallname in wall_keys:
-                self.wall_index = wall_keys.index(logical_wallname)
-            else:
-                self.wall_index = 0
-        else:
-            self.wall_index = 0
+        self.wall_index = (
+            list(self.walls.keys()).index(self.wallname)
+            if self.wallname in self.walls
+            else None
+        )
         camera = self.render.GetActiveCamera()
         self._translate = QCoreApplication.translate
         self.parent = parent
@@ -77,6 +59,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             or not self.remaining_walls_to_scan
         ):
             self.initialize_wall_tracking()
+        self.stacked_widget.setCurrentIndex(4)
         self.scanning = self.AddObserver("RightButtonPressEvent", self.wallscanning)
 
     def wallscanning(self, obj, event):
@@ -135,26 +118,26 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.stage_completed = False
 
     def find_next_valid_wall(self, wall_keys):
-        if self.wall_index is None:
-            self.wall_index = 0
         while self.wall_index < len(wall_keys) - 1:
             self.wall_index += 1
-            wall_name = wall_keys[self.wall_index]
-            # your logic to determine if this wall is valid
-            if self.is_valid_wall(wall_name):
-                return wall_name
-        return None  # or fallback
-
-    def is_valid_wall(self, wall_name):
-        valid = (
-            wall_name in self.wall_actors and self.wall_actors[wall_name] is not None
-        )
-        return valid
+            self.wallname = wall_keys[self.wall_index]
+            match = re.search(r"\d+", str(self.wallname))
+            wall_number = int(match.group()) if match else None
+            if (
+                wall_number in self.identifier
+                and wall_number in self.remaining_walls_to_scan
+            ):
+                return wall_number
+        if self.wallname == "Wall 6":
+            if "F" in self.remaining_walls_to_scan:
+                self.wallname = "Floor"
+                return "F"
+        return None
 
     def changewall(self):
         target_actor = None
         if self.wallname == "Floor":
-            self.scans = []
+            self.scans = [] 
             self.wall_actors["Floor"][self.currentindex].VisibilityOff()
             target_actor = self.wall_actors["Floor"][self.currentindex]
             if self.currentindex >= len(self.wall_actors["Floor"]) - 1:
@@ -188,31 +171,8 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                         else:
                             self.scans.append(entry)
                 else:
-                    self.scan = self.identifier[self.wall_number]
-                wall_keys = sorted(
-                    [name for name in self.wall_actors if name.startswith("Wall ")],
-                    key=lambda x: int(x.split()[1]),
-                )
-                if self.wallname in wall_keys:
-                    current_index = wall_keys.index(self.wallname)
-                else:
-                    current_index = -1
-                next_wallname = None
-                for i in range(current_index + 1, len(wall_keys)):
-                    wall_candidate = wall_keys[i]
-                    wall_num = int(wall_candidate.split()[1])
-                    if wall_num in self.identifier:
-                        next_wallname = wall_candidate
-                        self.wall_index = i
-                        self.wallname = wall_candidate
-                        self.wall_number = wall_num
-                        break
-                else:
-                    # No more valid walls
-                    self.wallname = None
-                    self.wall_number = None
-                    self.wall_index = None
-                    return
+                    self.scan = self.identifier[self.wall_number] 
+                wall_keys = sorted(self.walls.keys())
                 if self.wall_number == "F":
                     next_wall_number = self.find_next_valid_wall(wall_keys)
                     """self.listenerdialog.run_execution(
@@ -235,16 +195,11 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
                     )"""
                     self.wall_number = next_wall_number
                 if next_wall_number is not None:
-                    if isinstance(
-                        next_wall_number, str
-                    ) and next_wall_number.startswith("Wall "):
-                        self.wallname = next_wall_number  # already clean
-                    else:
-                        self.wallname = (
-                            "Floor"
-                            if next_wall_number == "F"
-                            else f"Wall {next_wall_number}"
-                        )
+                    self.wallname = (
+                        "Floor"
+                        if next_wall_number == "F"
+                        else f"Wall {next_wall_number}"
+                    )
                     if self.wallname == "Floor":
                         self.wall_actors[self.wallname][
                             self.currentindex
