@@ -305,10 +305,9 @@ class loadmainTMP:
                 w = next_w
                 x_val, y_val, area = w.get("x", 0), w.get("y", 0), w.get("area")
                 wall_width, z_val = area[0], self.wall_bss12[0]["z"]
-                z_max = 0
+                z_max ,distance = 0 , 0
                 if next_w in self.shower_walls:
                     axis = next_w.get("axis")
-                    distance = 0
                     facing_axis = next_w.get("facingaxis")
                     if axis in "X":
                         next_w_x = next_w.get("x", 0)
