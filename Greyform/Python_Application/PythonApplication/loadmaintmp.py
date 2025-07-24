@@ -305,7 +305,7 @@ class loadmainTMP:
                 w = next_w
                 x_val, y_val, area = w.get("x", 0), w.get("y", 0), w.get("area")
                 wall_width, z_val = area[0], self.wall_bss12[0]["z"]
-                z_max ,distance = 0 , 0
+                z_max, distance = 0, 0
                 if next_w in self.shower_walls:
                     axis = next_w.get("axis")
                     facing_axis = next_w.get("facingaxis")
@@ -471,15 +471,26 @@ class loadmainTMP:
                             ):
                                 continue
                         if self.index + 1 == self.boxup[0]["Wall Number"]:
-                            if (
-                                z_max <= z
-                                and self.boxup[0]["Position X"]
-                                <= pos
-                                <= self.boxup[0]["Position X"] + factors[1]
-                            ):
-                                continue
-                            elif z_base < z:
-                                continue
+                            if self.boxup[0]["Position X"] > self.thickness:
+                                if (
+                                    z_max <= z
+                                    and self.boxup[0]["Position X"]
+                                    <= pos
+                                    <= self.boxup[0]["Position X"] + factors[1]
+                                ):
+                                    continue
+                                elif z_base < z:
+                                    continue
+                            else:
+                                if (
+                                    z_max <= z
+                                    and self.boxup[0]["Position X"] + factors[1]
+                                    <= pos
+                                    <= self.boxup[0]["Position X"] + factors[2]
+                                ):
+                                    continue
+                                elif z_base < z:
+                                    continue
                         self.tmptemp.append(
                             {
                                 "Wall Number": self.index + 1,
