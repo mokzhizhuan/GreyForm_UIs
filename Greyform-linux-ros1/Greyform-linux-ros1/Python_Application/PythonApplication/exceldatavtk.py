@@ -1,10 +1,9 @@
 import pandas as pd
 import vtk
-import os
-import zipfile
 
-def exceldataextractor(args):
-    all_sheets = pd.read_excel(args.output_excel, sheet_name=None)
+
+def exceldataextractor(excel_file):
+    all_sheets = pd.read_excel(excel_file, sheet_name=None)
     wall_numbers_by_sheet = {}
     unique_wall_numbers_by_sheet = {}
     unique_width_height_dict = {}  # Moved outside the loop to persist across sheets
@@ -14,21 +13,10 @@ def exceldataextractor(args):
     for sheet_name, df in all_sheets.items():
         if "Wall Number" not in df.columns:
             continue  # Skip if no wall data in sheet
-        if "Position X (mm)" in df.columns:
-            df.rename(
-                columns={
-                    "Point number/name": "Point Name",
-                    "Position X (mm)": "Position X",
-                    "Position Y (mm)": "Position Y",
-                    "Position Z (mm)": "Position Z",
-                    "Shape type": "Shape Type"
-                },
-                inplace=True,
-            )
         df["Wall Number"] = (df["Wall Number"].astype(str).fillna("Unknown")) 
         df["Wall Number"] = df["Wall Number"].apply(lambda x: int(x) if x.isdigit() else x) 
         wall_numbers_by_sheet[sheet_name] = {
-            "markingidentifiers": df["Point Name"].astype(str).tolist(),
+            "markingidentifiers": df["Name"].astype(str).tolist(),
             "Wall Number": df["Wall Number"].tolist(),
             "Position X": df["Position X"].tolist(),
             "Position Y": df["Position Y"].tolist(),
@@ -70,7 +58,6 @@ def exceldataextractor(args):
     return (
         wall_numbers_by_sheet,
         wall_list,
-        args.output_excel,
         unique_wall_numbers_by_sheet,
         column_names,
     )

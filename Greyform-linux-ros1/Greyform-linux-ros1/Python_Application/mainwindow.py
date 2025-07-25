@@ -58,7 +58,8 @@ class Ui_MainWindow(QMainWindow):
     def __init__(self, ros_node):
         # starting initialize
         super(Ui_MainWindow, self).__init__()
-        self.mainwindow = uic.loadUi("UI_Design/mainframe.ui", self)
+        self.args = fileimport.parse_args()
+        self.mainwindow = uic.loadUi(self.args.mainui, self)
         self.mainwindow.setMouseTracking(False)
         self.selected_files = []
         self.filepaths = os.getcwd()
@@ -83,7 +84,6 @@ class Ui_MainWindow(QMainWindow):
 
     # setup UI
     def setupUi(self):
-        self.args = fileimport.parse_args()
         self.plotterloader = QtInteractor(
             self.mainwindow.pyvistaframe,
             line_smoothing=True,

@@ -11,8 +11,6 @@ from stl import mesh
 import PythonApplication.interactiveevent as events
 import PythonApplication.exceldatavtk as vtk_data_excel
 import PythonApplication.actors as createactorvtk
-import PythonApplication.arraystorage as storingelement
-import PythonApplication.ifcextractfiles as extractor
 import PythonApplication.robotplacementrobot as robotplacemats
 
 
@@ -23,89 +21,53 @@ class createMesh(QMainWindow):
         ren,
         polydata,
         renderwindowinteractor,
-        ros_node,
         file_path,
         mainwindow,
         Stagelabel,
         walllabel,
         stacked_widget,
-        listenerdialog,
-        wall_dimensions,
-        floor,
-        wall_finishes_dimensions,
-        label_map,
-        directional_axes_axis,
-        file,
-        class_type,
-        args,
+        count_plus_y,
+        count_minus_y,
+        excel_file,
+        wallformat,
+        axis_widths,
+        listenerdialog 
     ):
         # starting initialize
         super().__init__()
         self.defaultposition = [0, 0, 1]
         self.reader = vtk.vtkPolyData()
+        self.ren = ren
+        self.excel_file = excel_file
         self.meshbounds = None
         self.polydata = polydata
-        self.wall_dimensions = wall_dimensions
-        self.floor = floor
-        self.args = args
-        self.label_map = label_map
-        self.directional_axes_axis = directional_axes_axis
-        self.ren = ren
         self.dialog = None
         self.renderwindowinteractor = renderwindowinteractor
-        self.wall_finishes_dimensions = wall_finishes_dimensions
         self.renderwindowinteractor.GetRenderWindow().AddRenderer(self.ren)
         self.filepath = file_path
         self.walllabel = walllabel
+        self.count_plus_y = count_plus_y
+        self.count_minus_y = count_minus_y
         self.stacked_widget = stacked_widget
-        self.listenerdialog = listenerdialog    
+        self.wallformat = wallformat
         self.axis_widths = {"x": [], "y": []}
         self.ren.SetBackground(1, 1, 1)
         self.renderwindowinteractor.GetRenderWindow().SetMultiSamples(0)
         self.ren.UseHiddenLineRemovalOn()
         self.mainwindow = mainwindow
+        self.axis_widths = axis_widths
         self.currentindexstage = 0
+        self.listenerdialog = listenerdialog
         self.Stagelabel = Stagelabel
         (
             self.wall_identifiers,
             self.wall,
-            self.excelfiletext,
             self.stagewallnum,
             self.stagestorage,
-        ) = vtk_data_excel.exceldataextractor(self.args)
-        self.wall_finishes_height, self.small_wall_height = (
-            storingelement.wall_format_finishes(self.wall_finishes_dimensions)
-        )
-        self.wallformat, self.heighttotal, self.wall_height = (
-            storingelement.wall_format(
-                self.wall_dimensions,
-                self.floor,
-                self.label_map,
-                self.wall_finishes_height,
-            )
-        )
-        self.wallformat, self.axis_widths = extractor.addranges(
-            self.floor,
-            self.wall_height,
-            self.wall_finishes_height,
-            self.label_map,
-            self.wallformat,
-            self.axis_widths,
-            self.directional_axes_axis,
-        )
-        self.direction_stack = []
-        self.count_plus_y = 0
-        self.count_minus_y = 0
-        for index, (start, end, direction) in enumerate(self.directional_axes_axis):
-            self.direction_stack.append(direction)
-            self.count_minus_y = self.direction_stack.count("-Y")
-            self.count_plus_y = self.direction_stack.count("+Y")
+        ) = vtk_data_excel.exceldataextractor(self.excel_file)
+
         self.stagetext = self.stagestorage[self.currentindexstage]
-        self.timer = QTimer()
-        self.timer.timeout.connect(lambda:self.update_frame())
         Stagelabel.setText(f"Stage : {self.stagetext}")
-        self.wallaxis = vtk_data_excel.wall_format(self.wall)
-        self.data, self.verts_data = extractor.get_objects_data_by_class(file, class_type)
         self.loadStl()
 
     # load stl in vtk frame
@@ -160,11 +122,10 @@ class createMesh(QMainWindow):
             self.renderwindowinteractor,
             self.meshbounds,
             self.filepath,
-            self.excelfiletext,
+            self.excel_file,
             self.dialog,
             self.stagetext,
             self.wall7,
-            self.wallaxis,
             self.wall_identifiers,
             self.stagestorage,
             self.currentindexstage,
@@ -176,11 +137,8 @@ class createMesh(QMainWindow):
             self.stacked_widget,
             self.walllabel,
             self.listenerdialog,
-            self.label_map,
             self.robotplacement,
             self.objectrobot,
-            self.verts_data,
-            self.meshbounds,
         ]
         camera = events.myInteractorStyle(setcamerainteraction)
         self.renderwindowinteractor.SetInteractorStyle(camera)

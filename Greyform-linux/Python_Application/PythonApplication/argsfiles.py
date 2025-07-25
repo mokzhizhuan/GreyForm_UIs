@@ -10,12 +10,9 @@ def validate_file(path, ext):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("mainui", type=lambda p: validate_file(p, ".ui"))
-    parser.add_argument(
-        "excel_file_allocation", type=lambda p: validate_file(p, ".xlsx")
-    )
-    parser.add_argument(
-        "excel_file_checklist", type=lambda p: validate_file(p, ".xlsx")
-    )
+    parser.add_argument("output_stl", type=lambda p: validate_file(p, ".stl"))
+    parser.add_argument("floor_stl", type=lambda p: validate_file(p, ".stl"))
+    parser.add_argument("excel_file", type=lambda p: validate_file(p, ".xlsx"))
     parser.add_argument("output_excel", type=str)
     parser.add_argument(
         "--usb_path",
@@ -24,6 +21,4 @@ def parse_args():
         default="/media/ubuntu/",
         help="Path to the mounted USB directory",
     )
-    parser.add_argument("output_stl", type=lambda p: validate_file(p, ".stl"))
-    parser.add_argument("floor_stl", type=lambda p: validate_file(p, ".stl"))
     return parser.parse_args()

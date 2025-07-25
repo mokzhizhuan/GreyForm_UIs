@@ -24,22 +24,19 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.meshbound = setcamerainteraction[2]
         self.excelfiletext = setcamerainteraction[4]
         self.stagetext = setcamerainteraction[6]
-        self.wall_identifiers = setcamerainteraction[9]
-        self.stagestorage = setcamerainteraction[10]
-        self.currentindexstage = setcamerainteraction[11]
-        self.Stagelabel = setcamerainteraction[12]
-        self.walls = setcamerainteraction[13]
-        self.wall_actors = setcamerainteraction[14]
-        self.wallname = setcamerainteraction[15]
-        self.identifier = setcamerainteraction[16]
-        self.stacked_widget = setcamerainteraction[17]
-        self.walllabel = setcamerainteraction[18]
-        self.listenerdialog = setcamerainteraction[19]
-        self.label_map = setcamerainteraction[20]
-        self.robotplacement = setcamerainteraction[21]
-        self.objectrobot = setcamerainteraction[22]
-        self.verts_data = setcamerainteraction[23]
-        self.meshbounds = setcamerainteraction[24]
+        self.wall_identifiers = setcamerainteraction[8]
+        self.stagestorage = setcamerainteraction[9]
+        self.currentindexstage = setcamerainteraction[10]
+        self.Stagelabel = setcamerainteraction[11]
+        self.walls = setcamerainteraction[12]
+        self.wall_actors = setcamerainteraction[13]
+        self.wallname = setcamerainteraction[14]
+        self.identifier = setcamerainteraction[15]
+        self.stacked_widget = setcamerainteraction[16]
+        self.walllabel = setcamerainteraction[17]
+        self.listenerdialog = setcamerainteraction[18]
+        self.robotplacement = setcamerainteraction[19]
+        self.objectrobot = setcamerainteraction[20]
         match = re.search(r"\d+", self.wallname)
         self.currentindex = 0
         self.wall_number = int(match.group())
@@ -63,6 +60,7 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             or not self.remaining_walls_to_scan
         ):
             self.initialize_wall_tracking()
+        self.stacked_widget.setCurrentIndex(4)
         self.scanning = self.AddObserver("RightButtonPressEvent", self.wallscanning)
 
     def wallscanning(self, obj, event):
