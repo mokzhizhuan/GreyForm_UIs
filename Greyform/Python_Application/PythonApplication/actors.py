@@ -244,7 +244,7 @@ def initialize_walls(wallformat, axis_widths, walls):
                 position[1] + 100 if axis == "Y" else position[1],
                 height / 2,
             )
-            camera_actors[f"Camera_Wall {i+1}"] = {
+            camera_actors[f"Camera Wall {i+1}"] = {
                 "position": camera_position,
                 "focal_point": position,
                 "view_up": (0, 0, 1),
