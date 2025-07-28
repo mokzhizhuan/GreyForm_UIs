@@ -89,12 +89,16 @@ class data_draft(object):
         # storeys for the minimum ceiling
         storeys, ground = ifc_findings.extract_storeys(self.ifc_file)
         # wallformula
-        same , fallback = {} , []
+        same, fallback = {}, []
         if door:
             for doors in door:
-                closest_wall, distance = ifc_findings.find_closest_wall(doors, walls_bss50)
+                closest_wall, distance = ifc_findings.find_closest_wall(
+                    doors, walls_bss50
+                )
                 if closest_wall:
-                    same[closest_wall["name"]] = closest_wall  # overwrite if already exists
+                    same[closest_wall["name"]] = (
+                        closest_wall  # overwrite if already exists
+                    )
         else:
             # fallback logic: openings
             fallback = [
@@ -123,7 +127,9 @@ class data_draft(object):
                 else:
                     raise ValueError("Expected 'start' to contain only one wall dict")
             unvisited = [w for w in unvisited if w["name"] != start["name"]]
-            start_wall = next((w for w in walls_bss50 if w["name"] == start["name"]), start)
+            start_wall = next(
+                (w for w in walls_bss50 if w["name"] == start["name"]), start
+            )
             visited = [{start["name"]: start_wall}]
             (
                 internalx_width,  # centerpoint x
@@ -136,7 +142,7 @@ class data_draft(object):
                 externalymax_width,
                 xmaxwidths,
                 ymaxwidths,
-                self.axis_widths
+                self.axis_widths,
             ) = fitting.get_internal_width(
                 walls_bss50, start_wall, walls_bss20, walls_bss_no_tile
             )
@@ -165,7 +171,7 @@ class data_draft(object):
             list(wall.values())[0]
             for wall in visited
             if list(wall.values())[0]["facingaxis"] == "-Y"
-        ]   
+        ]
         count_plus_y = len(walls_facing_plus_y)
         count_minus_y = len(walls_facing_minus_y)
         if count_minus_y == 2:
@@ -182,7 +188,7 @@ class data_draft(object):
             xmaxwidths[-2], xmaxwidths[-1] = (
                 xmaxwidths[-1],
                 xmaxwidths[-2],
-            )   
+            )
         elif count_plus_y == 2:
             internal_y_width = fitting.compare_width_y(
                 walls_facing_minus_y, internal_y_width, count_plus_y, count_minus_y
@@ -234,7 +240,9 @@ class data_draft(object):
             )
             if list(wall_dict.values())[0]["axis"] == "X":
                 dist_needed = 0 - (list(wall_dict.values())[0]["y"] + origin_y)
-                y_wallsurface = (list(wall_dict.values())[0]["y"] + origin_y) + dist_needed
+                y_wallsurface = (
+                    list(wall_dict.values())[0]["y"] + origin_y
+                ) + dist_needed
                 stage2_rows.append(
                     {
                         "Wall Number": i + 1,
@@ -258,7 +266,9 @@ class data_draft(object):
                 )
             elif list(wall_dict.values())[0]["axis"] == "Y":
                 dist_needed = 0 - (list(wall_dict.values())[0]["x"] + origin_x)
-                x_wallsurface = (list(wall_dict.values())[0]["x"] + origin_x) + dist_needed
+                x_wallsurface = (
+                    list(wall_dict.values())[0]["x"] + origin_x
+                ) + dist_needed
                 stage2_rows.append(
                     {
                         "Wall Number": i + 1,
@@ -350,12 +360,14 @@ class data_draft(object):
                         "y": obj["y"],
                         "z": obj["z"],
                     }
-                )   
+                )
         glass_walls = [
             obj
             for obj in all_objs
             if "glass" in obj["name"].lower()
-            and not (obj.get("x", 0) == 0 and obj.get("y", 0) == 0 and obj.get("z", 0) == 0)
+            and not (
+                obj.get("x", 0) == 0 and obj.get("y", 0) == 0 and obj.get("z", 0) == 0
+            )
         ]
         df_checklist.columns = df_checklist.iloc[0]
         # assign fittings
@@ -382,7 +394,7 @@ class data_draft(object):
             origin_x,
             origin_y,
             walls_bss20,
-            walls_bss_no_tile
+            walls_bss_no_tile,
         )
         boxup = fitting.assign_nearest_fitting_rotation(
             visited,
@@ -400,8 +412,10 @@ class data_draft(object):
         )
         fitting_stage3.sort(
             key=lambda x: (
-                int(x["Wall Number"]) if str(x["Wall Number"]).isdigit() else float("inf")
-            )   
+                int(x["Wall Number"])
+                if str(x["Wall Number"]).isdigit()
+                else float("inf")
+            )
         )
         df_fitting = pd.DataFrame(fitting_stage3)
         tmptemp, distance = [], []
@@ -410,17 +424,17 @@ class data_draft(object):
                 all_objs,
                 stage2_rows,
                 visited,
-                fitting_stage3,
                 walls_bss20,
                 origin_x,
                 origin_y,
                 other_floor,
                 centerpoint_rows,
                 storeys,
-                brep_z_data,
-                furnishing_pos,
+                boxup,
+                externalxmax_width,
+                door,
             )
-            # tmptemp, distance = Tmpholder.addTMP2()
+            tmptemp = Tmpholder.returntmp()
         else:
             Tmpholder = tmps6sides.loadmainTMP(
                 all_objs,
@@ -473,18 +487,22 @@ class data_draft(object):
         fittingboundingbox = fittingbox.returnallfitting()
         df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
             lambda row: setuprobot.setupfittingrequirement(
-                row, all_objs, fittingboundingbox , df_checklist
+                row, all_objs, fittingboundingbox, df_checklist
             ),
             axis=1,
         )
-        #robot tiling dont use it
+        # robot tiling dont use it
         df_combined[["Position X", "Position Y", "Position Z"]] = df_combined.apply(
-            lambda row: setuprobot.setuprobotposition(row, stage2_rows , visited, externalxmax_width , externalymax_width),
-            axis=1
-        ) 
+            lambda row: setuprobot.setuprobotposition(
+                row, stage2_rows, visited, externalxmax_width, externalymax_width
+            ),
+            axis=1,
+        )
         df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
-            lambda row: setuprobot.setuprobotposition_fitting(row, stage2_rows , visited , externalymax_width , externalymax_width),
-            axis=1
+            lambda row: setuprobot.setuprobotposition_fitting(
+                row, stage2_rows, visited, externalymax_width, externalymax_width
+            ),
+            axis=1,
         )
         for df in (df_combined, df_fitting):
             if "Name" not in df.columns:
@@ -493,12 +511,16 @@ class data_draft(object):
                 idx = df.columns.get_loc("Name") + 1
                 df.insert(idx, "Shape Type", "")
             if "Status" not in df.columns:
-                df.insert(len(df.columns), "Status", "blank") 
+                df.insert(len(df.columns), "Status", "blank")
         df_combined = setuprobot.apply_rotation_to_markers(df_combined)
         df_fitting = setuprobot.apply_rotation_to_markers(df_fitting)
         with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
-            df_combined.to_excel(writer, index=True, sheet_name="Stage 2")  # Include index
-            df_fitting.to_excel(writer, index=True, sheet_name="Stage 3")   # Include index
+            df_combined.to_excel(
+                writer, index=True, sheet_name="Stage 2"
+            )  # Include index
+            df_fitting.to_excel(
+                writer, index=True, sheet_name="Stage 3"
+            )  # Include index
         return (
             count_plus_y,
             count_minus_y,
