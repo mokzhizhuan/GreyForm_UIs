@@ -410,17 +410,17 @@ class data_draft(object):
                 all_objs,
                 stage2_rows,
                 visited,
-                fitting_stage3,
                 walls_bss20,
                 origin_x,
                 origin_y,
                 other_floor,
                 centerpoint_rows,
                 storeys,
-                brep_z_data,
-                furnishing_pos,
+                boxup,
+                externalxmax_width,
+                door,
             )
-            # tmptemp, distance = Tmpholder.addTMP2()
+            tmptemp = Tmpholder.returntmp()
         else:
             Tmpholder = tmps6sides.loadmainTMP(
                 all_objs,
