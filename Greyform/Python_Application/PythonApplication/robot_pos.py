@@ -75,7 +75,7 @@ def setuprobotposition(row, stage2_rows, walls, xmaxwidth, ymaxwidth):
                             dy = -abs(dy)
                         else:
                             dy = abs(dy)
-                    return pd.Series([dx, dy, dz])
+                    return pd.Series([dy, dx, dz])
     return pd.Series([pos_x, pos_y, pos_z])
 
 
@@ -153,7 +153,7 @@ def setuprobotposition_fitting(
                             dy = -abs(dy)
                         else:
                             dy = abs(dy)
-                    return pd.Series([dx, dy, dz])
+                    return pd.Series([dy, dx, dz])
     return pd.Series([pos_x, pos_y, pos_z])
 
 
