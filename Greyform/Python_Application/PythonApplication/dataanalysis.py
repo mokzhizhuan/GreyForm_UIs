@@ -380,7 +380,7 @@ class data_draft(object):
             for row in stage2_rows
             if isinstance(row["Wall Number"], int)
         ]
-        fitting_stage3 = fitting.assign_nearest_fitting(
+        fitting_stage3, dist_needed = fitting.assign_nearest_fitting(
             visited,
             stage3_objects,
             storeys,
@@ -500,7 +500,12 @@ class data_draft(object):
         )
         df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
             lambda row: setuprobot.setuprobotposition_fitting(
-                row, stage2_rows, visited, externalymax_width, externalymax_width
+                row,
+                stage2_rows,
+                visited,
+                internalxmax_width,
+                internalymax_width,
+                dist_needed
             ),
             axis=1,
         )
