@@ -327,7 +327,7 @@ class data_draft(object):
                         "AxisDirection": floor_obj["facingaxis"],
                     }
                 )
-        floor_z_off = -abs(1000+floor_z)
+        floor_z_off = -abs(1000 + floor_z)
         stage2_rows.append(
             {
                 "Wall Number": "F",
@@ -504,8 +504,12 @@ class data_draft(object):
             ),
             axis=1,
         )
-        df_combined = df_combined.dropna(subset=["Position X", "Position Y", "Position Z"])
-        df_combined = df_combined[~df_combined["Name"].str.contains("CP", case=False, na=False)]
+        df_combined = df_combined.dropna(
+            subset=["Position X", "Position Y", "Position Z"]
+        )
+        df_combined = df_combined[
+            ~df_combined["Name"].str.contains("CP", case=False, na=False)
+        ]
         df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
             lambda row: setuprobot.setuprobotposition_fitting(
                 row,
@@ -519,14 +523,12 @@ class data_draft(object):
             ),
             axis=1,
         )
-        df_fitting = df_fitting.dropna(subset=["Position X", "Position Y", "Position Z"])
+        df_fitting = df_fitting.dropna(
+            subset=["Position X", "Position Y", "Position Z"]
+        )
         with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
-            df_combined.to_excel(
-                writer, index=True, sheet_name="Stage 2"
-            )  # Include index
-            df_fitting.to_excel(
-                writer, index=True, sheet_name="Stage 3"
-            )  # Include index
+            df_combined.to_excel(writer, index=True, sheet_name="Stage 2")
+            df_fitting.to_excel(writer, index=True, sheet_name="Stage 3")
         return (
             count_plus_y,
             count_minus_y,
