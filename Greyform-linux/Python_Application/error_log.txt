@@ -1,0 +1,2 @@
+Error while processing IFC shapes: 'QLabel' object has no attribute 'floor_stl'
+Failed to initialize IFC geometry settings or iterator: 'QLabel' object has no attribute 'excel_file' (File "/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/PythonApplication/IFCpythondialog.py", Line 189)
