@@ -90,13 +90,9 @@ class ListenerNodeRunner():
             stdout_str = stdout.decode("utf-8").strip()
             stderr_str = stderr.decode("utf-8").strip()
             if self.process.returncode == 0:
-                print("Node started successfully.")
-                print("STDOUT:\n", stdout_str)
                 self.signals.status_signal.emit("Node started successfully.")
                 self.signals.status_signal.emit(stdout.decode("utf-8"))
             else:
-                print("Failed to start node.")
-                print("STDERR:\n", stderr_str)
                 self.signals.status_signal.emit("Failed to start node.")
                 self.signals.status_signal.emit(stderr.decode("utf-8"))
             self.process_finished()
@@ -104,7 +100,6 @@ class ListenerNodeRunner():
             self.signals.status_signal.emit(f"Process failed: {str(e)}")
 
     def process_finished(self):
-        print("Process finished.")
         self.signals.status_signal.emit("Status: Completed")
         self.listener_started = True
 

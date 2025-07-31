@@ -327,14 +327,14 @@ class data_draft(object):
                         "AxisDirection": floor_obj["facingaxis"],
                     }
                 )
-        floor_z_off = floor_z - 1000
+        floor_z_off = -abs(1000+floor_z)
         stage2_rows.append(
             {
                 "Wall Number": "F",
                 "Wall": f"CP{len(visited) + 1}S2",
                 "Position X": externalxmax_width / 2,
                 "Position Y": externalymax_width / 2,
-                "Position Z": floor_z,
+                "Position Z": floor_z_off,
                 "Width": internalxmax_width,
                 "Height": internalymax_width,
             }
@@ -494,10 +494,18 @@ class data_draft(object):
         # robot tiling dont use it
         df_combined[["Position X", "Position Y", "Position Z"]] = df_combined.apply(
             lambda row: setuprobot.setuprobotposition(
-                row, stage2_rows, visited, externalxmax_width, externalymax_width
+                row,
+                stage2_rows,
+                visited,
+                internalxmax_width,
+                internalymax_width,
+                externalxmax_width,
+                externalymax_width,
             ),
             axis=1,
         )
+        df_combined = df_combined.dropna(subset=["Position X", "Position Y", "Position Z"])
+        df_combined = df_combined[~df_combined["Name"].str.contains("CP", case=False, na=False)]
         df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
             lambda row: setuprobot.setuprobotposition_fitting(
                 row,
@@ -505,20 +513,13 @@ class data_draft(object):
                 visited,
                 internalxmax_width,
                 internalymax_width,
-                dist_needed
+                dist_needed,
+                externalxmax_width,
+                externalymax_width,
             ),
             axis=1,
         )
-        for df in (df_combined, df_fitting):
-            if "Name" not in df.columns:
-                raise ValueError("'Name' column missing in DataFrame.")
-            if "Shape Type" not in df.columns:
-                idx = df.columns.get_loc("Name") + 1
-                df.insert(idx, "Shape Type", "")
-            if "Status" not in df.columns:
-                df.insert(len(df.columns), "Status", "blank")
-        df_combined = setuprobot.apply_rotation_to_markers(df_combined)
-        df_fitting = setuprobot.apply_rotation_to_markers(df_fitting)
+        df_fitting = df_fitting.dropna(subset=["Position X", "Position Y", "Position Z"])
         with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
             df_combined.to_excel(
                 writer, index=True, sheet_name="Stage 2"

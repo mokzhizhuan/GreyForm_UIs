@@ -2,9 +2,23 @@ import pandas as pd
 import numpy as np
 
 
-def setuprobotposition(row, stage2_rows, walls, xmaxwidth, ymaxwidth):
+def setuprobotposition(
+    row,
+    stage2_rows,
+    walls,
+    xmaxwidth,
+    ymaxwidth,
+    externalxmax_width,
+    externalymax_width,
+):
     pos_x, pos_y, pos_z = row["Position X"], row["Position Y"], row["Position Z"]
     wall_number, name = row["Wall Number"], row["Name"]
+    if (
+        (pos_x == 0 and pos_y == 0)
+        or pos_x == externalxmax_width
+        or pos_y == externalymax_width
+    ):
+        return pd.Series([None, None, None])
     extrusion_width, matched_wall = 0, None
     if str(wall_number).upper() == "F":
         if wall_number == "F" and "CP" not in name:
@@ -14,7 +28,7 @@ def setuprobotposition(row, stage2_rows, walls, xmaxwidth, ymaxwidth):
                         [
                             pos_x - cp_row["Position X"],
                             pos_y - cp_row["Position Y"],
-                            pos_z,
+                            pos_z + cp_row["Position Z"],
                         ]
                     )
     elif isinstance(wall_number, int) and 1 <= wall_number <= len(walls):
@@ -52,11 +66,14 @@ def setuprobotposition(row, stage2_rows, walls, xmaxwidth, ymaxwidth):
                 cp_x = cp_row["Position X"]
                 cp_y = cp_row["Position Y"]
                 cp_z = cp_row["Position Z"]
+                dz = pos_z - cp_z
+                if dz < -1000:
+                    return pd.Series([None, None, None])
                 if facing in ["+X", "-X"]:
                     dx = pos_x - cp_x
-                    dy = -abs(ymaxwidth - width)
-                    if dy == -abs(ymaxwidth):
-                        dy = 0
+                    dy = pos_y - cp_y
+                    """if dy == -abs(ymaxwidth):
+                        dy = 0"""
                     dz = pos_z - cp_z
                     if facing == "-X":
                         if dx > 0:
@@ -66,9 +83,9 @@ def setuprobotposition(row, stage2_rows, walls, xmaxwidth, ymaxwidth):
                     return pd.Series([dx, dy, dz])
                 elif facing in ["+Y", "-Y"]:
                     dy = pos_y - cp_y
-                    dx = -abs(xmaxwidth - width)
-                    if dx == -abs(xmaxwidth):
-                        dx = 0
+                    dx = pos_x - cp_x
+                    """if dx == -abs(xmaxwidth):
+                        dx = 0"""
                     dz = pos_z - cp_z
                     if facing == "-Y":
                         if dy > 0:
@@ -80,9 +97,20 @@ def setuprobotposition(row, stage2_rows, walls, xmaxwidth, ymaxwidth):
 
 
 def setuprobotposition_fitting(
-    row, stage2_rows, walls, xmaxwidth, ymaxwidth, dist_needed
+    row,
+    stage2_rows,
+    walls,
+    xmaxwidth,
+    ymaxwidth,
+    dist_needed,
+    externalxmax_width,
+    externalymax_width,
 ):
     pos_x, pos_y, pos_z = row["Position X"], row["Position Y"], row["Position Z"]
+    if (pos_x == 0 and pos_y == 0) or (
+        pos_x == externalxmax_width or pos_y == externalymax_width
+    ):
+        return pd.Series([None, None, None])
     wall_number, name = row["Wall Number"], row["Name"]
     extrusion_width, matched_wall = 0, None
     matched_distance = None
@@ -97,7 +125,7 @@ def setuprobotposition_fitting(
                         [
                             pos_x - cp_row["Position X"],
                             pos_y - cp_row["Position Y"],
-                            pos_z,
+                            pos_z + cp_row["Position Z"],
                         ]
                     )
     elif isinstance(wall_number, int) and 1 <= wall_number <= len(walls):
@@ -136,7 +164,7 @@ def setuprobotposition_fitting(
                 cp_z = cp_row["Position Z"]
                 if facing in ["+X", "-X"]:
                     dx = pos_x - cp_x
-                    dy = -abs((ymaxwidth - extrusion_width) + matched_distance)
+                    dy = pos_y - cp_y
                     dz = pos_z - cp_z
                     if facing == "-X":
                         if dx > 0:
@@ -146,7 +174,7 @@ def setuprobotposition_fitting(
                     return pd.Series([dx, dy, dz])
                 elif facing in ["+Y", "-Y"]:
                     dy = pos_y - cp_y
-                    dx = -abs((xmaxwidth - extrusion_width) + matched_distance)
+                    dx = pos_x - cp_x
                     dz = pos_z - cp_z
                     if facing == "-Y":
                         if dy > 0:
@@ -176,7 +204,7 @@ def setupfittingrequirement(row, all_objs, fitting_boundingbox, checklist):
                                 pos_z = pos_z + f["Size"][2] / 2
                                 vertices = obj.get("vertices")
                                 x_coords = vertices[:, 0]  # extract X coordinates
-                                min_x ,max_x= np.min(x_coords) , np.max(x_coords)
+                                min_x, max_x = np.min(x_coords), np.max(x_coords)
                                 if min_x + max_x > 0:
                                     pos_x = pos_x + f["Size"][0] / 2
     return pd.Series([round(pos_x), round(pos_y), round(pos_z)])
