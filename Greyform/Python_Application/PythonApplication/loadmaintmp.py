@@ -37,12 +37,6 @@ class loadmainTMP:
         self.wall_bss12 = wall_bss12
         self.boxup = boxup
         self.alphabet_string = string.ascii_lowercase
-        wall12 = self.wall_bss12[0]
-        for wall in self.wall_bss20:
-            tile_size = self.extract_tile_size(wall["name"])
-            if tile_size:
-                wall12["tile_size"] = tile_size
-                break
         self.origin_x = origin_x
         self.origin_y = origin_y
         self.floor = floor
@@ -62,7 +56,7 @@ class loadmainTMP:
         self.storey_min_height = min(
             storeys, key=lambda s: s["elevation"], default={"elevation": 0}
         )["elevation"]
-        z_values = [w["z"] for w in self.wall_bss20 if "z" in w]
+        z_values = list({w["z"] for w in self.wall_bss20 if "z" in w})
         self.two_lowest_z = sorted(z_values)[:2]
         self.index = 0
         self.tmptemp = []
@@ -213,6 +207,7 @@ class loadmainTMP:
                         {
                             "Wall Number": self.index + 1,
                             "Name": f"TMP{self.index + 1}S2{alpha}1",
+                            "Type" : "Tiles",
                             "Position X": pos if axis == "X" else x_wallsurface,
                             "Position Y": y_wallsurface if axis == "X" else pos,
                             "Position Z": z,
@@ -222,6 +217,7 @@ class loadmainTMP:
                         {
                             "Wall Number": self.index + 1,
                             "Name": f"TMP{self.index + 1}S2{alpha}2",
+                            "Type" : "Tiles",
                             "Position X": pos if axis == "X" else x_wallsurface,
                             "Position Y": y_wallsurface if axis == "X" else pos,
                             "Position Z": z1,
@@ -319,6 +315,7 @@ class loadmainTMP:
                             {
                                 "Wall Number": self.index + 1,
                                 "Name": f"TMP{self.index + 1}S2{alpha}{i+1}",
+                                "Type" : "Tiles",
                                 "Position X": pos if axis == "X" else x_wallsurface,
                                 "Position Y": y_wallsurface if axis == "X" else pos,
                                 "Position Z": zpos,
@@ -348,16 +345,13 @@ class loadmainTMP:
             )
         min_item = min(distance_needed, key=lambda d: d["remaining_distance"])
         for floor in floor_finishes:
-            width, height = self.get_width_heights_interval(floor)
             vertices = floor["vertices"]
             min_x = math.ceil(np.min(vertices[:, 0]) / 10) * 10
             max_x = math.ceil(np.max(vertices[:, 0]) / 10) * 10
             min_y = math.ceil(np.min(vertices[:, 1]) / 10) * 10
             max_y = math.ceil(np.max(vertices[:, 1]) / 10) * 10
             tiles_x, tiles_y = [], []
-            # X tiles
-            current_x = min_x
-            current_y = min_y
+            current_x , current_y= min_x, min_y
             tiles_x.append({"x": current_x, "z": floor["z"]})
             tiles_x.append({"x": max_x, "z": floor["z"]})
             tiles_y.append({"y": current_y, "z": floor["z"]})
@@ -373,6 +367,7 @@ class loadmainTMP:
                         {
                             "Wall Number": "F",
                             "Name": f"TMP{self.index + 1}S2{alpha}{count_y+1}",
+                            "Type" : "Tiles",
                             "Position X": xpos["x"],
                             "Position Y": ypos["y"],
                             "Position Z": floor["z"],
