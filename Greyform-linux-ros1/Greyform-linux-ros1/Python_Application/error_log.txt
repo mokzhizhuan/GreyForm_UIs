@@ -1,0 +1,12 @@
+Failed to initialize IFC geometry settings or iterator:
+__init__() missing 2 required positional arguments: 'floor_offset' and 'args'
+Originated from File "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/PythonApplication/dataanalysis.py", Line 425, in analysis
+Code: Tmpholder = tmps6sides.loadmainTMP(
+Full Traceback:
+Traceback (most recent call last):
+  File "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/PythonApplication/IFCpythondialog.py", line 179, in ifcprogramexecute
+    ) = datadrafter.analysis()
+  File "/root/catkin_ws/src/Greyform-linux-ros1/Python_Application/PythonApplication/dataanalysis.py", line 425, in analysis
+    Tmpholder = tmps6sides.loadmainTMP(
+TypeError: __init__() missing 2 required positional arguments: 'floor_offset' and 'args'
+
