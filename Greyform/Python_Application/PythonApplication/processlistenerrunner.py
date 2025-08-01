@@ -87,8 +87,6 @@ class ListenerNodeRunner():
             )
             self.signals.page_change_signal.emit(4)  
             stdout, stderr = self.process.communicate()
-            stdout_str = stdout.decode("utf-8").strip()
-            stderr_str = stderr.decode("utf-8").strip()
             if self.process.returncode == 0:
                 self.signals.status_signal.emit("Node started successfully.")
                 self.signals.status_signal.emit(stdout.decode("utf-8"))
