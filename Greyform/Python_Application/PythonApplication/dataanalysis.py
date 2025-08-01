@@ -21,7 +21,7 @@ class data_draft(object):
         all_walls = ifc_findings.process_elements(
             self.ifc_file.by_type("IfcWallStandardCase"), "basic wall:bss"
         )
-        site = self.ifc_file.by_type("IfcSite")[0] 
+        site = self.ifc_file.by_type("IfcSite")[0]
         placement = site.ObjectPlacement
         while hasattr(placement, "PlacementRelTo") and placement.PlacementRelTo:
             placement = placement.PlacementRelTo
@@ -49,7 +49,7 @@ class data_draft(object):
         )
         door = ifc_findings.process_elements(self.ifc_file.by_type("IfcDoor"), "opening")
         floors = ifc_findings.process_elements(self.ifc_file.by_type("IfcSlab"), "floor")
-        unique_floors ,seen_names = [], set()
+        unique_floors, seen_names = [], set()
         for floor in floors:
             if floor["name"] not in seen_names:
                 seen_names.add(floor["name"])
@@ -107,8 +107,7 @@ class data_draft(object):
             )
             floor_offset = max(floors, key=lambda f: f["z"], default={"z": 0})["z"]
             floor_offset = abs(floor_offset) if floor_offset else 0
-            offset = abs(start["z"])
-            curr = start
+            offset ,curr = abs(start["z"]) , start
             while unvisited:
                 next_w, _ = ifc_findings.find_closest_wall(curr, unvisited)
                 if not next_w:
@@ -131,8 +130,7 @@ class data_draft(object):
             for wall in visited
             if list(wall.values())[0]["facingaxis"] == "-Y"
         ]
-        count_plus_y = len(walls_facing_plus_y)
-        count_minus_y = len(walls_facing_minus_y)
+        count_plus_y, count_minus_y = len(walls_facing_plus_y), len(walls_facing_minus_y)
         if count_minus_y == 2:
             internal_x_width[-2], internal_x_width[-1] = (
                 internal_x_width[-1],
@@ -144,10 +142,7 @@ class data_draft(object):
             )
             ymaxwidths.sort()
             ymaxwidths[0], ymaxwidths[1] = (ymaxwidths[1], ymaxwidths[0])
-            xmaxwidths[-2], xmaxwidths[-1] = (
-                xmaxwidths[-1],
-                xmaxwidths[-2],
-            )
+            xmaxwidths[-2], xmaxwidths[-1] = (xmaxwidths[-1], xmaxwidths[-2])
         elif count_plus_y == 2:
             internal_y_width = fitting.compare_width_y(
                 walls_facing_minus_y, internal_y_width, count_plus_y, count_minus_y
@@ -319,7 +314,7 @@ class data_draft(object):
             for row in stage2_rows
             if isinstance(row["Wall Number"], int)
         ]
-        fitting_stage3, dist_needed = fitting.assign_nearest_fitting(
+        fitting_stage3 = fitting.assign_nearest_fitting(
             visited,
             stage3_objects,
             storeys,
@@ -369,11 +364,9 @@ class data_draft(object):
                 storeys,
                 centerpoint_rows,
                 fallback,
-                glass_walls,
             )
             tmptemp = Tmpholder.returnalltmps()
-        df_tmptemp = pd.DataFrame(tmptemp)
-        df_visited = pd.DataFrame(stage2_rows)
+        df_tmptemp, df_visited = pd.DataFrame(tmptemp), pd.DataFrame(stage2_rows)
         df_combined = pd.concat([df_tmptemp, df_visited], ignore_index=True)
         df_combined["Wall Number Sort"] = pd.to_numeric(
             df_combined["Wall Number"], errors="coerce"
@@ -417,8 +410,6 @@ class data_draft(object):
                 row,
                 stage2_rows,
                 visited,
-                internalxmax_width,
-                internalymax_width,
                 externalxmax_width,
                 externalymax_width,
             ),
@@ -433,9 +424,6 @@ class data_draft(object):
                 row,
                 stage2_rows,
                 visited,
-                internalxmax_width,
-                internalymax_width,
-                dist_needed,
                 externalxmax_width,
                 externalymax_width,
             ),
@@ -443,8 +431,7 @@ class data_draft(object):
         )
         df_fitting = df_fitting.dropna(subset=["Position X", "Position Y", "Position Z"])
         df_combined = df_combined.reset_index(drop=True)
-        df_combined.index = df_combined.index + 1
-        df_fitting.index = df_fitting.index + 1
+        df_combined.index, df_fitting.index = df_combined.index + 1, df_fitting.index + 1
         with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
             df_combined.to_excel(writer, index=True, sheet_name="Stage 2")
             df_fitting.to_excel(writer, index=True, sheet_name="Stage 3")  # Include index

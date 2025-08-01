@@ -185,10 +185,10 @@ def set_origin_z(origin, new_z, shape_item):
 
 
 def extract_z_from_shape_item(shape_item):
+    all_z = []
     if shape_item.is_a("IfcExtrudedAreaSolid"):
         return shape_item.Position.Location.Coordinates[2]
     elif shape_item.is_a("IfcFacetedBrep"):
-        all_z = []
         for face in shape_item.Outer.CfsFaces:
             for bound in face.Bounds:
                 for pt in bound.Bound.Polygon:
@@ -197,7 +197,6 @@ def extract_z_from_shape_item(shape_item):
             if all_z:
                 return min(all_z)
     elif shape_item.is_a("IfcFaceBasedSurfaceModel"):
-        all_z, pts = [], []
         for connected in shape_item.FbsmFaces:
             for face in connected.CfsFaces:
                 for bound in face.Bounds:

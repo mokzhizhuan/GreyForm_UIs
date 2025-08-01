@@ -17,7 +17,7 @@ def assign_nearest_fitting(
     wall_bss20,
     wall_bss12
 ):
-    stage3_results , dist_needed = [] , []
+    stage3_results = [] 
     top_twofloor_z = heapq.nlargest(2, (f["z"] for f in floor))
     lowest_floor = abs(min(f["z"] for f in floor) if floor else 0)
     storey_min_height = min(
@@ -106,14 +106,7 @@ def assign_nearest_fitting(
                 "Height": height,
             }
         )
-        dist_needed.append(
-            {
-                "Wall Number": nearestwallindex,
-                "Name": fitting["name"],
-                "distance" : min_dist
-            }
-        )
-    return stage3_results , dist_needed
+    return stage3_results
 
 def compare_width_y(walls_facing_y, internal_y_width, count_plus_y, count_minus_y):
     for i in range(len(walls_facing_y)):

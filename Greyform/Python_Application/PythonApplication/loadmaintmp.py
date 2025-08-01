@@ -19,15 +19,12 @@ class loadmainTMP:
         storeys,
         centerpoint_rows,
         opening,
-        glass_walls,
     ):
         self.all_objs = all_objs
         self.stage2_rows = stage2_rows
         self.walls = walls
         self.wall_bss20 = wall_bss20
         self.opening = opening
-        self.glass_walls = glass_walls
-        self.glass_walls = min(self.glass_walls, key=lambda d: d.get("z", float("inf")))
         self.height20 = self.wall_bss20[0]["area"][1]
         first_wall = list(self.walls[0].values())[0]
         self.wallsheight50 = first_wall["area"][1]

@@ -6,8 +6,6 @@ def setuprobotposition(
     row,
     stage2_rows,
     walls,
-    xmaxwidth,
-    ymaxwidth,
     externalxmax_width,
     externalymax_width,
 ):
@@ -19,7 +17,7 @@ def setuprobotposition(
         or pos_y == externalymax_width
     ):
         return pd.Series([None, None, None])
-    extrusion_width, matched_wall = 0, None
+    matched_wall = None
     if str(wall_number).upper() == "F":
         if wall_number == "F" and "CP" not in name:
             for cp_row in stage2_rows:
@@ -33,26 +31,6 @@ def setuprobotposition(
                     )
     elif isinstance(wall_number, int) and 1 <= wall_number <= len(walls):
         matched_wall = walls[wall_number - 1]
-        if isinstance(wall_number, int) and 1 <= wall_number <= len(walls) / 2:
-            getextrusion = walls[wall_number - 2]
-        elif wall_number <= len(walls):
-            if wall_number == len(walls):
-                getextrusion = walls[wall_number - len(walls)]
-            else:
-                getextrusion = walls[wall_number]
-        else:
-            getextrusion = walls[len(walls)]
-        getextrusion_index = walls.index(getextrusion)
-        matched_cp = next(
-            (
-                row
-                for row in stage2_rows
-                if row.get("Wall Number") == getextrusion_index + 1
-            ),
-            None,
-        )
-        if matched_cp:
-            extrusion_width = matched_cp.get("Width")
     else:
         matched_wall = None
     if matched_wall is None:
@@ -62,7 +40,6 @@ def setuprobotposition(
     if "CP" not in name:
         for cp_row in stage2_rows:
             if "CP" in cp_row["Wall"] and cp_row["Wall Number"] == wall_number:
-                width = extrusion_width
                 cp_x = cp_row["Position X"]
                 cp_y = cp_row["Position Y"]
                 cp_z = cp_row["Position Z"]
@@ -74,7 +51,6 @@ def setuprobotposition(
                     dy = pos_y - cp_y
                     """if dy == -abs(ymaxwidth):
                         dy = 0"""
-                    dz = pos_z - cp_z
                     if facing == "-X":
                         if dx > 0:
                             dx = -abs(dx)
@@ -86,13 +62,12 @@ def setuprobotposition(
                     dx = pos_x - cp_x
                     """if dx == -abs(xmaxwidth):
                         dx = 0"""
-                    dz = pos_z - cp_z
                     if facing == "-Y":
                         if dy > 0:
                             dy = -abs(dy)
                         else:
                             dy = abs(dy)
-                    return pd.Series([dy, dx, dz])
+                    return pd.Series([dx, dy, dz])
     return pd.Series([pos_x, pos_y, pos_z])
 
 
@@ -100,9 +75,6 @@ def setuprobotposition_fitting(
     row,
     stage2_rows,
     walls,
-    xmaxwidth,
-    ymaxwidth,
-    dist_needed,
     externalxmax_width,
     externalymax_width,
 ):
@@ -112,11 +84,7 @@ def setuprobotposition_fitting(
     ):
         return pd.Series([None, None, None])
     wall_number, name = row["Wall Number"], row["Name"]
-    extrusion_width, matched_wall = 0, None
-    matched_distance = None
-    for distances in dist_needed:
-        if distances["Name"] in name:
-            matched_distance = distances["distance"]
+    matched_wall = None
     if str(wall_number).upper() == "F":
         if wall_number == "F" and "CP" not in name:
             for cp_row in stage2_rows:
@@ -130,26 +98,6 @@ def setuprobotposition_fitting(
                     )
     elif isinstance(wall_number, int) and 1 <= wall_number <= len(walls):
         matched_wall = walls[wall_number - 1]
-        if isinstance(wall_number, int) and 1 <= wall_number <= len(walls) / 2:
-            getextrusion = walls[wall_number - 2]
-        elif wall_number <= len(walls):
-            if wall_number == len(walls):
-                getextrusion = walls[wall_number - len(walls)]
-            else:
-                getextrusion = walls[wall_number]
-        else:
-            getextrusion = walls[len(walls)]
-        getextrusion_index = walls.index(getextrusion)
-        matched_cp = next(
-            (
-                row
-                for row in stage2_rows
-                if row.get("Wall Number") == getextrusion_index + 1
-            ),
-            None,
-        )
-        if matched_cp:
-            extrusion_width = matched_cp.get("Width")
     else:
         matched_wall = None
     if matched_wall is None:
