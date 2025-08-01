@@ -435,3 +435,10 @@ class data_draft(object):
         with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
             df_combined.to_excel(writer, index=True, sheet_name="Stage 2")
             df_fitting.to_excel(writer, index=True, sheet_name="Stage 3")  # Include index
+        return (
+            count_plus_y,
+            count_minus_y,
+            self.args.output_excel,
+            visited,
+            self.axis_widths,
+        )
