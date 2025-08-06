@@ -10,8 +10,6 @@ import ifcopenshell.util.element
 
 SCALE = 1000.0
 
-
-
 def get_vertices(obj):
     if obj.Representation:
         settings = ifcopenshell.geom.settings()
