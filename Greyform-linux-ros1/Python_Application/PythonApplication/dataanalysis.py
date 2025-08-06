@@ -2,7 +2,7 @@ import pandas as pd
 import ifcopenshell
 import PythonApplication.methodifcfindings as ifc_findings
 import PythonApplication.fitting_width as fitting
-import PythonApplication.ifcextractmaterials as extractdatafiles
+import PythonApplication.ifcextractfiles as extractdatafiles
 from ifcopenshell.util.placement import get_local_placement
 import PythonApplication.gettmps as tmps
 import PythonApplication.loadmaintmp as tmps6sides
