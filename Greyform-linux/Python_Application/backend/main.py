@@ -1,8 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
 import subprocess
 import os
 import traceback
+
 
 app = FastAPI()
 
@@ -16,13 +17,23 @@ app.add_middleware(
 )
 
 
-@app.get("/api/launch_ui")
-async def launch_ui():
+@app.post("/api/launch_ui")
+async def launch_ui(usb_path: str = Form(...)):
     try:
         env = os.environ.copy()
-        env["DISPLAY"] = ":0" 
+        env["DISPLAY"] = ":0"
+
+        args = [
+            "python3", "mainwindow.py",
+            "UI_Design/mainframe.ui",
+            "output.stl",
+            "floor.stl",
+            "Greyform TERRAHL2(JMB)-T1a BOM Checklist 20231211.xlsx",
+            "PBU_TERRAHL2(final).xlsx",
+            "--usb_path", usb_path,
+        ]
         process = subprocess.Popen(
-            ["python3", "mainwindow.py"],
+            args,
             env=env,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -35,7 +46,7 @@ async def launch_ui():
                 "status": "error",
                 "message": f"UI failed: {error_message}",
             }
-        return {"status": "success", "message": "UI launched"}
+        return {"status": "success", "message": "UI launched", "output": stdout.decode("utf-8")}
     except Exception as e:
         print("Exception launching Qt UI:", traceback.format_exc())
         return {"status": "error", "message": str(e)}
