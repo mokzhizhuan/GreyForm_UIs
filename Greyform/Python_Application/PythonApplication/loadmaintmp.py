@@ -1,5 +1,5 @@
 import re
-import methodifcfindings as ifc_findings
+import PythonApplication.methodifcfindings as ifc_findings
 import string
 import numpy as np
 import math
@@ -37,6 +37,7 @@ class loadmainTMP:
         self.wall_bss12 = wall_bss12
         self.boxup = boxup
         self.alphabet_string = string.ascii_lowercase
+        self.alphabet_list = list(self.alphabet_string)
         wall12 = self.wall_bss12[0]
         for wall in self.wall_bss20:
             tile_size = self.extract_tile_size(wall["name"])
@@ -71,11 +72,9 @@ class loadmainTMP:
         return match.group(1) if match else None
 
     def extract_tile_size(self, name):
-        # Accept formats like: (600x600mm), 600x600mm, 600 x 600 mm, 600X600MM
         match = re.search(r"\(?\s*(\d+)\s*[xX]\s*(\d+)\s*mm\)?", name)
         if match:
-            width = int(match.group(1))
-            height = int(match.group(2))
+            width, height = int(match.group(1)), int(match.group(2))
             return f"({width}x{height}mm)"
         return None
 
@@ -95,8 +94,7 @@ class loadmainTMP:
         for wall_dict in self.walls:
             for wall_name, data in wall_dict.items():
                 axis = data.get("axis")
-                width = data["area"][0]
-                height = data["area"][1]
+                width, height = data["area"][0], data["area"][1]
                 if axis == "X":
                     x_widths.append((width, wall_name))
                 elif axis == "Y":
@@ -114,16 +112,14 @@ class loadmainTMP:
         match = re.search(r"\((\d+)x(\d+)mm\)", tile_size)
         width, height = 0, 0
         if match:
-            width = int(match.group(1))
-            height = int(match.group(2))
+            width, height = int(match.group(1)), int(match.group(2))
         return width, height
 
     def get_width_heights_interval(self, next_w):
         match = re.search(r"\((\d+)x(\d+)mm\)", next_w["name"])
         width, height = 0, 0
         if match:
-            width = int(match.group(1))  # 600
-            height = int(match.group(2))  # 150
+            width, height = int(match.group(1)), int(match.group(2))
         return width, height
 
     def find_opening_by_name(self, wall_name):
@@ -142,20 +138,11 @@ class loadmainTMP:
         for i, wall_dict in enumerate(self.walls):
             if i == self.index:
                 wall_obj = list(wall_dict.values())[0]
-                opening_match = self.find_opening_by_name(wall_obj["name"])
                 first_w, _ = ifc_findings.find_closest_wall(wall_obj, self.wall_bss20)
                 second_w, _ = ifc_findings.find_closest_wall(first_w, self.wall_bss20)
                 width, height = self.get_width_heights_intervals(first_w)
-                tiles_x, tiles_y = [], []
-                x_min_limit = 0
-                dist_needed = []
+                tiles_x, tiles_y, dist_needed = [], [], []
                 for w in [first_w, second_w]:
-                    if opening_match:
-                        vertices = opening_match.get("vertices")
-                        if vertices is not None and len(vertices) > 0:
-                            x_coords = np.array(vertices)[:, 0]  # get all X values
-                            x_min_limit = x_coords.min()
-                            x_max_limit = x_coords.max()
                     if not w:
                         continue  # Skip if None
                     x_val, y_val = w.get("x", 0), w.get("y", 0)
@@ -168,8 +155,7 @@ class loadmainTMP:
                     else:
                         tiles_y.append({"x": x_val, "z": z_val})
                     if w in self.shower_walls:
-                        axis = w.get("axis")
-                        distance = 0
+                        axis, distance = w.get("axis"), 0
                         if axis in "X":
                             next_w_x = w.get("x", 0)
                             distance = next_w_x - self.thickness
@@ -221,13 +207,9 @@ class loadmainTMP:
                 else:
                     dist_needed = 0 - wall_obj["x"]
                     x_wallsurface = wall_obj["x"] + dist_needed
-                alphabet_string = string.ascii_lowercase
-                alphabet_list = list(alphabet_string)
-                alphabet_list = list(self.alphabet_string)
-                counter = 0
                 for count, pos in enumerate(tile_list):
                     alpha = ""
-                    for index, item in enumerate(alphabet_list):
+                    for index, item in enumerate(self.alphabet_list):
                         if index == (count):
                             alpha = item
                     for i in range(repeatcount):
@@ -236,13 +218,13 @@ class loadmainTMP:
                             {
                                 "Wall Number": self.index + 1,
                                 "Name": f"TileMarkingPoint{self.index + 1}S2{alpha}{i+1}",
-                                "Type": "Tiles Point",
+                                "Shape Type": "Tiles Point",
                                 "Position X": pos if axis == "X" else x_wallsurface,
                                 "Position Y": y_wallsurface if axis == "X" else pos,
                                 "Position Z": z,
+                                "Status": "blank",
                             }
                         )
-                    counter += 1
         self.index += 1
         self.addTMP2()
 
@@ -253,30 +235,24 @@ class loadmainTMP:
         for i, wall_dict in enumerate(self.walls):
             if i == self.index:
                 wall_obj = list(wall_dict.values())[0]
-                next_w, _ = ifc_findings.find_closest_wall_rotation(
+                w, _ = ifc_findings.find_closest_wall_rotation(
                     wall_obj, self.wall_bss20 + self.wall_bss12
                 )
                 opening_match = self.find_opening_by_name(wall_obj["name"])
-                width, height = self.get_width_heights_intervals(next_w)
+                width, height = self.get_width_heights_intervals(w)
                 tiles_x, tiles_y = [], []
-                w = next_w
-                x_val = w.get("x", 0)
-                y_val = w.get("y", 0)
-                area = w.get("area")
                 x_val, y_val, area = w.get("x", 0), w.get("y", 0), w.get("area")
-                wall_width = area[0]
-                z_val = self.wall_bss12[0]["z"]
-                if next_w in self.shower_walls:
-                    axis = next_w.get("axis")
-                    distance = 0
+                wall_width, z_val = area[0], self.wall_bss12[0]["z"]
+                if w in self.shower_walls:
+                    axis, distance = w.get("axis"), 0
                     if axis in "X":
-                        next_w_x = next_w.get("x", 0)
+                        next_w_x = w.get("x", 0)
                         distance = next_w_x - self.thickness
                     else:
-                        next_w_y = next_w.get("y", 0)
+                        next_w_y = w.get("y", 0)
                         distance = next_w_y - self.thickness
                     if distance % width != 0:
-                        area = next_w.get("area")
+                        area = w.get("area")
                         if axis in "X":
                             if area[0] % width != 0:
                                 x_val = (area[0] - self.thickness) / 2 + self.thickness
@@ -296,7 +272,7 @@ class loadmainTMP:
                     while z_val - height > 0:
                         z_val -= height
                     x_val += tiles_width
-                elif next_w in self.shower_walls or self.index + 1 == len(self.walls):
+                elif w in self.shower_walls or self.index + 1 == len(self.walls):
                     z_val = self.wall_bss12[0]["z"] - height
                     while z_val - height > 0:
                         z_val -= height
@@ -332,8 +308,8 @@ class loadmainTMP:
                                 tiles_x.append({"x": current, "z": z_val})
                             current += width
                 elif facing in ["+Y", "-Y"]:
+                    current = y_val
                     if facing == "+Y":
-                        current = y_val
                         if current < self.glass_walls["y"]:
                             current = self.glass_walls["y"]
                         end = y_val + wall_width
@@ -345,18 +321,14 @@ class loadmainTMP:
                                 tiles_y.append({"y": current, "z": z_val})
                             current += width
                     elif facing == "-Y":
-                        current = y_val
                         end = y_val - wall_width
                         if end < self.glass_walls["y"]:
                             vertices = w.get("vertices")
                             x_values = vertices[:, 0]
                             unique_x = np.unique(x_values)
                             unique_x = unique_x[unique_x != 0]
-                            min_x = min(unique_x)
-                            max_x = max(unique_x)
-                            min_x , max_x = min(unique_x) , max(unique_x)
-                            current = y_val - min_x
-                            end = y_val - max_x
+                            min_x, max_x = min(unique_x), max(unique_x)
+                            current, end = y_val - min_x, y_val - max_x
                             while current > end:
                                 if (
                                     current > self.thickness
@@ -389,26 +361,19 @@ class loadmainTMP:
                 else:
                     dist_needed = 0 - wall_obj["x"]
                     x_wallsurface = wall_obj["x"] + dist_needed
-                alphabet_string = string.ascii_lowercase
-                alphabet_list = list(alphabet_string)
-                alphabet_list = list(self.alphabet_string)
                 z_min_limit, z_max_limit = 0, 0
                 y_min_limit, y_max_limit = 0, 0
                 if opening_match:
                     vertices = opening_match.get("vertices")
                     if vertices is not None and len(vertices) > 0:
-                        y_coords = np.array(vertices)[:, 1]  # get all Y values
-                        z_coords = np.array(vertices)[:, 2]  # get all Z values
-                        y_min_limit = y_coords.min()
-                        y_max_limit = y_coords.max()
-                        z_min_limit = z_coords.min()
-                        z_max_limit = z_coords.max()
-                        y_min_limit , y_max_limit = y_coords.min() , y_coords.max()
-                        z_min_limit , z_max_limit = z_coords.min() , z_coords.max()
+                        y_coords = np.array(vertices)[:, 1]
+                        z_coords = np.array(vertices)[:, 2]
+                        y_min_limit, y_max_limit = y_coords.min(), y_coords.max()
+                        z_min_limit, z_max_limit = z_coords.min(), z_coords.max()
                 repeatcount = int((self.storey_min_height - z_val) / height) + 1
                 for count, pos in enumerate(tile_list):
                     alpha = ""
-                    for index, item in enumerate(alphabet_list):
+                    for index, item in enumerate(self.alphabet_list):
                         if index == (count):
                             alpha = item
                     if self.index + 1 != self.boxup[0]["Wall Number"]:
@@ -424,10 +389,11 @@ class loadmainTMP:
                                 {
                                     "Wall Number": self.index + 1,
                                     "Name": f"TileMarkingPoint{self.index + 1}S2{alpha}{i+1}",
-                                    "Type": "Tiles Point",
+                                    "Shape Type": "Tiles Point",
                                     "Position X": pos if axis == "X" else x_wallsurface,
                                     "Position Y": y_wallsurface if axis == "X" else pos,
                                     "Position Z": z,
+                                    "Status": "blank",
                                 }
                             )
                     else:
@@ -435,10 +401,11 @@ class loadmainTMP:
                             {
                                 "Wall Number": self.index + 1,
                                 "Name": f"TileMarkingPoint{self.index + 1}S2{alpha}1",
-                                "Type": "Tiles Point",
+                                "Shape Type": "Tiles Point",
                                 "Position X": pos if axis == "X" else x_wallsurface,
                                 "Position Y": y_wallsurface if axis == "X" else pos,
                                 "Position Z": z_base,
+                                "Status": "blank",
                             }
                         )
                 self.index += 1
@@ -457,11 +424,7 @@ class loadmainTMP:
         lowest_floor_y = min(floor_finishes, key=lambda s: s["y"], default={"y": 0})[
             "y"
         ]
-        alphabet = string.ascii_lowercase
-        counters = 0  # global X-letter index
-        tmpfloor = []
-        distance_needed = []
-        tmpfloor , distance_needed  = [] , []
+        counters, tmpfloor, distance_needed = 0, [], []  # global X-letter index
         for floor in floor_finishes:
             distance_needed.append(
                 {
@@ -478,15 +441,13 @@ class loadmainTMP:
             min_y = math.ceil(np.min(vertices[:, 1]) / 10) * 10
             max_y = math.ceil(np.max(vertices[:, 1]) / 10) * 10
             tiles_x, tiles_y = [], []
-            # X tiles
             if floor["x"] == min_x + (max_x - min_x) / 2:
                 current = floor["x"] - (width / 2)
                 end = floor["x"] + (width / 2)
             elif floor["x"] < min_y + (max_y - min_y) / 2:
-                current = floor["x"] - width
+                current, end = floor["x"] - width, max_y
             else:
-                current = floor["x"]
-                end = max_x
+                current, end = floor["x"], max_x
             if min_item["name"] in floor["name"]:
                 current = self.boxup[0]["Position X"]
                 vertices = self.boxup[0]["vertices"]
@@ -501,7 +462,6 @@ class loadmainTMP:
                 if current >= self.thickness and current <= self.x_maxinternalwidth:
                     tiles_x.append({"x": current, "z": floor["z"]})
                 current += width
-            # Y tiles
             if floor["y"] == min_y + (max_y - min_y) / 2:
                 current = floor["y"] - ((max_y - min_y) / 2)
             elif floor["y"] < min_y + (max_y - min_y) / 2:
@@ -518,16 +478,21 @@ class loadmainTMP:
                     tiles_y.append({"y": current, "z": floor["z"]})
                 current += height
             for xpos in tiles_x:
-                alpha = (self.alphabet_string[counters] if counters < len(self.alphabet_string) else f"z{counters}")
+                alpha = (
+                    self.alphabet_string[counters]
+                    if counters < len(self.alphabet_string)
+                    else f"z{counters}"
+                )
                 for count_y, ypos in enumerate(tiles_y):
                     tmpfloor.append(
                         {
                             "Wall Number": "F",
                             "Name": f"TileMarkingPoint{self.index + 1}S2{alpha}{count_y+1}",
-                            "Type": "Tiles Point",
+                            "Shape Type": "Tiles Point",
                             "Position X": xpos["x"],
                             "Position Y": ypos["y"],
                             "Position Z": floor["z"],
+                            "Status": "blank",
                         }
                     )
                 counters += 1  # ✅ moved here (once per X-column)
@@ -535,4 +500,4 @@ class loadmainTMP:
         self.returnalltmps()
 
     def returnalltmps(self):
-        return self.tmptemp 
+        return self.tmptemp

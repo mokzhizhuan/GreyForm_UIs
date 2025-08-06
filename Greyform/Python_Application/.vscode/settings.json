@@ -40,4 +40,5 @@
         "install/setup.bat"
     ],
     "python.REPL.enableREPLSmartSend": false,
+    "github.copilot.chat.codeGeneration.useInstructionFiles": true,
 }

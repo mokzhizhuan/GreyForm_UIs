@@ -1,6 +1,6 @@
 import heapq
 import pandas as pd
-import methodifcfindings as ifc_findings
+import PythonApplication.methodifcfindings as ifc_findings
 
 def assign_nearest_fitting(
     walls,
@@ -99,11 +99,97 @@ def assign_nearest_fitting(
             {
                 "Wall Number": nearestwallindex,
                 "Name": fitting["name"],
+                "Shape Type": "Fitting",
                 "Position X": fx + origin_x,
                 "Position Y": fy + origin_y,
                 "Position Z": fz,
                 "Width": width,
                 "Height": height,
+                "Status": "blank",
+            }
+        )
+    return stage3_results 
+
+def assign_nearest_fitting_rotation(
+    walls,
+    fittings,
+    floor,
+    wall_info,
+    glass_walls,
+    count_minus_y,
+    count_plus_y,
+    centerpoint_rows,
+    origin_x,
+    origin_y,
+):
+    stage3_results = [] 
+    top_twofloor_z = heapq.nlargest(2, (f["z"] for f in floor))
+    lowest_floor = abs(min(f["z"] for f in floor) if floor else 0)
+    if glass_walls:
+        glass_x_pos = glass_walls[0]["x"]
+    width, height = 0, 0
+    for fitting in fittings:
+        fx, fy, fz = fitting["x"], fitting["y"], fitting["z"]
+        min_dist = float("inf")
+        nearestwallindex = 0
+        for i, wall_dict in enumerate(walls):
+            wall_data = list(wall_dict.values())[0]
+            wx, wy = wall_data["x"], wall_data["y"]
+            if wall_data["axis"] == "X" and fitting["axis"] == "X":
+                dist = abs(fy - wy)
+            elif wall_data["axis"] == "Y" and fitting["axis"] == "Y":
+                dist = abs(fx - wx)
+            if len(walls) == 6:
+                if count_minus_y == 2 and i > 0 and wx < glass_x_pos:
+                    for row in centerpoint_rows:
+                        if row["Wall Number"] == i + 1:
+                            row["floortileheight"] = (
+                                1000 + lowest_floor + top_twofloor_z[0]
+                            )
+                elif count_plus_y == 2 and i > 0 and wx > glass_x_pos:
+                    for row in centerpoint_rows:
+                        if row["Wall Number"] == i + 1:
+                            row["floortileheight"] = (
+                                1000 + lowest_floor + top_twofloor_z[0]
+                            )
+                if (
+                    count_minus_y == 2
+                    and i > 0
+                    and wx < glass_x_pos
+                    and dist < min_dist
+                ):
+                    min_dist = dist
+                    nearestwallindex = i + 1
+                elif (
+                    count_plus_y == 2 and i > 0 and wx > glass_x_pos and dist < min_dist
+                ):
+                    min_dist = dist
+                    nearestwallindex = i + 1
+                elif dist < min_dist:
+                    min_dist = dist
+                    nearestwallindex = i + 1
+            else:
+                if dist < min_dist:
+                    min_dist = dist
+                    nearestwallindex = i + 1
+        match = next(
+            (w for w in wall_info if w["Wall Number"] == nearestwallindex), None
+        )
+        if match:
+            width = match["Width"]
+            height = match["Height"]
+        stage3_results.append(
+            {
+                "Wall Number": nearestwallindex,
+                "Name": fitting["name"],
+                "Shape Type": "Fitting",
+                "Position X": fx + origin_x,
+                "Position Y": fy + origin_y,
+                "Position Z": fz,
+                "Width": width,
+                "Height": height,
+                "vertices": fitting["vertices"],
+                "Status": "blank",
             }
         )
     return stage3_results

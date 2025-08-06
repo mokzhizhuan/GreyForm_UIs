@@ -1,5 +1,5 @@
 import re
-import methodifcfindings as ifc_findings
+import PythonApplication.methodifcfindings as ifc_findings
 import string
 import math
 
@@ -16,7 +16,6 @@ class getTMP(object):
         floor,
         centerpoint_rows,
         storeys,
-        box_up,
         externalxmax_width,
         door,
     ):
@@ -28,7 +27,6 @@ class getTMP(object):
         self.origin_x = origin_x
         self.origin_y = origin_y
         self.floor = floor
-        self.boxup = box_up
         min_thickness = min(
             wall_data["area"][1]
             for wall_dict in self.walls
@@ -43,6 +41,8 @@ class getTMP(object):
         self.storey_min_height = min(
             storeys, key=lambda s: s["elevation"], default={"elevation": 0}
         )["elevation"]
+        z_values = [w["z"] for w in self.wall_bss20 if "z" in w]
+        self.getlowestground = min(z_values)
         self.tmptemp = []
         self.dist_neededarray = []
         self.maxwidths = []
@@ -61,15 +61,36 @@ class getTMP(object):
                     list(wall_dict.values())[0], self.wall_bss20
                 )
                 width, height = self.get_width_heights_intervals(next_w)
-                x_val = self.externalxmax_width - height + self.thickness
-                tiles = []
+                tiles_x, tiles_y, dist_needed = [], [], []
+                x_val, y_val, area = next_w.get("x", 0), next_w.get("y", 0), next_w.get("area")
+                wall_width, z_val = area[0] , next_w.get("z", 0) + self.height20
+                end = 0
+                facing = next_w.get("facingaxis")
+                if facing in ["+X", "-X"]:
+                    current = x_val
+                    if facing == "+X":
+                        end = current + wall_width
+                    elif facing == "-X":
+                        end = current - wall_width
+                    tiles_x.append({"x": current, "z": z_val})
+                    tiles_x.append({"x": end, "z": z_val})
+                elif facing in ["+Y", "-Y"]:
+                    current = y_val
+                    if facing == "+Y":
+                        end = y_val + wall_width
+                    elif facing == "-Y":
+                        end = y_val - wall_width
+                    tiles_y.append({"y": current, "z": z_val})
+                    tiles_y.append({"y": end, "z": z_val})
+                print(tiles_x)
+                print(tiles_y)
+                """tiles = []
                 tiles.append(x_val)
                 while x_val - height > 0:
                     x_val -= height
                     if x_val > self.thickness:
                         tiles.append(x_val)
                 tiles.sort()
-                repeatcount = int((ceilingzstart - width) / width) + 1
                 dist_needed = 0 - (list(wall_dict.values())[0]["y"] + self.origin_y)
                 y_wallsurface = (
                     list(wall_dict.values())[0]["y"] + self.origin_y
@@ -90,12 +111,10 @@ class getTMP(object):
                     counter = 0
                     if door_minx <= xpos <= door_maxx:
                         continue
-                    for i in range(repeatcount):
-                        z = width + width * i
-                        self.tmptemp.append(
+                    self.tmptemp.append(
                             {
                                 "Wall Number": self.index + 1,
-                                "Point Name": f"TMP{self.index + 1}S2{alpha}{counter+1}",
+                                "Point Name": f"TMP{self.index + 1}S2{alpha}1",
                                 "Position X": int(xpos),
                                 "Position Y": y_wallsurface,
                                 "Position Z": z,
@@ -103,9 +122,8 @@ class getTMP(object):
                                 "Height": maxheight,
                             }
                         )
-                        counter += 1
                     count += 1
-        self.index += 1
+        self.index += 1"""
         self.getTMP2()
 
     def getTMP2(self):

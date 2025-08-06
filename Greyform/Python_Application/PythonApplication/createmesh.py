@@ -30,7 +30,7 @@ class createMesh(QMainWindow):
         count_minus_y,
         excel_file,
         wallformat,
-        axis_widths
+        axis_widths, 
     ):
         # starting initialize
         super().__init__()

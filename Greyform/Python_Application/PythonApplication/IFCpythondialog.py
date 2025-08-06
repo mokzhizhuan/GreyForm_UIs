@@ -256,5 +256,5 @@ class ProgressBarDialogIFC(QDialog):
             self.count_minus_y,
             self.excelfile,
             self.wallformat,
-            self.axis_widths
+            self.axis_widths,
         )

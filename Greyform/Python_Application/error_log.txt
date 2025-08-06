@@ -1,0 +1,1 @@
+Failed to initialize IFC geometry settings or iterator: [Errno 13] Permission denied: 'PBU_TERRAHL2(final).xlsx' (File "C:\Users\MokZhiZhuan\OneDrive - WINSYS TECHNOLOGY PTE LTD\Documents\GitHub\GreyForm_UI\Greyform\Python_Application\PythonApplication\IFCpythondialog.py", Line 189)
