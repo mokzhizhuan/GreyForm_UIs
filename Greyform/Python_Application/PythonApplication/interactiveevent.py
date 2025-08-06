@@ -245,7 +245,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
         self.wall_index = 0
         self.currentindex = 0
         self.stagetext = self.stagestorage[self.currentindexstage]
-        print(self.stagetext)
         self.Stagelabel.setText(f"Stage : {self.stagetext}")
         self.wall_actors, self.identifier, self.wallname = createactorvtk.setupactors(
             self.walls,
@@ -256,7 +255,6 @@ class myInteractorStyle(vtkInteractorStyleTrackballCamera):
             self.robotplacement,
             self.objectrobot,
         )
-        print(self.wallname)
         self.show_message(
             f"Stage 2 is completed. Please Move in to {self.wallname} for Stage 3 process"
         )
