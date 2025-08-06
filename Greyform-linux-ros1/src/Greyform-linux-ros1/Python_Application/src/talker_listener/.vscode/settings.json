@@ -1,9 +1,0 @@
-{
-    "python.autoComplete.extraPaths": [
-        "/home/ubuntu/ros2_humble/install/turtlesim/local/lib/python3.10/dist-packages",
-        "/home/ubuntu/ros2_humble/install/ouster_sensor_msgs/local/lib/python3.10/dist-packages",
-        "/home/ubuntu/ros2_humble/install/dynamic_map_matcher/lib/python3.10/site-packages",
-        "/opt/ros/humble/lib/python3.10/site-packages",
-        "/opt/ros/humble/local/lib/python3.10/dist-packages"
-    ]
-}
