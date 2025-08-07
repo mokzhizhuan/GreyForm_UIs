@@ -82,15 +82,14 @@ class getTMP(object):
                         end = y_val - wall_width
                     tiles_y.append({"y": current, "z": z_val})
                     tiles_y.append({"y": end, "z": z_val})
-                print(tiles_x)
-                print(tiles_y)
-                """tiles = []
+                tiles = []
                 tiles.append(x_val)
                 while x_val - height > 0:
                     x_val -= height
                     if x_val > self.thickness:
                         tiles.append(x_val)
                 tiles.sort()
+                repeatcount = int((ceilingzstart - width) / width) + 1
                 dist_needed = 0 - (list(wall_dict.values())[0]["y"] + self.origin_y)
                 y_wallsurface = (
                     list(wall_dict.values())[0]["y"] + self.origin_y
@@ -111,10 +110,12 @@ class getTMP(object):
                     counter = 0
                     if door_minx <= xpos <= door_maxx:
                         continue
-                    self.tmptemp.append(
+                    for i in range(repeatcount):
+                        z = width + width * i
+                        self.tmptemp.append(
                             {
                                 "Wall Number": self.index + 1,
-                                "Point Name": f"TMP{self.index + 1}S2{alpha}1",
+                                "Point Name": f"TMP{self.index + 1}S2{alpha}{i + 1}",
                                 "Position X": int(xpos),
                                 "Position Y": y_wallsurface,
                                 "Position Z": z,
@@ -123,7 +124,7 @@ class getTMP(object):
                             }
                         )
                     count += 1
-        self.index += 1"""
+        self.index += 1
         self.getTMP2()
 
     def getTMP2(self):

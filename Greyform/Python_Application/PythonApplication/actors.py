@@ -129,8 +129,6 @@ def setupactors(
     return wall_actors, identifier, wallname
 
 
-
-
 def create_robot_actor(name, position, size, color, rotation=(0, 0, 0)):
     cube = vtk.vtkCubeSource()
     cube.SetXLength(size[0])

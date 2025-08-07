@@ -63,8 +63,7 @@ class loadmainTMP:
         self.storey_min_height = min(
             storeys, key=lambda s: s["elevation"], default={"elevation": 0}
         )["elevation"]
-        self.index = 0
-        self.tmptemp = []
+        self.index , self.tmptemp , self.alpha = 0, [] , ""
         self.addTMP1()
 
     def extract_wall_id(self, name):
@@ -188,7 +187,7 @@ class loadmainTMP:
                 tiles_y_structured = [t for t in tiles_y if isinstance(t, dict)]
                 tiles_x_structured.sort(key=lambda x: x["x"])
                 tiles_y_structured.sort(key=lambda y: y["y"])
-                axis = list(wall_dict.values())[0]["axis"]
+                axis = wall_obj["axis"]
                 tile_list = (
                     [t["x"] for t in tiles_x_structured]
                     if axis == "X"
@@ -208,16 +207,15 @@ class loadmainTMP:
                     dist_needed = 0 - wall_obj["x"]
                     x_wallsurface = wall_obj["x"] + dist_needed
                 for count, pos in enumerate(tile_list):
-                    alpha = ""
                     for index, item in enumerate(self.alphabet_list):
                         if index == (count):
-                            alpha = item
+                            self.alpha = item
                     for i in range(repeatcount):
                         z = z_base + height * i
                         self.tmptemp.append(
                             {
                                 "Wall Number": self.index + 1,
-                                "Name": f"TileMarkingPoint{self.index + 1}S2{alpha}{i+1}",
+                                "Name": f"TileMarkingPoint{self.index + 1}S2{self.alpha}{i+1}",
                                 "Shape Type": "Tiles Point",
                                 "Position X": pos if axis == "X" else x_wallsurface,
                                 "Position Y": y_wallsurface if axis == "X" else pos,
@@ -325,8 +323,7 @@ class loadmainTMP:
                         if end < self.glass_walls["y"]:
                             vertices = w.get("vertices")
                             x_values = vertices[:, 0]
-                            unique_x = np.unique(x_values)
-                            unique_x = unique_x[unique_x != 0]
+                            unique_x = np.unique(x_values[x_values != 0])
                             min_x, max_x = min(unique_x), max(unique_x)
                             current, end = y_val - min_x, y_val - max_x
                             while current > end:
@@ -372,10 +369,9 @@ class loadmainTMP:
                         z_min_limit, z_max_limit = z_coords.min(), z_coords.max()
                 repeatcount = int((self.storey_min_height - z_val) / height) + 1
                 for count, pos in enumerate(tile_list):
-                    alpha = ""
                     for index, item in enumerate(self.alphabet_list):
                         if index == (count):
-                            alpha = item
+                            self.alpha = item
                     if self.index + 1 != self.boxup[0]["Wall Number"]:
                         for i in range(repeatcount):
                             z = z_base + height * i
@@ -388,7 +384,7 @@ class loadmainTMP:
                             self.tmptemp.append(
                                 {
                                     "Wall Number": self.index + 1,
-                                    "Name": f"TileMarkingPoint{self.index + 1}S2{alpha}{i+1}",
+                                    "Name": f"TileMarkingPoint{self.index + 1}S2{self.alpha}{i+1}",
                                     "Shape Type": "Tiles Point",
                                     "Position X": pos if axis == "X" else x_wallsurface,
                                     "Position Y": y_wallsurface if axis == "X" else pos,
@@ -400,7 +396,7 @@ class loadmainTMP:
                         self.tmptemp.append(
                             {
                                 "Wall Number": self.index + 1,
-                                "Name": f"TileMarkingPoint{self.index + 1}S2{alpha}1",
+                                "Name": f"TileMarkingPoint{self.index + 1}S2{self.alpha}1",
                                 "Shape Type": "Tiles Point",
                                 "Position X": pos if axis == "X" else x_wallsurface,
                                 "Position Y": y_wallsurface if axis == "X" else pos,
@@ -478,7 +474,7 @@ class loadmainTMP:
                     tiles_y.append({"y": current, "z": floor["z"]})
                 current += height
             for xpos in tiles_x:
-                alpha = (
+                self.alpha = (
                     self.alphabet_string[counters]
                     if counters < len(self.alphabet_string)
                     else f"z{counters}"
@@ -487,7 +483,7 @@ class loadmainTMP:
                     tmpfloor.append(
                         {
                             "Wall Number": "F",
-                            "Name": f"TileMarkingPoint{self.index + 1}S2{alpha}{count_y+1}",
+                            "Name": f"TileMarkingPoint{self.index + 1}S2{self.alpha}{count_y+1}",
                             "Shape Type": "Tiles Point",
                             "Position X": xpos["x"],
                             "Position Y": ypos["y"],

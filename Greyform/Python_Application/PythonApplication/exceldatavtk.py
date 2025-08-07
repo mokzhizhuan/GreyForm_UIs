@@ -36,7 +36,6 @@ def exceldataextractor(excel_file):
                 unique_width_height_dict[wall_num] = {"width": set(), "height": set()}
             unique_width_height_dict[wall_num]["width"].add(length)
             unique_width_height_dict[wall_num]["height"].add(breath)
-
         unique_data = (
             df.groupby("Wall Number")
               .agg({"Status": lambda x: list(set(x))})

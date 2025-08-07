@@ -29,7 +29,6 @@ class data_draft(object):
         origin_x, origin_y, ____ = loc.Coordinates
         origin_x = round(origin_x)
         origin_y = round(origin_y)
-        # indicating the width and height
         walls_bss50 = [w for w in all_walls if "basic wall:bss.50" in w["name"].lower()]
         tile_pattern = re.compile(r"\d+\s*x\s*\d+\s*mm", re.IGNORECASE)
         walls_bss20 = [
@@ -65,9 +64,7 @@ class data_draft(object):
             box_up = ifc_findings.process_elements(
                 self.ifc_file.by_type("IfcWall"), "waterproof"
             )
-        # storeys for the minimum ceiling
         storeys = ifc_findings.extract_storeys(self.ifc_file)
-        # wallformula
         same = {}
         fallback = []
         if door:
@@ -76,7 +73,6 @@ class data_draft(object):
                 if closest_wall:
                     same[closest_wall["name"]] = closest_wall  # overwrite if already exists
         else:
-            # fallback logic: openings
             fallback = [
                 o for o in openings if any(o["name"] in w["name"] for w in walls_bss50)
             ]
@@ -128,7 +124,6 @@ class data_draft(object):
                 unvisited = [w for w in unvisited if w["name"] != next_w["name"]]
                 curr = next_w
         self.axis_widths = {"x":xmaxwidths , "y": ymaxwidths}
-        # store the finalized rows in stage 2
         if len(visited) == 6:
             top_twofloor_z = heapq.nlargest(2, (f["z"] for f in floors))
         counters, countersxy, width = 0, 0, 0
@@ -306,7 +301,6 @@ class data_draft(object):
                 "Height": internalymax_width,
             }
         )
-        # stage 3
         stage3_objects = []
         checklist_file = pd.ExcelFile(self.args.excel_file)
         df_checklist = checklist_file.parse("Sheet1")
@@ -335,7 +329,6 @@ class data_draft(object):
             and not (obj.get("x", 0) == 0 and obj.get("y", 0) == 0 and obj.get("z", 0) == 0)
         ]
         df_checklist.columns = df_checklist.iloc[0]
-        # assign fittings
         wall_info = [
             {
                 "Wall Number": row["Wall Number"],
@@ -454,7 +447,6 @@ class data_draft(object):
             ),
             axis=1,
         )
-        # robot tiling dont use it
         df_combined[["Position X", "Position Y", "Position Z"]] = df_combined.apply(
             lambda row: setuprobot.setuprobotposition(
                 row,
@@ -483,7 +475,6 @@ class data_draft(object):
         with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
             df_combined.to_excel(writer, index=True, sheet_name="Stage 2")
             df_fitting.to_excel(writer, index=True, sheet_name="Stage 3")  # Include index
-
         return (
             count_plus_y,
             count_minus_y,
