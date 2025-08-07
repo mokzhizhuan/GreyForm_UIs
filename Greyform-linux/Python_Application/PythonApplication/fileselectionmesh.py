@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-import PythonApplication.dxfframeloader as dxfload
 import PythonApplication.IFCpythondialog as ProgressIFCFile
 import ifcopenshell
 import geopandas as gpd
@@ -21,10 +20,7 @@ class FileSelectionMesh():
 
     # load meshdata from file
     def meshdata(self):
-        if ".dxf" in self.file_path:
-            gdf = gpd.read_file(self.file_path, engine="fiona")
-            dxfload.dxfloader(self.file_path, self.mainwindowforfileselection, gdf , self.mainwindow, self.stackedWidget)
-        elif ".ifc" in self.file_path:
+        if ".ifc" in self.file_path:
             try:
                 ifc_file = ifcopenshell.open(self.file_path)
             except Exception as e:

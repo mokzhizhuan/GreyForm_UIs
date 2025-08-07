@@ -9,6 +9,7 @@ from vtkmodules.vtkCommonColor import vtkNamedColors
 import re
 
 
+
 def setupactors(
     walls,
     stagetext,
@@ -30,6 +31,10 @@ def setupactors(
         if wall_number is None or stagetext not in wall_identifiers:
             continue
         sheet_data = wall_identifiers[stagetext]
+        sheet_data = {
+            col.strip().replace('\u00A0', ''): values
+            for col, values in sheet_data.items()
+        }
         if wall_number == "F":
             indexes = [i for i, wn in enumerate(sheet_data["Wall Number"]) if wn == "F"]
         else:
@@ -122,7 +127,6 @@ def setupactors(
             first_wall_number = min(identifier.keys(), key=lambda x: (x == "F", x))
             wallname = f"Wall {first_wall_number}"
     return wall_actors, identifier, wallname
-
 
 
 def create_robot_actor(name, position, size, color, rotation=(0, 0, 0)):
