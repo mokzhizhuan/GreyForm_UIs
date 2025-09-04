@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/rosidl_generator_c/my_robot_wallinterfaces/msg/file_extraction_message.h

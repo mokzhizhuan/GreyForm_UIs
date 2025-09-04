@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/rosidl_typesupport_introspection_c/my_robot_wallinterfaces/msg/rosidl_typesupport_introspection_c__visibility_control.h

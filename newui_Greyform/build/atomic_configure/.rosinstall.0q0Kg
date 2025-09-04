@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /root/catkin_ws/src/newui_Greyform/devel/setup.sh

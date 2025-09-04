@@ -1,1 +1,0 @@
-/home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/build/my_robot_wallinterfaces/ament_cmake_core/my_robot_wallinterfacesConfig-version.cmake
