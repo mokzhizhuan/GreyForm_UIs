@@ -31,9 +31,8 @@ class TalkerNode:
 
     def publish_selection_message(self, wall_number, picked_position, markingtype):
         msg = SelectionWall()
-        msg.wallselection = str(wall_number)  # can be "F" or "1".."6"
-        msg.typeselection = str(markingtype)  # will be parsed numeric on listener side
-        # round to nearest mm and cast to int for int32[]
+        msg.wallselection = str(wall_number)  
+        msg.typeselection = str(markingtype)  
         nums = [int(round(float(v))) for v in list(picked_position)[:3]]
         msg.picked_position = nums
         self.sel_pub.publish(msg)
