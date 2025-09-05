@@ -52,21 +52,14 @@ def getmaterial(
 ):
     ifc = _coerce_ifc(ifc_or_path)
     target_norm = _normalize(target_name)
-
-    # 1) direct IfcMaterial by name
     found = [m for m in ifc.by_type("IfcMaterial") if _normalize(m.Name) == target_norm]
-
-    # 2) via associations
     if not found:
         for rel in ifc.by_type("IfcRelAssociatesMaterial"):
             for m in _iter_materials_from_definition(rel.RelatingMaterial):
                 if _normalize(m.Name) == target_norm:
                     found.append(m)
-
     if names_only:
         names = sorted({(m.Name or "").strip() for m in found})
         return (names[0] if names else None) if first_only else names
-
-    # return entities (dedup) for legacy callers
     ents = list({m.id(): m for m in found}.values())
     return (ents[0] if ents else None) if first_only else ents

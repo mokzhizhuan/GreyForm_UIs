@@ -52,16 +52,6 @@ class ListenerNodeRunner:
                 threading.Thread(target=self._run_process, daemon=True).start()
                 self.signals.status_signal.emit("Status: Running")
                 self.listener_started = True
-                self.process = None
-            except Exception as e:
-                self.signals.status_signal.emit(f"Status: Error - {str(e)}")
-        else:
-            self.stop_listener_node()
-            try:
-                threading.Thread(target=self._run_process, daemon=True).start()
-                self.signals.status_signal.emit("Status: Running")
-                self.listener_started = True
-                self.process = None
             except Exception as e:
                 self.signals.status_signal.emit(f"Status: Error - {str(e)}")
 
@@ -80,37 +70,40 @@ class ListenerNodeRunner:
                 )
         self.process = None
 
-    def run_execution(self, rows, excel_data):
-        if not self.listener_started:
-            return
-        self.talker_node.publish_file_message(self.file, excel_data)
+    def run_execution(self, rows, excel_path):
+        self.talker_node.publish_file_message(self.file, excel_path)
         for data in rows:
             wn = data.get("Wall Number")
-            x = data.get("LX", data.get("Position X"))
-            y = data.get("LY", data.get("Position Y"))
-            z = data.get("LZ", data.get("Position Z"))
-            markingtype = data.get("Marking Type", data.get("Shape Type"))
-            picked_position = [int(x), int(y), int(z)]
+            x = data.get("LX", 0)
+            y = data.get("LY", 0)
+            z = data.get("LZ", 0)
+            markingtype = data.get("Marking Type")
+            def _num(v, default=0):
+                try:
+                    return float(v)
+                except Exception:
+                    return default
+            picked_position = [int(round(_num(x))),
+                               int(round(_num(y))),
+                               int(round(_num(z)))]
             self.talker_node.publish_selection_message(wn, picked_position, markingtype)
-        self.talker_node.showdialog()
 
     def _run_process(self):
         env = os.environ.copy()
-        command = (
-            "source /opt/ros/humble/setup.bash && "
-            "source /home/ubuntu/ros2_ws/src/Greyform-linux/Python_Application/install/setup.bash && "
-            "ros2 run talker_listener listener_node"
-        )
+        env["ROS_MASTER_URI"] = "http://localhost:11311"
+        env["ROS_IP"] = "172.17.0.1"
+        env["ROS_HOSTNAME"] = "localhost"
+        command = "source /opt/ros/noetic/setup.bash && source /root/catkin_ws/src/newui_Greyform/devel/setup.bash && rosrun talker_listener listener_node.py"
         try:
-            self.process = subprocess.Popen(
+            process = subprocess.Popen(
                 ["bash", "-c", command],
                 env=env,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            self.signals.page_change_signal.emit(4)
-            stdout, stderr = self.process.communicate()
-            if self.process.returncode == 0:
+            self.signals.page_change_signal.emit(4)  
+            stdout, stderr = process.communicate()
+            if process.returncode == 0:
                 self.signals.status_signal.emit("Node started successfully.")
                 self.signals.status_signal.emit(stdout.decode("utf-8"))
             else:
@@ -131,7 +124,6 @@ class ListenerNodeRunner:
             text, icon, gif = msg, None, None
 
         self.labelstatus.setText(text)
-
         # update small icon label next to text (create once in __init__)
         if getattr(self, "_movie", None):
             self._movie.stop(); self._movie = None

@@ -1,5 +1,4 @@
-# Regenerate a full table of Model Lines where the geometry is inside IFcGeometricCurveSet,
-# descending to pull out IFCPOLYLINE items; compute WORLD coordinates via placement chain.
+
 from pathlib import Path
 import re
 import math

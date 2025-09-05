@@ -1,113 +1,49 @@
+#!/usr/bin/env python3
 import rospy
-import sys
-from my_robot_wallinterfaces.msg import FileExtractionMessage, SelectionWall
-from my_robot_wallinterfaces.srv import SetLed
-from std_msgs.msg import String
-import numpy as np
-import sys
-import subprocess
-import dialoglogger as logs
 from pathlib import Path
+from my_robot_wallinterfaces.msg import FileExtractionMessage, SelectionWall
 
-
-# talker node
 class TalkerNode:
     def __init__(self):
-        # starting initialize
-        super().__init__()
-        self.file_publisher_ = rospy.Publisher(
-            "file_extraction_topic",
-            FileExtractionMessage,
-            queue_size=10,
+        self.file_pub = rospy.Publisher(
+            "file_extraction_topic", FileExtractionMessage, queue_size=10
         )
-        self.selection_publisher_ = rospy.Publisher(
-            "selection_wall_topic",
-            SelectionWall,
-            queue_size=10,
+        self.sel_pub = rospy.Publisher(
+            "selection_wall_topic", SelectionWall, queue_size=10
         )
-        self.message = ""
-        self.errormessage = ""
-        self.spacing = "\n"
-        self.title = "Publisher Node"
         self.rate = rospy.Rate(10)
-        self.active_dialog = None
-        self.listener_started = False
 
-    def showdialog(self):
-        if self.message != "":
-            self.show_info_dialog(self.message)
-            self.message = ""
-        elif self.errormessage != "":
-            self.show_error_dialog(self.errormessage)
-            self.errormessage = ""
-
-    # talker file message implementation
-    def publish_file_message(self, file_path, excel_filepath):
+    def publish_file_message(self, stl_path, excel_path):
+        msg = FileExtractionMessage()
         try:
-            if isinstance(file_path, Path):
-                file_path = str(file_path)
-            with open(file_path, "rb") as f:
-                stl_data = f.read()
-            msg = FileExtractionMessage()
-            msg.stl_data = list(stl_data)
-            if isinstance(excel_filepath, Path):
-                excel_filepath = str(excel_filepath)
-            msg.excelfile = excel_filepath
-            self.file_publisher_.publish(msg)
+            stl_path = Path(stl_path).expanduser().resolve()
+            with stl_path.open("rb") as f:
+                msg.stl_data = list(f.read())
         except Exception as e:
-            print(f"Error: {e}")
-            self.errormessage += f"{self.spacing}Failed to publish file message: {e}"
+            rospy.logwarn(f"[talker] Could not read STL ({type(e).__name__}: {e}); sending empty stl_data.")
+            msg.stl_data = []
+        excel_path = Path(excel_path).expanduser().resolve()
+        if not excel_path.exists():
+            rospy.logwarn(f"[talker] Excel path does not exist: {excel_path}")
+        msg.excelfile = str(excel_path)
+        self.file_pub.publish(msg)
+        rospy.loginfo(f"[talker] Published file message with Excel={msg.excelfile}")
 
-    # talker selection message implementation
     def publish_selection_message(self, wall_number, picked_position, markingtype):
-        try:
-            msg = SelectionWall()
-            msg.wallselection = str(wall_number)
-            msg.typeselection = f"{str(markingtype)}"
-            msg.picked_position = list(picked_position)
-            self.selection_publisher_.publish(msg)
-        except Exception as e:
-            self.errormessage += (
-                f"{self.spacing}Failed to publish selection message: {e}"
-            )
-
-    # test callback
-    def timer_callback(self, event):
-        msg = String()
-        msg.data = f"Hello everyone {self.count}"
-        self.publisher_.publish(msg)
-        self.count += 1
-        rclpy.loginfo(f"Publishing {msg.data}")
-
-    def show_info_dialog(self, message):
-        if self.active_dialog:
-            self.active_dialog.close()
-            self.active_dialog = None
-        self.active_dialog = logs.LogDialog(message, self.title, log_type="info")
-        self.active_dialog.exec_()
-        self.active_dialog.close()
-        self.active_dialog = None
-
-    # error dialog implementation
-    def show_error_dialog(self, message):
-        if self.active_dialog:
-            self.active_dialog.close()
-            self.active_dialog = None
-        self.active_dialog = logs.LogDialog(message, self.title, log_type="error")
-        self.active_dialog.exec_()
-        self.active_dialog.close()
-        self.active_dialog = None
+        msg = SelectionWall()
+        msg.wallselection = str(wall_number)  # can be "F" or "1".."6"
+        msg.typeselection = str(markingtype)  # will be parsed numeric on listener side
+        # round to nearest mm and cast to int for int32[]
+        nums = [int(round(float(v))) for v in list(picked_position)[:3]]
+        msg.picked_position = nums
+        self.sel_pub.publish(msg)
 
 
-# implement talker init
-def main(args=None):
-    rospy.init(args=args)
-    rospy.init_node("node_name", anonymous=True)
-    talkerNode = TalkerNode()
-    rospy.spin(talkerNode)
-    talkerNode.destroy_node()
-    rospy.shutdown()
-
+def main():
+    rospy.init_node("talker_node", anonymous=True)
+    node = TalkerNode()
+    rospy.loginfo("[talker] Node started. Use your UI to call publish_* methods.")
+    rospy.spin()
 
 if __name__ == "__main__":
     main()
