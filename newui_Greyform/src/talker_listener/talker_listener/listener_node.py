@@ -22,6 +22,7 @@ WRITE_AUDIT = False
 AUDIT_COL = None
 KEEP_FIRST_UNNAMED = True  # keep "Unnamed: 0" only
 
+
 def _distance_l1(a, b):
     return float(np.abs(a - b).sum())
 
@@ -46,11 +47,7 @@ def _read_first_bytes(path, n=8):
 def _wait_for_valid_xlsx(path, timeout=10.0, interval=0.25):
     end = time.time() + timeout
     last = None
-<<<<<<< Updated upstream
-    ok_count = 0  
-=======
     ok_count = 0
->>>>>>> Stashed changes
     while time.time() < end:
         try:
             st = os.stat(path)
@@ -113,15 +110,10 @@ def _atomic_write_excel(path, sheets_dict, retries=3, backoff=0.05):
                             df.to_excel(xw, sheet_name=name, index=False)
                     os.replace(tmp_path, path)  # atomic on same filesystem
                 finally:
-<<<<<<< Updated upstream
-                    try: os.remove(tmp_path)
-                    except Exception: pass
-=======
                     try:
                         os.remove(tmp_path)
                     except Exception:
                         pass
->>>>>>> Stashed changes
             return
         except FileExistsError as e:
             if attempt == retries - 1:
@@ -156,15 +148,9 @@ def _load_spreadsheet_dict(path: str):
         f"  magic: {magic!r}"
     )
     is_xlsx_magic = magic.startswith(MAGIC_XLSX)
-<<<<<<< Updated upstream
-    is_ole_magic  = magic.startswith(MAGIC_OLE)
-    is_xlsb_ext   = suffix == ".xlsb"
-    is_csv_ext    = suffix == ".csv"
-=======
     is_ole_magic = magic.startswith(MAGIC_OLE)
     is_xlsb_ext = suffix == ".xlsb"
     is_csv_ext = suffix == ".csv"
->>>>>>> Stashed changes
     if is_xlsx_magic or suffix == ".xlsx":
         try:
             return pd.read_excel(p, sheet_name=None, engine="openpyxl")
@@ -177,13 +163,9 @@ def _load_spreadsheet_dict(path: str):
             try:
                 return pd.read_excel(p, sheet_name=None)
             except Exception as e2:
-<<<<<<< Updated upstream
-                raise RuntimeError(f"Failed to read XLSX with openpyxl and default engine: {e1} / {e2}")
-=======
                 raise RuntimeError(
                     f"Failed to read XLSX with openpyxl and default engine: {e1} / {e2}"
                 )
->>>>>>> Stashed changes
     if is_ole_magic or suffix == ".xls":
         try:
             return pd.read_excel(p, sheet_name=None, engine="xlrd")
@@ -207,13 +189,9 @@ def _load_spreadsheet_dict(path: str):
             df = pd.read_csv(p)
             return {"Sheet1": df}
         except Exception as e:
-<<<<<<< Updated upstream
-            raise RuntimeError(f"Detected CSV but failed to read: {type(e).__name__}: {e}")
-=======
             raise RuntimeError(
                 f"Detected CSV but failed to read: {type(e).__name__}: {e}"
             )
->>>>>>> Stashed changes
     try:
         return pd.read_excel(p, sheet_name=None)
     except Exception as e:
@@ -282,13 +260,9 @@ class ListenerNode:
         except FileNotFoundError:
             sig = None
         if sig is not None and sig == self._last_excel_sig and self._excel_ready:
-<<<<<<< Updated upstream
-            rospy.loginfo("[listener] Excel unchanged; ignoring duplicate file message.")
-=======
             rospy.loginfo(
                 "[listener] Excel unchanged; ignoring duplicate file message."
             )
->>>>>>> Stashed changes
             self._maybe_process()
             return
         if not _wait_for_valid_xlsx(self._excel_path):
@@ -371,13 +345,9 @@ class ListenerNode:
             for w, mt, pos in self._journal:
                 if wx is not None and w != wx:
                     continue
-<<<<<<< Updated upstream
-                if (abs(lx - pos[0]) + abs(ly - pos[1]) + abs(lz - pos[2])) <= TOL_RELAX * 3:
-=======
                 if (
                     abs(lx - pos[0]) + abs(ly - pos[1]) + abs(lz - pos[2])
                 ) <= TOL_RELAX * 3:
->>>>>>> Stashed changes
                     df.at[idx, "Status"] = "done"
                     if WRITE_AUDIT and AUDIT_COL:  # guard everything
                         if AUDIT_COL not in df.columns:
@@ -405,21 +375,13 @@ class ListenerNode:
             rospy.logerr(f"[listener] Processing error: {e}")
         finally:
             self._in_progress = False
-<<<<<<< Updated upstream
-            
-=======
 
->>>>>>> Stashed changes
     def _numeric_cols(self, df):
         for c in ("LX", "LY", "LZ"):
             if c not in df.columns:
                 return None
         df = df.copy()
-<<<<<<< Updated upstream
-        for c in ("LX","LY","LZ","Wall Number","Marking Type","Status"):
-=======
         for c in ("LX", "LY", "LZ", "Wall Number", "Marking Type", "Status"):
->>>>>>> Stashed changes
             if c in df.columns:
                 df[c] = df[c].apply(lambda x: x.strip() if isinstance(x, str) else x)
         df["LX"] = pd.to_numeric(df["LX"], errors="coerce")
@@ -429,11 +391,7 @@ class ListenerNode:
             df["Status"] = "blank"
         else:
             df["Status"] = df["Status"].fillna("blank").astype(str).str.lower()
-<<<<<<< Updated upstream
-            df.loc[~df["Status"].isin(["blank","done"]), "Status"] = "blank"
-=======
             df.loc[~df["Status"].isin(["blank", "done"]), "Status"] = "blank"
->>>>>>> Stashed changes
         return df
 
     def _strip_admin_cols(self) -> bool:
@@ -446,10 +404,6 @@ class ListenerNode:
             audit_cols = ["LastUpdatedBy"]
             if "AUDIT_COL" in globals() and globals()["AUDIT_COL"]:
                 audit_cols.append(globals()["AUDIT_COL"])
-<<<<<<< Updated upstream
-            df = df.drop(columns=[c for c in audit_cols if c in df.columns], errors="ignore")
-            df = df.drop(columns=[c for c in list(df.columns) if (c is None) or (str(c).strip() == "")], errors="ignore")
-=======
             df = df.drop(
                 columns=[c for c in audit_cols if c in df.columns], errors="ignore"
             )
@@ -459,7 +413,6 @@ class ListenerNode:
                 ],
                 errors="ignore",
             )
->>>>>>> Stashed changes
             keep, first_unnamed = [], False
             for c in df.columns:
                 if str(c).startswith("Unnamed"):
@@ -469,10 +422,6 @@ class ListenerNode:
                 else:
                     keep.append(c)
             df = df[keep]
-<<<<<<< Updated upstream
-            drop_empty = [c for c in df.columns
-                        if str(c).startswith("Unnamed") and c != "Unnamed: 0" and df[c].isna().all()]
-=======
             drop_empty = [
                 c
                 for c in df.columns
@@ -480,7 +429,6 @@ class ListenerNode:
                 and c != "Unnamed: 0"
                 and df[c].isna().all()
             ]
->>>>>>> Stashed changes
             if drop_empty:
                 df = df.drop(columns=drop_empty, errors="ignore")
             self._excel_sheets[sheet] = df
@@ -504,14 +452,6 @@ class ListenerNode:
             if "Status" not in df.columns:
                 df["Status"] = "blank"
             status_str = df["Status"].astype(str).str.strip().str.lower()
-<<<<<<< Updated upstream
-            typ  = self._sstr(df, "Type")
-            name = self._sstr(df, "Name")
-            is_wall   = typ.str.contains(r"\bwall\b", na=False) | name.str.contains(r"\bbasic wall\b", na=False)
-            is_center = typ.str.contains(r"center\s*point", na=False) | name.str.contains(r"\bcp\d*\b", na=False)
-            candidates = ~(is_wall | is_center)
-            not_done   = ~status_str.eq("done")
-=======
             typ = self._sstr(df, "Type")
             name = self._sstr(df, "Name")
             is_wall = typ.str.contains(r"\bwall\b", na=False) | name.str.contains(
@@ -522,7 +462,6 @@ class ListenerNode:
             ) | name.str.contains(r"\bcp\d*\b", na=False)
             candidates = ~(is_wall | is_center)
             not_done = ~status_str.eq("done")
->>>>>>> Stashed changes
             to_fill = candidates & not_done
             n = int(to_fill.sum())
             if n:
@@ -532,18 +471,12 @@ class ListenerNode:
         return changed_total
 
     def _strip_audit(self, _df):
-<<<<<<< Updated upstream
-        drop = [c for c in _df.columns
-                if str(c).strip().lower() in ("lastupdatedby", "last updated by")
-                or str(c).strip().lower().startswith("unnamed:")]
-=======
         drop = [
             c
             for c in _df.columns
             if str(c).strip().lower() in ("lastupdatedby", "last updated by")
             or str(c).strip().lower().startswith("unnamed:")
         ]
->>>>>>> Stashed changes
         if drop:
             _df.drop(columns=list(set(drop)), inplace=True, errors="ignore")
         self._strip_audit(_df)
@@ -553,13 +486,8 @@ class ListenerNode:
         return True
 
     def _nearest_index(self, df, posX, posY, posZ, wall_str):
-<<<<<<< Updated upstream
-        pts = df[["LX","LY","LZ"]].to_numpy(dtype=float)
-        target = np.array([posX,posY,posZ], dtype=float)
-=======
         pts = df[["LX", "LY", "LZ"]].to_numpy(dtype=float)
         target = np.array([posX, posY, posZ], dtype=float)
->>>>>>> Stashed changes
         d = np.abs(pts - target).sum(axis=1)  # L1 is robust for grid snaps
         cand = pd.Series(d, index=df.index)
         if "Wall Number" in df.columns and wall_str is not None:
@@ -576,11 +504,7 @@ class ListenerNode:
         return int(idx), float(cand.loc[idx])
 
     def _closest_index(self, df, idx_list, posX, posY, posZ):
-<<<<<<< Updated upstream
-        sub = df.loc[idx_list, ["LX","LY","LZ"]].to_numpy(dtype=float)
-=======
         sub = df.loc[idx_list, ["LX", "LY", "LZ"]].to_numpy(dtype=float)
->>>>>>> Stashed changes
         target = np.array([posX, posY, posZ], float)
         d = np.abs(sub - target).sum(axis=1)
 
@@ -593,11 +517,7 @@ class ListenerNode:
         pos = np.array([posX, posY, posZ], dtype=float)
         wall_str = self.wallselection
         mtype = self.typeselection
-<<<<<<< Updated upstream
-        best = None 
-=======
         best = None
->>>>>>> Stashed changes
         for sheet, df0 in self._excel_sheets.items():
             df = self._numeric_cols(df0)
             if df is None or df.empty:
@@ -676,25 +596,16 @@ class ListenerNode:
         if str(df.at[idx, "Status"]).lower() != "done":
             df.at[idx, "Status"] = "done"
             changed = True
-<<<<<<< Updated upstream
-        if WRITE_AUDIT and AUDIT_COL:            # guard everything
-=======
         if WRITE_AUDIT and AUDIT_COL:  # guard everything
->>>>>>> Stashed changes
             if AUDIT_COL not in df.columns:
                 df[AUDIT_COL] = ""
             df.at[idx, AUDIT_COL] = audit_value
         self._excel_sheets[sheet] = df
         if AUDIT_COL not in df.columns:
             df[AUDIT_COL] = ""
-<<<<<<< Updated upstream
-        audit_value = f"{self.wallselection}|{self.typeselection}|{self.picked_position}"
-        # idempotency check (only if we’re auditing)
-=======
         audit_value = (
             f"{self.wallselection}|{self.typeselection}|{self.picked_position}"
         )
->>>>>>> Stashed changes
         if WRITE_AUDIT and AUDIT_COL:
             if AUDIT_COL not in df.columns:
                 df[AUDIT_COL] = ""
@@ -724,17 +635,10 @@ class ListenerNode:
             & (df["LZ"].sub(posZ).abs() <= tol)
         )
         if enforce_wall and "Wall Number" in df.columns and wall_str is not None:
-<<<<<<< Updated upstream
-            mask &= (df["Wall Number"].astype(str) == wall_str)
-        if "Marking Type" in df.columns and self._is_number(mtype):
-            mt = pd.to_numeric(df["Marking Type"], errors="coerce")
-            mask &= ((mt == float(mtype)) | (mt.isna()))
-=======
             mask &= df["Wall Number"].astype(str) == wall_str
         if "Marking Type" in df.columns and self._is_number(mtype):
             mt = pd.to_numeric(df["Marking Type"], errors="coerce")
             mask &= (mt == float(mtype)) | (mt.isna())
->>>>>>> Stashed changes
         return mask
 
     def _is_number(self, x):
@@ -750,6 +654,7 @@ class ListenerNode:
             return float(x)
         except Exception:
             return np.nan
+
 
 def main():
     rospy.init_node("listener_node", anonymous=True)
