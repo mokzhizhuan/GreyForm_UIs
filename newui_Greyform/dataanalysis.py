@@ -306,36 +306,32 @@ class data_draft(object):
         )
         df_combined = setuprobot.insert_L_cols_between_GZ_and_width(df_combined)
         df_fitting = setuprobot.insert_L_cols_between_GZ_and_width(df_fitting)
-        df_combined[["LX", "LY", "LZ"]] = df_combined.apply(
+        df_combined[["Position X", "Position Y", "Position Z"]] = df_combined.apply(
             lambda row: setuprobot.setuprobotposition(
-                row,
-                stage2_rows,
-                visited,
-                internalxmax_width,
-                internalymax_width,
-                thickness,
-                origin_x,
-                origin_y,
+                row, stage2_rows, visited, internalxmax_width, internalymax_width, thickness , origin_x, origin_y
             ),
             axis=1,
         )
-        df_fitting[["LX", "LY", "LZ"]] = df_fitting.apply(
+        df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
             lambda row: setuprobot.setuprobotposition_fitting(
-                row,
-                stage2_rows,
-                visited,
-                internalxmax_width,
-                internalymax_width,
-                thickness,
-                origin_x,
-                origin_y,
-            ),
+                row, stage2_rows, visited, internalxmax_width, internalymax_width, thickness , origin_x, origin_y
+            ),  
             axis=1,
         )
-        df_combined = df_combined.dropna(subset=["LX", "LY", "LZ"])
-        df_fitting = df_fitting.dropna(subset=["LX", "LY", "LZ"])
-        df_combined ["Status"] = "blank"
-        df_fitting ["Status"] = "blank"
+        df_combined = df_combined.dropna(subset=["Position X", "Position Y", "Position Z"])
+        df_fitting = df_fitting.dropna(subset=["Position X", "Position Y", "Position Z"])
+        df_combined = df_combined.drop(columns=["GX", "GY", "GZ", "Type"], errors="ignore")
+        df_fitting = df_fitting.drop(columns=["GX", "GY", "GZ"], errors="ignore")
+        for col in ["Orientation", "Diameter"]:
+            if col not in df_combined.columns:
+                df_combined[col] = ""   # create the column if missing
+            else:
+                df_combined[col] = df_combined[col].fillna("").astype(str)
+        mask_remove = (
+            df_combined["Name"].str.contains("Basic Wall|CP|Floor:BSS", case=False, na=False)
+            & (df_combined["Marking Type"] != "Tiles Point")
+        )
+        df_combined = df_combined[~mask_remove].copy()
         df_combined_all = pd.concat([df_combined, df_fitting], ignore_index=True)
         with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
             for df, sheet in [(df_combined, "Stage 2"), (df_fitting, "Stage 3")]:

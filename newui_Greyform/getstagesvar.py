@@ -49,13 +49,13 @@ def getstage2andstage3(
             width = (internal_x_width[counters] if axis == "X" else internal_y_width[counters])
         width_val = w["area"][0]
         row = {
-            "Wall Number": i + 1,
+            "Marking Type": "Wall",
             "Name": name,
-            "Type": "Wall",
-            "Marking Type" : "",
             "GX": w["x"],
             "GY": w["y"],
             "GZ": w["z"],
+            "Wall Number": i + 1,
+            "Shape Type" : "",
             "Width": width_val,
             "Height": w["area"][2],
         }
@@ -65,13 +65,13 @@ def getstage2andstage3(
             dist_needed = -(w["y"] + origin_y)
             y_wallsurface = (w["y"] + origin_y) + dist_needed
             stage2_rows.append({
-                "Wall Number": i + 1,
+                "Marking Type": "Center Point",
                 "Name": f"CP{i + 1}S2",
-                "Type": "Center Point",
-                "Marking Type" : "",
                 "GX": internalxmax_width / 2,
                 "GY": y_wallsurface,
                 "GZ": posz_cp,
+                "Wall Number": i + 1,
+                "Shape Type" : "",
                 "Width": width,
                 "Height": w["area"][2],
             })
@@ -87,14 +87,14 @@ def getstage2andstage3(
             dist_needed = -(w["x"] + origin_x)
             x_wallsurface = (w["x"] + origin_x) + dist_needed
             stage2_rows.append({
-                "Wall Number": i + 1,
+                "Marking Type": "Center Point",
                 "Name": f"CP{i + 1}S2",
-                "Type": "Center Point",
-                "Marking Type" : "",
-                "GX": x_wallsurface,
-                "GY": internalymax_width / 2,
+                "GX": internalxmax_width / 2,
+                "GY": y_wallsurface,
                 "GZ": posz_cp,
-                "Width": width,
+                "Wall Number": i + 1,
+                "Shape Type" : "",
+                "Width": width, 
                 "Height": w["area"][2],
             })
             centerpoint_rows.append({
@@ -137,13 +137,13 @@ def getstage2andstage3(
             })
     floor_z_off = -abs(1000)
     stage2_rows.append({
-        "Wall Number": "F",
+        "Marking Type" : "Center Point",
         "Name": f"CP{len(visited) + 1}S2",
-        "Type": "Center Point",
-        "Marking Type" : "",
         "GX": internalxmax_width / 2,
         "GY": internalymax_width / 2,
         "GZ": floor_z_off,
+        "Wall Number": "F",
+        "Shape Type" : "",
         "Width": internalxmax_width,
         "Height": internalymax_width,
     })

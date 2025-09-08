@@ -61,16 +61,22 @@ def assign_nearest_fitting(
         if match:
             width, height = match["Width"], match["Height"]
         stage3_results.append(
-            {
-                "Wall Number": nearestwallindex,
+            {   
+                "Marking Type": "Fitting",
                 "Name": fitting["name"],
-                "Type": "Fitting",
                 "Marking Type": 1,
                 "GX": fx,
                 "GY": fy,
                 "GZ": fz,
+                "Wall Number": nearestwallindex,
+                "Shape Type": 1,
+                "Status" : "blank",
+                "Quadrant" : 1,
+                "Unnamed" : "",
                 "Width": width,
                 "Height": height,
+                "Orientation" : "",
+                "Diameter" : "",
             }
         )
     return stage3_results

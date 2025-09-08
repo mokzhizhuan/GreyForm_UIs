@@ -140,10 +140,9 @@ export default function Status() {
       formData.append("usb_path", usbPath);
 
       const res = await axios.post(`${API}/api/launch_ui`, formData);
-
-      // Expecting backend to return a pid
       const pid = Number(res.data?.pid ?? 0);
       if (pid > 0) setUiPid(pid);
+
 
       setResponseMessage(
         `✅ Automated PBU Robot UI: ${res.data.message ?? "started"}\nPath: ${usbPath}`
@@ -159,7 +158,7 @@ export default function Status() {
   };
 
   // Poll the backend to know when the UI process exits
-  useEffect(() => {
+    useEffect(() => {
     if (!uiPid) return;
     let cancelled = false;
     const interval = setInterval(async () => {
@@ -175,14 +174,10 @@ export default function Status() {
       } catch (e) {
         console.warn("ui_status poll failed:", e);
       }
-    }, pollMs);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
+    }, 2000);
+    return () => { cancelled = true; clearInterval(interval); };
   }, [uiPid, API]);
-
+  
   const handlePrimary = () => {
     switch (state) {
       case "waiting":

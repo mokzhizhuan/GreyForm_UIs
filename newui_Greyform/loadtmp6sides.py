@@ -138,15 +138,20 @@ class loadTMP6sides:
                 width, _, height = poscheckPBU.lengths_xyz(verts)
         self.tmptemp.append(
             {
-                "Wall Number": wall_idx + 1,
+                "Marking Type": "Wall",
                 "Name": wall_name,
-                "Type": "Wall",
-                "Marking Type": "",
                 "GX": w.get("x", 0),
                 "GY": w.get("y", 0),
                 "GZ": w.get("z", 0),
+                "Wall Number": wall_idx + 1,
+                "Shape Type": "",
+                "Status" : "blank",
+                "Quadrant" : 1,
+                "Unnamed" : "",
                 "Width": width,
                 "Height": height,
+                "Orientation" : "",
+                "Diameter" : "",
             }
         )
 
@@ -222,7 +227,7 @@ class loadTMP6sides:
                         {
                             "Wall Number": wall_idx + 1,
                             "Name": wname,
-                            "Type": "Wall",
+                            "Marking Type": "Wall",
                             "SGX": w.get("x", 0),
                             "SGY": model_lines[0].get("SGY", 0),
                             "SGZ": z_ref,
@@ -291,13 +296,16 @@ class loadTMP6sides:
                                     continue
                                 self._append_unique_point(
                                     {
-                                        "Wall Number": wall_idx + 1,
+                                        "Marking Type": "Tiles Point",
                                         "Name": f"TW{wall_idx + 1}aMP{col_alpha}{r+1}",
-                                        "Type": "Tiles Point",
-                                        "Marking Type": 1,
                                         "GX": pos if axis_letter == "x" else anchor_x,
                                         "GY": anchor_y if axis_letter == "x" else pos,
                                         "GZ": z,
+                                        "Wall Number": wall_idx + 1,
+                                        "Shape Type": 1,
+                                        "Status" : "blank",
+                                        "Quadrant" : 1,
+                                        "Unnamed" : "",
                                     }
                                 )
                         for pos in pos_b:
@@ -317,13 +325,16 @@ class loadTMP6sides:
                                     continue
                                 self._append_unique_point(
                                     {
-                                        "Wall Number": wall_idx + 1,
+                                        "Marking Type": "Tiles Point",
                                         "Name": f"TW{wall_idx + 1}bMP{col_alpha}{r+1}",
-                                        "Type": "Tiles Point",
-                                        "Marking Type": 1,
                                         "GX": pos if axis_letter == "x" else anchor_x,
                                         "GY": anchor_y if axis_letter == "x" else pos,
                                         "GZ": z,
+                                        "Wall Number": wall_idx + 1,
+                                        "Shape Type": 1,
+                                        "Status" : "blank",
+                                        "Quadrant" : 1,
+                                        "Unnamed" : "",
                                     }
                                 )
         else:
@@ -420,13 +431,16 @@ class loadTMP6sides:
                                 )
                                 continue
                             row = {
-                                "Wall Number": wall_idx + 1,
+                                "Marking Type": "Tiles Point",
                                 "Name": f"TW{wall_idx + 1}MP{alpha}{r+1}",
-                                "Type": "Tiles Point",
-                                "Marking Type": 1,
                                 "GX": pos if axis_obj == "X" else anchor_x,
                                 "GY": anchor_y if axis_obj == "X" else pos,
                                 "GZ": z,
+                                "Wall Number": wall_idx + 1,
+                                "Shape Type": 1,
+                                "Status" : "blank",
+                                "Quadrant" : 1,
+                                "Unnamed" : "",
                             }
                             self._append_unique_point(row)
                     if openingcheckpos and opening["opening_type"] == "window":
@@ -446,10 +460,9 @@ class loadTMP6sides:
                             ):
                                 continue
                             row = {
+                                "Marking Type": "Tiles Point",
                                 "Wall Number": wall_idx + 1,
                                 "Name": f"TW{wall_idx + 1}MP{alpha_last}{p['index']}",
-                                "Type": "Tiles Point",
-                                "Marking Type": 1,
                                 "GX": (
                                     (p["x"] + w2.get("x", 0)) / 2
                                     if axis_obj == "X"
@@ -461,6 +474,7 @@ class loadTMP6sides:
                                     else (p["y"] + w2.get("y", 0)) / 2
                                 ),
                                 "GZ": p["z"],
+                                "Shape Type": 1,
                             }
                             self._append_unique_point(row)
 
@@ -512,13 +526,16 @@ class loadTMP6sides:
                             continue
                         self.tmptemp.append(
                             {
-                                "Wall Number": "F",
+                                "Marking Type": "Tiles Point",
                                 "Name": f"TW{len(self.walls) + 1}{main_alpha}MP{alpha}{count+1}",
-                                "Type": "Tiles Point",
-                                "Marking Type": 1,
                                 "GX": x,
                                 "GY": y,
                                 "GZ": floor.get("z", 0),
+                                "Wall Number": "F",
+                                "Shape Type": 1,
+                                "Status" : "blank",
+                                "Quadrant" : 1,
+                                "Unnamed" : "",
                             }
                         )
                         count, added = count + 1, added + 1
@@ -534,13 +551,16 @@ class loadTMP6sides:
                         y = min(ys) + self.height * (i + 1)
                         self.tmptemp.append(
                             {
-                                "Wall Number": "F",
+                                "Marking Type": "Tiles Point",
                                 "Name": f"TW{len(self.walls) + 1}{main_alpha}MP{alpha}{i+1}",
-                                "Type": "Tiles Point",
-                                "Marking Type": 1,
                                 "GX": x,
                                 "GY": y,
                                 "GZ": floor.get("z", 0),
+                                "Wall Number": "F",
+                                "Shape Type": 1,
+                                "Status" : "blank",
+                                "Quadrant" : 1,
+                                "Unnamed" : "",
                             }
                         )
                     counter += 1

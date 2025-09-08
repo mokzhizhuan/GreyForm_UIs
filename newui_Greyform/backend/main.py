@@ -10,12 +10,11 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # temporary for debugging
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 PIDFILE = Path("/tmp/greyform_ui.pid")
 LOGFILE = Path("/tmp/greyform_ui.log")
@@ -145,7 +144,6 @@ async def launch_ui(usb_path: str = Form(...), ifc_path: Optional[str] = Form(No
             str(ifc),
             str(excel_checklist),
             str(excel_output),
-            "--usb_path", str(base),
         ]
 
         LOGFILE.parent.mkdir(parents=True, exist_ok=True)

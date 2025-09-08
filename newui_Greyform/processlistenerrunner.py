@@ -74,9 +74,9 @@ class ListenerNodeRunner:
         self.talker_node.publish_file_message(self.file, excel_path)
         for data in rows:
             wn = data.get("Wall Number")
-            x = data.get("LX", 0)
-            y = data.get("LY", 0)
-            z = data.get("LZ", 0)
+            x = data.get("Position X", 0)
+            y = data.get("Position Y", 0)
+            z = data.get("Position Z", 0)
             markingtype = data.get("Marking Type")
             def _num(v, default=0):
                 try:
