@@ -8,9 +8,6 @@ def getstage2andstage3(
     walls_bss50,
     internal_x_width,
     internal_y_width,
-    same,
-    externalxmax_width,
-    externalymax_width,
     origin_x,
     origin_y,
     internalx_width,
@@ -83,14 +80,14 @@ def getstage2andstage3(
                 "floortileheight": posz_cp + offset,
                 "AxisDirection": w["facingaxis"],
             })
-        else:  
+        elif axis == "Y":  
             dist_needed = -(w["x"] + origin_x)
             x_wallsurface = (w["x"] + origin_x) + dist_needed
             stage2_rows.append({
                 "Marking Type": "Center Point",
                 "Name": f"CP{i + 1}S2",
-                "GX": internalxmax_width / 2,
-                "GY": y_wallsurface,
+                "GX": x_wallsurface,
+                "GY": internalymax_width / 2,
                 "GZ": posz_cp,
                 "Wall Number": i + 1,
                 "Shape Type" : "",

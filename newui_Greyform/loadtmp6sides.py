@@ -475,6 +475,9 @@ class loadTMP6sides:
                                 ),
                                 "GZ": p["z"],
                                 "Shape Type": 1,
+                                "Status" : "blank",
+                                "Quadrant" : 1,
+                                "Unnamed" : "",
                             }
                             self._append_unique_point(row)
 
