@@ -64,7 +64,7 @@ const views = {
   },
   shutdown: {
     title: "Please power off the machine",
-    message: "The operation has completed successfully. You may now shut down the system.",
+    message: "The operation is completed successfully",
     variant: "neutral",
     primaryText: "",
     showSpinner: false,
@@ -91,17 +91,22 @@ const views = {
 export default function Status() {
   const [state, setState] = useState<UsbState>("waiting");
   const v = views[state];
+ const [shouldPoll, setShouldPoll] = useState(false);
 
-  const API = useMemo(
-    () => import.meta.env.VITE_API_URL ?? "http://localhost:8000",
-    []
-  );
+  const API = useMemo(() => {
+    const base = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+    return base.replace(/\/+$/, "");
+  }, []);
 
   const [usbPath, setUsbPath] = useState<string>("");
   const [uiPid, setUiPid] = useState<number | null>(null);
   const [responseMessage, setResponseMessage] = useState("Ready");
   const [closedMessage, setClosedMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState("");
+  const [lastPollAt, setLastPollAt] = useState<string>("");
+  const [lastRunning, setLastRunning] = useState<string>("");
+  const [lastError, setLastError] = useState<string>("");
+  const showFooter = state !== "shutdown";
 
   const pollMs = 2000;
 
@@ -131,54 +136,66 @@ export default function Status() {
 
   
   const launchUI = async () => {
-    if (!usbPath) {
-      setState("error");
-      return;
-    }
-    setState("launching");
+      if (!usbPath) { setState("error"); return; }
+      setState("launching");                       // <-- move to launching immediately
+      try {
+        const formData = new FormData();
+        formData.append("usb_path", usbPath);
+        const res = await axios.post(`${API}/api/launch_ui`, formData);
+
+        const pid = Number(res.data?.pid ?? 0);
+        if (pid > 0) setUiPid(pid);
+
+        // enable polling for this tab
+        sessionStorage.setItem("uiPoll", "1");
+        setShouldPoll(true);
+
+        setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}\nPath: ${usbPath}`);
+        setClosedMessage("");
+        // stay in "launching" (or create a "running" view if you prefer); the poll will flip to shutdown
+      } catch (err: any) {
+        const detail = err?.response?.data?.detail || err?.message || "unknown error";
+        setResponseMessage(`❌ Failed to launch: ${detail}`);
+        setState("error");
+      }
+    };
+
+  // Poll the backend to know when the UI process exits
+   useEffect(() => {
+  if (!shouldPoll) return;
+  let cancelled = false;
+
+  const check = async () => {
     try {
-      const formData = new FormData();
-      formData.append("usb_path", usbPath);
+      const params = uiPid ? { params: { pid: uiPid } } : undefined;
+      const r = await axios.get(`${API}/api/ui_status`, params as any);
+      const running = !!r.data?.running;
 
-      const res = await axios.post(`${API}/api/launch_ui`, formData);
-      const pid = Number(res.data?.pid ?? 0);
-      if (pid > 0) setUiPid(pid);
+      setLastPollAt(new Date().toLocaleTimeString());
+      setLastRunning(String(running));
+      setLastError("");
 
-
-      setResponseMessage(
-        `✅ Automated PBU Robot UI: ${res.data.message ?? "started"}\nPath: ${usbPath}`
-      );
-      setClosedMessage(""); // not closed yet—we’ll detect it
-      setState("success");  // remain here until process ends
-    } catch (err: any) {
-      const detail = err?.response?.data?.detail || err?.message || "unknown error";
-      console.error("Launch failed:", detail);
-      setResponseMessage(`❌ Failed to launch: ${detail}`);
-      setState("error");
+      if (!running && !cancelled) {
+        sessionStorage.removeItem("uiPoll");
+        setShouldPoll(false);
+        setClosedMessage("");
+        setResponseMessage("");
+        setState("shutdown");
+      }
+    } catch (e: any) {
+      setLastPollAt(new Date().toLocaleTimeString());
+      setLastRunning("n/a");
+      setLastError(e?.message ?? String(e));
+      console.warn("ui_status poll failed:", e);
     }
   };
 
-  // Poll the backend to know when the UI process exits
-    useEffect(() => {
-    if (!uiPid) return;
-    let cancelled = false;
-    const interval = setInterval(async () => {
-      try {
-        const r = await axios.get(`${API}/api/ui_status`, { params: { pid: uiPid } });
-        const running = !!r.data?.running;
-        if (!running && !cancelled) {
-          setClosedMessage("");
-          setResponseMessage("Please power off the machine.");
-          setState("shutdown");
-          clearInterval(interval);
-        }
-      } catch (e) {
-        console.warn("ui_status poll failed:", e);
-      }
-    }, 2000);
-    return () => { cancelled = true; clearInterval(interval); };
-  }, [uiPid, API]);
-  
+  check();                                // immediate
+  const id = setInterval(check, pollMs);  // use your pollMs = 2000
+  return () => { cancelled = true; clearInterval(id); };
+}, [shouldPoll, uiPid, API, pollMs]);
+
+        
   const handlePrimary = () => {
     switch (state) {
       case "waiting":
@@ -222,11 +239,6 @@ export default function Status() {
               <span className="loading loading-spinner loading-md" aria-label="Loading" />
             ) : null}
 
-            {/* Show which path was detected, if any */}
-            {usbPath && state !== "waiting" && (
-              <div className="badge badge-outline font-mono">{usbPath}</div>
-            )}
-
             {/* Primary button (hidden in shutdown state) */}
             {state !== "shutdown" && (
               <div>
@@ -251,16 +263,18 @@ export default function Status() {
       </div>
 
       {/* Status messages below the hero */}
-      <div className="p-6 space-y-3">
-        <div className="alert alert-info whitespace-pre-line">
-          {responseMessage}
-        </div>
-        {closedMessage && (
-          <div className="alert alert-warning whitespace-pre-line">
-            {closedMessage}
+          {/* 
+          <div className="p-6 space-y-3">
+            <div className="alert alert-info whitespace-pre-line">
+              {responseMessage}
+            </div>
+            {closedMessage && (
+              <div className="alert alert-warning whitespace-pre-line">
+                {closedMessage}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+          */}
     </>
   );
 }

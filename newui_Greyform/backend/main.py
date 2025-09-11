@@ -105,8 +105,16 @@ def _require_exists(label: str, p: Path):
         raise HTTPException(status_code=400, detail=f"{label} not found: {p}")
 
 def _pid_running(pid: int) -> bool:
-    # minimal, Linux-friendly
-    return pid > 0 and Path(f"/proc/{pid}").exists()
+    if pid <= 0:
+        return False
+    proc = Path(f"/proc/{pid}")
+    if not proc.exists():
+        return False
+    try:
+        cmd = (proc / "cmdline").read_text(errors="ignore")
+        return "mainwindow.py" in cmd or "greyform" in cmd.lower()
+    except Exception:
+        return False
 
 @app.post("/api/launch_ui")
 async def launch_ui(usb_path: str = Form(...), ifc_path: Optional[str] = Form(None)):

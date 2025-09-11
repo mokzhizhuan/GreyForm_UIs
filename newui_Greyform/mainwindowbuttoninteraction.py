@@ -160,7 +160,8 @@ class mainwindowbuttonUI(object):
         self.confirmButton_2.clicked.connect(lambda: self.start_scan2())
 
     def finalize(self):
-        try: 
+        # close dialogs/windows first
+        try:
             self.dialog.close()
         except Exception:
             pass
@@ -169,9 +170,28 @@ class mainwindowbuttonUI(object):
         except Exception:
             pass
 
+        # NEW: tell the backend the UI has closed (best-effort)
+        try:
+            pidfile = Path("/tmp/greyform_ui.pid")
+            if pidfile.exists():
+                txt = pidfile.read_text().strip()
+                if txt.isdigit():
+                    requests.post(
+                        "http://localhost:8000/api/ui_closed",
+                        data={"pid": int(txt)},
+                        timeout=1.0
+                    )
+        except Exception as e:
+            print("ui_closed post failed:", e)
+
+        # quit Qt
         app = QtWidgets.QApplication.instance()
         if app is not None:
-            QtCore.QTimer.singleShot(0, app.quit)  
+            QtCore.QTimer.singleShot(0, app.quit)
+        self.mainwindow.closeEvent = lambda ev: (self.finalize(), ev.accept())
+
+
+
 
     def close_status_dialog(self):
         self.dialog.close()       # hides the window
