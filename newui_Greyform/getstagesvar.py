@@ -18,6 +18,7 @@ def getstage2andstage3(
     other_floor,
     top_twofloor_z,
     floor_offset,
+    thickness
 ):
     def _first_kv(d):
         k = next(iter(d))
@@ -64,7 +65,7 @@ def getstage2andstage3(
             stage2_rows.append({
                 "Marking Type": "Center Point",
                 "Name": f"CP{i + 1}S2",
-                "GX": internalxmax_width / 2,
+                "GX": (internalxmax_width / 2)+ thickness,
                 "GY": y_wallsurface,
                 "GZ": posz_cp,
                 "Wall Number": i + 1,
@@ -87,7 +88,7 @@ def getstage2andstage3(
                 "Marking Type": "Center Point",
                 "Name": f"CP{i + 1}S2",
                 "GX": x_wallsurface,
-                "GY": internalymax_width / 2,
+                "GY": (internalymax_width / 2)+thickness,
                 "GZ": posz_cp,
                 "Wall Number": i + 1,
                 "Shape Type" : "",
@@ -106,8 +107,8 @@ def getstage2andstage3(
         stage2_rows.append({
             "Wall Number": "F",
             "Name": floor_obj["name"],
-            "Type": "Floor",
-            "Marking Type" : "",
+            "Marking Type": "Floor",
+            "Shape Type" : "",
             "GX": floor_obj["x"],
             "GY": floor_obj["y"],
             "GZ": floor_obj["z"],
@@ -136,8 +137,8 @@ def getstage2andstage3(
     stage2_rows.append({
         "Marking Type" : "Center Point",
         "Name": f"CP{len(visited) + 1}S2",
-        "GX": internalxmax_width / 2,
-        "GY": internalymax_width / 2,
+        "GX": (internalxmax_width / 2)+ thickness,
+        "GY": (internalymax_width / 2)+ thickness,
         "GZ": floor_z_off,
         "Wall Number": "F",
         "Shape Type" : "",

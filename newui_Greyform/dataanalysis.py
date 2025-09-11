@@ -139,6 +139,7 @@ class data_draft(object):
             internal_y_width = fitting.compare_width_y(
                 walls_facing_minus_y, internal_y_width, count_plus_y, count_minus_y
             )
+        thickness = walls_bss50[0]["area"][1] + walls_bss20[1]["area"][1]
         stage2_rows, centerpoint_rows, stage3_objects, df_checklist = (
             stage_val.getstage2andstage3(
                 all_objs,
@@ -157,6 +158,7 @@ class data_draft(object):
                 other_floor,
                 top_twofloor_z,
                 floor_offset,
+                thickness
             )
         )
         glass_walls = [
@@ -260,15 +262,17 @@ class data_draft(object):
                 walls_bss20,
                 walls_bss_no_tile,
                 materials,
-                model_lines_walls,
-                origin_x,
-                origin_y,
+                model_lines_walls, 
                 other_floor,
                 storeys,
                 centerpoint_rows,
                 fallback,
                 boxup,
                 walls_bss20_wall_num,
+                externalxmax_width,
+                externalymax_width,
+                origin_x,
+                origin_y
             )
             tmptemp, thickness = Tmpholder.returnalltmps()
         df_tmptemp = pd.DataFrame(tmptemp)

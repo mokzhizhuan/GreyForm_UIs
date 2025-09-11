@@ -30,8 +30,8 @@ def setuprobotposition(
                     if "CP" in cp_row["Name"] and cp_row["Wall Number"] == "F":
                         return pd.Series(
                             [
-                                pos_x - cp_row["GX"] - thickness + origin_x,
-                                pos_y - cp_row["GY"] - thickness + origin_y,
+                                pos_x - cp_row["GX"] + origin_x,
+                                pos_y - cp_row["GY"] + origin_y,
                                 pos_z + cp_row["GZ"],
                             ]
                         )
@@ -47,12 +47,12 @@ def setuprobotposition(
             for cp_row in stage2_rows:
                 if "CP" in cp_row["Name"] and cp_row["Wall Number"] == wall_number:
                     cp_x, cp_y, cp_z = cp_row["GX"], cp_row["GY"], cp_row["GZ"]
-                    dx = pos_x - cp_x - thickness + origin_x
-                    dy = pos_y - cp_y - thickness + origin_y
                     dz = pos_z - cp_z
                     if dz < -1000:
                         return pd.Series([None, None, None])
                     if facing in ["+X", "-X"]:
+                        dx = pos_x - cp_x + origin_x
+                        dy = pos_y - cp_y - thickness + origin_y
                         protrusion_y = dy - externalymax_width
                         if not (0 > protrusion_y > -abs(externalymax_width)):
                             dy = 0
@@ -62,12 +62,19 @@ def setuprobotposition(
                             dx = -abs(dx) if dx > 0 else abs(dx)
                         return pd.Series([dx, dy, dz])
                     elif facing in ["+Y", "-Y"]:
+                        dx = pos_x - cp_x - thickness + origin_x
+                        dy = pos_y - cp_y + origin_y
                         protrusion_x = dx - externalxmax_width
                         if not (0 > protrusion_x > -abs(externalxmax_width)):
                             dx = 0
                         else:
                             dx = protrusion_x
                         if facing == "-Y":
+                            protrusion_xs = externalxmax_width + dx
+                            if not (0 < protrusion_xs < externalxmax_width):
+                                dx = 0
+                            else:
+                                dx = -abs(protrusion_xs)
                             dy = -abs(dy) if dy > 0 else abs(dy)
                         return pd.Series([dy, dx, dz])
     return pd.Series([pos_x, pos_y, pos_z])
@@ -95,8 +102,8 @@ def setuprobotposition_fitting(
                 if "CP" in cp_row["Name"] and cp_row["Wall Number"] == "F":
                     return pd.Series(
                         [
-                            pos_x - cp_row["GX"] - thickness + origin_x,
-                            pos_y - cp_row["GY"] - thickness + origin_y,
+                            pos_x - cp_row["GX"] + origin_x,
+                            pos_y - cp_row["GY"] + origin_y,
                             pos_z + cp_row["GZ"],
                         ]
                     )
@@ -112,10 +119,10 @@ def setuprobotposition_fitting(
         for cp_row in stage2_rows:
             if "CP" in cp_row["Name"] and cp_row["Wall Number"] == wall_number:
                 cp_x, cp_y, cp_z = cp_row["GX"], cp_row["GY"], cp_row["GZ"]
-                dx = pos_x - cp_x - thickness + origin_x
-                dy = pos_y - cp_y - thickness + origin_y
                 dz = pos_z - cp_z
                 if facing in ["+X", "-X"]:
+                    dx = pos_x - cp_x + origin_x
+                    dy = pos_y - cp_y - thickness + origin_y
                     protrusion_y = dy - externalymax_width
                     if not (0 > protrusion_y > -abs(externalymax_width)):
                         dy = 0
@@ -125,6 +132,8 @@ def setuprobotposition_fitting(
                         dx = -abs(dx) if dx > 0 else abs(dx)
                     return pd.Series([dx, dy, dz])
                 elif facing in ["+Y", "-Y"]:
+                    dx = pos_x - cp_x - thickness + origin_x
+                    dy = pos_y - cp_y + origin_y
                     protrusion_x = dx - externalxmax_width
                     if not (0 > protrusion_x > -abs(externalxmax_width)):
                         dx = 0
@@ -168,6 +177,6 @@ def insert_L_cols_between_GZ_and_width(df, fill_value=np.nan):
         insert_at = i_gz + 1
     else:
         insert_at = len(cols)
-    for j, c in enumerate(("LX", "LY", "LZ")):
+    for j, c in enumerate(("Position X", "Position Y", "Position Z")):
         df.insert(insert_at + j, c, fill_value)
     return df

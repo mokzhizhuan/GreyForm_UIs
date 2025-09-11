@@ -34,6 +34,6 @@ class Ui_MainWindow_layout(object):
         self.page1boxlayout.addWidget(self.confirmButton)
         self.page1boxlayout.setStretch(0, 1)
         self.page1boxlayout.setStretch(1, 4)
-        self.page1boxlayout.setStretch(2, 1)
+        self.page1boxlayout.setStretch(2, 2)
         self.page1boxlayout.setStretch(3, 1)
         self.page.setLayout(self.page1boxlayout)

@@ -16,14 +16,16 @@ class loadTMP6sides:
         walls_bss_no_tile,
         materials,
         model_lines_walls,
-        origin_x,
-        origin_y,
         floor,
         storeys,
         centerpoint_rows,
         opening,
         box_up,
         walls_bss_wall_num,
+        externalxmax_width,
+        externalymax_width,
+        origin_x,
+        origin_y,
     ):
         self.all_objs = all_objs
         self.stage2_rows = stage2_rows
@@ -41,9 +43,9 @@ class loadTMP6sides:
         self.thickness = self.height20 + self.wallsheight50
         self.alphabet_list = list(string.ascii_lowercase)
         self.box_up = box_up
+        self.floor = floor
         self.origin_x = origin_x
         self.origin_y = origin_y
-        self.floor = floor
         self.wall_bss_wall_num = walls_bss_wall_num
         self.centerpoint_rows = centerpoint_rows
         self.max_depth = max(wall["area"][2] for wall in self.wall_bss20)
@@ -71,6 +73,8 @@ class loadTMP6sides:
         ]
         self.x_maxinternalwidth = (max(x_widths)) * 2
         self.y_maxinternalwidth = (max(y_widths)) * 2
+        self.externalxmax_width = externalxmax_width
+        self.externalymax_width = externalymax_width
         self.storey_min_height = min(
             storeys, key=lambda s: s["elevation"], default={"elevation": 0}
         )["elevation"]
@@ -145,13 +149,13 @@ class loadTMP6sides:
                 "GZ": w.get("z", 0),
                 "Wall Number": wall_idx + 1,
                 "Shape Type": "",
-                "Status" : "blank",
-                "Quadrant" : 1,
-                "Unnamed" : "",
+                "Status": "blank",
+                "Quadrant": 1,
+                "Unnamed": "",
                 "Width": width,
                 "Height": height,
-                "Orientation" : "",
-                "Diameter" : "",
+                "Orientation": "",
+                "Diameter": "",
             }
         )
 
@@ -190,7 +194,7 @@ class loadTMP6sides:
         wn = wall_idx + 1
         return [row for row in self.model_lines_walls if row.get("Wall Number") == wn]
 
-    def _num(self,v, default=0.0):
+    def _num(self, v, default=0.0):
         try:
             return float(v)
         except (TypeError, ValueError):
@@ -208,6 +212,11 @@ class loadTMP6sides:
         z_ref = min(
             (r.get("SGZ", 0) for r in model_lines if r.get("SGZ", 0) > 0), default=0
         )
+        edge_max = (
+            self.externalxmax_width if axis_letter == "x" else self.externalymax_width
+        )
+        shape_type = 1
+        origin = self.origin_x if axis_letter == "x" else self.origin_y
         a_min, a_max, z_min, z_max = poscheckPBU.getopeningvert(opening, axis_obj)
         added_wall_names = set()
         if width > self.x_maxinternalwidth:
@@ -242,13 +251,23 @@ class loadTMP6sides:
                         self.setgetwall(w, wall_idx)
                         added_wall_names.add(wname)
                 axis_vals = [
-                    (self._num(r.get("EGX", r.get("SGX", 0))) if axis_letter == "x" 
-                     else self._num(r.get("EGY", r.get("SGY", 0))))
+                    (
+                        self._num(r.get("EGX", r.get("SGX", 0)))
+                        if axis_letter == "x"
+                        else self._num(r.get("EGY", r.get("SGY", 0)))
+                    )
                     for r in model_lines
                 ]
                 axis_vals = [v for v in axis_vals if v > self.EPS]
                 pos_list = poscheckPBU._unique_in_order(axis_vals, tol=0)
                 pos_list = sorted(pos_list)
+                pos_list = [
+                    p
+                    for p in pos_list
+                    if not poscheckPBU._is_in_edge_band(
+                        p, edge_max=edge_max, thickness=self.thickness, origin=origin
+                    )
+                ]
                 if pos_list:
                     anchor_x = model_lines[0].get("SGX", 0) if model_lines else 0
                     anchor_y = model_lines[0].get("SGY", 0) if model_lines else 0
@@ -259,7 +278,8 @@ class loadTMP6sides:
                     eligible_all = [
                         p
                         for p in pos_list
-                        if poscheckPBU._column_has_any_point(
+                        if p > self.EPS
+                        and poscheckPBU._column_has_any_point(
                             pos=p,
                             opening=opening,
                             a_min=a_min,
@@ -283,6 +303,10 @@ class loadTMP6sides:
                             count = poscheckPBU._alpha_index_from_eligible(
                                 pos, eligible_all
                             )
+                            if pos == candidates[0].get("x", 0):
+                                shape_type = 4
+                            else:
+                                shape_type = 1
                             col_alpha = self.returnalpha(count)
                             for r in range(repeatcount):
                                 z = z_base + self.height * r
@@ -302,16 +326,20 @@ class loadTMP6sides:
                                         "GY": anchor_y if axis_letter == "x" else pos,
                                         "GZ": z,
                                         "Wall Number": wall_idx + 1,
-                                        "Shape Type": 1,
-                                        "Status" : "blank",
-                                        "Quadrant" : 1,
-                                        "Unnamed" : "",
+                                        "Shape Type": shape_type,
+                                        "Status": "blank",
+                                        "Quadrant": 1,
+                                        "Unnamed": "",
                                     }
                                 )
                         for pos in pos_b:
                             count = poscheckPBU._alpha_index_from_eligible(
                                 pos, eligible_all
                             )
+                            if pos == candidates[1].get("x", 0):
+                                shape_type = 4
+                            else:
+                                shape_type = 1
                             col_alpha = self.returnalpha(count)
                             for r in range(repeatcount):
                                 z = z_base + self.height * r
@@ -331,10 +359,10 @@ class loadTMP6sides:
                                         "GY": anchor_y if axis_letter == "x" else pos,
                                         "GZ": z,
                                         "Wall Number": wall_idx + 1,
-                                        "Shape Type": 1,
-                                        "Status" : "blank",
-                                        "Quadrant" : 1,
-                                        "Unnamed" : "",
+                                        "Shape Type": shape_type,
+                                        "Status": "blank",
+                                        "Quadrant": 1,
+                                        "Unnamed": "",
                                     }
                                 )
         else:
@@ -357,22 +385,39 @@ class loadTMP6sides:
                 base = w2.get(sweep_axis, 0)
                 start, end = sorted((base, base + sign * wall_width))
                 key = "SGX" if sweep_axis == "x" else "SGY"
+                endkey = "EGX" if sweep_axis == "x" else "EGY"
                 seen_vals, tiles = set(), []
                 for r in model_lines:
                     v = r.get(key, 0)
+                    vend = r.get(endkey, 0)
                     if v in seen_vals:
                         continue
                     seen_vals.add(v)
                     inside = (
-                        (start < v < end) if sweep_axis == "x" else (start <= v <= end)
+                        (start < v < end)
+                        if sweep_axis == "x"
+                        else (start <= v < end - self.thickness)
+                    )
+                    insideend = (
+                        (start < vend - self.thickness <= end)
+                        if sweep_axis == "x"
+                        else (start <= vend < end - self.thickness)
                     )
                     if inside:
                         tiles.append(
                             {"x": r.get("SGX", 0), "y": r.get("SGY", 0), "z": z_ref}
                         )
-                        tiles.append(
-                            {"x": r.get("EGX", 0), "y": r.get("EGY", 0), "z": z_ref}
-                        )
+                        if round((end - start) / self.width) <= 1 and sweep_axis == "y":
+                            shape_type = 4
+                        if insideend:
+                            if round((end - start) / self.width) > 1:
+                                tiles.append(
+                                    {
+                                        "x": r.get("EGX", 0),
+                                        "y": r.get("EGY", 0),
+                                        "z": z_ref,
+                                    }
+                                )
                 boxup_x, boxup_z, boxup_verts = 0.0, 0.0, []
                 for box in self.box_up:
                     if wall_idx + 1 == box.get("Wall Number"):
@@ -391,6 +436,13 @@ class loadTMP6sides:
                 vals_sorted = [t[sweep_axis] for t in tiles]
                 vals_sorted = [v for v in vals_sorted if v > self.EPS]
                 pos_list = poscheckPBU._unique_in_order(vals_sorted, tol=0)
+                pos_list = [
+                    p
+                    for p in pos_list
+                    if not poscheckPBU._is_in_edge_band(
+                        p, edge_max=edge_max, thickness=self.thickness, origin=origin
+                    )
+                ]
                 if pos_list:
                     anchor_x = tiles[0]["x"] if tiles else 0
                     anchor_y = tiles[0]["y"] if tiles else 0
@@ -410,9 +462,15 @@ class loadTMP6sides:
                         if (
                             has_boxup
                             and sweep_axis == "x"
-                            and not poscheckPBU._x_gate_ok(pos, cap_x, boxup_x, self.EPS)
+                            and not poscheckPBU._x_gate_ok(
+                                pos, cap_x, boxup_x, self.EPS
+                            )
                         ):
-                            continue  # check for boxup
+                            continue
+                        if pos > w2.get("x", 0) and sweep_axis == "x":
+                            shape_type = 4
+                        if has_boxup and  boxup_x + ((cap_x - boxup_x)/2) <= pos <= cap_x:
+                            shape_type = 2
                         for r in range(r_max + 1):
                             z = z_base + self.height * r
                             if (
@@ -426,7 +484,6 @@ class loadTMP6sides:
                                         "x": pos if axis_obj == "X" else anchor_x,
                                         "y": anchor_y if axis_obj == "X" else pos,
                                         "z": z,
-                                        "index": r + 1,
                                     }
                                 )
                                 continue
@@ -437,10 +494,10 @@ class loadTMP6sides:
                                 "GY": anchor_y if axis_obj == "X" else pos,
                                 "GZ": z,
                                 "Wall Number": wall_idx + 1,
-                                "Shape Type": 1,
-                                "Status" : "blank",
-                                "Quadrant" : 1,
-                                "Unnamed" : "",
+                                "Shape Type": shape_type,
+                                "Status": "blank",
+                                "Quadrant": 1,
+                                "Unnamed": "",
                             }
                             self._append_unique_point(row)
                     if openingcheckpos and opening["opening_type"] == "window":
@@ -451,7 +508,7 @@ class loadTMP6sides:
                         alpha_last = (
                             self.returnalpha(len(pos_list)) if pos_list else "a"
                         )
-                        for p in windowy_vals:
+                        for i, p in enumerate(windowy_vals):
                             if ymax_val > w2.get("y", 0) and facing == "-Y":
                                 continue
                             elif (
@@ -462,7 +519,7 @@ class loadTMP6sides:
                             row = {
                                 "Marking Type": "Tiles Point",
                                 "Wall Number": wall_idx + 1,
-                                "Name": f"TW{wall_idx + 1}MP{alpha_last}{p['index']}",
+                                "Name": f"TW{wall_idx + 1}MP{alpha_last}{i+1}",
                                 "GX": (
                                     (p["x"] + w2.get("x", 0)) / 2
                                     if axis_obj == "X"
@@ -474,10 +531,10 @@ class loadTMP6sides:
                                     else (p["y"] + w2.get("y", 0)) / 2
                                 ),
                                 "GZ": p["z"],
-                                "Shape Type": 1,
-                                "Status" : "blank",
-                                "Quadrant" : 1,
-                                "Unnamed" : "",
+                                "Shape Type": 6,
+                                "Status": "blank",
+                                "Quadrant": 1,
+                                "Unnamed": "",
                             }
                             self._append_unique_point(row)
 
@@ -520,11 +577,12 @@ class loadTMP6sides:
             main_alpha = self.returnalpha(i)
             minx, miny, maxx, maxy = poscheckPBU.bbox_xy(floor.get("vertices", []))
             if (self.lowest_z + self.height20) == floor.get("z", 0):
+                shape_type = 3
                 for x in xs:
-                    added, count = 0, 0
+                    count = 0
+                    appended = False
                     alpha = self.returnalpha(counter)
                     for y in ys:
-                        added = 0
                         if not (minx < x < maxx) or not (miny < y < maxy):
                             continue
                         self.tmptemp.append(
@@ -535,14 +593,16 @@ class loadTMP6sides:
                                 "GY": y,
                                 "GZ": floor.get("z", 0),
                                 "Wall Number": "F",
-                                "Shape Type": 1,
-                                "Status" : "blank",
-                                "Quadrant" : 1,
-                                "Unnamed" : "",
+                                "Shape Type": shape_type,
+                                "Status": "blank",
+                                "Quadrant": 1,
+                                "Unnamed": "",
                             }
                         )
-                        count, added = count + 1, added + 1
-                    if added:
+                        count += 1
+                        appended = True
+                    if appended:
+                        shape_type +=1
                         counter += 1
             else:
                 repeatcount = int((max(ys) - min(ys)) / self.height)
@@ -561,9 +621,9 @@ class loadTMP6sides:
                                 "GZ": floor.get("z", 0),
                                 "Wall Number": "F",
                                 "Shape Type": 1,
-                                "Status" : "blank",
-                                "Quadrant" : 1,
-                                "Unnamed" : "",
+                                "Status": "blank",
+                                "Quadrant": 1,
+                                "Unnamed": "",
                             }
                         )
                     counter += 1

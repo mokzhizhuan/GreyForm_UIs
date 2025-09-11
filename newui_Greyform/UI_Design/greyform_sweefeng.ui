@@ -44,7 +44,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Place the robot in the center of placement 1 (the wall with the door)</string>
+       <string>Place the robot in the center of placement 1 (the wall 1 with the door)</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>

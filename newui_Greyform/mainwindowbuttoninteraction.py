@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QDialog, QProgressBar, QLabel, QApplica
 from PyQt5.QtCore import Qt, QBuffer, QByteArray, QIODevice
 from PyQt5.QtGui import QFont , QPixmap
 import subprocess
+import launcher as launchers
 import processlistenerrunner as process
 import processloader as Thread
 import pandas as pd
@@ -154,11 +155,12 @@ class mainwindowbuttonUI(object):
         html = f'<div style="text-align:center;"><img src="{icon}" width="800" height="600" style="display:block; margin:0 auto;"></div>'
         self.mainwindow.imagelabel.setTextFormat(Qt.RichText)
         self.mainwindow.imagelabel.setText(html)
-        self.labelstatus.setText("Place the robot in the center of Placement 2")
+        self.labelstatus.setText(f"Place the robot in the center of Placement 2\n(The wall that is clockwise of wall 1)")
         self.confirmButton_2.clicked.connect(lambda: self.start_scan2())
 
     def finalize(self):
         self.dialog.close()
+        launchers.stop()
         self.mainwindow.close()
 
     def close_status_dialog(self):

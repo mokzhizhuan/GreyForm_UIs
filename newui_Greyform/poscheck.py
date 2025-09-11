@@ -15,6 +15,12 @@ def _column_has_any_point(
             return True
     return False
 
+def _is_in_edge_band(pos, *, edge_max, thickness, origin ,eps=1e-9):
+    if thickness is None or thickness <= 0 or edge_max is None:
+        return False
+    left_band  = (0 - eps - origin) <= pos <= (thickness + eps - origin)
+    right_band = (edge_max - thickness - eps - origin) <= pos <= (edge_max + eps - origin)
+    return left_band or right_band
 
 def _partition_by_two_spans(pos_list, span1, span2):
     s1, e1, w1, _ = span1
@@ -95,6 +101,12 @@ def _unique_in_order(vals, tol=0):
 
 def get_width_heights_interval(next_w):
     match = re.search(r"\((\d+)x(\d+)mm\)", next_w)
+    width, height = int(match.group(1)), int(match.group(2))
+    return width, height
+
+
+def get_width_heights_interval_dict(next_w):
+    match = re.search(r"\((\d+)x(\d+)mm\)", next_w.get("name", ""))
     width, height = int(match.group(1)), int(match.group(2))
     return width, height
 
