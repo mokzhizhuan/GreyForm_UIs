@@ -174,6 +174,18 @@ async def launch_ui(usb_path: str = Form(...), ifc_path: Optional[str] = Form(No
     except Exception:
         print("Exception launching Qt UI:", traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Exception launching with usb_path={usb_path}")
+    
+@app.post("/api/ui_closed")
+def ui_closed(pid: int = Form(...)):
+    # trust-but-verify: if this pid matches the one we started, clear it
+    try:
+        saved = int(PIDFILE.read_text().strip())
+        if saved == pid:
+            PIDFILE.unlink(missing_ok=True)
+    except Exception:
+        pass
+    return {"ok": True}
+
 
 
 @app.get("/api/ui_status")

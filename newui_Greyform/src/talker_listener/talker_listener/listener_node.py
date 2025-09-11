@@ -28,15 +28,7 @@ def _distance_l1(a, b):
 
 
 def _choose_best_idx(df, idxs, target, prefer_blank=True):
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
     sub = df.loc[idxs, ["Position X", "Position Y", "Position Z"]].to_numpy(dtype=float)
-=======
-    sub = df.loc[idxs, ["LX", "LY", "LZ"]].to_numpy(dtype=float)
->>>>>>> Stashed changes
-=======
-    sub = df.loc[idxs, ["LX", "LY", "LZ"]].to_numpy(dtype=float)
->>>>>>> Stashed changes
     d = np.abs(sub - target).sum(axis=1)
     if prefer_blank and "Status" in df.columns:
         blanks = df.loc[idxs, "Status"].astype(str).str.lower() != "done"
@@ -318,15 +310,7 @@ class ListenerNode:
             wx = (
                 str(row.get("Wall Number", "")) if "Wall Number" in df.columns else None
             )
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
             lx, ly, lz = float(row["Position X"]), float(row["Position Y"]), float(row["Position Z"])
-=======
-            lx, ly, lz = float(row["LX"]), float(row["LY"]), float(row["LZ"])
->>>>>>> Stashed changes
-=======
-            lx, ly, lz = float(row["LX"]), float(row["LY"]), float(row["LZ"])
->>>>>>> Stashed changes
             for w, _mt, (px, py, pz) in recent_positions:
                 if wx and w != wx:
                     continue

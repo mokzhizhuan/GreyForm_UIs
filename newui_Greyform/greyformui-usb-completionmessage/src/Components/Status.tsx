@@ -129,6 +129,7 @@ export default function Status() {
     }
   };
 
+  
   const launchUI = async () => {
     if (!usbPath) {
       setState("error");

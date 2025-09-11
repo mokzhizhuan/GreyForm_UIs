@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+from PyQt5 import QtCore , QtWidgets
 from PyQt5.QtWidgets import QVBoxLayout, QDialog, QProgressBar, QLabel, QApplication , QStyle, QWidget , QHBoxLayout
 from PyQt5.QtCore import Qt, QBuffer, QByteArray, QIODevice
 from PyQt5.QtGui import QFont , QPixmap
@@ -9,6 +9,7 @@ import processloader as Thread
 import pandas as pd
 from pathlib import Path
 import processingloader as loaddialogUI
+import requests, pathlib
 
 # main window button interaction
 class mainwindowbuttonUI(object):
@@ -159,9 +160,18 @@ class mainwindowbuttonUI(object):
         self.confirmButton_2.clicked.connect(lambda: self.start_scan2())
 
     def finalize(self):
-        self.dialog.close()
-        launchers.stop()
-        self.mainwindow.close()
+        try: 
+            self.dialog.close()
+        except Exception:
+            pass
+        try:
+            self.mainwindow.close()
+        except Exception:
+            pass
+
+        app = QtWidgets.QApplication.instance()
+        if app is not None:
+            QtCore.QTimer.singleShot(0, app.quit)  
 
     def close_status_dialog(self):
         self.dialog.close()       # hides the window

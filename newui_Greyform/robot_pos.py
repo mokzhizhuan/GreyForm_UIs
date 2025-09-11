@@ -35,6 +35,16 @@ def setuprobotposition(
                                 pos_z + cp_row["GZ"],
                             ]
                         )
+            elif wall_number == "F" and "CP" in name:
+                for cp_row in stage2_rows:
+                    if "CP" in cp_row["Name"] and cp_row["Wall Number"] == "F":
+                        return pd.Series(
+                            [
+                                pos_x - cp_row["GX"],
+                                pos_y - cp_row["GY"],
+                                pos_z + cp_row["GZ"],
+                            ]
+                        )
         elif isinstance(wall_number, int) and 1 <= wall_number <= len(walls):
             matched_wall = walls[wall_number - 1]
         else:
@@ -77,6 +87,14 @@ def setuprobotposition(
                                 dx = -abs(protrusion_xs)
                             dy = -abs(dy) if dy > 0 else abs(dy)
                         return pd.Series([dy, dx, dz])
+        elif "CP" in name:
+            for cp_row in stage2_rows:
+                if "CP" in cp_row["Name"] and cp_row["Wall Number"] == wall_number:
+                    cp_x, cp_y, cp_z = cp_row["GX"], cp_row["GY"], cp_row["GZ"]
+                    dx = pos_x - cp_x 
+                    dy = pos_y - cp_y 
+                    dz = pos_z - cp_z
+                    return pd.Series([dx, dy, dz])
     return pd.Series([pos_x, pos_y, pos_z])
 
 
