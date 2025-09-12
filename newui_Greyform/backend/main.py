@@ -2,7 +2,7 @@
 import os, subprocess, traceback
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, Iterable, List, Dict , Union
+from typing import Optional, Iterable, List, Dict, Union
 from fastapi import FastAPI, Form, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,6 +18,9 @@ app.add_middleware(
 
 PIDFILE = Path("/tmp/greyform_ui.pid")
 LOGFILE = Path("/tmp/greyform_ui.log")
+WANTED_EXTS = {".pbt", ".ifc", ".ifczip", ".ifcxml"}
+IFC_EXTS = {".ifc", ".ifczip", ".ifcxml"}
+
 
 @app.get("/api/detect_usb")
 def detect_usb(path: str = Query("/mnt/usb"), scan_media: bool = Query(True)):
@@ -41,11 +44,7 @@ def detect_usb(path: str = Query("/mnt/usb"), scan_media: bool = Query(True)):
     }
 
 
-IFC_EXTS = {".ifc", ".ifczip", ".ifcxml"}
-
-
 def _iter_files(root: Path, max_depth: int = 3):
-    """Yield files under root up to max_depth levels deep."""
     root = root.resolve()
     root_depth = len(root.parts)
     for p in root.rglob("*"):
@@ -58,11 +57,6 @@ def _iter_files(root: Path, max_depth: int = 3):
             continue
 
 
-# keep your WANTED_EXTS as-is
-WANTED_EXTS = {".pbt", ".ifc", ".ifczip", ".ifcxml"}
-
-
-# replace the old _root_ok with a recursive version
 def _root_ok(root: Path) -> Dict:
     if not root.exists() or not root.is_dir():
         return {"exists": False, "valid": False, "files": []}
@@ -100,9 +94,11 @@ def _first_existing(*candidates: Union[str, Path]) -> Optional[Path]:
             return p
     return None
 
+
 def _require_exists(label: str, p: Path):
     if not p.exists():
         raise HTTPException(status_code=400, detail=f"{label} not found: {p}")
+
 
 def _pid_running(pid: int) -> bool:
     if pid <= 0:
@@ -116,48 +112,48 @@ def _pid_running(pid: int) -> bool:
     except Exception:
         return False
 
+
 @app.post("/api/launch_ui")
 async def launch_ui(usb_path: str = Form(...), ifc_path: Optional[str] = Form(None)):
     try:
         base = Path(usb_path).resolve()
         if not base.exists() or not base.is_dir():
-            raise HTTPException(status_code=400, detail=f"usb_path not found or not a directory: {usb_path}")
-
-        # pick_ifc(...) -> you already have this
+            raise HTTPException(
+                status_code=400,
+                detail=f"usb_path not found or not a directory: {usb_path}",
+            )
         if ifc_path:
             ifc = Path(ifc_path).resolve()
         else:
             ifc = pick_ifc(base, recursive=True, max_depth=8)
             if ifc is None:
-                raise HTTPException(status_code=404, detail="No IFC file found on the USB drive")
+                raise HTTPException(
+                    status_code=404, detail="No IFC file found on the USB drive"
+                )
         try:
             _ = ifc.resolve().relative_to(base)
         except ValueError:
             raise HTTPException(status_code=400, detail="IFC must be inside usb_path")
-
-        # Resolve paths to your files (adjust project_dir if needed)
         project_dir = Path(__file__).resolve().parent.parent
         main_py = (project_dir / "mainwindow.py").resolve()
         ui_file = (project_dir / "UI_Design" / "greyform_sweefeng.ui").resolve()
-        excel_checklist = (project_dir / "Greyform TERRAHL2(JMB)-T1a BOM Checklist 20231211.xlsx").resolve()
-        excel_output    = (project_dir / "PBU_TERRAHL2(final).xlsx").resolve()
-
+        excel_checklist = (
+            project_dir / "Greyform TERRAHL2(JMB)-T1a BOM Checklist 20231211.xlsx"
+        ).resolve()
+        excel_output = (project_dir / "PBU_TERRAHL2(final).xlsx").resolve()
         env = os.environ.copy()
         env.setdefault("DISPLAY", ":0")
         env.setdefault("QT_QPA_PLATFORM", "xcb")
-
         args = [
-            "python3", str(main_py),
+            "python3",
+            str(main_py),
             str(ui_file),
             str(ifc),
             str(excel_checklist),
             str(excel_output),
         ]
-
         LOGFILE.parent.mkdir(parents=True, exist_ok=True)
         log_f = open(LOGFILE, "ab", buffering=0)
-
-        # START DETACHED (do NOT call communicate)
         proc = subprocess.Popen(
             args,
             cwd=str(project_dir),
@@ -166,9 +162,7 @@ async def launch_ui(usb_path: str = Form(...), ifc_path: Optional[str] = Form(No
             stderr=subprocess.STDOUT,
             start_new_session=True,
         )
-
         PIDFILE.write_text(str(proc.pid))
-
         return {
             "status": "started",
             "message": f"UI started (pid {proc.pid})",
@@ -176,16 +170,17 @@ async def launch_ui(usb_path: str = Form(...), ifc_path: Optional[str] = Form(No
             "ifc_path": str(ifc),
             "log_file": str(LOGFILE),
         }
-
     except HTTPException:
         raise
     except Exception:
         print("Exception launching Qt UI:", traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Exception launching with usb_path={usb_path}")
-    
+        raise HTTPException(
+            status_code=500, detail=f"Exception launching with usb_path={usb_path}"
+        )
+
+
 @app.post("/api/ui_closed")
 def ui_closed(pid: int = Form(...)):
-    # trust-but-verify: if this pid matches the one we started, clear it
     try:
         saved = int(PIDFILE.read_text().strip())
         if saved == pid:
@@ -195,22 +190,16 @@ def ui_closed(pid: int = Form(...)):
     return {"ok": True}
 
 
-
 @app.get("/api/ui_status")
 def ui_status(pid: Optional[int] = Query(None)):
-    # if pid not provided, read pidfile (nice fallback)
     if pid is None and PIDFILE.exists():
         try:
             pid = int(PIDFILE.read_text().strip())
         except Exception:
             pid = None
-
     if pid is None:
         return {"running": False, "pid": None}
-
     running = _pid_running(pid)
-
-    # clean up pidfile if it matches
     if not running and PIDFILE.exists():
         try:
             saved = int(PIDFILE.read_text().strip())
@@ -218,8 +207,8 @@ def ui_status(pid: Optional[int] = Query(None)):
                 PIDFILE.unlink(missing_ok=True)
         except Exception:
             pass
-
     return {"running": running, "pid": pid}
+
 
 @app.get("/api/hello")
 async def hello():

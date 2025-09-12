@@ -42,7 +42,7 @@ def setuprobotposition(
                             [
                                 pos_x - cp_row["GX"],
                                 pos_y - cp_row["GY"],
-                                pos_z + cp_row["GZ"],
+                                pos_z - cp_row["GZ"],
                             ]
                         )
         elif isinstance(wall_number, int) and 1 <= wall_number <= len(walls):

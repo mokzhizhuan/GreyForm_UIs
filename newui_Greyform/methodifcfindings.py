@@ -15,7 +15,7 @@ def get_vertices(obj):
             [[verts[i], verts[i + 1], verts[i + 2]] for i in range(0, len(verts), 3)]
         )
         return (grouped * SCALE).astype(int)
-    
+
 
 def get_posxyz(obj):
     if obj.ObjectPlacement and obj.ObjectPlacement.RelativePlacement:
@@ -116,7 +116,7 @@ def extract_z(shape_item):
     return min(all_z, default=None)
 
 
-def collect_bounds  (bounds):
+def collect_bounds(bounds):
     all_z = []
     for b in bounds:
         for pt in b.Bound.Polygon:
@@ -186,7 +186,7 @@ def find_closest_wall_rotation(current, pool):
         (
             (inner, math.hypot(inner["x"] - cx, inner["y"] - cy))
             for wrapper in pool
-            for inner in wrapper.values()   # <--- unpack inner dict
+            for inner in wrapper.values()  # <--- unpack inner dict
             if inner["name"] != current["name"] and inner["axis"] == current["axis"]
         ),
         key=lambda x: x[1],

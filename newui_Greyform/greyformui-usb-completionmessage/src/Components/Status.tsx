@@ -21,11 +21,8 @@ const svg = `
   </g>
 </svg>
 `.trim();
-
 const bgDataUri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-
 type UsbState = "waiting" | "reading" | "success" | "error" | "launching" | "shutdown";
-
 const views = {
   waiting: {
     title: "Please insert a USB drive to continue",
@@ -92,12 +89,10 @@ export default function Status() {
   const [state, setState] = useState<UsbState>("waiting");
   const v = views[state];
  const [shouldPoll, setShouldPoll] = useState(false);
-
   const API = useMemo(() => {
     const base = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
     return base.replace(/\/+$/, "");
   }, []);
-
   const [usbPath, setUsbPath] = useState<string>("");
   const [uiPid, setUiPid] = useState<number | null>(null);
   const [responseMessage, setResponseMessage] = useState("Ready");
@@ -107,16 +102,13 @@ export default function Status() {
   const [lastRunning, setLastRunning] = useState<string>("");
   const [lastError, setLastError] = useState<string>("");
   const showFooter = state !== "shutdown";
-
   const pollMs = 2000;
-
   const detectUsb = async () => {
     setState("reading");
     try {
       const res = await axios.get(`${API}/api/detect_usb`, {
         params: { path: "/mnt/usb", scan_media: false },
       });
-
       if (res.data?.found && res.data?.preferred) {
         setUsbPath(res.data.preferred as string);
         setErrorDetails("");
@@ -133,48 +125,36 @@ export default function Status() {
       setState("error");
     }
   };
-
-  
   const launchUI = async () => {
       if (!usbPath) { setState("error"); return; }
-      setState("launching");                       // <-- move to launching immediately
+      setState("launching");  
       try {
         const formData = new FormData();
         formData.append("usb_path", usbPath);
         const res = await axios.post(`${API}/api/launch_ui`, formData);
-
         const pid = Number(res.data?.pid ?? 0);
         if (pid > 0) setUiPid(pid);
-
-        // enable polling for this tab
         sessionStorage.setItem("uiPoll", "1");
         setShouldPoll(true);
-
         setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}\nPath: ${usbPath}`);
         setClosedMessage("");
-        // stay in "launching" (or create a "running" view if you prefer); the poll will flip to shutdown
       } catch (err: any) {
         const detail = err?.response?.data?.detail || err?.message || "unknown error";
         setResponseMessage(`❌ Failed to launch: ${detail}`);
         setState("error");
       }
     };
-
-  // Poll the backend to know when the UI process exits
    useEffect(() => {
   if (!shouldPoll) return;
   let cancelled = false;
-
   const check = async () => {
     try {
       const params = uiPid ? { params: { pid: uiPid } } : undefined;
       const r = await axios.get(`${API}/api/ui_status`, params as any);
       const running = !!r.data?.running;
-
       setLastPollAt(new Date().toLocaleTimeString());
       setLastRunning(String(running));
       setLastError("");
-
       if (!running && !cancelled) {
         sessionStorage.removeItem("uiPoll");
         setShouldPoll(false);
@@ -189,13 +169,10 @@ export default function Status() {
       console.warn("ui_status poll failed:", e);
     }
   };
-
   check();                                // immediate
   const id = setInterval(check, pollMs);  // use your pollMs = 2000
   return () => { cancelled = true; clearInterval(id); };
-}, [shouldPoll, uiPid, API, pollMs]);
-
-        
+}, [shouldPoll, uiPid, API, pollMs]);  
   const handlePrimary = () => {
     switch (state) {
       case "waiting":
@@ -234,12 +211,9 @@ export default function Status() {
           <div className="max-w-md space-y-5">
             <h1 className="text-4xl md:text-5xl font-bold">{v.title}</h1>
             <p>{v.message}</p>
-
             {v.showSpinner ? (
               <span className="loading loading-spinner loading-md" aria-label="Loading" />
             ) : null}
-
-            {/* Primary button (hidden in shutdown state) */}
             {state !== "shutdown" && (
               <div>
                 <button
@@ -251,8 +225,6 @@ export default function Status() {
                 </button>
               </div>
             )}
-
-            {/* Error details (helpful for debugging) */}
             {state === "error" && errorDetails && (
               <pre className="text-left text-xs bg-base-200 p-3 rounded overflow-auto max-h-64">
                 {errorDetails}
@@ -261,7 +233,6 @@ export default function Status() {
           </div>
         </div>
       </div>
-
       {/* Status messages below the hero */}
           {/* 
           <div className="p-6 space-y-3">

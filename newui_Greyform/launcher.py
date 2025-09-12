@@ -54,23 +54,18 @@ def start():
     # wait briefly until port opens
     for _ in range(40):
         if is_listening():
-            print(f"Started uvicorn (pid {proc.pid}) on {HOST}:{PORT}")
             return 0
         time.sleep(0.1)
-    print("Started process but port not open yet.")
     return 0
 
 def stop(timeout=5):
     pid = read_pid()
     if not pid:
-        print("No pidfile; trying best-effort kill by port...")
         os.system("fuser -k 8000/tcp >/dev/null 2>&1 || true")
         return 0
     if not is_alive(pid):
-        print(f"PID {pid} not alive. Cleaning pidfile.")
         PIDFILE.unlink(missing_ok=True)
         return 0
-    print(f"Stopping uvicorn (pid {pid})...")
     try:
         os.kill(pid, signal.SIGTERM)
     except ProcessLookupError:
@@ -84,7 +79,6 @@ def stop(timeout=5):
             print("Stopped.")
             return 0
         time.sleep(0.2)
-    print("Force killing...")
     try:
         os.kill(pid, signal.SIGKILL)
     except ProcessLookupError:
