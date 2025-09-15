@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/catkin_ws/src/newui_Greyform/src
+CMAKE_SOURCE_DIR = /root/catkin_ws/newui_Greyform/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/catkin_ws/src/newui_Greyform/build
+CMAKE_BINARY_DIR = /root/catkin_ws/newui_Greyform/build
 
 # Utility rule file for std_msgs_generate_messages_eus.
 
@@ -63,10 +63,10 @@ my_robot_wallinterfaces/CMakeFiles/std_msgs_generate_messages_eus.dir/build: std
 .PHONY : my_robot_wallinterfaces/CMakeFiles/std_msgs_generate_messages_eus.dir/build
 
 my_robot_wallinterfaces/CMakeFiles/std_msgs_generate_messages_eus.dir/clean:
-	cd /root/catkin_ws/src/newui_Greyform/build/my_robot_wallinterfaces && $(CMAKE_COMMAND) -P CMakeFiles/std_msgs_generate_messages_eus.dir/cmake_clean.cmake
+	cd /root/catkin_ws/newui_Greyform/build/my_robot_wallinterfaces && $(CMAKE_COMMAND) -P CMakeFiles/std_msgs_generate_messages_eus.dir/cmake_clean.cmake
 .PHONY : my_robot_wallinterfaces/CMakeFiles/std_msgs_generate_messages_eus.dir/clean
 
 my_robot_wallinterfaces/CMakeFiles/std_msgs_generate_messages_eus.dir/depend:
-	cd /root/catkin_ws/src/newui_Greyform/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/catkin_ws/src/newui_Greyform/src /root/catkin_ws/src/newui_Greyform/src/my_robot_wallinterfaces /root/catkin_ws/src/newui_Greyform/build /root/catkin_ws/src/newui_Greyform/build/my_robot_wallinterfaces /root/catkin_ws/src/newui_Greyform/build/my_robot_wallinterfaces/CMakeFiles/std_msgs_generate_messages_eus.dir/DependInfo.cmake --color=$(COLOR)
+	cd /root/catkin_ws/newui_Greyform/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/catkin_ws/newui_Greyform/src /root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces /root/catkin_ws/newui_Greyform/build /root/catkin_ws/newui_Greyform/build/my_robot_wallinterfaces /root/catkin_ws/newui_Greyform/build/my_robot_wallinterfaces/CMakeFiles/std_msgs_generate_messages_eus.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : my_robot_wallinterfaces/CMakeFiles/std_msgs_generate_messages_eus.dir/depend
 

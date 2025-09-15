@@ -21,8 +21,11 @@ const svg = `
   </g>
 </svg>
 `.trim();
+
 const bgDataUri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+
 type UsbState = "waiting" | "reading" | "success" | "error" | "launching" | "shutdown";
+
 const views = {
   waiting: {
     title: "Please insert a USB drive to continue",
@@ -87,8 +90,10 @@ const views = {
 
 export default function Status() {
   const [state, setState] = useState<UsbState>("waiting");
-  const v = views[state];
- const [shouldPoll, setShouldPoll] = useState(false);
+  // ✅ Fallback so UI never goes blank; defaults to shutdown view if state is weird
+  const v = views[state] ?? views.shutdown;
+
+  const [shouldPoll, setShouldPoll] = useState(false);
   const API = useMemo(() => {
     const base = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
     return base.replace(/\/+$/, "");
@@ -101,14 +106,30 @@ export default function Status() {
   const [lastPollAt, setLastPollAt] = useState<string>("");
   const [lastRunning, setLastRunning] = useState<string>("");
   const [lastError, setLastError] = useState<string>("");
+
   const showFooter = state !== "shutdown";
-  const pollMs = 2000;
+  // ✅ Poll faster so shutdown shows almost instantly
+  const pollMs = 500;
+
   const detectUsb = async () => {
     setState("reading");
     try {
       const res = await axios.get(`${API}/api/detect_usb`, {
-        params: { path: "/mnt/usb", scan_media: false },
+        params: { path: "/media/ubuntu", scan_media: true, need_files: false },
+        timeout: 1500,
       });
+      const { data } = await axios.get(`${API}/api/usb_list`, {
+        params: { path: "/media/ubuntu" },
+        timeout: 1500,
+      });
+      if (data.found) {
+        setUsbPath(data.preferred);
+        // Optional peek for files
+        axios.get(`${API}/api/detect_usb`, {
+          params: { path: "/media/ubuntu", scan_media: true, need_files: true, timeout: 0.6 },
+          timeout: 1200,
+        }).catch(() => {});
+      }
       if (res.data?.found && res.data?.preferred) {
         setUsbPath(res.data.preferred as string);
         setErrorDetails("");
@@ -125,54 +146,73 @@ export default function Status() {
       setState("error");
     }
   };
+
   const launchUI = async () => {
-      if (!usbPath) { setState("error"); return; }
-      setState("launching");  
-      try {
-        const formData = new FormData();
-        formData.append("usb_path", usbPath);
-        const res = await axios.post(`${API}/api/launch_ui`, formData);
-        const pid = Number(res.data?.pid ?? 0);
-        if (pid > 0) setUiPid(pid);
-        sessionStorage.setItem("uiPoll", "1");
-        setShouldPoll(true);
-        setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}\nPath: ${usbPath}`);
-        setClosedMessage("");
-      } catch (err: any) {
-        const detail = err?.response?.data?.detail || err?.message || "unknown error";
-        setResponseMessage(`❌ Failed to launch: ${detail}`);
-        setState("error");
-      }
-    };
-   useEffect(() => {
-  if (!shouldPoll) return;
-  let cancelled = false;
-  const check = async () => {
+    if (!usbPath) { setState("error"); return; }
+    setState("launching");
     try {
-      const params = uiPid ? { params: { pid: uiPid } } : undefined;
-      const r = await axios.get(`${API}/api/ui_status`, params as any);
-      const running = !!r.data?.running;
-      setLastPollAt(new Date().toLocaleTimeString());
-      setLastRunning(String(running));
-      setLastError("");
-      if (!running && !cancelled) {
-        sessionStorage.removeItem("uiPoll");
-        setShouldPoll(false);
-        setClosedMessage("");
-        setResponseMessage("");
-        setState("shutdown");
+      const formData = new FormData();
+      formData.append("usb_path", usbPath);
+      const { data: d } = await axios.get(`${API}/api/detect_usb`, {
+        params: {
+          path: usbPath,
+          scan_media: false,                   // exact root already known
+          need_files: true,
+          patterns: "*.ifc,*.ifczip,*.ifcxml",
+          timeout: 0.6,                        // keep small to avoid long probe
+        },
+        timeout: 1500,
+      });
+      if (!d?.match) {
+        throw new Error("No IFC found on USB");
       }
-    } catch (e: any) {
-      setLastPollAt(new Date().toLocaleTimeString());
-      setLastRunning("n/a");
-      setLastError(e?.message ?? String(e));
-      console.warn("ui_status poll failed:", e);
+      formData.append("usb_path", usbPath);
+      formData.append("ifc_path", d.match);     
+      const res = await axios.post(`${API}/api/launch_ui`, formData);
+      const pid = Number(res.data?.pid ?? 0);
+      if (pid > 0) setUiPid(pid);
+      sessionStorage.setItem("uiPoll", "1");
+      setShouldPoll(true);
+      setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}\nPath: ${usbPath}`);
+      setClosedMessage("");
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail || err?.message || "unknown error";
+      setResponseMessage(`❌ Failed to launch: ${detail}`);
+      setState("error");
     }
   };
-  check();                                // immediate
-  const id = setInterval(check, pollMs);  // use your pollMs = 2000
-  return () => { cancelled = true; clearInterval(id); };
-}, [shouldPoll, uiPid, API, pollMs]);  
+
+  useEffect(() => {
+    if (!shouldPoll) return;
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const params = uiPid ? { params: { pid: uiPid } } : undefined;
+        const r = await axios.get(`${API}/api/ui_status`, params as any);
+        const running = !!r.data?.running;
+        setLastPollAt(new Date().toLocaleTimeString());
+        setLastRunning(String(running));
+        setLastError("");
+        if (!running && !cancelled) {
+          sessionStorage.removeItem("uiPoll");
+          setShouldPoll(false);
+          setUiPid(null);
+          setClosedMessage("");
+          setResponseMessage("");
+          setState("shutdown");
+        }
+      } catch (e: any) {
+        setLastPollAt(new Date().toLocaleTimeString());
+        setLastRunning("n/a");
+        setLastError(e?.message ?? String(e));
+        console.warn("ui_status poll failed:", e);
+      }
+    };
+    check(); // immediate
+    const id = setInterval(check, pollMs);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [shouldPoll, uiPid, API, pollMs]);
+
   const handlePrimary = () => {
     switch (state) {
       case "waiting":
@@ -233,19 +273,6 @@ export default function Status() {
           </div>
         </div>
       </div>
-      {/* Status messages below the hero */}
-          {/* 
-          <div className="p-6 space-y-3">
-            <div className="alert alert-info whitespace-pre-line">
-              {responseMessage}
-            </div>
-            {closedMessage && (
-              <div className="alert alert-warning whitespace-pre-line">
-                {closedMessage}
-              </div>
-            )}
-          </div>
-          */}
     </>
   );
 }

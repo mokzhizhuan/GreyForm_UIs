@@ -12,8 +12,9 @@ PORT = 8000
 APP = "backend.main:app"                 # matches backend/main.py -> app
 PIDFILE = Path("/tmp/uvicorn_backend_main.pid")
 CWD = Path(__file__).parent.resolve()    # project root
+CHECK_HOST = "172.17.0.2"
 
-def is_listening(host=HOST, port=PORT, timeout=0.25) -> bool:
+def is_listening(host=CHECK_HOST, port=PORT, timeout=0.25) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.settimeout(timeout)
         return s.connect_ex((host, port)) == 0
@@ -41,7 +42,6 @@ def start():
         "--workers", "1",
         # "--reload",                      # uncomment in dev if you want auto-reload
     ]
-    print("Starting:", " ".join(cmd))
     proc = subprocess.Popen(
         cmd,
         cwd=str(CWD),
@@ -51,7 +51,6 @@ def start():
         start_new_session=True,          # detach from this shell
     )
     PIDFILE.write_text(str(proc.pid))
-    # wait briefly until port opens
     for _ in range(40):
         if is_listening():
             return 0

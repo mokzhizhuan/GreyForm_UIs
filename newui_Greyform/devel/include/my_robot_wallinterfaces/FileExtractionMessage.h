@@ -192,23 +192,12 @@ struct Printer< ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAlloc
 {
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAllocator>& v)
   {
-    if (false || !indent.empty())
-      s << std::endl;
-    s << indent << "stl_data: ";
-    if (v.stl_data.empty() || true)
-      s << "[";
+    s << indent << "stl_data[]" << std::endl;
     for (size_t i = 0; i < v.stl_data.size(); ++i)
     {
-      if (true && i > 0)
-        s << ", ";
-      else if (!true)
-        s << std::endl << indent << "  -";
-      Printer<uint8_t>::stream(s, true ? std::string() : indent + "    ", v.stl_data[i]);
+      s << indent << "  stl_data[" << i << "]: ";
+      Printer<uint8_t>::stream(s, indent + "  ", v.stl_data[i]);
     }
-    if (v.stl_data.empty() || true)
-      s << "]";
-    if (true || !indent.empty())
-      s << std::endl;
     s << indent << "excelfile: ";
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.excelfile);
   }

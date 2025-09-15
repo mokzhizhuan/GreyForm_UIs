@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/catkin_ws/src/newui_Greyform/src
+CMAKE_SOURCE_DIR = /root/catkin_ws/newui_Greyform/src
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /root/catkin_ws/src/newui_Greyform/build
+CMAKE_BINARY_DIR = /root/catkin_ws/newui_Greyform/build
 
 # Utility rule file for tests.
 
@@ -67,6 +67,6 @@ CMakeFiles/tests.dir/clean:
 .PHONY : CMakeFiles/tests.dir/clean
 
 CMakeFiles/tests.dir/depend:
-	cd /root/catkin_ws/src/newui_Greyform/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/catkin_ws/src/newui_Greyform/src /root/catkin_ws/src/newui_Greyform/src /root/catkin_ws/src/newui_Greyform/build /root/catkin_ws/src/newui_Greyform/build /root/catkin_ws/src/newui_Greyform/build/CMakeFiles/tests.dir/DependInfo.cmake --color=$(COLOR)
+	cd /root/catkin_ws/newui_Greyform/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/catkin_ws/newui_Greyform/src /root/catkin_ws/newui_Greyform/src /root/catkin_ws/newui_Greyform/build /root/catkin_ws/newui_Greyform/build /root/catkin_ws/newui_Greyform/build/CMakeFiles/tests.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/tests.dir/depend
 

@@ -5,6 +5,8 @@ from datetime import datetime
 from typing import Optional, Iterable, List, Dict, Union
 from fastapi import FastAPI, Form, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fnmatch import fnmatch
+import threading, time
 
 app = FastAPI()
 
@@ -17,31 +19,69 @@ app.add_middleware(
 )
 
 PIDFILE = Path("/tmp/greyform_ui.pid")
+LOCKFILE = Path("/tmp/greyform_ui.lock")
 LOGFILE = Path("/tmp/greyform_ui.log")
 WANTED_EXTS = {".pbt", ".ifc", ".ifczip", ".ifcxml"}
 IFC_EXTS = {".ifc", ".ifczip", ".ifcxml"}
 
+def _list_mounts(base="/media/ubuntu") -> List[str]:
+    try:
+        with os.scandir(base) as it:
+            return [e.path for e in it if e.is_dir(follow_symlinks=False)]
+    except FileNotFoundError:
+        return []
+
+@app.get("/api/usb_list")
+def usb_list(path: str = "/media/ubuntu"):
+    """FAST: just list mount directories under /media/ubuntu."""
+    mounts = _list_mounts(path)
+    return {"paths": mounts, "found": bool(mounts), "preferred": mounts[0] if mounts else None}
+
+def _peek_for_patterns(root: str,
+                       patterns: List[str],
+                       max_depth: int = 2,
+                       max_files: int = 5000,
+                       deadline: Optional[float] = None) -> Optional[str]:
+    """Bounded, shallow peek for matching files; returns first hit or None."""
+    seen = 0
+    for cur, dirs, files in os.walk(root):
+        depth = cur[len(root):].count(os.sep)
+        if depth >= max_depth:
+            dirs[:] = []  # stop descending deeper
+        for f in files:
+            seen += 1
+            if any(fnmatch(f.lower(), p) for p in patterns):
+                return os.path.join(cur, f)
+            if seen >= max_files or (deadline and time.time() > deadline):
+                return None
+    return None
 
 @app.get("/api/detect_usb")
-def detect_usb(path: str = Query("/mnt/usb"), scan_media: bool = Query(True)):
-    checked: List[Dict] = []
-    choices: List[Dict] = []
-    base = Path(path)
-    to_test = [base]
-    media = Path("/media/ubuntu")
-    if scan_media and media.exists():
-        to_test.extend([p for p in media.iterdir() if p.is_dir()])
-    for root in to_test:
-        info = _root_ok(root)
-        checked.append({"path": str(root), **info})
-        if info["exists"] and info["valid"]:
-            choices.append({"path": str(root), "files": info["files"]})
-    return {
-        "found": len(choices) > 0,
-        "preferred": choices[0]["path"] if choices else None,
-        "choices": choices,
-        "checked": checked,
-    }
+def detect_usb(
+    path: str = "/media/ubuntu",
+    scan_media: bool = True,
+    need_files: bool = False,
+    patterns: str = Query("*.ifc,*.stl,*.xlsx,*.xls,*.csv", description="comma-separated"),
+    timeout: float = 0.6,  # seconds budget for OPTIONAL peek
+):
+    """FAST path detection; optional, bounded file peek if need_files=true."""
+    mounts = _list_mounts(path) if scan_media else ([path] if os.path.isdir(path) else [])
+    if not mounts:
+        return {"found": False, "preferred": None, "paths": []}
+
+    preferred = mounts[0]
+    first_match = None
+
+    if need_files:
+        pats = [p.strip().lower() for p in patterns.split(",") if p.strip()]
+        deadline = time.time() + max(0.1, timeout)
+        for m in mounts:
+            hit = _peek_for_patterns(m, pats, max_depth=2, max_files=5000, deadline=deadline)
+            if hit:
+                preferred, first_match = m, hit
+                break
+
+    return {"found": True, "preferred": preferred, "paths": mounts, "match": first_match}
 
 
 def _iter_files(root: Path, max_depth: int = 3):
@@ -154,6 +194,15 @@ async def launch_ui(usb_path: str = Form(...), ifc_path: Optional[str] = Form(No
         ]
         LOGFILE.parent.mkdir(parents=True, exist_ok=True)
         log_f = open(LOGFILE, "ab", buffering=0)
+        if LOCKFILE.exists():
+            raise HTTPException(status_code=409, detail="UI relaunch is locked (machine should be powered off).")
+        if PIDFILE.exists():
+            try:
+                saved = int(PIDFILE.read_text().strip())
+                if _pid_running(saved):
+                    return {"status": "running", "message": f"UI already running (pid {saved})", "pid": saved}
+            except Exception:
+                pass
         proc = subprocess.Popen(
             args,
             cwd=str(project_dir),
@@ -185,6 +234,7 @@ def ui_closed(pid: int = Form(...)):
         saved = int(PIDFILE.read_text().strip())
         if saved == pid:
             PIDFILE.unlink(missing_ok=True)
+            LOCKFILE.write_text(datetime.now().isoformat())
     except Exception:
         pass
     return {"ok": True}
@@ -205,9 +255,19 @@ def ui_status(pid: Optional[int] = Query(None)):
             saved = int(PIDFILE.read_text().strip())
             if saved == pid:
                 PIDFILE.unlink(missing_ok=True)
+                if not LOCKFILE.exists():
+                    LOCKFILE.write_text(datetime.now().isoformat())
         except Exception:
             pass
     return {"running": running, "pid": pid}
+
+@app.post("/api/reset_lock")
+def reset_lock():
+    try:
+        LOCKFILE.unlink(missing_ok=True)
+        return {"ok": True, "message": "Lock cleared."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to clear lock: {e}")
 
 
 @app.get("/api/hello")

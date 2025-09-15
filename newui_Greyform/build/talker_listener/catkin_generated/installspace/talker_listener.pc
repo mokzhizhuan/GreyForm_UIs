@@ -1,4 +1,4 @@
-prefix=/root/catkin_ws/src/newui_Greyform/install
+prefix=/root/catkin_ws/newui_Greyform/install
 
 Name: talker_listener
 Description: Description of talker_listener
