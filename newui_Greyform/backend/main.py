@@ -25,6 +25,7 @@ WANTED_EXTS = {".ifc", ".ifczip", ".step", ".stp", ".csv", ".xlsx", ".xls"}
 IFC_EXTS = {".ifc", ".ifczip", ".ifcxml"}
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 def _list_mounts(base="/media/ubuntu") -> List[str]:
     try:
         with os.scandir(base) as it:
@@ -119,6 +120,43 @@ def _gather_candidates(roots: list[Path], max_depth: int = 2) -> list[Path]:
     return out
 
 @app.get("/api/detect_usb")
+=======
+def _dir_has_wanted_files(d: Path, exts=WANTED_EXTS, max_files=50) -> list[str]:
+    files = []
+    try:
+        for p in d.iterdir():
+            if p.is_file() and p.suffix.lower() in exts:
+                files.append(str(p))
+                if len(files) >= max_files:
+                    break
+    except Exception:
+        pass
+    return files
+
+def _gather_candidates(roots: list[Path], max_depth: int = 2) -> list[Path]:
+    out, seen = [], set()
+    stack = [(r, 0) for r in roots if r.exists()]
+    while stack:
+        d, depth = stack.pop()
+        try:
+            rp = d.resolve()
+        except Exception:
+            continue
+        if rp in seen or not rp.is_dir():
+            continue
+        seen.add(rp)
+        out.append(rp)
+        if depth < max_depth:
+            try:
+                for c in rp.iterdir():
+                    if c.is_dir():
+                        stack.append((c, depth + 1))
+            except Exception:
+                pass
+    return out
+
+@app.get("/api/detect_usb")
+>>>>>>> Stashed changes
 def detect_usb(path: str | None = Query(None), scan_media: bool = Query(True)):
     roots = []
     if path:
@@ -144,6 +182,9 @@ def detect_usb(path: str | None = Query(None), scan_media: bool = Query(True)):
         "choices": choices,
         "checked": checked,
     }
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 def _iter_files(root: Path, max_depth: int = 3):
