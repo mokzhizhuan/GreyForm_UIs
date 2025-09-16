@@ -24,8 +24,6 @@ LOGFILE = Path("/tmp/greyform_ui.log")
 WANTED_EXTS = {".ifc", ".ifczip", ".step", ".stp", ".csv", ".xlsx", ".xls"}
 IFC_EXTS = {".ifc", ".ifczip", ".ifcxml"}
 
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 def _list_mounts(base="/media/ubuntu") -> List[str]:
     try:
         with os.scandir(base) as it:
@@ -35,7 +33,6 @@ def _list_mounts(base="/media/ubuntu") -> List[str]:
 
 @app.get("/api/usb_list")
 def usb_list(path: str = "/media/ubuntu"):
-    """FAST: just list mount directories under /media/ubuntu."""
     mounts = _list_mounts(path)
     return {"paths": mounts, "found": bool(mounts), "preferred": mounts[0] if mounts else None}
 
@@ -44,7 +41,6 @@ def _peek_for_patterns(root: str,
                        max_depth: int = 2,
                        max_files: int = 5000,
                        deadline: Optional[float] = None) -> Optional[str]:
-    """Bounded, shallow peek for matching files; returns first hit or None."""
     seen = 0
     for cur, dirs, files in os.walk(root):
         depth = cur[len(root):].count(os.sep)
@@ -59,33 +55,7 @@ def _peek_for_patterns(root: str,
     return None
 
 @app.get("/api/detect_usb")
-def detect_usb(
-    path: str = "/media/ubuntu",
-    scan_media: bool = True,
-    need_files: bool = False,
-    patterns: str = Query("*.ifc,*.stl,*.xlsx,*.xls,*.csv", description="comma-separated"),
-    timeout: float = 0.6,  # seconds budget for OPTIONAL peek
-):
-    """FAST path detection; optional, bounded file peek if need_files=true."""
-    mounts = _list_mounts(path) if scan_media else ([path] if os.path.isdir(path) else [])
-    if not mounts:
-        return {"found": False, "preferred": None, "paths": []}
-
-    preferred = mounts[0]
-    first_match = None
-
-    if need_files:
-        pats = [p.strip().lower() for p in patterns.split(",") if p.strip()]
-        deadline = time.time() + max(0.1, timeout)
-        for m in mounts:
-            hit = _peek_for_patterns(m, pats, max_depth=2, max_files=5000, deadline=deadline)
-            if hit:
-                preferred, first_match = m, hit
-                break
-
-    return {"found": True, "preferred": preferred, "paths": mounts, "match": first_match}
-
-def _dir_has_wanted_files(d: Path, exts=WANTED_EXTS, max_files=50) -> list[str]:
+def _dir_has_wanted_files(d: Path, exts=WANTED_EXTS, max_files=50) -> List[str]:
     files = []
     try:
         for p in d.iterdir():
@@ -97,7 +67,7 @@ def _dir_has_wanted_files(d: Path, exts=WANTED_EXTS, max_files=50) -> list[str]:
         pass
     return files
 
-def _gather_candidates(roots: list[Path], max_depth: int = 2) -> list[Path]:
+def _gather_candidates(roots: list[Path], max_depth: int = 2) -> List[Path]:
     out, seen = [], set()
     stack = [(r, 0) for r in roots if r.exists()]
     while stack:
@@ -120,43 +90,6 @@ def _gather_candidates(roots: list[Path], max_depth: int = 2) -> list[Path]:
     return out
 
 @app.get("/api/detect_usb")
-=======
-def _dir_has_wanted_files(d: Path, exts=WANTED_EXTS, max_files=50) -> list[str]:
-    files = []
-    try:
-        for p in d.iterdir():
-            if p.is_file() and p.suffix.lower() in exts:
-                files.append(str(p))
-                if len(files) >= max_files:
-                    break
-    except Exception:
-        pass
-    return files
-
-def _gather_candidates(roots: list[Path], max_depth: int = 2) -> list[Path]:
-    out, seen = [], set()
-    stack = [(r, 0) for r in roots if r.exists()]
-    while stack:
-        d, depth = stack.pop()
-        try:
-            rp = d.resolve()
-        except Exception:
-            continue
-        if rp in seen or not rp.is_dir():
-            continue
-        seen.add(rp)
-        out.append(rp)
-        if depth < max_depth:
-            try:
-                for c in rp.iterdir():
-                    if c.is_dir():
-                        stack.append((c, depth + 1))
-            except Exception:
-                pass
-    return out
-
-@app.get("/api/detect_usb")
->>>>>>> Stashed changes
 def detect_usb(path: str | None = Query(None), scan_media: bool = Query(True)):
     roots = []
     if path:
@@ -182,10 +115,6 @@ def detect_usb(path: str | None = Query(None), scan_media: bool = Query(True)):
         "choices": choices,
         "checked": checked,
     }
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 def _iter_files(root: Path, max_depth: int = 3):
     root = root.resolve()
