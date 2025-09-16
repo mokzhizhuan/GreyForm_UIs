@@ -84,7 +84,7 @@ def detect_usb(
                 break
 
     return {"found": True, "preferred": preferred, "paths": mounts, "match": first_match}
-=======
+
 def _dir_has_wanted_files(d: Path, exts=WANTED_EXTS, max_files=50) -> list[str]:
     files = []
     try:
