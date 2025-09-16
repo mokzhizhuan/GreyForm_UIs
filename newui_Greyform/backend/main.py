@@ -21,9 +21,10 @@ app.add_middleware(
 PIDFILE = Path("/tmp/greyform_ui.pid")
 LOCKFILE = Path("/tmp/greyform_ui.lock")
 LOGFILE = Path("/tmp/greyform_ui.log")
-WANTED_EXTS = {".pbt", ".ifc", ".ifczip", ".ifcxml"}
+WANTED_EXTS = {".ifc", ".ifczip", ".step", ".stp", ".csv", ".xlsx", ".xls"}
 IFC_EXTS = {".ifc", ".ifczip", ".ifcxml"}
 
+<<<<<<< Updated upstream
 def _list_mounts(base="/media/ubuntu") -> List[str]:
     try:
         with os.scandir(base) as it:
@@ -82,7 +83,68 @@ def detect_usb(
                 break
 
     return {"found": True, "preferred": preferred, "paths": mounts, "match": first_match}
+=======
+def _dir_has_wanted_files(d: Path, exts=WANTED_EXTS, max_files=50) -> list[str]:
+    files = []
+    try:
+        for p in d.iterdir():
+            if p.is_file() and p.suffix.lower() in exts:
+                files.append(str(p))
+                if len(files) >= max_files:
+                    break
+    except Exception:
+        pass
+    return files
 
+def _gather_candidates(roots: list[Path], max_depth: int = 2) -> list[Path]:
+    out, seen = [], set()
+    stack = [(r, 0) for r in roots if r.exists()]
+    while stack:
+        d, depth = stack.pop()
+        try:
+            rp = d.resolve()
+        except Exception:
+            continue
+        if rp in seen or not rp.is_dir():
+            continue
+        seen.add(rp)
+        out.append(rp)
+        if depth < max_depth:
+            try:
+                for c in rp.iterdir():
+                    if c.is_dir():
+                        stack.append((c, depth + 1))
+            except Exception:
+                pass
+    return out
+
+@app.get("/api/detect_usb")
+def detect_usb(path: str | None = Query(None), scan_media: bool = Query(True)):
+    roots = []
+    if path:
+        roots.append(Path(path))
+    if scan_media:
+        roots += [Path("/media"), Path("/run/media")]
+    checked, choices = [], []
+    for d in _gather_candidates(roots, max_depth=2):
+        files = _dir_has_wanted_files(d)
+        info = {
+            "path": str(d),
+            "exists": True,
+            "valid": bool(files) or os.path.ismount(d),
+            "files": files,
+            "ismount": os.path.ismount(d),
+        }
+        checked.append(info)
+        if info["valid"]:
+            choices.append({"path": info["path"], "files": info["files"]})
+    return {
+        "found": bool(choices),
+        "preferred": choices[0]["path"] if choices else None,
+        "choices": choices,
+        "checked": checked,
+    }
+>>>>>>> Stashed changes
 
 def _iter_files(root: Path, max_depth: int = 3):
     root = root.resolve()

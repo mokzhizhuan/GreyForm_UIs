@@ -112,40 +112,33 @@ export default function Status() {
   const pollMs = 500;
 
   const detectUsb = async () => {
-    setState("reading");
-    try {
-      const res = await axios.get(`${API}/api/detect_usb`, {
-        params: { path: "/media/ubuntu", scan_media: true, need_files: false },
-        timeout: 1500,
-      });
-      const { data } = await axios.get(`${API}/api/usb_list`, {
-        params: { path: "/media/ubuntu" },
-        timeout: 1500,
-      });
-      if (data.found) {
-        setUsbPath(data.preferred);
-        // Optional peek for files
-        axios.get(`${API}/api/detect_usb`, {
-          params: { path: "/media/ubuntu", scan_media: true, need_files: true, timeout: 0.6 },
-          timeout: 1200,
-        }).catch(() => {});
-      }
-      if (res.data?.found && res.data?.preferred) {
-        setUsbPath(res.data.preferred as string);
-        setErrorDetails("");
-        setState("success");
-      } else {
-        setUsbPath("");
-        setErrorDetails(JSON.stringify(res.data?.checked ?? [], null, 2));
-        setState("error");
-      }
-    } catch (e) {
-      console.error("USB detect failed:", e);
+  setState("reading");
+  try {
+    const res = await axios.get(`${API}/api/detect_usb`, { timeout: 3000 });
+    const list = await axios
+      .get(`${API}/api/usb_list`, { timeout: 3000 })
+      .catch(() => null);
+    const preferred =
+      res.data?.preferred ??
+      list?.data?.preferred ??
+      res.data?.choices?.[0]?.path ??
+      list?.data?.choices?.[0]?.path;
+    if (preferred) {
+      setUsbPath(preferred);
+      setErrorDetails("");
+      setState("success");
+    } else {
+      const checked = res.data?.checked ?? list?.data?.checked ?? [];
       setUsbPath("");
-      setErrorDetails(String(e));
+      setErrorDetails(JSON.stringify(checked, null, 2));
       setState("error");
     }
-  };
+  } catch (e) {
+    setUsbPath("");
+    setErrorDetails(String(e));
+    setState("error");
+  }
+};
 
   const launchUI = async () => {
     if (!usbPath) { setState("error"); return; }
