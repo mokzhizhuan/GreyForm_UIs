@@ -200,16 +200,29 @@ struct Printer< ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocator> >
 {
   template<typename Stream> static void stream(Stream& s, const std::string& indent, const ::my_robot_wallinterfaces::SelectionWall_<ContainerAllocator>& v)
   {
+    if (false || !indent.empty())
+      s << std::endl;
     s << indent << "wallselection: ";
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.wallselection);
+    if (true || !indent.empty())
+      s << std::endl;
     s << indent << "typeselection: ";
     Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.typeselection);
-    s << indent << "picked_position[]" << std::endl;
+    if (true || !indent.empty())
+      s << std::endl;
+    s << indent << "picked_position: ";
+    if (v.picked_position.empty() || true)
+      s << "[";
     for (size_t i = 0; i < v.picked_position.size(); ++i)
     {
-      s << indent << "  picked_position[" << i << "]: ";
-      Printer<int32_t>::stream(s, indent + "  ", v.picked_position[i]);
+      if (true && i > 0)
+        s << ", ";
+      else if (!true)
+        s << std::endl << indent << "  -";
+      Printer<int32_t>::stream(s, true ? std::string() : indent + "    ", v.picked_position[i]);
     }
+    if (v.picked_position.empty() || true)
+      s << "]";
   }
 };
 

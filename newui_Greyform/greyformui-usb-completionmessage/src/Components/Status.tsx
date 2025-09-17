@@ -29,7 +29,7 @@ type UsbState = "waiting" | "reading" | "success" | "error" | "launching" | "shu
 const views = {
   waiting: {
     title: "Please insert a USB drive to continue",
-    message: "Click Start to detect a USB drive (e.g. /mnt/usb).",
+    message: "Click Start to detect a USB drive.",
     variant: "primary",
     primaryText: "Start",
     showSpinner: false,
@@ -112,68 +112,136 @@ export default function Status() {
   const pollMs = 500;
 
   const detectUsb = async () => {
-  setState("reading");
-  try {
-    const res = await axios.get(`${API}/api/detect_usb`, { timeout: 3000 });
-    const list = await axios
-      .get(`${API}/api/usb_list`, { timeout: 3000 })
-      .catch(() => null);
-    const preferred =
-      res.data?.preferred ??
-      list?.data?.preferred ??
-      res.data?.choices?.[0]?.path ??
-      list?.data?.choices?.[0]?.path;
-    if (preferred) {
-      setUsbPath(preferred);
-      setErrorDetails("");
-      setState("success");
-    } else {
-      const checked = res.data?.checked ?? list?.data?.checked ?? [];
+    setState("reading");
+    try {
+      const res = await axios.get(`${API}/api/detect_usb`, {
+        params: { path: "/media/*/*", scan_media: true, need_files: false },
+        timeout: 6000,
+      });
+      if (res.data?.found && res.data?.preferred) {
+        setUsbPath(res.data.preferred);
+        setErrorDetails("");
+        setState("success");
+      } else {
+        setUsbPath("");
+        setErrorDetails(JSON.stringify(res.data?.checked ?? [], null, 2));
+        setState("error");
+      }
+    } catch (e: any) {
       setUsbPath("");
-      setErrorDetails(JSON.stringify(checked, null, 2));
+      setErrorDetails(String(e?.message || e));
       setState("error");
     }
-  } catch (e) {
-    setUsbPath("");
-    setErrorDetails(String(e));
-    setState("error");
-  }
-};
+  };
+  const cacheKey = "greyform:lastIfc";
 
-  const launchUI = async () => {
-    if (!usbPath) { setState("error"); return; }
-    setState("launching");
+function saveLastIfc(usb: string, ifc: string) {
+  localStorage.setItem(cacheKey, JSON.stringify({ usb, ifc }));
+}
+function loadLastIfc() {
+  try { return JSON.parse(localStorage.getItem(cacheKey) || "null"); } catch { return null; }
+}
+ const launchUI = async () => {
+  if (!usbPath) {
+    setState("error");
+    const msg = "❌ No USB path selected.";
+    setResponseMessage(msg);
+    setErrorDetails(msg);
+    return;
+  }
+  setState("launching");
+
+  try {
+    let ifcPath: string | undefined;
+
+    // 1) quick (non-recursive, 0–2 levels)
+    const q = await axios.get(`${API}/api/find_ifc_quick`, {
+      params: { root: usbPath },
+      timeout: 1500,
+    }).catch(() => null);
+    ifcPath = q?.data?.ok ? q?.data?.match : undefined;
+
+    // 2) shallow fast find
+    if (!ifcPath) {
+      const f1 = await axios.get(`${API}/api/find_ifc_fast`, {
+        params: { root: usbPath, max_depth: 3, timeout_ms: 1200 },
+        timeout: 3000,
+      }).catch(() => null);
+      ifcPath = f1?.data?.ok ? f1?.data?.match : undefined;
+    }
+
+    // 3) deeper fallback
+    if (!ifcPath) {
+      const f2 = await axios.get(`${API}/api/find_ifc_fast`, {
+        params: { root: usbPath, max_depth: 8, timeout_ms: 2500 },
+        timeout: 4000,
+      }).catch(() => null);
+      ifcPath = f2?.data?.ok ? f2?.data?.match : undefined;
+    }
+
+    if (!ifcPath) {
+      const msg = "❌ No IFC found. Put an IFC at USB root or inside IFC/, models/, export/.";
+      setResponseMessage(msg);
+      setErrorDetails(msg);
+      setState("error");
+      return;
+    }
+
+    // 4) sanity probe (tells us *exactly* why it might fail)
+    const probe = await axios.get(`${API}/api/ifc_probe`, {
+      params: { path: ifcPath },
+      timeout: 2000,
+    }).catch(() => null);
+    if (!probe?.data?.ok) {
+      const msg = `❌ Probe failed for ${ifcPath}: ${probe?.data?.reason || "unreadable file"}`;
+      setResponseMessage(msg);
+      setErrorDetails(JSON.stringify(probe?.data ?? {}, null, 2));
+      setState("error");
+      return;
+    }
+    const fd = new FormData();
+    fd.append("usb_path", usbPath);
+    fd.append("ifc_path", ifcPath);   // must be set from find_ifc_quick/fast
+    await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
+
+    const res = await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
+    const pid = Number(res.data?.pid ?? 0);
+    if (pid > 0) setUiPid(pid);
+
+    sessionStorage.setItem("uiPoll", "1");
+    setShouldPoll(true);
+    setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}`);
+    setErrorDetails(""); // clear any old errors
+    setClosedMessage("");
+    }catch (err:any) {
+     const detail = err?.response?.data?.detail || err?.message || "unknown error";
+
+  // Auto-clear lock if we hit the relaunch lock
+  if (status === 409 && /relaunch is locked/i.test(detail)) {
     try {
-      const formData = new FormData();
-      formData.append("usb_path", usbPath);
-      const { data: d } = await axios.get(`${API}/api/detect_usb`, {
-        params: {
-          path: usbPath,
-          scan_media: false,                   // exact root already known
-          need_files: true,
-          patterns: "*.ifc,*.ifczip,*.ifcxml",
-          timeout: 0.6,                        // keep small to avoid long probe
-        },
-        timeout: 1500,
-      });
-      if (!d?.match) {
-        throw new Error("No IFC found on USB");
-      }
-      formData.append("usb_path", usbPath);
-      formData.append("ifc_path", d.match);     
-      const res = await axios.post(`${API}/api/launch_ui`, formData);
+      await axios.post(`${API}/api/reset_lock`);
+      // retry once
+      const fd = new FormData();
+      fd.append("usb_path", usbPath);
+      fd.append("ifc_path", ifcPath!);
+      const res = await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
       const pid = Number(res.data?.pid ?? 0);
       if (pid > 0) setUiPid(pid);
       sessionStorage.setItem("uiPoll", "1");
       setShouldPoll(true);
-      setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}\nPath: ${usbPath}`);
-      setClosedMessage("");
-    } catch (err: any) {
-      const detail = err?.response?.data?.detail || err?.message || "unknown error";
-      setResponseMessage(`❌ Failed to launch: ${detail}`);
-      setState("error");
+      setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}`);
+      setErrorDetails("");
+      return;
+    } catch (e2:any) {
+      // fall through to show error
     }
-  };
+  }
+
+  setResponseMessage(`❌ Failed to launch: ${detail}`);
+  setErrorDetails(JSON.stringify(err?.response?.data ?? { message: detail }, null, 2));
+  setState("error");
+}
+};
 
   useEffect(() => {
     if (!shouldPoll) return;
@@ -257,6 +325,14 @@ export default function Status() {
                   {v.primaryText}
                 </button>
               </div>
+            )}
+            {state === "error" && errorDetails && (
+              <pre className="text-left text-xs bg-base-200 p-3 rounded overflow-auto max-h-64">
+                {errorDetails}
+              </pre>
+            )}
+            {state === "error" && responseMessage && (
+              <p className="text-sm opacity-80">{responseMessage}</p>
             )}
             {state === "error" && errorDetails && (
               <pre className="text-left text-xs bg-base-200 p-3 rounded overflow-auto max-h-64">
