@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 
-// Background hero image (inline SVG -> data URI)
 const svg = `
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
   <rect fill='#020133' width='800' height='800'/>
@@ -21,78 +20,19 @@ const svg = `
   </g>
 </svg>
 `.trim();
-
 const bgDataUri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-
 type UsbState = "waiting" | "reading" | "success" | "error" | "launching" | "shutdown";
-
 const views = {
-  waiting: {
-    title: "Please insert a USB drive to continue",
-    message: "Click Start to detect a USB drive.",
-    variant: "primary",
-    primaryText: "Start",
-    showSpinner: false,
-  },
-  reading: {
-    title: "Reading USB drive...",
-    message: "Please wait while we read the contents of the USB drive.",
-    variant: "info",
-    primaryText: "Cancel",
-    showSpinner: true,
-  },
-  success: {
-    title: "USB drive detected",
-    message: "Press Continue to launch the UI.",
-    variant: "success",
-    primaryText: "Continue",
-    showSpinner: false,
-  },
-  error: {
-    title: "Error reading USB drive",
-    message: "We could not find a usable USB or matching files.",
-    variant: "error",
-    primaryText: "Try Again",
-    showSpinner: false,
-  },
-  launching: {
-    title: "Launching UI…",
-    message: "Sending request to the backend.",
-    variant: "info",
-    primaryText: "Launching…",
-    showSpinner: true,
-  },
-  shutdown: {
-    title: "Please power off the machine",
-    message: "The operation is completed successfully",
-    variant: "neutral",
-    primaryText: "",
-    showSpinner: false,
-  },
-} as const satisfies Record<
-  UsbState,
-  {
-    title: string;
-    message: string;
-    variant:
-      | "primary"
-      | "secondary"
-      | "accent"
-      | "info"
-      | "success"
-      | "warning"
-      | "error"
-      | "neutral";
-    primaryText: string;
-    showSpinner?: boolean;
-  }
->;
-
+  waiting: { title: "Please insert a USB drive to continue", message: "Click Start to detect a USB drive.", variant: "primary", primaryText: "Start", showSpinner: false },
+  reading: { title: "Reading USB drive...", message: "Please wait while we read the contents of the USB drive.", variant: "info", primaryText: "Cancel", showSpinner: true },
+  success: { title: "USB drive detected", message: "Press Continue to launch the UI.", variant: "success", primaryText: "Continue", showSpinner: false },
+  error:   { title: "Error reading USB drive", message: "We could not find a usable USB or matching files.", variant: "error", primaryText: "Try Again", showSpinner: false },
+  launching:{ title: "Launching UI…", message: "Sending request to the backend.", variant: "info", primaryText: "Launching…", showSpinner: true },
+  shutdown:{ title: "Please power off the machine", message: "The operation is completed successfully", variant: "neutral", primaryText: "", showSpinner: false },
+} as const;
 export default function Status() {
   const [state, setState] = useState<UsbState>("waiting");
-  // ✅ Fallback so UI never goes blank; defaults to shutdown view if state is weird
   const v = views[state] ?? views.shutdown;
-
   const [shouldPoll, setShouldPoll] = useState(false);
   const API = useMemo(() => {
     const base = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
@@ -106,11 +46,7 @@ export default function Status() {
   const [lastPollAt, setLastPollAt] = useState<string>("");
   const [lastRunning, setLastRunning] = useState<string>("");
   const [lastError, setLastError] = useState<string>("");
-
-  const showFooter = state !== "shutdown";
-  // ✅ Poll faster so shutdown shows almost instantly
   const pollMs = 500;
-
   const detectUsb = async () => {
     setState("reading");
     try {
@@ -134,92 +70,76 @@ export default function Status() {
     }
   };
   const cacheKey = "greyform:lastIfc";
-
-function saveLastIfc(usb: string, ifc: string) {
-  localStorage.setItem(cacheKey, JSON.stringify({ usb, ifc }));
-}
-function loadLastIfc() {
-  try { return JSON.parse(localStorage.getItem(cacheKey) || "null"); } catch { return null; }
-}
- const launchUI = async () => {
-  if (!usbPath) {
-    setState("error");
-    const msg = "❌ No USB path selected.";
-    setResponseMessage(msg);
-    setErrorDetails(msg);
-    return;
-  }
-  setState("launching");
-  let ifcPath: string | undefined;
-  try {
-
-    // 1) quick (non-recursive, 0–2 levels)
-    const q = await axios.get(`${API}/api/find_ifc_quick`, {
-      params: { root: usbPath },
-      timeout: 1500,
-    }).catch(() => null);
-    ifcPath = q?.data?.ok ? q?.data?.match : undefined;
-
-    // 2) shallow fast find
-    if (!ifcPath) {
-      const f1 = await axios.get(`${API}/api/find_ifc_fast`, {
-        params: { root: usbPath, max_depth: 3, timeout_ms: 1200 },
-        timeout: 3000,
-      }).catch(() => null);
-      ifcPath = f1?.data?.ok ? f1?.data?.match : undefined;
-    }
-
-    // 3) deeper fallback
-    if (!ifcPath) {
-      const f2 = await axios.get(`${API}/api/find_ifc_fast`, {
-        params: { root: usbPath, max_depth: 8, timeout_ms: 2500 },
-        timeout: 4000,
-      }).catch(() => null);
-      ifcPath = f2?.data?.ok ? f2?.data?.match : undefined;
-    }
-
-    if (!ifcPath) {
-      const msg = "❌ No IFC found. Put an IFC at USB root or inside IFC/, models/, export/.";
+  const saveLastIfc = (usb: string, ifc: string) =>
+    localStorage.setItem(cacheKey, JSON.stringify({ usb, ifc }));
+  const loadLastIfc = () => {
+    try { return JSON.parse(localStorage.getItem(cacheKey) || "null"); } catch { return null; }
+  };
+  const launchUI = async () => {
+    if (!usbPath) {
+      const msg = "❌ No USB path selected.";
       setResponseMessage(msg);
       setErrorDetails(msg);
       setState("error");
       return;
     }
-
-    // 4) sanity probe (tells us *exactly* why it might fail)
-    const probe = await axios.get(`${API}/api/ifc_probe`, {
-      params: { path: ifcPath },
-      timeout: 2000,
-    }).catch(() => null);
-    if (!probe?.data?.ok) {
-      const msg = `❌ Probe failed for ${ifcPath}: ${probe?.data?.reason || "unreadable file"}`;
-      setResponseMessage(msg);
-      setErrorDetails(JSON.stringify(probe?.data ?? {}, null, 2));
-      setState("error");
-      return;
-    }
-    const fd = new FormData();
-    fd.append("usb_path", usbPath);
-    fd.append("ifc_path", ifcPath);   // must be set from find_ifc_quick/fast
-    await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
-
-    const res = await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
-    const pid = Number(res.data?.pid ?? 0);
-    if (pid > 0) setUiPid(pid);
-
-    sessionStorage.setItem("uiPoll", "1");
-    setShouldPoll(true);
-    setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}`);
-    setErrorDetails(""); // clear any old errors
-    setClosedMessage("");
-    }catch (err:any) {
-     const detail = err?.response?.data?.detail || err?.message || "unknown error";
-
-  // Auto-clear lock if we hit the relaunch lock
+    setState("launching");
+    let ifcPath: string | undefined;
+    try {
+      const q = await axios.get(`${API}/api/find_ifc_quick`, {
+        params: { root: usbPath },
+        timeout: 1500,
+      }).catch(() => null);
+      ifcPath = q?.data?.ok ? q?.data?.match : undefined;
+      if (!ifcPath) {
+        const f1 = await axios.get(`${API}/api/find_ifc_fast`, {
+          params: { root: usbPath, max_depth: 3, timeout_ms: 1200 },
+          timeout: 3000,
+        }).catch(() => null);
+        ifcPath = f1?.data?.ok ? f1?.data?.match : undefined;
+      }
+      if (!ifcPath) {
+        const f2 = await axios.get(`${API}/api/find_ifc_fast`, {
+          params: { root: usbPath, max_depth: 8, timeout_ms: 2500 },
+          timeout: 4000,
+        }).catch(() => null);
+        ifcPath = f2?.data?.ok ? f2?.data?.match : undefined;
+      }
+      if (!ifcPath) {
+        const msg = "❌ No IFC found. Put an IFC at USB root or inside IFC/, models/, export/.";
+        setResponseMessage(msg);
+        setErrorDetails(msg);
+        setState("error");
+        return;
+      }
+      const probe = await axios.get(`${API}/api/ifc_probe`, {
+        params: { path: ifcPath },
+        timeout: 2000,
+      }).catch(() => null);
+      if (!probe?.data?.ok) {
+        const msg = `❌ Probe failed for ${ifcPath}: ${probe?.data?.reason || "unreadable file"}`;
+        setResponseMessage(msg);
+        setErrorDetails(JSON.stringify(probe?.data ?? {}, null, 2));
+        setState("error");
+        return;
+      }
+      const fd = new FormData();
+      fd.append("usb_path", usbPath);
+      fd.append("ifc_path", ifcPath);
+      const res = await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
+      const pid = Number(res.data?.pid ?? 0);
+      if (pid > 0) setUiPid(pid);
+      sessionStorage.setItem("uiPoll", "1");
+      setShouldPoll(true);
+      setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}`);
+      setErrorDetails("");
+      setClosedMessage("");
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const detail = err?.response?.data?.detail || err?.message || "unknown error";
       if (status === 409 && /relaunch is locked/i.test(detail)) {
         try {
           await axios.post(`${API}/api/reset_lock`);
-          // retry once
           const fd = new FormData();
           fd.append("usb_path", usbPath);
           fd.append("ifc_path", ifcPath!);
@@ -231,17 +151,15 @@ function loadLastIfc() {
           setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}`);
           setErrorDetails("");
           return;
-        } catch (e2:any) {
-          // fall through to show error
+        } catch {
+          // fall through
         }
-  }
-
-  setResponseMessage(`❌ Failed to launch: ${detail}`);
-  setErrorDetails(JSON.stringify(err?.response?.data ?? { message: detail }, null, 2));
-  setState("error");
-}
-};
-
+      }
+      setResponseMessage(`❌ Failed to launch: ${detail}`);
+      setErrorDetails(JSON.stringify(err?.response?.data ?? { message: detail }, null, 2));
+      setState("error");
+    }
+  };
   useEffect(() => {
     if (!shouldPoll) return;
     let cancelled = false;
@@ -268,71 +186,38 @@ function loadLastIfc() {
         console.warn("ui_status poll failed:", e);
       }
     };
-    check(); // immediate
+    check();
     const id = setInterval(check, pollMs);
     return () => { cancelled = true; clearInterval(id); };
-  }, [shouldPoll, uiPid, API, pollMs]);
-
+  }, [shouldPoll, uiPid, API]);
   const handlePrimary = () => {
     switch (state) {
-      case "waiting":
-        detectUsb();
-        break;
-      case "reading":
-        setState("waiting");
-        break;
-      case "success":
-        launchUI();
-        break;
-      case "error":
-        detectUsb();
-        break;
+      case "waiting":  detectUsb(); break;
+      case "reading":  setState("waiting"); break;
+      case "success":  launchUI(); break;
+      case "error":    detectUsb(); break;
       case "launching":
-      case "shutdown":
-        // no-op
-        break;
+      case "shutdown": break;
     }
   };
-
   return (
     <>
-      <div
-        className="hero min-h-screen relative bg-cover bg-center"
-        style={{ backgroundImage: `url("${bgDataUri}")` }}
-      >
-        <div
-          className={`hero-overlay ${
-            state === "reading" || state === "launching"
-              ? "bg-neutral/60"
-              : "bg-neutral/40"
-          }`}
-        />
+      <div className="hero min-h-screen relative bg-cover bg-center" style={{ backgroundImage: `url("${bgDataUri}")` }}>
+        <div className={`hero-overlay ${state === "reading" || state === "launching" ? "bg-neutral/60" : "bg-neutral/40"}`} />
         <div className="hero-content text-neutral-content text-center relative">
           <div className="max-w-md space-y-5">
             <h1 className="text-4xl md:text-5xl font-bold">{v.title}</h1>
             <p>{v.message}</p>
-            {v.showSpinner ? (
-              <span className="loading loading-spinner loading-md" aria-label="Loading" />
-            ) : null}
+            {v.showSpinner ? <span className="loading loading-spinner loading-md" aria-label="Loading" /> : null}
+
             {state !== "shutdown" && (
               <div>
-                <button
-                  className={`btn btn-${v.variant} md:btn-md lg:btn-lg`}
-                  onClick={handlePrimary}
-                  disabled={state === "launching"}
-                >
+                <button className={`btn btn-${v.variant} md:btn-md lg:btn-lg`} onClick={handlePrimary} disabled={state === "launching"}>
                   {v.primaryText}
                 </button>
               </div>
             )}
-            {state === "error" && errorDetails && (
-              <pre className="text-left text-xs bg-base-200 p-3 rounded overflow-auto max-h-64">
-                {errorDetails}
-              </pre>
-            )}
-            {state === "error" && responseMessage && (
-              <p className="text-sm opacity-80">{responseMessage}</p>
-            )}
+            {state === "error" && responseMessage && <p className="text-sm opacity-80">{responseMessage}</p>}
             {state === "error" && errorDetails && (
               <pre className="text-left text-xs bg-base-200 p-3 rounded overflow-auto max-h-64">
                 {errorDetails}

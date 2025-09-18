@@ -7,16 +7,12 @@ import signal
 import subprocess
 from pathlib import Path
 
-# ---------- Config (env overridable) ----------
 HOST     = os.getenv("HOST", "0.0.0.0")
 PORT     = int(os.getenv("PORT", "8000"))
 APP      = os.getenv("APP", "backend.main:app")
 WORKERS  = int(os.getenv("WORKERS", "1"))          # uvicorn --workers
 RELOAD   = os.getenv("RELOAD", "0") == "1"         # uvicorn --reload (dev)
 EXTRA    = os.getenv("UVICORN_EXTRA", "")          # any extra flags
-
-# Where to check if it's actually listening.
-# Never probe 0.0.0.0; probe localhost.
 CHECK_HOSTS = [
     os.getenv("CHECK_HOST", "127.0.0.1"),
     "localhost",
@@ -26,7 +22,6 @@ CWD     = Path(__file__).parent.resolve()
 PIDFILE = Path("/tmp/uvicorn_backend_main.pid")
 LOGFILE = Path("/tmp/uvicorn_backend_main.log")
 
-# ---------- Helpers ----------
 def is_listening(hosts=CHECK_HOSTS, port=PORT, timeout=0.25) -> bool:
     for h in hosts:
         try:
@@ -69,19 +64,14 @@ def _build_cmd():
 
 # ---------- Actions ----------
 def start():
-    # Already listening?
     if is_listening():
         print(f"FastAPI already listening on {HOST}:{PORT}")
         return 0
-
-    # Clean stale PID
     pid = read_pid()
     if pid and not is_alive(pid):
         PIDFILE.unlink(missing_ok=True)
-
     LOGFILE.parent.mkdir(parents=True, exist_ok=True)
     log_f = open(LOGFILE, "ab", buffering=0)
-
     cmd = _build_cmd()
     print(f"Starting: {' '.join(cmd)}")
     proc = subprocess.Popen(
@@ -93,15 +83,11 @@ def start():
         start_new_session=True,      # detach
     )
     PIDFILE.write_text(str(proc.pid))
-
-    # wait until it’s actually up (max ~4s)
     for _ in range(40):
         if is_listening():
             print(f"Started (pid {proc.pid}) on {HOST}:{PORT}")
             return 0
         time.sleep(0.1)
-
-    # didn't come up; show last few log lines
     try:
         tail = LOGFILE.read_bytes()[-2000:].decode("utf-8", "ignore")
     except Exception:
@@ -112,24 +98,19 @@ def start():
 def stop(timeout=5):
     pid = read_pid()
     if not pid:
-        # Fallback: kill whatever is bound to the TCP port
         os.system(f"fuser -k {PORT}/tcp >/dev/null 2>&1 || true")
         print("Stopped (no pidfile).")
         return 0
-
     if not is_alive(pid):
         PIDFILE.unlink(missing_ok=True)
         print("Stopped (stale pidfile).")
         return 0
-
     try:
         os.kill(pid, signal.SIGTERM)
     except ProcessLookupError:
         PIDFILE.unlink(missing_ok=True)
         print("Stopped.")
         return 0
-
-    # wait for exit
     t0 = time.time()
     while time.time() - t0 < timeout:
         if not is_alive(pid):
@@ -137,7 +118,6 @@ def stop(timeout=5):
             print("Stopped.")
             return 0
         time.sleep(0.2)
-
     try:
         os.kill(pid, signal.SIGKILL)
     except ProcessLookupError:
@@ -158,7 +138,6 @@ def status():
     print("Not running")
     return 3
 
-# ---------- CLI ----------
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "start"
     if cmd == "start":
