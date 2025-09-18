@@ -562,7 +562,7 @@ def _pid_running(pid: int) -> bool:
         return False
 
 @app.post("/api/launch_ui")
-async def launch_ui(usb_path: str = Form(...), ifc_path: Optional[str] = Form(None)):
+async def launch_ui(usb_path: str = Form(...), ifc_path: Optional[str] = Form(None),  force: bool = Form(False),):
     try:
         base = Path(usb_path).resolve()
         if not base.exists() or not base.is_dir():
@@ -598,7 +598,7 @@ async def launch_ui(usb_path: str = Form(...), ifc_path: Optional[str] = Form(No
         log_f = open(LOGFILE, "ab", buffering=0)
 
         if LOCKFILE.exists():
-            raise HTTPException(status_code=409, detail="UI relaunch is locked (machine should be powered off).")
+            LOCKFILE.unlink(missing_ok=True)
 
         if PIDFILE.exists():
             try:

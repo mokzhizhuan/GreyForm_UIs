@@ -150,9 +150,8 @@ function loadLastIfc() {
     return;
   }
   setState("launching");
-
+  let ifcPath: string | undefined;
   try {
-    let ifcPath: string | undefined;
 
     // 1) quick (non-recursive, 0–2 levels)
     const q = await axios.get(`${API}/api/find_ifc_quick`, {
@@ -217,24 +216,24 @@ function loadLastIfc() {
      const detail = err?.response?.data?.detail || err?.message || "unknown error";
 
   // Auto-clear lock if we hit the relaunch lock
-  if (status === 409 && /relaunch is locked/i.test(detail)) {
-    try {
-      await axios.post(`${API}/api/reset_lock`);
-      // retry once
-      const fd = new FormData();
-      fd.append("usb_path", usbPath);
-      fd.append("ifc_path", ifcPath!);
-      const res = await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
-      const pid = Number(res.data?.pid ?? 0);
-      if (pid > 0) setUiPid(pid);
-      sessionStorage.setItem("uiPoll", "1");
-      setShouldPoll(true);
-      setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}`);
-      setErrorDetails("");
-      return;
-    } catch (e2:any) {
-      // fall through to show error
-    }
+      if (status === 409 && /relaunch is locked/i.test(detail)) {
+        try {
+          await axios.post(`${API}/api/reset_lock`);
+          // retry once
+          const fd = new FormData();
+          fd.append("usb_path", usbPath);
+          fd.append("ifc_path", ifcPath!);
+          const res = await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
+          const pid = Number(res.data?.pid ?? 0);
+          if (pid > 0) setUiPid(pid);
+          sessionStorage.setItem("uiPoll", "1");
+          setShouldPoll(true);
+          setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}`);
+          setErrorDetails("");
+          return;
+        } catch (e2:any) {
+          // fall through to show error
+        }
   }
 
   setResponseMessage(`❌ Failed to launch: ${detail}`);
