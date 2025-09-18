@@ -36,6 +36,50 @@ IFC_CACHE: Dict[str, Dict[str, float]] = {}
 _CACHE = {"ts": 0.0, "preferred": None, "choices": []}
 _CACHE_TTL = 5.0  # seconds
 PROJECT_DIR = Path(__file__).resolve().parent.parent  
+
+def _is_mountpoint(p: Path) -> bool:
+    """Robust mount check (handles some FUSE/bind cases)."""
+    try:
+        if os.path.ismount(p):
+            return True
+        st = os.stat(p)
+        pst = os.stat(p.parent)
+        return st.st_dev != pst.st_dev
+    except Exception:
+        return False
+
+def _has_entries(p: Path) -> bool:
+    """Cheap 'is empty?' check."""
+    try:
+        with os.scandir(p) as it:
+            next(it)
+            return True
+    except StopIteration:
+        return False
+    except PermissionError:
+        return True
+    except FileNotFoundError:
+        return False
+    except Exception:
+        return False
+
+def _is_media_root(p: Path) -> bool:
+    # /media  or  /run/media
+    parts = p.resolve().parts
+    return (parts == ("/","media")) or (len(parts) == 3 and parts[0]=="/" and parts[1]=="run" and parts[2]=="media")
+
+def _is_user_media_root(p: Path) -> bool:
+    # /media/<user>  or  /run/media/<user>
+    parts = p.resolve().parts
+    return (len(parts) == 3 and parts[0]=="/" and parts[1]=="media") or \
+           (len(parts) == 4 and parts[0]=="/" and parts[1]=="run" and parts[2]=="media")
+
+def _is_media_leaf(p: Path) -> bool:
+    # /media/<user>/<LABEL> (and deeper)
+    parts = p.resolve().parts
+    return (len(parts) >= 4 and parts[0]=="/" and parts[1]=="media") or \
+           (len(parts) >= 5 and parts[0]=="/" and parts[1]=="run" and parts[2]=="media")
+
 def _cache_load():
     global IFC_CACHE
     try:
@@ -348,14 +392,20 @@ def detect_usb(
 ):
     now = time.monotonic()
     if (now - _CACHE["ts"]) < _CACHE_TTL and _CACHE["preferred"]:
-        return {"found": True, "preferred": _CACHE["preferred"], "choices": _CACHE["choices"], "checked": [], "cached": True}
+        return {
+            "found": True, "preferred": _CACHE["preferred"],
+            "choices": _CACHE["choices"], "checked": [], "cached": True
+        }
     checked: List[Dict] = []
     choices: List[Dict] = []
     roots = _expand_roots(path)
     if scan_media:
         roots += [Path("/media"), Path("/run/media")]
+        roots += [Path(p) for p in glob.glob("/media/*")]
         roots += [Path(p) for p in glob.glob("/media/*/*")]
+        roots += [Path(p) for p in glob.glob("/run/media/*")]
         roots += [Path(p) for p in glob.glob("/run/media/*/*")]
+    seen = set()
     seen = set()
     for d in roots:
         try:
@@ -365,23 +415,58 @@ def detect_usb(
         if rp in seen or not rp.exists() or not rp.is_dir():
             continue
         seen.add(rp)
-        files = [] if not need_files else _cheap_list(rp, exts=[], limit=200)
+
+        # Skip container roots outright
+        if _is_media_root(rp):
+            checked.append({
+                "path": str(rp), "exists": True, "valid": False,
+                "ismount": False, "has_entries": _has_entries(rp),
+                "reason": "media_root"
+            })
+            continue
+
         has_any = _has_entries(rp)
-        ismnt = os.path.ismount(rp)
+        ismnt = _is_mountpoint(rp)
+        files = [] if not need_files else _cheap_list(rp, exts=[], limit=200)
+
+        # If it's a user root like /media/ubuntu and it's empty => not valid
+        if _is_user_media_root(rp) and not has_any:
+            checked.append({
+                "path": str(rp), "exists": True, "valid": False,
+                "ismount": ismnt, "has_entries": has_any,
+                "reason": "empty_user_media_root"
+            })
+            continue
+
+        under_media = str(rp).startswith("/media/") or str(rp).startswith("/run/media/")
+
+        # Only accept *leaf* media dirs (e.g., /media/<user>/<LABEL>), and they must be mounted or have entries
+        if under_media:
+            valid = _is_media_leaf(rp) and (ismnt or has_any or bool(files))
+        else:
+            # outside /media: keep your original permissive rule
+            valid = bool(files) or ismnt or has_any
+
         info = {
             "path": str(rp),
             "exists": True,
-            "valid": bool(files) or ismnt or has_any,
+            "valid": valid,
             "files": files,
             "ismount": ismnt,
             "has_entries": has_any,
         }
         checked.append(info)
+
         if info["valid"]:
             choices.append({"path": info["path"], "files": info["files"]})
             _CACHE.update(ts=now, preferred=info["path"], choices=choices)
-            return {"found": True, "preferred": info["path"], "choices": choices, "checked": checked, "cached": False}
+            return {
+                "found": True, "preferred": info["path"],
+                "choices": choices, "checked": checked, "cached": False
+            }
+
     return {"found": False, "preferred": None, "choices": choices, "checked": checked, "cached": False}
+
 
 @app.post("/api/launch_ui")
 async def launch_ui(
@@ -486,3 +571,4 @@ def reset_lock():
         return {"ok": True, "message": "Lock cleared."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to clear lock: {e}")
+
