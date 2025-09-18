@@ -34,3 +34,27 @@ http://packages.ros.org/ros/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME)
 #           s|http://security.ubuntu.com|http://old-releases.ubuntu.com|g' /etc/apt/sources.list; \
 #   apt-get update
 
+#FROM ubuntu:20.04 AS ubuntu_base
+#RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl gnupg2 lsb-release && rm -rf /var/lib/apt/lists/*
+#RUN set -eux; \
+#    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+#      | gpg --dearmor -o /usr/share/keyrings/ros-archive-keyring.gpg; \
+#    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros/ubuntu focal main" \
+#     > /etc/apt/sources.list.d/ros1.list; \
+#    apt-get update; \
+#    apt-get install -y --no-install-recommends ros-noetic-robot; \
+#    rm -rf /var/lib/apt/lists/*
+
+#FROM ros-noetic:robot-usb AS ros_prebuilt
+
+#FROM ubuntu_base AS ubuntu_final
+#SHELL ["/bin/bash","-c"]
+#RUN echo "source /opt/ros/noetic/setup.bash" >> /etc/bash.bashrc
+#CMD ["/bin/bash"]
+
+FROM ros_prebuilt AS ros_final
+SHELL ["/bin/bash","-c"]
+RUN echo "source /opt/ros/noetic/setup.bash" >> /etc/bash.bashrc
+CMD ["/bin/bash"]
+
+

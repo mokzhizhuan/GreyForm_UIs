@@ -152,7 +152,6 @@ export default function Status() {
           setErrorDetails("");
           return;
         } catch {
-          // fall through
         }
       }
       setResponseMessage(`❌ Failed to launch: ${detail}`);
