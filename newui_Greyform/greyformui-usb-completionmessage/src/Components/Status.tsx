@@ -69,12 +69,6 @@ export default function Status() {
       setState("error");
     }
   };
-  const cacheKey = "greyform:lastIfc";
-  const saveLastIfc = (usb: string, ifc: string) =>
-    localStorage.setItem(cacheKey, JSON.stringify({ usb, ifc }));
-  const loadLastIfc = () => {
-    try { return JSON.parse(localStorage.getItem(cacheKey) || "null"); } catch { return null; }
-  };
   const launchUI = async () => {
     if (!usbPath) {
       const msg = "❌ No USB path selected.";
@@ -208,7 +202,6 @@ export default function Status() {
             <h1 className="text-4xl md:text-5xl font-bold">{v.title}</h1>
             <p>{v.message}</p>
             {v.showSpinner ? <span className="loading loading-spinner loading-md" aria-label="Loading" /> : null}
-
             {state !== "shutdown" && (
               <div>
                 <button className={`btn btn-${v.variant} md:btn-md lg:btn-lg`} onClick={handlePrimary} disabled={state === "launching"}>
@@ -216,12 +209,12 @@ export default function Status() {
                 </button>
               </div>
             )}
-            {state === "error" && responseMessage && <p className="text-sm opacity-80">{responseMessage}</p>}
+            {/*{state === "error" && responseMessage && <p className="text-sm opacity-80">{responseMessage}</p>}
             {state === "error" && errorDetails && (
               <pre className="text-left text-xs bg-base-200 p-3 rounded overflow-auto max-h-64">
                 {errorDetails}
               </pre>
-            )}
+            )}*/}
           </div>
         </div>
       </div>

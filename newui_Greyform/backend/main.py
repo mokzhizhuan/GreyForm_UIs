@@ -38,7 +38,6 @@ _CACHE_TTL = 5.0  # seconds
 PROJECT_DIR = Path(__file__).resolve().parent.parent  
 
 def _is_mountpoint(p: Path) -> bool:
-    """Robust mount check (handles some FUSE/bind cases)."""
     try:
         if os.path.ismount(p):
             return True
@@ -49,7 +48,6 @@ def _is_mountpoint(p: Path) -> bool:
         return False
 
 def _has_entries(p: Path) -> bool:
-    """Cheap 'is empty?' check."""
     try:
         with os.scandir(p) as it:
             next(it)
@@ -64,18 +62,15 @@ def _has_entries(p: Path) -> bool:
         return False
 
 def _is_media_root(p: Path) -> bool:
-    # /media  or  /run/media
     parts = p.resolve().parts
     return (parts == ("/","media")) or (len(parts) == 3 and parts[0]=="/" and parts[1]=="run" and parts[2]=="media")
 
 def _is_user_media_root(p: Path) -> bool:
-    # /media/<user>  or  /run/media/<user>
     parts = p.resolve().parts
     return (len(parts) == 3 and parts[0]=="/" and parts[1]=="media") or \
            (len(parts) == 4 and parts[0]=="/" and parts[1]=="run" and parts[2]=="media")
 
 def _is_media_leaf(p: Path) -> bool:
-    # /media/<user>/<LABEL> (and deeper)
     parts = p.resolve().parts
     return (len(parts) >= 4 and parts[0]=="/" and parts[1]=="media") or \
            (len(parts) >= 5 and parts[0]=="/" and parts[1]=="run" and parts[2]=="media")
@@ -261,8 +256,6 @@ def find_ifc_quick(root: str = Query(..., description="USB mount root")):
     r = Path(root)
     if not r.exists() or not r.is_dir():
         return {"ok": False, "reason": "root-not-dir", "match": None}
-
-    # cache hit?
     got = IFC_CACHE.get(str(r))
     if got:
         p = Path(got.get("path", ""))
@@ -355,7 +348,6 @@ def find_ifc_fast(
             out = cp.stdout.strip()
             if out:
                 lines = out.splitlines()
-                # newest first; prefer .ifc
                 lines.sort(key=lambda s: (float(s.split(" ", 1)[0]),
                                           s.split(" ", 1)[1].lower().endswith(".ifc")), reverse=True)
                 ts, path = lines[0].split(" ", 1)
@@ -415,8 +407,6 @@ def detect_usb(
         if rp in seen or not rp.exists() or not rp.is_dir():
             continue
         seen.add(rp)
-
-        # Skip container roots outright
         if _is_media_root(rp):
             checked.append({
                 "path": str(rp), "exists": True, "valid": False,
@@ -424,12 +414,9 @@ def detect_usb(
                 "reason": "media_root"
             })
             continue
-
         has_any = _has_entries(rp)
         ismnt = _is_mountpoint(rp)
         files = [] if not need_files else _cheap_list(rp, exts=[], limit=200)
-
-        # If it's a user root like /media/ubuntu and it's empty => not valid
         if _is_user_media_root(rp) and not has_any:
             checked.append({
                 "path": str(rp), "exists": True, "valid": False,
@@ -437,16 +424,11 @@ def detect_usb(
                 "reason": "empty_user_media_root"
             })
             continue
-
         under_media = str(rp).startswith("/media/") or str(rp).startswith("/run/media/")
-
-        # Only accept *leaf* media dirs (e.g., /media/<user>/<LABEL>), and they must be mounted or have entries
         if under_media:
             valid = _is_media_leaf(rp) and (ismnt or has_any or bool(files))
         else:
-            # outside /media: keep your original permissive rule
             valid = bool(files) or ismnt or has_any
-
         info = {
             "path": str(rp),
             "exists": True,
@@ -571,4 +553,3 @@ def reset_lock():
         return {"ok": True, "message": "Lock cleared."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to clear lock: {e}")
-

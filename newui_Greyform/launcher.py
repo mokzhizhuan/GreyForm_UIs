@@ -62,7 +62,6 @@ def _build_cmd():
         cmd.extend(EXTRA.split())
     return cmd
 
-# ---------- Actions ----------
 def start():
     if is_listening():
         print(f"FastAPI already listening on {HOST}:{PORT}")

@@ -24,8 +24,7 @@ class Ui_MainWindow_layout(object):
         self.confirmButton = confirmButton
         self.page = page
         self.setStretch()
-
-    # stretch layout
+        
     def setStretch(self):
         self.page1boxlayout = QVBoxLayout()
         self.page1boxlayout.addWidget(self.titlelabel)

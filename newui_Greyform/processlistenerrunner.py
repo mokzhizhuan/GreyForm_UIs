@@ -1,9 +1,7 @@
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtGui import QPixmap, QMovie
 from PyQt5.QtCore import Qt ,  QObject ,pyqtSignal
-import threading
-import subprocess
-import os
+import os, subprocess, threading, shlex
 import json
 
 
@@ -90,31 +88,47 @@ class ListenerNodeRunner:
 
     def _run_process(self):
         env = os.environ.copy()
-        env["ROS_MASTER_URI"] = "http://localhost:11311"
-        env["ROS_IP"] = "172.17.0.1"
-        env["ROS_HOSTNAME"] = "localhost"
-        command = "source /opt/ros/noetic/setup.bash && source /root/catkin_ws/src/newui_Greyform/devel/setup.bash && rosrun talker_listener listener_node.py"
+        env["ROS_MASTER_URI"] = env.get("ROS_MASTER_URI", "http://localhost:11311")
+        env["ROS_HOSTNAME"] = env.get("ROS_HOSTNAME", "localhost")
+        ros_setup = "/opt/ros/noetic/setup.bash"
+        ws_setup  = "/root/catkin_ws/newui_Greyform/devel/setup.bash"
+        shell_cmd = f"""
+            set -e
+            source {ros_setup}
+            source {ws_setup}
+            rospack find talker_listener >/dev/null
+            rosrun talker_listener listener_node.py
+        """
         try:
             process = subprocess.Popen(
-                ["bash", "-c", command],
+                ["bash", "-lc", shell_cmd],
                 env=env,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,   # <- only change needed
+                bufsize=1,
+                universal_newlines=True,
             )
-            self.signals.page_change_signal.emit(4)  
-            stdout, stderr = process.communicate()
-            if process.returncode == 0:
-                self.signals.status_signal.emit("Node started successfully.")
-                self.signals.status_signal.emit(stdout.decode("utf-8"))
-            else:
-                self.signals.status_signal.emit("Failed to start node.")
-                self.signals.status_signal.emit(stderr.decode("utf-8"))
-            self.process_finished()
+            self.signals.page_change_signal.emit(4)
+            self.signals.status_signal.emit("Starting listener_node…")
+            def _pump_out(pipe):
+                try:
+                    for line in pipe:
+                        if line:
+                            self.signals.status_signal.emit(line.rstrip())
+                finally:
+                    pipe.close()
+            threading.Thread(target=_pump_out, args=(process.stdout,), daemon=True).start()
+            def _waiter():
+                rc = process.wait()
+                msg = "Node exited normally." if rc == 0 else f"Node exited with code {rc}."
+                self.signals.status_signal.emit(msg)
+                self.process_finished()
+            threading.Thread(target=_waiter, daemon=True).start()
         except Exception as e:
-            self.signals.status_signal.emit(f"Process failed: {str(e)}")
+            self.signals.status_signal.emit(f"Process failed: {e}")
+            self.process_finished()
 
     def on_status(self, msg: str):
-        # Parse JSON if provided; else treat as plain text
         try:
             data = json.loads(msg)
             text = data.get("text", msg)
@@ -142,7 +156,6 @@ class ListenerNodeRunner:
                 self.status_icon.setPixmap(pm)
 
     def send_status(self, text, icon=None, gif=None):
-        # This method should NEVER be connected to status_signal
         if icon or gif:
             payload = {"text": text}
             if icon: payload["icon"] = icon

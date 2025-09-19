@@ -377,16 +377,16 @@ class ListenerNode:
             self._in_progress = False
 
     def _numeric_cols(self, df):
-        for c in ("LX", "LY", "LZ"):
+        for c in ("Position X", "Position Y", "Position Z"):
             if c not in df.columns:
                 return None
         df = df.copy()
-        for c in ("LX", "LY", "LZ", "Wall Number", "Marking Type", "Status"):
+        for c in ("Position X", "Position Y", "Position Z", "Wall Number", "Marking Type", "Status"):
             if c in df.columns:
                 df[c] = df[c].apply(lambda x: x.strip() if isinstance(x, str) else x)
-        df["LX"] = pd.to_numeric(df["LX"], errors="coerce")
-        df["LY"] = pd.to_numeric(df["LY"], errors="coerce")
-        df["LZ"] = pd.to_numeric(df["LZ"], errors="coerce")
+        df["Position X"] = pd.to_numeric(df["Position X"], errors="coerce")
+        df["Position Y"] = pd.to_numeric(df["Position Y"], errors="coerce")
+        df["Position Z"] = pd.to_numeric(df["Position Z"], errors="coerce")
         if "Status" not in df.columns:
             df["Status"] = "blank"
         else:
@@ -486,7 +486,7 @@ class ListenerNode:
         return True
 
     def _nearest_index(self, df, posX, posY, posZ, wall_str):
-        pts = df[["LX", "LY", "LZ"]].to_numpy(dtype=float)
+        pts = df[["Position X", "Position Y", "Position Z"]].to_numpy(dtype=float)
         target = np.array([posX, posY, posZ], dtype=float)
         d = np.abs(pts - target).sum(axis=1)  # L1 is robust for grid snaps
         cand = pd.Series(d, index=df.index)
@@ -504,7 +504,7 @@ class ListenerNode:
         return int(idx), float(cand.loc[idx])
 
     def _closest_index(self, df, idx_list, posX, posY, posZ):
-        sub = df.loc[idx_list, ["LX", "LY", "LZ"]].to_numpy(dtype=float)
+        sub = df.loc[idx_list, ["Position X", "Position Y", "Position Z"]].to_numpy(dtype=float)
         target = np.array([posX, posY, posZ], float)
         d = np.abs(sub - target).sum(axis=1)
 
@@ -530,7 +530,7 @@ class ListenerNode:
                 idx = self._closest_index(df, cand_idx, posX, posY, posZ)
                 l1 = float(
                     np.abs(
-                        df.loc[idx, ["LX", "LY", "LZ"]].to_numpy(dtype=float) - pos
+                        df.loc[idx, ["Position X", "Position Y", "Position Z"]].to_numpy(dtype=float) - pos
                     ).sum()
                 )
                 if best is None or l1 < best[1]:
@@ -548,7 +548,7 @@ class ListenerNode:
                     idx = self._closest_index(df, cand_idx, posX, posY, posZ)
                     l1 = float(
                         np.abs(
-                            df.loc[idx, ["LX", "LY", "LZ"]].to_numpy(dtype=float) - pos
+                            df.loc[idx, ["Position X", "Position Y", "Position Z"]].to_numpy(dtype=float) - pos
                         ).sum()
                     )
                     if best is None or l1 < best[1]:
@@ -580,7 +580,7 @@ class ListenerNode:
                 idx = self._closest_index(df, pool, posX, posY, posZ)
                 l1 = float(
                     np.abs(
-                        df.loc[idx, ["LX", "LY", "LZ"]].to_numpy(dtype=float) - pos
+                        df.loc[idx, ["Position X", "Position Y", "Position Z"]].to_numpy(dtype=float) - pos
                     ).sum()
                 )
                 if best is None or l1 < best[1]:
@@ -630,9 +630,9 @@ class ListenerNode:
         self, df, posX, posY, posZ, wall_str, mtype, tol, enforce_wall=True
     ):
         mask = (
-            (df["LX"].sub(posX).abs() <= tol)
-            & (df["LY"].sub(posY).abs() <= tol)
-            & (df["LZ"].sub(posZ).abs() <= tol)
+            (df["Position X"].sub(posX).abs() <= tol)
+            & (df["Position Y"].sub(posY).abs() <= tol)
+            & (df["Position Z"].sub(posZ).abs() <= tol)
         )
         if enforce_wall and "Wall Number" in df.columns and wall_str is not None:
             mask &= df["Wall Number"].astype(str) == wall_str

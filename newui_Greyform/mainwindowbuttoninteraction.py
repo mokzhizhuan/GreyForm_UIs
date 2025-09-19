@@ -184,9 +184,7 @@ class mainwindowbuttonUI(object):
         if app is not None:
             QtCore.QTimer.singleShot(0, app.quit)
         self.mainwindow.closeEvent = lambda ev: (self.finalize(), ev.accept())
-
-
-
+        
 
     def close_status_dialog(self):
         self.dialog.close()       # hides the window
