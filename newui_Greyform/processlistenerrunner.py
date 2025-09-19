@@ -109,7 +109,6 @@ class ListenerNodeRunner:
                 universal_newlines=True,
             )
             self.signals.page_change_signal.emit(4)
-            self.signals.status_signal.emit("Starting listener_node…")
             def _pump_out(pipe):
                 try:
                     for line in pipe:
@@ -138,11 +137,9 @@ class ListenerNodeRunner:
             text, icon, gif = msg, None, None
 
         self.labelstatus.setText(text)
-        # update small icon label next to text (create once in __init__)
         if getattr(self, "_movie", None):
             self._movie.stop(); self._movie = None
         self.status_icon.clear()
-
         if gif:
             self._movie = QMovie(gif)
             self._movie.setScaledSize(self.status_icon.size())

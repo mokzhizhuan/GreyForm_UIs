@@ -13,7 +13,6 @@ from src.talker_listener.talker_listener import talker_node as RosPublisher
 import rospy
 import warnings
 import argsfiles as fileimport
-import vtk
 import exceldatavtk as dataplacement
 import dataanalysis as datadraft
 
