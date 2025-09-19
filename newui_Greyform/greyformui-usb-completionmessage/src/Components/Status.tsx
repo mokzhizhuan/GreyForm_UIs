@@ -26,7 +26,7 @@ const views = {
   waiting: { title: "Please insert a USB drive to continue", message: "Click Start to detect a USB drive.", variant: "primary", primaryText: "Start", showSpinner: false },
   reading: { title: "Reading USB drive...", message: "Please wait while we read the contents of the USB drive.", variant: "info", primaryText: "Cancel", showSpinner: true },
   success: { title: "USB drive detected", message: "Press Continue to launch the UI.", variant: "success", primaryText: "Continue", showSpinner: false },
-  error:   { title: "Error reading USB drive", message: "We could not find a usable USB or matching files.", variant: "error", primaryText: "Try Again", showSpinner: false },
+  error:   { title: "Error reading USB drive", message: "Please plug in your drive", variant: "error", primaryText: "Try Again", showSpinner: false },
   launching:{ title: "Launching UI…", message: "Sending request to the backend.", variant: "info", primaryText: "Launching…", showSpinner: true },
   shutdown:{ title: "Please power off the machine", message: "The operation is completed successfully", variant: "neutral", primaryText: "", showSpinner: false },
 } as const;

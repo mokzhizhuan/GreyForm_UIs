@@ -341,7 +341,7 @@ class ListenerNode:
             wx = (
                 str(row.get("Wall Number", "")) if "Wall Number" in df.columns else None
             )
-            lx, ly, lz = float(row["LX"]), float(row["LY"]), float(row["LZ"])
+            lx, ly, lz = float(row["Position X"]), float(row["Position Y"]), float(row["Position Z"])
             for w, mt, pos in self._journal:
                 if wx is not None and w != wx:
                     continue

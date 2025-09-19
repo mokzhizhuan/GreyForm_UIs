@@ -49,9 +49,9 @@ class mainwindowbuttonUI(object):
         return pd.DataFrame({
             "Name": payload["markingidentifiers"],
             "Wall Number": payload["Wall Number"],
-            "LX": payload["Position X"],
-            "LY": payload["Position Y"],
-            "LZ": payload["Position Z"],
+            "Position X": payload["Position X"],
+            "Position Y": payload["Position Y"],
+            "Position Z": payload["Position Z"],
             "Marking Type": payload["Shape Type"],
             "Width": payload["width"],
             "Height": payload["height"],
@@ -168,18 +168,15 @@ class mainwindowbuttonUI(object):
             self.mainwindow.close()
         except Exception:
             pass
-        try:
-            pidfile = Path("/tmp/greyform_ui.pid")
-            if pidfile.exists():
-                txt = pidfile.read_text().strip()
-                if txt.isdigit():
-                    requests.post(
-                        "http://localhost:8000/api/ui_closed",
-                        data={"pid": int(txt)},
-                        timeout=1.0
-                    )
-        except Exception as e:
-            print("ui_closed post failed:", e)
+        pidfile = Path("/tmp/greyform_ui.pid")
+        if pidfile.exists():
+            txt = pidfile.read_text().strip()
+            if txt.isdigit():
+                requests.post(
+                    "http://localhost:8000/api/ui_closed",
+                    data={"pid": int(txt)},
+                    timeout=1.0
+                )
         app = QtWidgets.QApplication.instance()
         if app is not None:
             QtCore.QTimer.singleShot(0, app.quit)

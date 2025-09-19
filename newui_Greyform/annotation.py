@@ -1,7 +1,5 @@
-
 from pathlib import Path
-import re
-import math
+import re , math
 
 
 def getannotation(ifc_file):
@@ -83,134 +81,135 @@ def getannotation(ifc_file):
         if len(nums) == 2:
             nums.append(0.0)
         return tuple(nums[:3])
-        item_to_layers = {}
-        for rid, (rtype, args) in records.items():
-            if rtype == "IFCPRESENTATIONLAYERASSIGNMENT":
-                parts = split_top_level_commas(args)
-                name = parse_string(parts[0]) if parts else None
-                if len(parts) >= 3:
-                    items_list = strip_outer_parens(parts[2])
-                    for tok in split_top_level_commas(items_list):
-                        ref = parse_ref(tok)
-                        if ref:
-                            item_to_layers.setdefault(ref, []).append(name)
-        rows = []
-        for ann_id, (rtype, args) in records.items():
-            if rtype != "IFCANNOTATION":
-                continue
+    item_to_layers = {}
+    for rid, (rtype, args) in records.items():
+        if rtype == "IFCPRESENTATIONLAYERASSIGNMENT":
             parts = split_top_level_commas(args)
-            name = parse_string(parts[2]) if len(parts) >= 3 else None
-            if not (name and name.lower().startswith("model lines:")):
+            name = parse_string(parts[0]) if parts else None
+            if len(parts) >= 3:
+                items_list = strip_outer_parens(parts[2])
+                for tok in split_top_level_commas(items_list):
+                    ref = parse_ref(tok)
+                    if ref:
+                        item_to_layers.setdefault(ref, []).append(name)
+    rows = []
+    for ann_id, (rtype, args) in records.items():
+        if rtype != "IFCANNOTATION":
+            continue
+        parts = split_top_level_commas(args)
+        name = parse_string(parts[2]) if len(parts) >= 3 else None
+        if not (name and name.lower().startswith("model lines:")):
+            continue
+        gid = parse_string(parts[0]) if parts else None
+        objtype = parse_string(parts[4]) if len(parts) >= 5 else "Model Lines"
+        pds_id = None
+        for tok in parts:
+            ref = parse_ref(tok)
+            if ref and records.get(ref, (None, None))[0] == "IFCPRODUCTDEFINITIONSHAPE":
+                pds_id = ref
+                break
+        if not pds_id:
+            continue
+        _, pds_args = records[pds_id]
+        pds_parts = split_top_level_commas(pds_args)
+        reps_list = strip_outer_parens(pds_parts[2]) if len(pds_parts) >= 3 else ""
+        rep_ids = [
+            parse_ref(t) for t in split_top_level_commas(reps_list) if parse_ref(t)
+        ]
+        for srid in rep_ids:
+            stype, sargs = records.get(srid, (None, None))
+            if stype != "IFCSHAPEREPRESENTATION":
                 continue
-            gid = parse_string(parts[0]) if parts else None
-            objtype = parse_string(parts[4]) if len(parts) >= 5 else "Model Lines"
-            pds_id = None
-            for tok in parts:
-                ref = parse_ref(tok)
-                if ref and records.get(ref, (None, None))[0] == "IFCPRODUCTDEFINITIONSHAPE":
-                    pds_id = ref
-                    break
-            if not pds_id:
-                continue
-            _, pds_args = records[pds_id]
-            pds_parts = split_top_level_commas(pds_args)
-            reps_list = strip_outer_parens(pds_parts[2]) if len(pds_parts) >= 3 else ""
-            rep_ids = [
-                parse_ref(t) for t in split_top_level_commas(reps_list) if parse_ref(t)
+            sra = split_top_level_commas(sargs)
+            items_list = strip_outer_parens(sra[3]) if len(sra) >= 4 else ""
+            item_ids = [
+                parse_ref(t) for t in split_top_level_commas(items_list) if parse_ref(t)
             ]
-            for srid in rep_ids:
-                stype, sargs = records.get(srid, (None, None))
-                if stype != "IFCSHAPEREPRESENTATION":
-                    continue
-                sra = split_top_level_commas(sargs)
-                items_list = strip_outer_parens(sra[3]) if len(sra) >= 4 else ""
-                item_ids = [
-                    parse_ref(t) for t in split_top_level_commas(items_list) if parse_ref(t)
-                ]
-                for iid in item_ids:
-                    itype, iargs = records.get(iid, (None, None))
-                    if itype == "IFCPOLYLINE":
-                        iparts = split_top_level_commas(iargs)
-                        pts_list = strip_outer_parens(iparts[0]) if iparts else ""
-                        pt_ids = [
-                            parse_ref(t.strip())
-                            for t in split_top_level_commas(pts_list)
-                            if parse_ref(t.strip())
-                        ]
-                        if len(pt_ids) >= 2:
-                            p0 = coords_from_point_id(pt_ids[0])
-                            p1 = coords_from_point_id(pt_ids[-1])
-                            if p0 and p1:
-                                L = math.dist(p0, p1)
-                                layers = item_to_layers.get(iid)
-                                rows.append(
-                                    {
-                                        "AnnotationId": ann_id,
-                                        "GlobalId": gid,
-                                        "name": name,
-                                        "ObjectType": objtype,
-                                        "CurveItemType": "IFCPOLYLINE",
-                                        "PolylineId": iid,
-                                        "LayerNames": ";".join(layers) if layers else None,
-                                        "StartX_local": round(p0[0]),
-                                        "StartY_local": round(p0[1]),
-                                        "StartZ_local": round(p0[2]),
-                                        "CenterX_local": round((p0[0] + p1[0]) / 2),
-                                        "CenterY_local": round((p0[1] + p1[1]) / 2),
-                                        "CenterZ_local": round((p0[2] + p1[2]) / 2),
-                                        "EndX_local": round(p1[0]),
-                                        "EndY_local": round(p1[1]),
-                                        "EndZ_local": round(p1[2]),
-                                        "Length_local": round(L),
-                                    }
-                                )
-                    elif itype == "IFCGEOMETRICCURVESET":
-                        parts_geo = split_top_level_commas(iargs)
-                        elements = strip_outer_parens(parts_geo[0]) if parts_geo else ""
-                        sub_ids = [
-                            parse_ref(t)
-                            for t in split_top_level_commas(elements)
-                            if parse_ref(t)
-                        ]
-                        for sid in sub_ids:
-                            st, sa = records.get(sid, (None, None))
-                            if st == "IFCPOLYLINE":
-                                iparts = split_top_level_commas(sa)
-                                pts_list = strip_outer_parens(iparts[0]) if iparts else ""
-                                pt_ids = [
-                                    parse_ref(t.strip())
-                                    for t in split_top_level_commas(pts_list)
-                                    if parse_ref(t.strip())
-                                ]
-                                if len(pt_ids) >= 2:
-                                    p0 = coords_from_point_id(pt_ids[0])
-                                    p1 = coords_from_point_id(pt_ids[-1])
-                                    if p0 and p1:
-                                        L = math.dist(p0, p1)
-                                        layers = item_to_layers.get(
-                                            sid
-                                        ) or item_to_layers.get(iid)
-                                        rows.append(
-                                            {
-                                                "AnnotationId": ann_id,
-                                                "GlobalId": gid,
-                                                "name": name,
-                                                "ObjectType": objtype,
-                                                "CurveItemType": "IFCPOLYLINE",
-                                                "PolylineId": sid,
-                                                "LayerNames": (
-                                                    ";".join(layers) if layers else None
-                                                ),
-                                                "StartX_local": round(p0[0]),
-                                                "StartY_local": round(p0[1]),
-                                                "StartZ_local": round(p0[2]),
-                                                "CenterX_local": round((p0[0] + p1[0]) / 2),
-                                                "CenterY_local": round((p0[1] + p1[1]) / 2),
-                                                "CenterZ_local": round((p0[2] + p1[2]) / 2),
-                                                "EndX_local": round(p1[0]),
-                                                "EndY_local": round(p1[1]),
-                                                "EndZ_local": round(p1[2]),
-                                                "Length_local": round(L),
-                                            }
-                                        )
-        return rows
+
+            for iid in item_ids:
+                itype, iargs = records.get(iid, (None, None))
+                if itype == "IFCPOLYLINE":
+                    iparts = split_top_level_commas(iargs)
+                    pts_list = strip_outer_parens(iparts[0]) if iparts else ""
+                    pt_ids = [
+                        parse_ref(t.strip())
+                        for t in split_top_level_commas(pts_list)
+                        if parse_ref(t.strip())
+                    ]
+                    if len(pt_ids) >= 2:
+                        p0 = coords_from_point_id(pt_ids[0])
+                        p1 = coords_from_point_id(pt_ids[-1])
+                        if p0 and p1:
+                            L = math.dist(p0, p1)
+                            layers = item_to_layers.get(iid)
+                            rows.append(
+                                {
+                                    "AnnotationId": ann_id,
+                                    "GlobalId": gid,
+                                    "name": name,
+                                    "ObjectType": objtype,
+                                    "CurveItemType": "IFCPOLYLINE",
+                                    "PolylineId": iid,
+                                    "LayerNames": ";".join(layers) if layers else None,
+                                    "StartX_local": round(p0[0]),
+                                    "StartY_local": round(p0[1]),
+                                    "StartZ_local": round(p0[2]),
+                                    "CenterX_local": round((p0[0] + p1[0]) / 2),
+                                    "CenterY_local": round((p0[1] + p1[1]) / 2),
+                                    "CenterZ_local": round((p0[2] + p1[2]) / 2),
+                                    "EndX_local": round(p1[0]),
+                                    "EndY_local": round(p1[1]),
+                                    "EndZ_local": round(p1[2]),
+                                    "Length_local": round(L),
+                                }
+                            )
+                elif itype == "IFCGEOMETRICCURVESET":
+                    parts_geo = split_top_level_commas(iargs)
+                    elements = strip_outer_parens(parts_geo[0]) if parts_geo else ""
+                    sub_ids = [
+                        parse_ref(t)
+                        for t in split_top_level_commas(elements)
+                        if parse_ref(t)
+                    ]
+                    for sid in sub_ids:
+                        st, sa = records.get(sid, (None, None))
+                        if st == "IFCPOLYLINE":
+                            iparts = split_top_level_commas(sa)
+                            pts_list = strip_outer_parens(iparts[0]) if iparts else ""
+                            pt_ids = [
+                                parse_ref(t.strip())
+                                for t in split_top_level_commas(pts_list)
+                                if parse_ref(t.strip())
+                            ]
+                            if len(pt_ids) >= 2:
+                                p0 = coords_from_point_id(pt_ids[0])
+                                p1 = coords_from_point_id(pt_ids[-1])
+                                if p0 and p1:
+                                    L = math.dist(p0, p1)
+                                    layers = item_to_layers.get(
+                                        sid
+                                    ) or item_to_layers.get(iid)
+                                    rows.append(
+                                        {
+                                            "AnnotationId": ann_id,
+                                            "GlobalId": gid,
+                                            "name": name,
+                                            "ObjectType": objtype,
+                                            "CurveItemType": "IFCPOLYLINE",
+                                            "PolylineId": sid,
+                                            "LayerNames": (
+                                                ";".join(layers) if layers else None
+                                            ),
+                                            "StartX_local": round(p0[0]),
+                                            "StartY_local": round(p0[1]),
+                                            "StartZ_local": round(p0[2]),
+                                            "CenterX_local": round((p0[0] + p1[0]) / 2),
+                                            "CenterY_local": round((p0[1] + p1[1]) / 2),
+                                            "CenterZ_local": round((p0[2] + p1[2]) / 2),
+                                            "EndX_local": round(p1[0]),
+                                            "EndY_local": round(p1[1]),
+                                            "EndZ_local": round(p1[2]),
+                                            "Length_local": round(L),
+                                        }
+                                    )
+    return rows
