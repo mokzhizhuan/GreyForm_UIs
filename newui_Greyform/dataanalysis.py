@@ -10,10 +10,7 @@ from ifcopenshell.util.placement import get_local_placement
 import robot_pos as setuprobot
 import annotation as modellines
 import material as mats
-import ifcopenshell
-import re
-import heapq
-
+import ifcopenshell , re , heapq
 
 class data_draft(object):
     def __init__(self, ifc_file, args):
@@ -244,14 +241,16 @@ class data_draft(object):
                 all_objs,
                 visited,
                 walls_bss20,
-                origin_x,
-                origin_y,
+                materials,
+                model_lines_walls, 
                 other_floor,
                 centerpoint_rows,
                 storeys,
                 externalxmax_width,
                 externalymax_width,
                 door,
+                origin_x,
+                origin_y
             )
             tmptemp = Tmpholder.returntmp()
         else:

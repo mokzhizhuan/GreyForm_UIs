@@ -152,10 +152,14 @@ class mainwindowbuttonUI(object):
         self.nextstepButton.hide()
         self.confirmButton_2.show()
         self.hide_status_icon()
+        iconindicator = "placementindicator2.png"
         icon = "placement2.png"
         html = f'<div style="text-align:center;"><img src="{icon}" width="800" height="600" style="display:block; margin:0 auto;"></div>'
+        htmlindicator = f'<div style="text-align:center;"><img src="{iconindicator}" style="display:block; margin:0 auto;"></div>'
         self.mainwindow.imagelabel.setTextFormat(Qt.RichText)
         self.mainwindow.imagelabel.setText(html)
+        self.mainwindow.imageplacelabel.setTextFormat(Qt.RichText)
+        self.mainwindow.imageplacelabel.setText(htmlindicator)
         self.labelstatus.setText(f"Place the robot in the center of Placement 2\n(The wall that is clockwise of wall 1)")
         self.confirmButton_2.clicked.connect(lambda: self.start_scan2())
 

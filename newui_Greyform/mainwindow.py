@@ -39,10 +39,14 @@ class Ui_MainWindow(QMainWindow):
         )
         datadrafter = datadraft.data_draft(self.stl_file, self.args)
         df_combined_data = datadrafter.analysis()
+        iconindicator = "placementindicator1.png"
         icon = "placement1.png"
         html = f'<div style="text-align:center;"><img src="{icon}" width="800" height="600" style="display:block; margin:0 auto;"></div>'
+        htmlindicator = f'<div style="text-align:center;"><img src="{iconindicator}"  style="display:block; margin:0 auto;"></div>'
         self.mainwindow.imagelabel.setTextFormat(Qt.RichText)
         self.mainwindow.imagelabel.setText(html)
+        self.mainwindow.imageplacelabel.setTextFormat(Qt.RichText)
+        self.mainwindow.imageplacelabel.setText(htmlindicator)
         self.wall_numbers_by_placement = dataplacement.exceldataextractor(df_combined_data)
         self.mainwindow.confirmButton_2.hide()
         self.mainwindow.nextstepButton.hide()

@@ -61,6 +61,13 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayoutpbu">
        <item>
+        <widget class="QLabel" name="imageplacelabel">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLabel" name="imagelabel">
          <property name="text">
           <string/>

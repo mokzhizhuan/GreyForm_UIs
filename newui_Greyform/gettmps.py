@@ -121,7 +121,7 @@ class getTMP(object):
             }
         )
 
-    def _build_wall(wall_idx)(self):
+    def _build_wall(self, wall_idx):
         wall_dict = self.walls[wall_idx]
         wall_obj = list(wall_dict.values())[0]
         opening = self.find_opening_by_name(wall_obj["name"])
@@ -374,4 +374,3 @@ class getTMP(object):
         if match:
             width, height = int(match.group(1)), int(match.group(2))
             return width, height
-

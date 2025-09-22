@@ -125,7 +125,6 @@ def getannotation(ifc_file):
             item_ids = [
                 parse_ref(t) for t in split_top_level_commas(items_list) if parse_ref(t)
             ]
-
             for iid in item_ids:
                 itype, iargs = records.get(iid, (None, None))
                 if itype == "IFCPOLYLINE":
@@ -197,9 +196,7 @@ def getannotation(ifc_file):
                                             "ObjectType": objtype,
                                             "CurveItemType": "IFCPOLYLINE",
                                             "PolylineId": sid,
-                                            "LayerNames": (
-                                                ";".join(layers) if layers else None
-                                            ),
+                                            "LayerNames": ";".join(layers) if layers else None,
                                             "StartX_local": round(p0[0]),
                                             "StartY_local": round(p0[1]),
                                             "StartZ_local": round(p0[2]),

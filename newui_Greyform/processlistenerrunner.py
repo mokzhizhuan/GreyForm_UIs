@@ -96,7 +96,6 @@ class ListenerNodeRunner:
             set -e
             source {ros_setup}
             source {ws_setup}
-            rospack find talker_listener >/dev/null
             rosrun talker_listener listener_node.py
         """
         try:
@@ -109,14 +108,7 @@ class ListenerNodeRunner:
                 universal_newlines=True,
             )
             self.signals.page_change_signal.emit(4)
-            def _pump_out(pipe):
-                try:
-                    for line in pipe:
-                        if line:
-                            self.signals.status_signal.emit(line.rstrip())
-                finally:
-                    pipe.close()
-            threading.Thread(target=_pump_out, args=(process.stdout,), daemon=True).start()
+            threading.Thread(target=self._pump_out, args=(process.stdout,), daemon=True).start()
             def _waiter():
                 rc = process.wait()
                 msg = "Node exited normally." if rc == 0 else f"Node exited with code {rc}."
@@ -126,6 +118,14 @@ class ListenerNodeRunner:
         except Exception as e:
             self.signals.status_signal.emit(f"Process failed: {e}")
             self.process_finished()
+
+    def _pump_out(self, pipe):
+        try:
+            for line in pipe:
+                if line:
+                    self.signals.status_signal.emit(line.rstrip())
+        finally:
+            pipe.close()
 
     def on_status(self, msg: str):
         try:

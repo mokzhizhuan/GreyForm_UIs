@@ -13,8 +13,8 @@ def _validate_file(path, exts):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("mainui",      type=lambda p: _validate_file(p, ".ui"),                help="Qt Designer .ui")
-    parser.add_argument("ifc_file",    type=lambda p: _validate_file(p, ".ifc"),               help="Input IFC")
-    parser.add_argument("excel_checklist",  type=lambda p: _validate_file(p, (".xlsx", ".xlsm")),   help="Checklist Excel")
-    parser.add_argument("output_excel", type=str,                                              help="Output Excel path (created/overwritten)")
+    parser.add_argument("mainui", type=lambda p: _validate_file(p, ".ui"), help="Qt Designer .ui")
+    parser.add_argument("ifc_file", type=lambda p: _validate_file(p, ".ifc"), help="Input IFC")
+    parser.add_argument("excel_checklist", type=lambda p: _validate_file(p, (".xlsx", ".xlsm")), help="Checklist Excel")
+    parser.add_argument("output_excel", type=str, help="Output Excel path (created/overwritten)")
     return parser.parse_args()
