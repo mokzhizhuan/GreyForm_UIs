@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import ModelSelection from "./ModelSelection";
 
 const svg = `
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
@@ -25,7 +26,7 @@ type UsbState = "waiting" | "reading" | "success" | "error" | "launching" | "shu
 const views = {
   waiting: { title: "Please insert a USB drive to continue", message: "Click Start to detect a USB drive.", variant: "primary", primaryText: "Start", showSpinner: false },
   reading: { title: "Reading USB drive...", message: "Please wait while we read the contents of the USB drive.", variant: "info", primaryText: "Cancel", showSpinner: true },
-  success: { title: "USB drive detected", message: "Press Continue to launch the UI.", variant: "success", primaryText: "Continue", showSpinner: false },
+  success: { title: "USB drive detected", message: "Please select the correct model option and click continue to launch the UI.", variant: "success", primaryText: "Continue", showSpinner: false },
   error:   { title: "Error reading USB drive", message: "Please plug in your drive", variant: "error", primaryText: "Try Again", showSpinner: false },
   launching:{ title: "Loading…", message: "", variant: "info", primaryText: "Loading…", showSpinner: true },
   shutdown:{ title: "Please power off the machine", message: "The operation is completed successfully", variant: "neutral", primaryText: "", showSpinner: false },
@@ -198,9 +199,12 @@ export default function Status() {
       <div className="hero min-h-screen relative bg-cover bg-center" style={{ backgroundImage: `url("${bgDataUri}")` }}>
         <div className={`hero-overlay ${state === "reading" || state === "launching" ? "bg-neutral/60" : "bg-neutral/40"}`} />
         <div className="hero-content text-neutral-content text-center relative">
-          <div className="max-w-md space-y-5">
+          <div className="max-w-2xl space-y-5">
             <h1 className="text-4xl md:text-5xl font-bold">{v.title}</h1>
             <p>{v.message}</p>
+            {state === "success" && responseMessage && (
+              <ModelSelection />
+            )}
             {v.showSpinner ? <span className="loading loading-spinner loading-md" aria-label="Loading" /> : null}
             {state !== "shutdown" && (
               <div>
