@@ -3,18 +3,14 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-import sys
-import vtk
+import sys, vtk , rospy , warnings
 from pyvistaqt import QtInteractor
 from vtkmodules.qt import QVTKRenderWindowInteractor
 import mainwindowlayout as mainwindowuilayout
 import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
 from src.talker_listener.talker_listener import talker_node as RosPublisher
-import rospy
-import warnings
 import argsfiles as fileimport
 import exceldatavtk as dataplacement
-import dataanalysis as datadraft
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -32,24 +28,21 @@ class Ui_MainWindow(QMainWindow):
 
     # setup UI
     def setupUi(self):
-        self.renderWindowInteractor = (
-            QVTKRenderWindowInteractor.QVTKRenderWindowInteractor(
-                self.mainwindow.pbuframe
-            )
-        )
-        datadrafter = datadraft.data_draft(self.stl_file, self.args)
-        df_combined_data = datadrafter.analysis()
+        self.mainwindow.progresslabel.hide()
+        self.mainwindow.nextstepButton.hide()
         iconindicator = "placementindicator1.png"
         icon = "placement1.png"
-        html = f'<div style="text-align:center;"><img src="{icon}" width="800" height="600" style="display:block; margin:0 auto;"></div>'
+        html = f'<div style="text-align:center;"><img src="{icon}"style="display:block; margin:0 auto;"></div>'
         htmlindicator = f'<div style="text-align:center;"><img src="{iconindicator}"  style="display:block; margin:0 auto;"></div>'
         self.mainwindow.imagelabel.setTextFormat(Qt.RichText)
         self.mainwindow.imagelabel.setText(html)
         self.mainwindow.imageplacelabel.setTextFormat(Qt.RichText)
         self.mainwindow.imageplacelabel.setText(htmlindicator)
-        self.wall_numbers_by_placement = dataplacement.exceldataextractor(df_combined_data)
-        self.mainwindow.confirmButton_2.hide()
-        self.mainwindow.nextstepButton.hide()
+        sheets_dict = dataplacement._coerce_to_dataframe(self.args.output_excel, sheet_name=None)
+        self.wall_numbers_by_placement = dataplacement.exceldataextractor(sheets_dict)
+        self.mainwindow.leftButton.hide()
+        self.mainwindow.beginButton.hide()
+        self.mainwindow.rightButton.hide()
         self.button_UI()
         self.setStretch()
 
@@ -57,16 +50,18 @@ class Ui_MainWindow(QMainWindow):
         self.buttonui = mainwindowbuttonUIinteraction.mainwindowbuttonUI(
             self.mainwindow,
             self.mainwindow.stackedWidget,
-            self.mainwindow.confirmButton,
-            self.mainwindow.confirmButton_2,
-            self.mainwindow.nextstepButton,
-            self.mainwindow.machinelabel,
-            self.ros_node,
+            self.mainwindow.nextButton,
+            self.mainwindow.leftButton,
+            self.mainwindow.beginButton,
+            self.mainwindow.rightButton,
+            self.mainwindow.warninglabel,
+            self.mainwindow.progresslabel,
             self.stl_file,
+            self.ros_node,
             self.args,
-            self.mainwindow,
-            self.renderWindowInteractor,
             self.wall_numbers_by_placement,
+            self.mainwindow.indicatelabel,
+            self.mainwindow.nextstepButton
         )
 
     def setStretch(self):
@@ -76,9 +71,7 @@ class Ui_MainWindow(QMainWindow):
         mainwindowuilayout.Ui_MainWindow_layout(
             self.mainwindow.stackedWidget,
             self.mainwindow.titlelabel,
-            self.mainwindow.machinelabel,
             self.mainwindow.verticalLayoutWidget_3,
-            self.mainwindow.horizontalLayoutWidget,
             self.mainwindow.page,
         )
 
@@ -89,7 +82,6 @@ def ros_spin():
 
 
 if __name__ == "__main__":
-    # Initialize the ROS node
     rospy.init_node("talker_node", anonymous=True)
     talker_node = RosPublisher.TalkerNode()
     app = QApplication(sys.argv)

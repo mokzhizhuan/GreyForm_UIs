@@ -3,7 +3,6 @@ import pandas as pd
 
 def getstage2andstage3(
     all_objs,
-    args,
     visited,
     walls_bss50,
     internal_x_width,
@@ -145,7 +144,7 @@ def getstage2andstage3(
         "Width": internalxmax_width,
         "Height": internalymax_width,
     })
-    checklist_file = pd.ExcelFile(args.excel_checklist)
+    checklist_file = pd.ExcelFile("Greyform TERRAHL2(JMB)-T1a BOM Checklist 20231211.xlsx")
     df_checklist = checklist_file.parse("Sheet1")
     item_names = df_checklist.iloc[1:, 3].dropna().unique().tolist()
     filtered_item_names = [n for n in item_names

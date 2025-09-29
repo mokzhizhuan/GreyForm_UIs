@@ -1,24 +1,27 @@
-from PyQt5.QtCore import Qt, QThread, pyqtSignal
-import time  # Simulate work
-
+# Thread.py
+from PyQt5.QtCore import QThread, pyqtSignal
+import time
 
 class WorkerThread(QThread):
-    update_progress = pyqtSignal(int)
     update_status = pyqtSignal(str)
-    render_mesh = pyqtSignal()  # New signal to trigger mesh rendering
+    render_mesh   = pyqtSignal(object)
 
-    def __init__(self, listenerdialog, stackedWidget):
-        super().__init__()
+    def __init__(self, listenerdialog, stackedWidget, parent=None):
+        super().__init__(parent)
         self.listenerdialog = listenerdialog
-        self.stackedWidget = stackedWidget
+        self.stackedWidget  = stackedWidget
 
     def run(self):
-        for i in range(101):  # Simulate a task progressing from 0% to 100%
-            time.sleep(0.05)
-            self.update_progress.emit(i)
-            self.update_status.emit(f"Please wait, the robot is currently marking the wall.")
-        self.scancompleted()  # Run completion function
+        for step in range(100):
+            if self.isInterruptionRequested():
+                return
+            # do a chunk of work...
+            time.sleep(0.02)  # never tight-loop; lets interruption bite
+        # when done:
+        self.render_mesh.emit({"ok": True})
 
-    def scancompleted(self):
-        self.listenerdialog.run_listener_node()
-        self.render_mesh.emit()  # Emit signal to update UI
+    def stop(self, timeout_ms=1000):
+        """Ask the thread to stop and wait for it to finish."""
+        if self.isRunning():
+            self.requestInterruption()
+            self.wait(timeout_ms)  # blocks this calling (GUI) thread until it exits

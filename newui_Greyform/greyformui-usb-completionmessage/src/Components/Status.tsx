@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import ModelSelection from "./ModelSelection";
 
@@ -21,33 +21,89 @@ const svg = `
   </g>
 </svg>
 `.trim();
+
 const bgDataUri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-type UsbState = "waiting" | "reading" | "success" | "error" | "launching" | "shutdown";
+
+type UsbState =
+  | "waiting"
+  | "reading"
+  | "success"
+  | "error"
+  | "launching"
+  | "shutdown"
+  | "checked_ok"    // ✅ validated, can launch
+  | "invalid_model";
+
 const views = {
-  waiting: { title: "Please insert a USB drive to continue", message: "Click Start to detect a USB drive.", variant: "primary", primaryText: "Start", showSpinner: false },
-  reading: { title: "Reading USB drive...", message: "Please wait while we read the contents of the USB drive.", variant: "info", primaryText: "Cancel", showSpinner: true },
-  success: { title: "USB drive detected", message: "Please select the correct model option and click continue to launch the UI.", variant: "success", primaryText: "Continue", showSpinner: false },
-  error:   { title: "Error reading USB drive", message: "Please plug in your drive", variant: "error", primaryText: "Try Again", showSpinner: false },
+  waiting:  { title: "Please insert a USB drive to continue", message: "Click Start to detect a USB drive.", variant: "primary", primaryText: "Start", showSpinner: false },
+  reading:  { title: "Reading USB drive...", message: "Please wait while we read the contents of the USB drive.", variant: "info",    primaryText: "Cancel",       showSpinner: true },
+  success:  { title: "USB drive detected",    message: "Select the correct model, then click Check selection.",   variant: "success", primaryText: "Check selection", showSpinner: false },
+  invalid_model: { title: "Wrong model type", message: "Please change the model and Check selection again.",       variant: "error",   primaryText: "Check selection", showSpinner: false },
+  checked_ok: { title: "Selection verified",  message: "Model matches the IFC. You can now Launch UI.",            variant: "success", primaryText: "Launch UI", showSpinner: false },
+  error:    { title: "Error reading USB drive", message: "Please plug in your drive",                              variant: "error",   primaryText: "Try Again", showSpinner: false },
   launching:{ title: "Loading…", message: "", variant: "info", primaryText: "Loading…", showSpinner: true },
-  shutdown:{ title: "Please power off the machine", message: "The operation is completed successfully", variant: "neutral", primaryText: "", showSpinner: false },
+  shutdown: { title: "Please power off the machine", message: "The operation is completed successfully",           variant: "neutral", primaryText: "", showSpinner: false },
 } as const;
+
 export default function Status() {
   const [state, setState] = useState<UsbState>("waiting");
   const v = views[state] ?? views.shutdown;
-  const [shouldPoll, setShouldPoll] = useState(false);
+
   const API = useMemo(() => {
     const base = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
     return base.replace(/\/+$/, "");
   }, []);
+
   const [usbPath, setUsbPath] = useState<string>("");
   const [uiPid, setUiPid] = useState<number | null>(null);
+  const [shouldPoll, setShouldPoll] = useState(false);
+
   const [responseMessage, setResponseMessage] = useState("Ready");
-  const [closedMessage, setClosedMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState("");
+  const prevUsbRef = useRef<string>("");
+  const [closedMessage, setClosedMessage] = useState("");
   const [lastPollAt, setLastPollAt] = useState<string>("");
+
   const [lastRunning, setLastRunning] = useState<string>("");
   const [lastError, setLastError] = useState<string>("");
+  const [selectedModel, setSelectedModel] = useState<number | null>(null);
+  const [isValidated, setIsValidated] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  const [ifcPath, setIfcPath] = useState<string | null>(null);
+
+  const http = useMemo(() => {
+  const base = (import.meta.env.VITE_API_URL ?? "http://localhost:8000").replace(/\/+$/,"");
+  return axios.create({
+    baseURL: base,
+    timeout: 0,        // no client-side timeout by default
+  });
+}, [])
+
+
+  // Debug log
+  useEffect(() => {
+    console.log("[Status]", { state, usbPath, ifcPath, selectedModel, isValidated });
+  }, [state, usbPath, ifcPath, selectedModel, isValidated]);
+
+  // Only reset validation when the USB actually changes
+  useEffect(() => {
+    if (usbPath && usbPath !== prevUsbRef.current) {
+      setIsValidated(false);
+      setIfcPath(null);
+      if (state !== "checked_ok") setState("success");
+      prevUsbRef.current = usbPath;
+    }
+    if (!usbPath && prevUsbRef.current) {
+      setIsValidated(false);
+      setIfcPath(null);
+      setState("waiting");
+      prevUsbRef.current = "";
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usbPath]);
+
   const pollMs = 500;
+
   const detectUsb = async () => {
     setState("reading");
     try {
@@ -70,88 +126,95 @@ export default function Status() {
       setState("error");
     }
   };
+
+  const findAndProbeIfc = async (root: string): Promise<string> => {
+    const q = await axios.get(`${API}/api/find_ifc_quick`, { params: { root }, timeout: 1500 }).catch(() => null);
+    let path = q?.data?.ok ? q?.data?.match : undefined;
+
+    if (!path) {
+      const f1 = await axios.get(`${API}/api/find_ifc_fast`, { params: { root, max_depth: 3, timeout_ms: 1200 }, timeout: 3000 }).catch(() => null);
+      path = f1?.data?.ok ? f1?.data?.match : undefined;
+    }
+    if (!path) {
+      const f2 = await axios.get(`${API}/api/find_ifc_fast`, { params: { root, max_depth: 8, timeout_ms: 2500 }, timeout: 4000 }).catch(() => null);
+      path = f2?.data?.ok ? f2?.data?.match : undefined;
+    }
+    if (!path) throw new Error("No IFC found. Put an IFC at USB root or inside IFC/, models/, export/.");
+
+    const probe = await axios.get(`${API}/api/ifc_probe`, { params: { path }, timeout: 2000 }).catch(() => null);
+    if (!probe?.data?.ok) throw new Error(`Probe failed for ${path}: ${probe?.data?.reason || "unreadable file"}`);
+
+    return path;
+  };
+
+  const validateSelection = async () => {
+    try {
+      if (!usbPath) throw new Error("No USB path selected.");
+      if (!selectedModel) throw new Error("Please choose a model (4 or 6 walls).");
+
+      setIsChecking(true);
+      setResponseMessage("🔎 Checking selection against IFC…");
+      setErrorDetails("");
+
+      const path = ifcPath ?? (await findAndProbeIfc(usbPath));
+      setIfcPath(path);
+
+      const fd = new FormData();
+      fd.append("usb_path", usbPath);
+      fd.append("ifc_path", path);
+      fd.append("model_sides", String(selectedModel));
+
+      const res = await axios.post(`${API}/api/checkifc`, fd, { timeout: 80000 });
+
+      if (res.data?.ok) {
+        setIsValidated(true);
+        setState("checked_ok");
+        setResponseMessage(`✅ Selection is valid${res.data.model ? ` (model: ${res.data.model})` : ""}. You can now Launch UI.`);
+        setErrorDetails("");
+      } else {
+        throw new Error("Backend did not confirm selection");
+      }
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const detail = err?.response?.data?.detail || err?.message || "unknown error";
+
+      setIsValidated(false);
+      setResponseMessage(`❌ ${detail}`);
+      setErrorDetails(
+        typeof err?.response?.data === "object" ? JSON.stringify(err.response.data, null, 2) : String(detail)
+      );
+
+      if (status === 400) setState("invalid_model");
+      else setState("success");
+    } finally {
+      setIsChecking(false);
+    }
+  };
+
   const launchUI = async () => {
-    if (!usbPath) {
-      const msg = "❌ No USB path selected.";
-      setResponseMessage(msg);
-      setErrorDetails(msg);
-      setState("error");
+    if (!(isValidated && state === "checked_ok") || !ifcPath || !usbPath) {
+      setResponseMessage("❌ Please validate the selection first.");
+      setErrorDetails("Missing validation or paths");
       return;
     }
-    setState("launching");
-    let ifcPath: string | undefined;
     try {
-      const q = await axios.get(`${API}/api/find_ifc_quick`, {
-        params: { root: usbPath },
-        timeout: 1500,
-      }).catch(() => null);
-      ifcPath = q?.data?.ok ? q?.data?.match : undefined;
-      if (!ifcPath) {
-        const f1 = await axios.get(`${API}/api/find_ifc_fast`, {
-          params: { root: usbPath, max_depth: 3, timeout_ms: 1200 },
-          timeout: 3000,
-        }).catch(() => null);
-        ifcPath = f1?.data?.ok ? f1?.data?.match : undefined;
-      }
-      if (!ifcPath) {
-        const f2 = await axios.get(`${API}/api/find_ifc_fast`, {
-          params: { root: usbPath, max_depth: 8, timeout_ms: 2500 },
-          timeout: 4000,
-        }).catch(() => null);
-        ifcPath = f2?.data?.ok ? f2?.data?.match : undefined;
-      }
-      if (!ifcPath) {
-        const msg = "❌ No IFC found. Put an IFC at USB root or inside IFC/, models/, export/.";
-        setResponseMessage(msg);
-        setErrorDetails(msg);
-        setState("error");
-        return;
-      }
-      const probe = await axios.get(`${API}/api/ifc_probe`, {
-        params: { path: ifcPath },
-        timeout: 2000,
-      }).catch(() => null);
-      if (!probe?.data?.ok) {
-        const msg = `❌ Probe failed for ${ifcPath}: ${probe?.data?.reason || "unreadable file"}`;
-        setResponseMessage(msg);
-        setErrorDetails(JSON.stringify(probe?.data ?? {}, null, 2));
-        setState("error");
-        return;
-      }
+      setState("launching");
       const fd = new FormData();
       fd.append("usb_path", usbPath);
       fd.append("ifc_path", ifcPath);
       const res = await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
+
       const pid = Number(res.data?.pid ?? 0);
       if (pid > 0) setUiPid(pid);
       sessionStorage.setItem("uiPoll", "1");
       setShouldPoll(true);
       setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}`);
       setErrorDetails("");
-      setClosedMessage("");
     } catch (err: any) {
-      const status = err?.response?.status;
       const detail = err?.response?.data?.detail || err?.message || "unknown error";
-      if (status === 409 && /relaunch is locked/i.test(detail)) {
-        try {
-          await axios.post(`${API}/api/reset_lock`);
-          const fd = new FormData();
-          fd.append("usb_path", usbPath);
-          fd.append("ifc_path", ifcPath!);
-          const res = await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
-          const pid = Number(res.data?.pid ?? 0);
-          if (pid > 0) setUiPid(pid);
-          sessionStorage.setItem("uiPoll", "1");
-          setShouldPoll(true);
-          setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}`);
-          setErrorDetails("");
-          return;
-        } catch {
-        }
-      }
+      setState("error");
       setResponseMessage(`❌ Failed to launch: ${detail}`);
       setErrorDetails(JSON.stringify(err?.response?.data ?? { message: detail }, null, 2));
-      setState("error");
     }
   };
   useEffect(() => {
@@ -184,44 +247,82 @@ export default function Status() {
     const id = setInterval(check, pollMs);
     return () => { cancelled = true; clearInterval(id); };
   }, [shouldPoll, uiPid, API]);
-  const handlePrimary = () => {
-    switch (state) {
-      case "waiting":  detectUsb(); break;
-      case "reading":  setState("waiting"); break;
-      case "success":  launchUI(); break;
-      case "error":    detectUsb(); break;
-      case "launching":
-      case "shutdown": break;
-    }
-  };
+  const canShowPicker = state === "success" || state === "invalid_model" || state === "checked_ok";
+  const canLaunch = isValidated && !!usbPath && !!ifcPath && state === "checked_ok";
+
+  // UI (balanced braces/parens)
   return (
-    <>
-      <div className="hero min-h-screen relative bg-cover bg-center" style={{ backgroundImage: `url("${bgDataUri}")` }}>
-        <div className={`hero-overlay ${state === "reading" || state === "launching" ? "bg-neutral/60" : "bg-neutral/40"}`} />
-        <div className="hero-content text-neutral-content text-center relative">
-          <div className="max-w-2xl space-y-5">
-            <h1 className="text-4xl md:text-5xl font-bold">{v.title}</h1>
-            <p>{v.message}</p>
-            {state === "success" && responseMessage && (
-              <ModelSelection />
-            )}
-            {v.showSpinner ? <span className="loading loading-spinner loading-md" aria-label="Loading" /> : null}
-            {state !== "shutdown" && (
-              <div>
-                <button className={`btn btn-${v.variant} md:btn-md lg:btn-lg`} onClick={handlePrimary} disabled={state === "launching"}>
-                  {v.primaryText}
+    <div className="hero min-h-screen relative bg-cover bg-center" style={{ backgroundImage: `url("${bgDataUri}")` }}>
+      <div className={`hero-overlay ${state === "reading" || state === "launching" ? "bg-neutral/60" : "bg-neutral/40"}`} />
+      <div className="hero-content text-neutral-content text-center relative">
+        <div className="max-w-2xl space-y-5">
+          <h1 className="text-4xl md:text-5xl font-bold">{v.title}</h1>
+          <p className="opacity-90">{v.message}</p>
+
+          {(responseMessage || errorDetails) && (
+            <div className="mt-2">
+              <p className="text-sm opacity-90" aria-live="polite">
+                {responseMessage}
+              </p>
+              {errorDetails && (
+                <pre className="text-left text-xs bg-base-200/60 p-3 rounded overflow-auto max-h-40 mt-2">
+                  {errorDetails}
+                </pre>
+              )}
+            </div>
+          )}
+
+          {canShowPicker && (
+            <>
+              <ModelSelection value={selectedModel} onChange={setSelectedModel} />
+
+              {state === "invalid_model" && (
+                <p className="text-sm text-red-300">
+                  Wrong model type detected for this IFC. Adjust your selection and try again.
+                </p>
+              )}
+
+              <div className="flex gap-3 justify-center mt-2">
+                <button
+                  className="btn btn-outline"
+                  onClick={validateSelection}
+                  disabled={isChecking || !usbPath || !selectedModel}
+                >
+                  {isChecking ? (
+                    <>
+                      <span className="loading loading-spinner loading-xs mr-2" />
+                      Checking…
+                    </>
+                  ) : (
+                    "Check selection"
+                  )}
+                </button>
+
+                <button className="btn btn-primary" onClick={launchUI} disabled={isChecking || !canLaunch}>
+                  Launch UI
                 </button>
               </div>
-            )}
-            {/*{state === "error" && responseMessage && <p className="text-sm opacity-80">{responseMessage}</p>}
-            {state === "error" && errorDetails && (
-              <pre className="text-left text-xs bg-base-200 p-3 rounded overflow-auto max-h-64">
-                {errorDetails}
-              </pre>
-            )}*/}
-          </div>
+
+              {!isChecking && !canLaunch && (
+                <p className="text-xs opacity-80 mt-1">
+                  Select a model and click <span className="font-semibold">Check selection</span> to enable Launch UI.
+                </p>
+              )}
+            </>
+          )}
+          {!canShowPicker && state !== "shutdown" && (
+            <div>
+              <button
+                className={`btn btn-${v.variant} md:btn-md lg:btn-lg`}
+                onClick={detectUsb}
+                disabled={state === "launching"}
+              >
+                {v.primaryText}
+              </button>
+            </div>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

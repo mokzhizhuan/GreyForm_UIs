@@ -1,47 +1,72 @@
-#!/usr/bin/env python3
+# talker_node.py (only showing the essentials)
 import rospy
-from pathlib import Path
+from std_msgs.msg import String, Int32, Bool
 from my_robot_wallinterfaces.msg import FileExtractionMessage, SelectionWall
 
 class TalkerNode:
     def __init__(self):
+        if not rospy.core.is_initialized():
+            rospy.init_node("talker_node", anonymous=True, disable_signals=True)
+
         self.file_pub = rospy.Publisher(
-            "file_extraction_topic", FileExtractionMessage, queue_size=10
-        )
-        self.sel_pub = rospy.Publisher(
-            "selection_wall_topic", SelectionWall, queue_size=10
-        )
-        self.rate = rospy.Rate(10)
+            "file_extraction_topic",
+            FileExtractionMessage,
+            queue_size=10, )
+        self.sel_pub  = rospy.Publisher("selection_wall_topic",   SelectionWall,       queue_size=10)
 
-    def publish_file_message(self, stl_path, excel_path):
+        # optional UI topics (keep if you use them elsewhere)
+        self.ui_wall_started_pub = rospy.Publisher("/ui/wall_started", String, queue_size=10, latch=True)
+
+        self.ui_all_done_pub = rospy.Publisher("/ui/all_done", Bool, queue_size=10, latch=True)
+
+    def _wait_for_subscribers(self, pubs, timeout=1.0):
+        start = rospy.Time.now().to_sec()
+        while not rospy.is_shutdown() and (rospy.Time.now().to_sec() - start) < timeout:
+            if all(p.get_num_connections() > 0 for p in pubs):
+                return
+            rospy.sleep(0.05)
+
+    # --- NO LABEL UPDATES HERE ---
+    def publish_file_message(self, stl_file_path: str, excel_path: str):
+        # read STL as bytes
+        with open(stl_file_path, "rb") as f:
+            ifc_bytes = f.read()
+
         msg = FileExtractionMessage()
-        try:
-            stl_path = Path(stl_path).expanduser().resolve()
-            with stl_path.open("rb") as f:
-                msg.stl_data = list(f.read())
-        except Exception as e:
-            rospy.logwarn(f"[talker] Could not read STL ({type(e).__name__}: {e}); sending empty stl_data.")
-            msg.stl_data = []
-        excel_path = Path(excel_path).expanduser().resolve()
-        if not excel_path.exists():
-            rospy.logwarn(f"[talker] Excel path does not exist: {excel_path}")
-        msg.excelfile = str(excel_path)
-        self.file_pub.publish(msg)
-        rospy.loginfo(f"[talker] Published file message with Excel={msg.excelfile}")
+        # uint8[] can be bytes/bytearray/list[int]
+        msg.stl_data  = ifc_bytes # or just: msg.stl_data = data
+        msg.excelfile = excel_path        # this matches your .msg
 
-    def publish_selection_message(self, wall_number, picked_position, markingtype):
+        self.file_pub.publish(msg)
+        rospy.loginfo(f"[talker] Sent FileExtraction: bytes={len(ifc_bytes)} excel={excel_path}")
+
+
+    # keep label/ROS UI updates here if desired
+    def publish_selection_message(self, wallselection, picked_position, typeselection):
+        try:
+            self.ui_wall_started_pub.publish(Int32(int(wallselection)))
+        except Exception:
+            pass
+
+
+        self._wait_for_subscribers([self.sel_pub], timeout=0.5)
         msg = SelectionWall()
-        msg.wallselection = str(wall_number)  
-        msg.typeselection = str(markingtype)  
-        nums = [int(round(float(v))) for v in list(picked_position)[:3]]
-        msg.picked_position = nums
+        msg.wallselection = str(wallselection)
+        # when a wall starts:
+        self.ui_wall_started_pub.publish(String(data=str(wallselection)))
+        msg.typeselection = str(typeselection)
+        try:    msg.sectionselection = 0
+        except: pass
+        try:    msg.picked_position = [int(v) for v in picked_position]
+        except: msg.picked_position = []
+        try:    msg.default_position = []
+        except: pass
         self.sel_pub.publish(msg)
 
 
 def main():
     rospy.init_node("talker_node", anonymous=True)
     node = TalkerNode()
-    rospy.loginfo("[talker] Node started. Use your UI to call publish_* methods.")
     rospy.spin()
 
 if __name__ == "__main__":

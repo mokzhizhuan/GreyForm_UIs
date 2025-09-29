@@ -48,7 +48,10 @@ class ListenerNodeRunner:
         if not self.listener_started:
             try:
                 threading.Thread(target=self._run_process, daemon=True).start()
-                self.signals.status_signal.emit("Status: Running")
+                self.send_status(
+                    "The robot is now correctly centered and is ready to mark the wall.",
+                    icon="check.png"
+                )
                 self.listener_started = True
             except Exception as e:
                 self.signals.status_signal.emit(f"Status: Error - {str(e)}")
@@ -68,7 +71,7 @@ class ListenerNodeRunner:
                 )
         self.process = None
 
-    def run_execution(self, rows, excel_path):
+    def run_execution(self, rows, excel_path, label, mainlabel):
         self.talker_node.publish_file_message(self.file, excel_path)
         for data in rows:
             wn = data.get("Wall Number")
@@ -76,15 +79,21 @@ class ListenerNodeRunner:
             y = data.get("Position Y", 0)
             z = data.get("Position Z", 0)
             markingtype = data.get("Marking Type")
+
             def _num(v, default=0):
                 try:
                     return float(v)
                 except Exception:
                     return default
-            picked_position = [int(round(_num(x))),
-                               int(round(_num(y))),
-                               int(round(_num(z)))]
-            self.talker_node.publish_selection_message(wn, picked_position, markingtype)
+
+            picked_position = [int(_num(x)),
+                            int(_num(y)),
+                            int(_num(z))]
+
+            # now send with labels
+            self.talker_node.publish_selection_message(
+                wn, picked_position, markingtype,
+            )
 
     def _run_process(self):
         env = os.environ.copy()
@@ -103,7 +112,7 @@ class ListenerNodeRunner:
                 ["bash", "-lc", shell_cmd],
                 env=env,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL,   # <- only change needed
+                stderr=subprocess.DEVNULL,   
                 bufsize=1,
                 universal_newlines=True,
             )
@@ -135,7 +144,6 @@ class ListenerNodeRunner:
             gif  = data.get("gif")
         except Exception:
             text, icon, gif = msg, None, None
-
         self.labelstatus.setText(text)
         if getattr(self, "_movie", None):
             self._movie.stop(); self._movie = None
@@ -162,7 +170,7 @@ class ListenerNodeRunner:
             self.signals.status_signal.emit(text)
 
     def process_finished(self):
-        self.send_status("Marking is completed. Please move the robot to the next position.", icon="check.png")
+        self.send_status("The robot is now correctly centered and is ready to mark the wall.", icon="check.png")
         self.listener_started = True
 
     def update_status(self, text: str):

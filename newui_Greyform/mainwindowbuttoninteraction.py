@@ -1,15 +1,32 @@
 from PyQt5 import QtCore , QtWidgets
 from PyQt5.QtWidgets import QVBoxLayout, QDialog, QProgressBar, QLabel, QApplication , QStyle, QWidget , QHBoxLayout
-from PyQt5.QtCore import Qt, QBuffer, QByteArray, QIODevice
+from PyQt5.QtCore import Qt, QBuffer, QByteArray, QIODevice , QThread , pyqtSignal , QObject
 from PyQt5.QtGui import QFont , QPixmap
-import subprocess
-import launcher as launchers
+import re
 import processlistenerrunner as process
 import processloader as Thread
 import pandas as pd
+import numpy as np
 from pathlib import Path
-import processingloader as loaddialogUI
+from collections import defaultdict, Counter
+from ui_progress import ProgressUI
 import requests, pathlib
+
+def _parse_wall_int(x):
+    """Return an int for '3', 3, 'Wall 3', else None."""
+    if x is None:
+        return None
+    s = str(x)
+    m = re.search(r"\d+", s)
+    return int(m.group(0)) if m else None
+
+def _is_seq(x):
+    if isinstance(x, (list, tuple, set)):
+        return True
+    if np is not None and isinstance(x, np.ndarray):
+        return True
+    return False
+
 
 # main window button interaction
 class mainwindowbuttonUI(object):
@@ -17,30 +34,36 @@ class mainwindowbuttonUI(object):
         self,
         mainwindow,
         stackedWidget,
-        confirmButton,
-        confirmButton_2,
-        nextstepButton,
-        labelstatus,
-        ros_node,
+        nextButton,
+        leftButton,
+        beginButton,
+        rightButton,
+        warninglabel,
+        progresslabel,
         stl_file,
+        ros_node,
         args,
-        window,
-        renderWindowInteractor,
         wall_numbers_by_placement,
+        indicatelabel,
+        nextstepButton
     ):
         # starting initialize
         super().__init__()
-        self.mainwindow = window
+        self.mainwindow = mainwindow
         self.stackedWidget = stackedWidget
-        self.confirmButton = confirmButton
-        self.confirmButton_2 = confirmButton_2
-        self.nextstepButton = nextstepButton
-        self.labelstatus = labelstatus
+        self.nextButton = nextButton
+        self.leftButton = leftButton
+        self.beginButton = beginButton
+        self.rightButton = rightButton
+        self.warninglabel = warninglabel
+        self.progresslabel = progresslabel
+        self.indicatelabel = indicatelabel
         self.ros_node = ros_node
         self.stl_file = stl_file
+        self.nextstepButton =  nextstepButton
         self.args = args
-        self.renderWindowInteractor = renderWindowInteractor
         self.wall_numbers_by_placement = wall_numbers_by_placement
+        self.n = 0
         self.button_UI()
         
     def payload_to_df(self, payload):
@@ -57,29 +80,50 @@ class mainwindowbuttonUI(object):
             "Height": payload["height"],
             "Status": payload["Status"],
         })
-    
-    def mount_status_row(self, size=24):
-        parent = self.labelstatus.parent()
-        main_lay = parent.layout()
-        idx = main_lay.indexOf(self.labelstatus)
-        main_lay.removeWidget(self.labelstatus)
-        self.status_row = QWidget(parent)
-        row = QHBoxLayout(self.status_row)
-        row.setContentsMargins(0, 0, 0, 0)
-        row.setSpacing(8)
-        self.status_icon = QLabel(self.status_row)
-        self.status_icon.setFixedSize(size, size)
-        self.status_icon.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        self.labelstatus.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        row.addWidget(self.status_icon, 0, Qt.AlignVCenter)
-        row.addWidget(self.labelstatus, 0, Qt.AlignVCenter)
-        main_lay.insertWidget(idx, self.status_row, 0, Qt.AlignHCenter)
 
-    def set_status_ok(self, text):
-        style = self.labelstatus.style()  # or QApplication.style()
-        pm = style.standardIcon(QStyle.SP_DialogApplyButton).pixmap(24, 24)
-        self.status_icon.setPixmap(pm)
-        self.labelstatus.setText(text)
+    def _stop_worker_if_running(self):
+        w = getattr(self, "worker", None)
+        if w is None:
+            return
+        try:
+            if w.isRunning():
+                w.stop()            # requests interruption and waits
+        except Exception:
+            pass
+        try:
+            w.deleteLater()
+        except Exception:
+            pass
+        self.worker = None
+
+    def _get_status_label(self):
+        return getattr(self, "labelstatus", None) or getattr(self, "warninglabel", None)
+
+    def set_status_ok(self, msg: str):
+        lbl = self._get_status_label()
+        if not lbl:
+            return  # nowhere to show; optionally log
+        lbl.setTextFormat(Qt.RichText)
+        lbl.setText(
+            "<div style='font-size:14px'>"
+            "<img src='check.png' width='16' height='16' "
+            "style='vertical-align:middle;margin-right:8px'/>"
+            f"{msg}"
+            "</div>"
+        )
+
+    def set_status_error(self, msg: str):
+        lbl = self._get_status_label()
+        if not lbl:
+            return
+        lbl.setTextFormat(Qt.RichText)
+        lbl.setText(
+            "<div style='font-size:14px;color:#b00020'>"
+            "<img src='cross.png' width='16' height='16' "
+            "style='vertical-align:middle;margin-right:8px'/>"
+            f"{msg}"
+            "</div>"
+        )
     
     def ensure_status_icon_left_of(self, labelstatus, size=24):
         if getattr(labelstatus, "_icon_label", None):
@@ -104,39 +148,201 @@ class mainwindowbuttonUI(object):
     
     # stacked widget page ui
     def start_scan(self):
+        self.nextButton.setEnabled(False)
+        self.indicatelabel.hide()
+        self.update_status_label("Please wait , the robot calculating its position.")
         self.worker = Thread.WorkerThread(self.listenerdialog, self.stackedWidget)
-        df_p1 =self.payload_to_df(self.wall_numbers_by_placement["placement1"])
-        rows_p1 = df_p1.to_dict(orient="records")
-        self.listenerdialog.run_execution(rows_p1, self.args.output_excel)
         self.worker.update_status.connect(self.update_status_label)
-        self.worker.render_mesh.connect(self.create_mesh)  # Connect new signal
+        self.worker.render_mesh.connect(self.beginmarking)  # Connect new signal
         self.worker.start()  # Start the worker thread
 
-    def start_scan2(self):
-        self.worker = Thread.WorkerThread(self.listenerdialog, self.stackedWidget)
-        df_p2 =self.payload_to_df(self.wall_numbers_by_placement["placement2"])
-        rows_p2 = df_p2.to_dict(orient="records")
-        self.listenerdialog.run_execution(rows_p2, self.args.output_excel)
-        self.worker.update_status.connect(self.update_status_label)
-        self.worker.render_mesh.connect(self.finalize)  # Connect new signal
-        self.worker.start()  # Start the worker thread
+    def beginmarking(self):
+        icon = "check.png"
+        text = "The robot is now correctly centered and is ready to mark the wall."
+        html = f'<div style="text-align:center;"><img src="{icon}" width="50" height="50" style="display:block; margin:0 auto;">{text}</div>'
+        self.warninglabel.setTextFormat(Qt.RichText)
+        self.warninglabel.setText(html)
+        self.beginButton.show()
+        self.nextButton.hide()
+        self.beginButton.clicked.connect(self.create_mesh)
+
 
     def update_status_label(self, text: str):
-        if not hasattr(self, "dialog") or self.dialog is None:
-            self.dialog = loaddialogUI.LogDialog(self.mainwindow)
-        self.dialog.set_text(text)
-        self.dialog.show()
-        self.dialog.raise_()
-        self.dialog.activateWindow()
+        icon = "processing.png"
+        html = f'<div style="text-align:center;"><img src="{icon}" width="50" height="50" style="display:block; margin:0 auto;">{text}</div>'
+        self.warninglabel.setTextFormat(Qt.RichText)
+        self.warninglabel.setText(html)
         QApplication.processEvents() 
 
+    def format_wall(self, n):
+        try:
+            return f"Wall {int(n):02d}"
+        except Exception:
+            return "Wall ----"
+
+    def build_summary_text(self, data, icon="cross.png"):
+        nums = data.get("Wall Number", [])
+        counts = Counter(self.format_wall(n) for n in nums)
+        lines = [f"{k} : {counts[k]} × {icon}" for k in sorted(counts, key=self.sort_key(k))]
+        return "\n".join(lines)
+
+    def sort_key(self, k: str):
+        if k == "Wall ----":
+            return (1, 9999)
+        try:
+            return (0, int(k.split()[1]))
+        except Exception:
+            return (1, 9999)
+
+
     def create_mesh(self):
-        self.dialog.close()
-        self.confirmButton.hide()
-        self.mount_status_row(size=24)
-        self.set_status_ok("Marking is completed. Please move the robot to the next position.")
+        self.beginButton.hide()
+        self.nextstepButton.setEnabled(False)
+        self.nextstepButton.hide()
+        df = self.payload_to_df(self.wall_numbers_by_placement[f"placement{self.n + 1}"])
+        def _sort_key_wall_label(s: str):
+            import re
+            s = str(s)
+            m = re.search(r"\d+", s)
+            return (0, int(m.group())) if m else (1, s)
+        labels, seen = [], set()
+        for v in df["Wall Number"].astype(str):
+            if v not in seen:
+                seen.add(v)
+                labels.append(v)
+        labels = sorted(labels, key=_sort_key_wall_label)  
+        self._pui =  ProgressUI(self.warninglabel, self.progresslabel, labels,
+                  cross_icon_path="cross.png", tick_icon_path="check.png")
+        if labels:
+            self._pui.set_processing_warning(labels[0], img="processing.png")
+        self._pui.set_progress_list(labels, done=set())
+        self.progresslabel.show()
+        from ui_ros_bridge import UiRosBridge
+        _ros_bridge = UiRosBridge(self._pui, labels)
+        rows = df.to_dict(orient="records")
+        class ExecWorker(QObject):
+            finished = pyqtSignal(bool, str)
+            def __init__(self, listenerdialog, rows, excel_path, progresslabel, warninglabel):
+                super().__init__()
+                self.listenerdialog = listenerdialog
+                self.rows = rows
+                self.excel_path = excel_path
+                self.progresslabel = progresslabel
+                self.warninglabel = warninglabel
+            def run(self):
+                try:
+                    self.listenerdialog.run_execution(
+                        self.rows, self.excel_path, self.progresslabel, self.warninglabel
+                    )
+                    self.finished.emit(True, "Completed.")
+                except Exception as e:
+                    self.finished.emit(False, f"Error: {e}")
+        _thread = QThread()
+        _worker = ExecWorker(
+            self.listenerdialog, rows, self.args.output_excel, self.progresslabel, self.warninglabel
+        )
+        def _after_thread_stopped():
+            try: _worker.deleteLater()
+            except: pass
+            try: _thread.deleteLater()
+            except: pass
+                # ✅ finalize the placement UI from the UI thread
+            _ros_bridge._finish_ui.emit()
+            try: _ros_bridge.placement_done_qt.disconnect()
+            except Exception: pass
+            _ros_bridge.placement_done_qt.connect(self._wire_next_button)
+        _worker.moveToThread(_thread)
+        _thread.started.connect(_worker.run)
+        def _on_worker_finished(ok: bool, msg: str):
+            _thread.quit()
+        _worker.finished.connect(_on_worker_finished)
+        _thread.finished.connect(_after_thread_stopped)
+        _thread.start()
+                    
+
+    def _placement_count(self):
+        # count keys named placement1, placement2, ...
+        return sum(1 for k in self.wall_numbers_by_placement.keys() if str(k).startswith("placement"))
+
+    def _wire_next_button(self):
+        """Set the Next button action depending on whether there is another placement."""
+        self.nextstepButton.setEnabled(True)
         self.nextstepButton.show()
-        self.nextstepButton.clicked.connect(lambda: self.movetothenextstep())
+        count = self._placement_count()
+        is_last = (self.n + 1) >= count
+
+        # remove any previous handler
+        try:
+            self.nextstepButton.clicked.disconnect()
+        except Exception:
+            pass
+        self._pui.set_all_done() 
+        if is_last:
+            # Last (or only) placement -> Finish
+            self.nextstepButton.setText("Finish")
+            self.nextstepButton.clicked.connect(self._finish_and_close)
+        else:
+            # More placements -> go to next 
+            self.nextstepButton.setText("Proceed to the next Placement")
+            self.nextstepButton.clicked.connect(lambda: (setattr(self, "n", self.n + 1),
+                                                        self.movetothenextstep()))
+        self.nextstepButton.setEnabled(True)
+        self.nextstepButton.show()
+
+    def _finish_and_close(self):
+        try:
+            self.set_status_ok("All walls have been marked. Marking is completed.")
+        except Exception:
+            pass
+
+        # your app’s termination step
+        try:
+            self.finalize()        # if you already have this
+        except Exception:
+            pass
+
+        # close window/dialog if appropriate
+        try:
+            self.mainwindow.close()           # QMainWindow / QWidget
+        except Exception:
+            try:
+                self.mainwindow.accept()      # QDialog
+            except Exception:
+                pass
+
+
+    def _parse_wall_int(self, v):
+        """Return an int wall number if possible (handles 'Wall 3', '3', 3), else None."""
+        if v is None:
+            return None
+        s = str(v)
+        m = re.search(r"\d+", s)
+        return int(m.group(0)) if m else None
+
+    def _unique_walls_in_placement(self, placement_idx: int):
+        """Return sorted list of unique wall ints for placementN."""
+        key = f"placement{placement_idx}"
+        payload = self.wall_numbers_by_placement.get(key, {})
+        walls = payload.get("Wall Number", [])
+        uniq = {self._parse_wall_int(w) for w in walls}
+        uniq.discard(None)
+        return sorted(uniq)
+
+    def _unique_walls_all(self):
+        """Return sorted unique wall ints across all placements."""
+        uniq = set()
+        for pdata in self.wall_numbers_by_placement.values():
+            for w in pdata.get("Wall Number", []):
+                wi = self._parse_wall_int(w)
+                if wi is not None:
+                    uniq.add(wi)
+        return sorted(uniq)
+
+    def completedplacement2(self):
+        walls_here = self._unique_walls_in_placement(self.n + 1)
+        count_here = len(walls_here)
+        self.set_status_ok(f"All {count_here} walls have been marked.\nMarking is completed.")
+        self.finalize()
 
     def hide_status_icon(self):
         if getattr(self, "_movie", None):
@@ -150,8 +356,11 @@ class mainwindowbuttonUI(object):
 
     def movetothenextstep(self):
         self.nextstepButton.hide()
-        self.confirmButton_2.show()
+        self.nextButton.show()
+        self.nextButton.setEnabled(True)
         self.hide_status_icon()
+        self.indicatelabel.show()
+        self.progresslabel.hide()
         iconindicator = "placementindicator2.png"
         icon = "placement2.png"
         html = f'<div style="text-align:center;"><img src="{icon}" width="800" height="600" style="display:block; margin:0 auto;"></div>'
@@ -160,14 +369,10 @@ class mainwindowbuttonUI(object):
         self.mainwindow.imagelabel.setText(html)
         self.mainwindow.imageplacelabel.setTextFormat(Qt.RichText)
         self.mainwindow.imageplacelabel.setText(htmlindicator)
-        self.labelstatus.setText(f"Place the robot in the center of Placement 2\n(The wall that is clockwise of wall 1)")
-        self.confirmButton_2.clicked.connect(lambda: self.start_scan2())
+        self.warninglabel.setText(f"Place the robot in the center of the wall that is clockwise of wall 1")
+        self.nextButton.clicked.connect(lambda: self.start_scan())
 
     def finalize(self):
-        try:
-            self.dialog.close()
-        except Exception:
-            pass
         try:
             self.mainwindow.close()
         except Exception:
@@ -184,17 +389,12 @@ class mainwindowbuttonUI(object):
         app = QtWidgets.QApplication.instance()
         if app is not None:
             QtCore.QTimer.singleShot(0, app.quit)
-        self.mainwindow.closeEvent = lambda ev: (self.finalize(), ev.accept())
         
 
-    def close_status_dialog(self):
-        self.dialog.close()       # hides the window
-        self.dialog.deleteLater() # cleanup
-        self.dialog = None
 
     # button interaction ui
     def button_UI(self):
         self.listenerdialog = process.ListenerNodeRunner(
-            self.ros_node, self.stl_file , self.labelstatus, self.stackedWidget
+            self.ros_node, self.stl_file , self.warninglabel, self.stackedWidget
         )
-        self.confirmButton.clicked.connect(lambda: self.start_scan())
+        self.nextButton.clicked.connect(lambda: self.start_scan())

@@ -54,7 +54,7 @@ CMAKE_BINARY_DIR = /root/catkin_ws/newui_Greyform/build
 include CMakeFiles/clean_test_results.dir/progress.make
 
 CMakeFiles/clean_test_results:
-	/usr/bin/python3 /opt/ros/noetic/share/catkin/cmake/test/remove_test_results.py /root/catkin_ws/newui_Greyform/build/test_results
+	/root/.venvs/py39/bin/python3 /opt/ros/noetic/share/catkin/cmake/test/remove_test_results.py /root/catkin_ws/newui_Greyform/build/test_results
 
 clean_test_results: CMakeFiles/clean_test_results
 clean_test_results: CMakeFiles/clean_test_results.dir/build.make

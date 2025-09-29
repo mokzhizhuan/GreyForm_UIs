@@ -7,11 +7,7 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/root/catkin_ws/newui_Greyform/devel:$CMAKE_PREFIX_PATH"
-export LD_LIBRARY_PATH="/root/catkin_ws/newui_Greyform/devel/lib:$LD_LIBRARY_PATH"
-export PATH='/opt/ros/noetic/bin:/root/.venvs/py39/bin:/root/.vscode-server/bin/c306e94f98122556ca081f527b466015e1bc37b0/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
-export PKG_CONFIG_PATH="/root/catkin_ws/newui_Greyform/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
+export LD_LIBRARY_PATH='/opt/ros/noetic/lib'
+export PKG_CONFIG_PATH='/opt/ros/noetic/lib/pkgconfig'
 export PWD='/root/catkin_ws/newui_Greyform/build'
-export PYTHONPATH="/root/catkin_ws/newui_Greyform/devel/lib/python3/dist-packages:$PYTHONPATH"
-export ROSLISP_PACKAGE_DIRECTORIES='/root/catkin_ws/newui_Greyform/devel/share/common-lisp'
-export ROS_PACKAGE_PATH="/root/catkin_ws/newui_Greyform/src:$ROS_PACKAGE_PATH"
+export PYTHONPATH='/opt/ros/noetic/lib/python3/dist-packages'

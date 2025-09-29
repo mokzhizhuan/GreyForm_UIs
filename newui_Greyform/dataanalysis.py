@@ -13,12 +13,12 @@ import material as mats
 import ifcopenshell , re , heapq
 
 class data_draft(object):
-    def __init__(self, ifc_file, args):
+    def __init__(self, ifc_file, model_sides):
         self.ifc_file = ifc_file
-        self.args = args
+        self.model_sides = model_sides
 
     def analysis(self):
-        ifc_file = ifcopenshell.open(self.args.ifc_file)
+        ifc_file = ifcopenshell.open(self.ifc_file)
         # get the data  wall , opening , floor
         all_walls = ifc_findings.process_elements(
             ifc_file.by_type("IfcWall"), "basic wall:bss"
@@ -53,7 +53,7 @@ class data_draft(object):
         all_objs = ifc_findings.process_elements(ifc_file.by_type("IfcElement"), "")
         storeys = ifc_findings.extract_storeys(ifc_file)
         materials = mats.getmaterial(ifc_file, names_only=True, first_only=True)
-        modelline = modellines.getannotation(self.args.ifc_file)
+        modelline = modellines.getannotation(self.ifc_file)
         if door:
             for doors in door:
                 closest_wall, distance = ifc_findings.find_closest_wall(
@@ -111,6 +111,8 @@ class data_draft(object):
                 visited.append({next_w["name"]: next_w})
                 unvisited = [w for w in unvisited if w["name"] != next_w["name"]]
                 curr = next_w
+        if self.model_sides != len(visited):
+            return None
         if len(visited) == 6:
             top_twofloor_z = heapq.nlargest(2, (f["z"] for f in floors))
         walls_facing_plus_y = [
@@ -140,7 +142,6 @@ class data_draft(object):
         stage2_rows, centerpoint_rows, stage3_objects, df_checklist = (
             stage_val.getstage2andstage3(
                 all_objs,
-                self.args,
                 visited,
                 walls_bss50,
                 internal_x_width,
@@ -333,7 +334,7 @@ class data_draft(object):
         )
         df_combined = df_combined[~mask_remove].copy()
         df_combined_all = pd.concat([df_combined, df_fitting], ignore_index=True)
-        with pd.ExcelWriter(self.args.output_excel, engine="openpyxl") as writer:
+        with pd.ExcelWriter("PBU_TERRAHL2.xlsx", engine="openpyxl") as writer:
             for df, sheet in [(df_combined, "Stage 2"), (df_fitting, "Stage 3")]:
                 df.reset_index(drop=True, inplace=True)
                 df.index += 1

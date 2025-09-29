@@ -1,19 +1,13 @@
 # backend/main.py
-import os
-import stat
-import json
-import time
-import glob
-import shutil
-import traceback
-import subprocess
+import os, stat , json , time , glob , shutil, traceback , subprocess
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, List, Dict, Union, Tuple
-
+import dataanalysis as datadraft
 import pwd, grp
 from errno import errorcode
-from fastapi import FastAPI, Form, HTTPException, Query
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Form, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -438,7 +432,6 @@ def detect_usb(
             "has_entries": has_any,
         }
         checked.append(info)
-
         if info["valid"]:
             choices.append({"path": info["path"], "files": info["files"]})
             _CACHE.update(ts=now, preferred=info["path"], choices=choices)
@@ -448,6 +441,23 @@ def detect_usb(
             }
 
     return {"found": False, "preferred": None, "choices": choices, "checked": checked, "cached": False}
+
+@app.post("/api/checkifc")
+async def data_checker(
+    usb_path: str = Form(...),
+    ifc_path: str = Form(...),
+    model_sides: int = Form(...),
+    force: bool = Form(False),
+):
+    datadrafter = datadraft.data_draft(ifc_path, model_sides)
+    df_combined_data = datadrafter.analysis()
+    if df_combined_data is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Wrong PBU sides file , please include the specific PBU sides with the file"
+        )
+    return {"ok": True, "model": model_sides , "cached": True}
+        
 
 
 @app.post("/api/launch_ui")
