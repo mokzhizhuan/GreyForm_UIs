@@ -12,6 +12,7 @@ from collections import defaultdict, Counter
 from ui_progress import ProgressUI
 import requests, pathlib
 
+
 def _parse_wall_int(x):
     """Return an int for '3', 3, 'Wall 3', else None."""
     if x is None:
@@ -19,6 +20,7 @@ def _parse_wall_int(x):
     s = str(x)
     m = re.search(r"\d+", s)
     return int(m.group(0)) if m else None
+
 
 def _is_seq(x):
     if isinstance(x, (list, tuple, set)):
@@ -47,7 +49,6 @@ class mainwindowbuttonUI(object):
         indicatelabel,
         nextstepButton
     ):
-        # starting initialize
         super().__init__()
         self.mainwindow = mainwindow
         self.stackedWidget = stackedWidget
@@ -64,6 +65,8 @@ class mainwindowbuttonUI(object):
         self.args = args
         self.wall_numbers_by_placement = wall_numbers_by_placement
         self.n = 0
+        self._pui = None
+        self._ros_bridge = None
         self.button_UI()
         
     def payload_to_df(self, payload):
@@ -87,7 +90,7 @@ class mainwindowbuttonUI(object):
             return
         try:
             if w.isRunning():
-                w.stop()            # requests interruption and waits
+                w.stop()
         except Exception:
             pass
         try:
@@ -102,7 +105,7 @@ class mainwindowbuttonUI(object):
     def set_status_ok(self, msg: str):
         lbl = self._get_status_label()
         if not lbl:
-            return  # nowhere to show; optionally log
+            return
         lbl.setTextFormat(Qt.RichText)
         lbl.setText(
             "<div style='font-size:14px'>"
@@ -153,8 +156,8 @@ class mainwindowbuttonUI(object):
         self.update_status_label("Please wait , the robot calculating its position.")
         self.worker = Thread.WorkerThread(self.listenerdialog, self.stackedWidget)
         self.worker.update_status.connect(self.update_status_label)
-        self.worker.render_mesh.connect(self.beginmarking)  # Connect new signal
-        self.worker.start()  # Start the worker thread
+        self.worker.render_mesh.connect(self.beginmarking)
+        self.worker.start()
 
     def beginmarking(self):
         icon = "check.png"
@@ -165,7 +168,6 @@ class mainwindowbuttonUI(object):
         self.beginButton.show()
         self.nextButton.hide()
         self.beginButton.clicked.connect(self.create_mesh)
-
 
     def update_status_label(self, text: str):
         icon = "processing.png"
@@ -194,32 +196,97 @@ class mainwindowbuttonUI(object):
         except Exception:
             return (1, 9999)
 
+    def _sorted_global_labels(self):
+        """Ordered unique wall labels across ALL placements."""
+        def _sort_key_wall_label(s: str):
+            s = str(s).strip()
+            m = re.search(r"\d+", s)
+            return (0, int(m.group())) if m else (1, s)
+        all_labels_set = set()
+        for payload in self.wall_numbers_by_placement.values():
+            for v in payload.get("Wall Number", []):
+                sv = str(v).strip()
+                if sv:
+                    all_labels_set.add(sv)
+        return sorted(all_labels_set, key=_sort_key_wall_label)
+
+    def _bridge_done_now(self):
+        """Return a copy of the bridge's authoritative done set, or empty set."""
+        try:
+            return set(self._ros_bridge.done)
+        except Exception:
+            return set()
 
     def create_mesh(self):
+        # UI prep
         self.beginButton.hide()
         self.nextstepButton.setEnabled(False)
         self.nextstepButton.hide()
-        df = self.payload_to_df(self.wall_numbers_by_placement[f"placement{self.n + 1}"])
-        def _sort_key_wall_label(s: str):
-            import re
-            s = str(s)
-            m = re.search(r"\d+", s)
-            return (0, int(m.group())) if m else (1, s)
-        labels, seen = [], set()
-        for v in df["Wall Number"].astype(str):
-            if v not in seen:
-                seen.add(v)
-                labels.append(v)
-        labels = sorted(labels, key=_sort_key_wall_label)  
-        self._pui =  ProgressUI(self.warninglabel, self.progresslabel, labels,
-                  cross_icon_path="cross.png", tick_icon_path="check.png")
-        if labels:
-            self._pui.set_processing_warning(labels[0], img="processing.png")
-        self._pui.set_progress_list(labels, done=set())
-        self.progresslabel.show()
+
+        # 1) Current placement dataframe
+        key = f"placement{self.n + 1}"
+        df = self.payload_to_df(self.wall_numbers_by_placement.get(key, {}))
+
+        # 2) GLOBAL labels (canonical so they match UiRosBridge)
         from ui_ros_bridge import UiRosBridge
-        _ros_bridge = UiRosBridge(self._pui, labels)
+        canon = UiRosBridge._canon
+
+        all_labels_raw = self._sorted_global_labels()
+        all_labels = [canon(v) for v in all_labels_raw]
+
+        # 3) Build per-placement canonical subsets from the payload dicts
+        def _uniq_canon(seq):
+            seen, out = set(), []
+            for x in (seq or []):
+                cx = canon(x)
+                if cx and cx not in seen:
+                    seen.add(cx); out.append(cx)
+            return out
+
+        p1_raw = (self.wall_numbers_by_placement.get("placement1") or {}).get("Wall Number", [])
+
+        # Placement 1: unique canonical; if it contains any digits, keep numerics only
+        p1 = _uniq_canon(p1_raw)
+        if any(x.isdigit() for x in p1):
+            p1 = [x for x in p1 if x.isdigit()]
+
+        # Placement 2: everything else from GLOBAL labels (the remainder!)
+        p2 = [lab for lab in all_labels if lab not in set(p1)]
+
+        # Pick active subset for this placement
+        placement_labels = p1 if (self.n == 0) else p2
+        # 4) One ProgressUI over canonical labels — always render with 'done' from bridge
+        if not hasattr(self, "_pui") or self._pui is None:
+            self._pui = ProgressUI(
+                self.warninglabel, self.progresslabel, all_labels,
+                cross_icon_path="cross.png", tick_icon_path="check.png",
+            )
+            self._pui.set_progress_list(all_labels, done=set())
+        else:
+            self._pui.labels = list(all_labels)
+            self._pui.set_progress_list(all_labels, done=self._bridge_done_now())
+
+        # spinner: prefer a numeric wall in this placement
+        first_display = next((x for x in placement_labels if x.isdigit()), (placement_labels[0] if placement_labels else None))
+        if first_display:
+            self._pui.set_processing_warning(first_display, img="processing.png")
+        self.progresslabel.show()
+
+        # 5) One UiRosBridge, then set the ACTIVE subset
+        if not hasattr(self, "_ros_bridge") or self._ros_bridge is None:
+            self._ros_bridge = UiRosBridge(self._pui, all_labels)
+        else:
+            self._ros_bridge.walls = list(all_labels)
+        self._ros_bridge.set_active_subset(set(placement_labels))
+        try:
+            import rospy
+            rospy.loginfo(f"[ui] Placement {self.n+1} subset = {sorted(set(placement_labels))}")
+        except Exception:
+            print(f"[ui] Placement {self.n+1} subset = {sorted(set(placement_labels))}")
+
+        # 6) Launch execution worker
         rows = df.to_dict(orient="records")
+
         class ExecWorker(QObject):
             finished = pyqtSignal(bool, str)
             def __init__(self, listenerdialog, rows, excel_path, progresslabel, warninglabel):
@@ -237,20 +304,28 @@ class mainwindowbuttonUI(object):
                     self.finished.emit(True, "Completed.")
                 except Exception as e:
                     self.finished.emit(False, f"Error: {e}")
+
         _thread = QThread()
         _worker = ExecWorker(
             self.listenerdialog, rows, self.args.output_excel, self.progresslabel, self.warninglabel
         )
+
         def _after_thread_stopped():
             try: _worker.deleteLater()
             except: pass
             try: _thread.deleteLater()
             except: pass
-                # ✅ finalize the placement UI from the UI thread
-            _ros_bridge._finish_ui.emit()
-            try: _ros_bridge.placement_done_qt.disconnect()
-            except Exception: pass
-            _ros_bridge.placement_done_qt.connect(self._wire_next_button)
+
+            # connect handler BEFORE finalize
+            try:
+                self._ros_bridge.placement_done_qt.disconnect()
+            except Exception:
+                pass
+            self._ros_bridge.placement_done_qt.connect(self._wire_next_button)
+
+            # finalize ONLY this placement's subset (ensures any missing /done events tick)
+            self._ros_bridge._finish_ui.emit()
+
         _worker.moveToThread(_thread)
         _thread.started.connect(_worker.run)
         def _on_worker_finished(ok: bool, msg: str):
@@ -258,58 +333,62 @@ class mainwindowbuttonUI(object):
         _worker.finished.connect(_on_worker_finished)
         _thread.finished.connect(_after_thread_stopped)
         _thread.start()
-                    
 
     def _placement_count(self):
-        # count keys named placement1, placement2, ...
         return sum(1 for k in self.wall_numbers_by_placement.keys() if str(k).startswith("placement"))
 
     def _wire_next_button(self):
         """Set the Next button action depending on whether there is another placement."""
         self.nextstepButton.setEnabled(True)
         self.nextstepButton.show()
+
         count = self._placement_count()
         is_last = (self.n + 1) >= count
 
-        # remove any previous handler
         try:
             self.nextstepButton.clicked.disconnect()
         except Exception:
             pass
-        self._pui.set_all_done() 
+
+        # message only; ticking is handled by UiRosBridge
+        try:
+            done_count = len(self._ros_bridge.done)  # how many walls are done globally
+            self._pui.set_all_done(
+                message=f"All {done_count} walls have been marked. Marking is completed."
+            )
+        except Exception:
+            pass
+
         if is_last:
-            # Last (or only) placement -> Finish
             self.nextstepButton.setText("Finish")
             self.nextstepButton.clicked.connect(self._finish_and_close)
         else:
-            # More placements -> go to next 
             self.nextstepButton.setText("Proceed to the next Placement")
-            self.nextstepButton.clicked.connect(lambda: (setattr(self, "n", self.n + 1),
-                                                        self.movetothenextstep()))
+            self.nextstepButton.clicked.connect(lambda: (
+                setattr(self, "n", self.n + 1),
+                self.movetothenextstep()
+            ))
+
         self.nextstepButton.setEnabled(True)
         self.nextstepButton.show()
+
 
     def _finish_and_close(self):
         try:
             self.set_status_ok("All walls have been marked. Marking is completed.")
         except Exception:
             pass
-
-        # your app’s termination step
         try:
-            self.finalize()        # if you already have this
+            self.finalize()
         except Exception:
             pass
-
-        # close window/dialog if appropriate
         try:
-            self.mainwindow.close()           # QMainWindow / QWidget
+            self.mainwindow.close()
         except Exception:
             try:
-                self.mainwindow.accept()      # QDialog
+                self.mainwindow.accept()
             except Exception:
                 pass
-
 
     def _parse_wall_int(self, v):
         """Return an int wall number if possible (handles 'Wall 3', '3', 3), else None."""
@@ -329,7 +408,6 @@ class mainwindowbuttonUI(object):
         return sorted(uniq)
 
     def _unique_walls_all(self):
-        """Return sorted unique wall ints across all placements."""
         uniq = set()
         for pdata in self.wall_numbers_by_placement.values():
             for w in pdata.get("Wall Number", []):
@@ -355,21 +433,27 @@ class mainwindowbuttonUI(object):
             self.status_icon.setFixedWidth(0)
 
     def movetothenextstep(self):
+        # Prepare UI for next placement; keep progress visible
         self.nextstepButton.hide()
         self.nextButton.show()
         self.nextButton.setEnabled(True)
         self.hide_status_icon()
         self.indicatelabel.show()
+
+        # keep progress panel visible and refresh with current done set
         self.progresslabel.hide()
+
+        # placement illustration
         iconindicator = "placementindicator2.png"
         icon = "placement2.png"
-        html = f'<div style="text-align:center;"><img src="{icon}" width="800" height="600" style="display:block; margin:0 auto;"></div>'
+        html = f'<div style="text-align:left;"><img src="{icon}" width="800" height="600" style="display:block; margin:0 auto;"></div>'
         htmlindicator = f'<div style="text-align:center;"><img src="{iconindicator}" style="display:block; margin:0 auto;"></div>'
         self.mainwindow.imagelabel.setTextFormat(Qt.RichText)
         self.mainwindow.imagelabel.setText(html)
         self.mainwindow.imageplacelabel.setTextFormat(Qt.RichText)
         self.mainwindow.imageplacelabel.setText(htmlindicator)
-        self.warninglabel.setText(f"Place the robot in the center of the wall that is clockwise of wall 1")
+
+        self.warninglabel.setText("Place the robot in the center of the wall that is clockwise of wall 1")
         self.nextButton.clicked.connect(lambda: self.start_scan())
 
     def finalize(self):
@@ -390,8 +474,6 @@ class mainwindowbuttonUI(object):
         if app is not None:
             QtCore.QTimer.singleShot(0, app.quit)
         
-
-
     # button interaction ui
     def button_UI(self):
         self.listenerdialog = process.ListenerNodeRunner(

@@ -34,7 +34,7 @@
        <rect>
         <x>0</x>
         <y>40</y>
-        <width>781</width>
+        <width>917</width>
         <height>481</height>
        </rect>
       </property>
@@ -48,6 +48,9 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,1">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetFixedSize</enum>
+         </property>
          <item>
           <widget class="QLabel" name="imagelabel">
            <property name="text">

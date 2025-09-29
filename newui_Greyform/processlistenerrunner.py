@@ -73,27 +73,31 @@ class ListenerNodeRunner:
 
     def run_execution(self, rows, excel_path, label, mainlabel):
         self.talker_node.publish_file_message(self.file, excel_path)
+
         for data in rows:
             wn = data.get("Wall Number")
-            x = data.get("Position X", 0)
-            y = data.get("Position Y", 0)
-            z = data.get("Position Z", 0)
+
+            picked_position = [
+                int(round(float(data.get("Position X", 0) or 0))),
+                int(round(float(data.get("Position Y", 0) or 0))),
+                int(round(float(data.get("Position Z", 0) or 0))),
+            ]
             markingtype = data.get("Marking Type")
 
-            def _num(v, default=0):
-                try:
-                    return float(v)
-                except Exception:
-                    return default
+            # Publish the STARTED event
+            self.talker_node.publish_selection_message(wn, picked_position, markingtype)
 
-            picked_position = [int(_num(x)),
-                            int(_num(y)),
-                            int(_num(z))]
+            # 👉 No "done" publish here.
+            # The bridge will tick the previous wall automatically
+            # when the next /ui/wall_started arrives.
 
-            # now send with labels
-            self.talker_node.publish_selection_message(
-                wn, picked_position, markingtype,
-            )
+            # Run your actual marking for `wn` here...
+            # robot.mark_wall(wn, ...)
+
+        # ✅ After loop, explicitly send all_done so the last wall ticks
+        self.talker_node.publish_all_done(True)
+
+
 
     def _run_process(self):
         env = os.environ.copy()

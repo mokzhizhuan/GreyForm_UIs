@@ -1,99 +1,119 @@
-# ui_ros_bridge.py
 import re, rospy
 from PyQt5.QtCore import QObject, pyqtSignal, Qt
 from std_msgs.msg import String, Bool
 
 class UiRosBridge(QObject):
-    placement_done_qt = pyqtSignal()      # placement finished (all walls ✅)
+    placement_done_qt = pyqtSignal()
 
-    # hop-to-UI signals
     _started_ui  = pyqtSignal(str)
     _done_ui     = pyqtSignal(str)
-    _finish_ui   = pyqtSignal()           # <-- NEW: finalize from UI thread
+    _finish_ui   = pyqtSignal()
+
+    def _log(self, msg: str):
+        try: rospy.loginfo(msg)
+        except Exception:
+            try: print(msg)
+            except Exception: pass
 
     def __init__(self, pui, walls_ordered, parent=None):
         try: super().__init__(parent)
         except TypeError: super().__init__(None)
 
         self.pui   = pui
-        self.walls = [str(w) for w in walls_ordered]   # e.g. ['1','4','5','6','F']
+        self.walls = [self._canon(w) for w in walls_ordered]
         self.done  = set()
-        self._current = None
+        self._active_subset = set()
+        self._prev_started = None  # track last started wall
 
-        self.pui.set_progress_list(self.walls, done=self.done)
-
-        # connect UI-thread handlers
         self._started_ui.connect(self._on_started_ui, type=Qt.QueuedConnection)
         self._done_ui.connect(self._on_done_ui,       type=Qt.QueuedConnection)
-        self._finish_ui.connect(self._finalize_ui,    type=Qt.QueuedConnection)  # <-- NEW
+        self._finish_ui.connect(self._finalize_ui,    type=Qt.QueuedConnection)
 
-        # ROS subscribers (don’t touch Qt from these)
         if not rospy.core.is_initialized():
             rospy.init_node("ui_ros_bridge", anonymous=True, disable_signals=True)
         rospy.Subscriber("/ui/wall_started", String, self._on_started_ros)
         rospy.Subscriber("/ui/wall_done",    String, self._on_done_ros)
         rospy.Subscriber("/ui/all_done",     Bool,   self._on_all_done_ros)
 
+        self._log(f"[bridge] INIT walls={self.walls}, done={sorted(self.done)}")
+        self.pui.set_progress_list(self.walls, done=self.done)
+        self._log("[bridge] INIT subscribers ready")
 
     @staticmethod
     def _canon(s: str) -> str:
-        import re
-        s = str(s).strip()
-        m = re.search(r'([A-Za-z]+|\d+)\s*$', s)   # << last token (letters OR digits)
-        return m.group(1) if m else s
+        s = str(s)
+        m = re.search(r'\b0*(\d+)\b', s)
+        if m:
+            try: return str(int(m.group(1)))
+            except Exception: return m.group(1)
+        if re.search(r'\b(F|FL|FLOOR)\b', s, flags=re.I):
+            return 'F'
+        m = re.search(r'\b([A-Za-z])\b', s)
+        return m.group(1).upper() if m else s.strip().upper()
 
-        
-    def _ensure_label(self, lab: str):
-        if lab not in self.walls:
-            self.walls.append(lab)
+    def set_active_subset(self, labels_for_this_placement) -> None:
+        self._active_subset = {
+            self._canon(x) for x in (labels_for_this_placement or []) if str(x).strip()
+        }
+        self._log(f"[bridge] ACTIVE SUBSET SET -> {sorted(self._active_subset)}")
 
-    # ---------- ROS thread → UI thread ----------
+    # ============== ROS THREAD ==============
     def _on_started_ros(self, msg: String):
-        self._started_ui.emit(self._canon(msg.data))
+        lab = self._canon(getattr(msg, "data", ""))
+        prev = getattr(self, "_prev_started", None)
 
-    def _on_done_ros(self, msg: String):
-        self._done_ui.emit(self._canon(msg.data))
+        self._log(f"[bridge:ROS] /ui/wall_started -> '{lab}' (prev={prev})")
 
-    def _on_all_done_ros(self, msg: Bool):
-        if getattr(msg, "data", False) and len(self.done) == len(set(self.walls)):
-            self._finish_ui.emit()
+        # ✅ only tick when moving from one wall to the next
+        if prev and prev != lab:
+            if prev not in self.done and (not self._active_subset or prev in self._active_subset):
+                self.done.add(prev)
+                self._log(f"[bridge:ROS] TICK previous '{prev}', done_now={sorted(self.done)}")
+                self.pui.set_progress_list(self.walls, done=self.done)
+                self._done_ui.emit(prev)
 
-    # ---------- UI-thread slots ----------
-    def _on_started_ui(self, lab: str):
-        self._ensure_label(lab)
-        # tick previous in order (your rule)
+        # spinner for current wall
         try:
-            i = self.walls.index(lab)
-            if i > 0:
-                prev = self.walls[i-1]
-                if prev not in self.done:
-                    self.done.add(prev)
-                    self.pui.set_progress_list(self.walls, done=self.done)
-        except ValueError:
-            pass
-        self._current = lab
-        self.pui.set_processing_warning(lab, img="processing.png")
-
-    def _on_done_ui(self, lab: str):
-        self._ensure_label(lab)
-        if lab not in self.done:
-            self.done.add(lab)
-            self.pui.set_progress_list(self.walls, done=self.done)
-        self._maybe_emit_placement_done()
-
-    def _finalize_ui(self):
-        """Force completion of the active placement (UI thread)."""
-        # Canonical, all-string set of walls:
-        self.walls = [str(w) for w in self.walls]
-        # ✅ Force every listed wall to done
-        self.done = set(self.walls)
-        self.pui.set_progress_list(self.walls, done=self.done)
-        # Tell the controller the placement is finished
-        try:
-            self.placement_done_qt.emit()
+            self.pui.set_processing_warning(lab, img="processing.png")
         except Exception:
             pass
 
-    def _maybe_emit_placement_done(self):
-        if len(self.done) == len(set(self.walls)):
-            self.placement_done_qt.emit()
+        self._started_ui.emit(lab)
+        self._prev_started = lab
+
+    def _on_done_ros(self, msg: String):
+        lab = self._canon(getattr(msg, "data", ""))
+        self._log(f"[bridge:ROS] /ui/wall_done -> '{lab}' (subset={sorted(self._active_subset)})")
+
+        if self._active_subset and (lab not in self._active_subset):
+            self._log(f"[bridge:ROS] IGNORE '{lab}' (not in active subset)")
+            return
+
+        if lab and (lab not in self.done):
+            self.done.add(lab)
+            self._log(f"[bridge:ROS] ADDED '{lab}', done_now={sorted(self.done)}")
+            self.pui.set_progress_list(self.walls, done=self.done)
+            self._done_ui.emit(lab)
+
+    def _on_all_done_ros(self, msg: Bool):
+        if getattr(msg, "data", False):
+            self._finish_ui.emit()
+
+    # ============== UI THREAD ==============
+    def _on_started_ui(self, lab: str):
+        self._log(f"[bridge:UI] START slot '{lab}'")
+
+    def _on_done_ui(self, lab: str):
+        lab = self._canon(lab)
+        self._log(f"[bridge:UI] DONE slot '{lab}' seen; done_now={sorted(self.done)}")
+        self.pui.set_progress_list(self.walls, done=self.done)
+
+    def _finalize_ui(self):
+        subset = self._active_subset or set(self.walls)
+        for lab in subset:
+            if lab not in self.done:
+                self.done.add(lab)
+        self.pui.set_progress_list(self.walls, done=self.done)
+        self._log(f"[bridge:UI] FINALIZE subset -> merged done={sorted(self.done)}")
+        try: self.placement_done_qt.emit()
+        except Exception: pass

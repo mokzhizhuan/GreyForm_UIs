@@ -32,7 +32,7 @@ class Ui_MainWindow(QMainWindow):
         self.mainwindow.nextstepButton.hide()
         iconindicator = "placementindicator1.png"
         icon = "placement1.png"
-        html = f'<div style="text-align:center;"><img src="{icon}"style="display:block; margin:0 auto;"></div>'
+        html = f'<div style="text-align:left;"><img src="{icon}" width="800" height="600" style="display:block; margin:0 auto;"></div>'
         htmlindicator = f'<div style="text-align:center;"><img src="{iconindicator}"  style="display:block; margin:0 auto;"></div>'
         self.mainwindow.imagelabel.setTextFormat(Qt.RichText)
         self.mainwindow.imagelabel.setText(html)
