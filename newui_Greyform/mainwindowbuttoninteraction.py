@@ -151,6 +151,11 @@ class mainwindowbuttonUI(object):
     
     # stacked widget page ui
     def start_scan(self):
+        if self.n == 1 :
+            icon = "placement2.png"
+            html = f'<div style="text-align:left;"><img src="{icon}" width="800" height="600" style="display:block; margin:0 auto;"></div>'
+            self.mainwindow.imagelabel.setTextFormat(Qt.RichText)
+            self.mainwindow.imagelabel.setText(html)
         self.nextButton.setEnabled(False)
         self.indicatelabel.hide()
         self.update_status_label("Please wait , the robot calculating its position.")
@@ -361,6 +366,10 @@ class mainwindowbuttonUI(object):
 
         if is_last:
             self.nextstepButton.setText("Finish")
+            iconindicator = "placementindicatorcompleted.png"
+            htmlindicator = f'<div style="text-align:center;"><img src="{iconindicator}" style="display:block; margin:0 auto;"></div>'
+            self.mainwindow.imageplacelabel.setTextFormat(Qt.RichText)
+            self.mainwindow.imageplacelabel.setText(htmlindicator)
             self.nextstepButton.clicked.connect(self._finish_and_close)
         else:
             self.nextstepButton.setText("Proceed to the next Placement")
@@ -445,7 +454,7 @@ class mainwindowbuttonUI(object):
 
         # placement illustration
         iconindicator = "placementindicator2.png"
-        icon = "placement2.png"
+        icon = "placement1-2.png"
         html = f'<div style="text-align:left;"><img src="{icon}" width="800" height="600" style="display:block; margin:0 auto;"></div>'
         htmlindicator = f'<div style="text-align:center;"><img src="{iconindicator}" style="display:block; margin:0 auto;"></div>'
         self.mainwindow.imagelabel.setTextFormat(Qt.RichText)

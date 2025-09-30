@@ -90,7 +90,7 @@ class ProgressUI(QObject):
         rows = [self.labels[i:i+2] for i in range(0, len(self.labels), 2)]
 
         parts = [
-            "<div style='font-weight:700;margin-bottom:8px'>Progress:</div>",
+            "<div style='font-weight:700;margin-bottom:8px;font-size:20px'>Progress:</div>",
             "<table cellspacing='0' cellpadding='6' style='border-collapse:collapse;table-layout:fixed;width:100%;max-width:520px;'>"
         ]
 
@@ -100,8 +100,8 @@ class ProgressUI(QObject):
             icon = tick if is_done else cross
             return (
                 "<td style='vertical-align:middle;white-space:nowrap;width:50%;'>"
-                f"  <img src='{icon}' width='18' height='18' style='vertical-align:middle;margin-right:6px'/>"
-                f"  <span>Wall {esc}</span>"
+                f"  <img src='{icon}' width='40' height='40' style='vertical-align:middle;margin-right:6px'/>"
+                f"  <span style='font-size:20px;'>Wall {esc}</span>"
                 "</td>"
             )
 
@@ -117,8 +117,8 @@ class ProgressUI(QObject):
     def set_processing_warning(self, wall_label, img="processing.png"):
         wall_label = html.escape(str(wall_label), quote=True)
         self.set_warning_sig.emit(
-            "<div style='display:inline-block;font-size:16px'>"
-            f"<img src='{img}' width='18' height='18' style='vertical-align:middle;margin-right:8px'/>"
+            "<div style='display:inline-block;font-size:20px'>"
+            f"<img src='{img}' width='40' height='40' style='vertical-align:middle;margin-right:8px'/>"
             f"<b>Please wait.</b> The robot is now marking wall <b>{wall_label}</b>."
             "</div>"
         )
@@ -128,8 +128,8 @@ class ProgressUI(QObject):
         if message is None:
             message = f"All {n} walls have been marked. Marking is completed."
         html_msg = (
-            "<div style='font-size:14px'>"
-            f"<img src='{check_icon_path}' width='16' height='16' "
+            "<div style='font-size:20px'>"
+            f"<img src='{check_icon_path}' width='40' height='40' "
             "style='vertical-align:middle;margin-right:8px'/>"
             f"{message}"
             "</div>"
