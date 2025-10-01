@@ -16,11 +16,6 @@ UI_DONE    = "/ui/wall_done"
 UI_ALLDONE = "/ui/all_done"
 
 def _normalize_wall_token(v: object) -> str:
-    """
-    Turn '1', 1, 1.0, 'Wall 1', 'W1', '1 ' -> '1'
-    Turn 'F', 'floor', 'Floor/Slab' -> 'F'
-    Else return uppercased trimmed string for traceability.
-    """
     s = str(v).strip().upper()
     m = re.search(r'(\d+)', s)
     if m:
@@ -30,10 +25,6 @@ def _normalize_wall_token(v: object) -> str:
     return s
 
 def _resolve_sheet_name(xl_sheets: dict, typeselection: str) -> str:
-    """
-    If typeselection matches a real sheet name (case-insensitive), return it.
-    If not, return '' to indicate 'search ALL sheets'.
-    """
     if not typeselection:
         return ""
     key = str(typeselection).strip().lower()
