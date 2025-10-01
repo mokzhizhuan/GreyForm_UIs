@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>570</height>
+    <height>540</height>
    </rect>
   </property>
   <property name="font">
@@ -32,8 +32,8 @@
      <widget class="QWidget" name="verticalLayoutWidget_3">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>30</y>
+        <x>0</x>
+        <y>20</y>
         <width>917</width>
         <height>481</height>
        </rect>
@@ -68,6 +68,9 @@
                 <string>Place the robot facing the center of the wall with the door.
 </string>
                </property>
+               <property name="wordWrap">
+                <bool>false</bool>
+               </property>
               </widget>
              </item>
              <item>
@@ -77,23 +80,7 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <spacer name="verticalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Expanding</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
+                 <width>100</width>
                  <height>40</height>
                 </size>
                </property>
