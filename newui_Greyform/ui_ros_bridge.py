@@ -56,7 +56,6 @@ class UiRosBridge(QObject):
         if prev and prev != lab:
             if prev not in self.done and (not self._active_subset or prev in self._active_subset):
                 self.done.add(prev)
-                self._log(f"[bridge:ROS] TICK previous '{prev}', done_now={sorted(self.done)}")
                 self.pui.set_progress_list(self.walls, done=self.done)
                 self._done_ui.emit(prev)
         try:
@@ -70,11 +69,9 @@ class UiRosBridge(QObject):
     def _on_done_ros(self, msg: String):
         lab = self._canon(getattr(msg, "data", ""))
         if self._active_subset and (lab not in self._active_subset):
-            self._log(f"[bridge:ROS] IGNORE '{lab}' (not in active subset)")
             return
         if lab and (lab not in self.done):
             self.done.add(lab)
-            self._log(f"[bridge:ROS] ADDED '{lab}', done_now={sorted(self.done)}")
             self.pui.set_progress_list(self.walls, done=self.done)
             self._done_ui.emit(lab)
 
@@ -87,7 +84,6 @@ class UiRosBridge(QObject):
 
     def _on_done_ui(self, lab: str):
         lab = self._canon(lab)
-        self._log(f"[bridge:UI] DONE slot '{lab}' seen; done_now={sorted(self.done)}")
         self.pui.set_progress_list(self.walls, done=self.done)
 
     def _finalize_ui(self):
@@ -96,6 +92,5 @@ class UiRosBridge(QObject):
             if lab not in self.done:
                 self.done.add(lab)
         self.pui.set_progress_list(self.walls, done=self.done)
-        self._log(f"[bridge:UI] FINALIZE subset -> merged done={sorted(self.done)}")
         try: self.placement_done_qt.emit()
         except Exception: pass

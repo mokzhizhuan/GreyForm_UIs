@@ -166,6 +166,10 @@ class mainwindowbuttonUI(object):
 
     def beginmarking(self):
         icon = "check.png"
+        icon_left = "left.png"
+        icon_right = "right.png"
+        text_left = "The robot is not correctly centered. Please move the robot to the left."
+        text_right = "The robot is not correctly centered. Please move the robot to the left."
         text = "The robot is now correctly centered and is ready to mark the wall."
         html = f'<div style="text-align:center;"><img src="{icon}" width="50" height="50" style="display:block; margin:0 auto;">{text}</div>'
         self.warninglabel.setTextFormat(Qt.RichText)
@@ -202,7 +206,6 @@ class mainwindowbuttonUI(object):
             return (1, 9999)
 
     def _sorted_global_labels(self):
-        """Ordered unique wall labels across ALL placements."""
         def _sort_key_wall_label(s: str):
             s = str(s).strip()
             m = re.search(r"\d+", s)
@@ -216,7 +219,6 @@ class mainwindowbuttonUI(object):
         return sorted(all_labels_set, key=_sort_key_wall_label)
 
     def _bridge_done_now(self):
-        """Return a copy of the bridge's authoritative done set, or empty set."""
         try:
             return set(self._ros_bridge.done)
         except Exception:

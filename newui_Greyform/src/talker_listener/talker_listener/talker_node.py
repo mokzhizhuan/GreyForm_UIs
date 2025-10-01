@@ -29,7 +29,6 @@ class TalkerNode:
         self.file_pub.publish(msg)
 
     def publish_selection_message(self, wallselection, picked_position, typeselection):
-        """Only publishes 'started'. NO 'done' here."""
         lab = str(wallselection)
         try:
             self.ui_wall_started_pub.publish(String(data=lab))

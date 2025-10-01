@@ -28,7 +28,6 @@ def _resolve_sheet_name(xl_sheets: dict, typeselection: str) -> str:
     if not typeselection:
         return ""
     key = str(typeselection).strip().lower()
-    # build case-insensitive map of sheet names
     cmap = {name.strip().lower(): name for name in xl_sheets.keys()}
     return cmap.get(key, "")
 
