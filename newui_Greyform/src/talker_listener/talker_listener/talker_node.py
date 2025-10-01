@@ -7,11 +7,8 @@ class TalkerNode:
     def __init__(self):
         if not rospy.core.is_initialized():
             rospy.init_node("talker_node", anonymous=True, disable_signals=True)
-
         self.file_pub = rospy.Publisher("file_extraction_topic", FileExtractionMessage, queue_size=10)
         self.sel_pub  = rospy.Publisher("selection_wall_topic",   SelectionWall,        queue_size=10)
-
-        # UI topics
         self.ui_wall_started_pub = rospy.Publisher("/ui/wall_started", String, queue_size=10, latch=True)
         self.ui_wall_done_pub    = rospy.Publisher("/ui/wall_done",    String, queue_size=10, latch=True)
         self.ui_all_done_pub     = rospy.Publisher("/ui/all_done",     Bool,   queue_size=10, latch=True)
@@ -30,17 +27,14 @@ class TalkerNode:
         msg.stl_data  = ifc_bytes
         msg.excelfile = excel_path
         self.file_pub.publish(msg)
-        rospy.loginfo(f"[talker] Sent FileExtraction: bytes={len(ifc_bytes)} excel={excel_path}")
 
     def publish_selection_message(self, wallselection, picked_position, typeselection):
         """Only publishes 'started'. NO 'done' here."""
         lab = str(wallselection)
         try:
             self.ui_wall_started_pub.publish(String(data=lab))
-            rospy.loginfo(f"[talker] /ui/wall_started -> {lab}")
         except Exception:
             pass
-
         self._wait_for_subscribers([self.sel_pub], timeout=0.5)
         msg = SelectionWall()
         msg.wallselection = lab
@@ -57,13 +51,11 @@ class TalkerNode:
         lab = str(wallselection)
         try:
             self.ui_wall_done_pub.publish(String(data=lab))
-            rospy.loginfo(f"[talker] Published /ui/wall_done -> {lab}")
         except Exception:
             pass
 
     def publish_all_done(self, is_done: bool):
         try:
             self.ui_all_done_pub.publish(Bool(data=bool(is_done)))
-            rospy.loginfo(f"[talker] /ui/all_done -> {bool(is_done)}")
         except Exception:
             pass

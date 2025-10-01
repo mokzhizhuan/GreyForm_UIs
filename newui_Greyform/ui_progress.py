@@ -23,13 +23,8 @@ class ProgressUI(QObject):
         self.cross_icon_path = cross_icon_path
         self.tick_icon_path  = tick_icon_path
         self._done = set()
-
-        # You can log right here ⬇️
-        self._log(f"[pui] INIT labels={self.labels} done={sorted(self._done)}")
-
         self.set_warning_sig.connect(self.warninglabel.setText,  type=Qt.QueuedConnection)
         self.set_progress_sig.connect(self._apply_progress_html, type=Qt.QueuedConnection)
-
         self.warninglabel.setTextFormat(Qt.RichText)
         self.progresslabel.setTextFormat(Qt.RichText)
         self.progresslabel.setWordWrap(False)
@@ -39,7 +34,6 @@ class ProgressUI(QObject):
         self.progresslabel.setTextFormat(Qt.RichText)
         self.progresslabel.setText(html_text)
 
-    # ---------- helpers ----------
 
     def _ensure_init(self):
         if not hasattr(self, "_done"):
@@ -48,52 +42,37 @@ class ProgressUI(QObject):
             self.labels = []
 
     def mark_done(self, label):
-        """Tick a single wall and re-render immediately."""
         self._ensure_init()
         if label is None:
             return
         lab = str(label).strip()
         self._done.add(lab)
-        self._log(f"[pui] TICK '{lab}' -> done_now={sorted(self._done)}")
         self.set_progress_list(self.labels, done=self._done)
 
 
     def mark_done_subset(self, subset):
-        """Tick a subset of walls and re-render immediately."""
         self._ensure_init()
         if not subset:
             return
         subset = {str(x).strip() for x in subset}
         self._done |= subset
-        self._log(f"[pui] TICK SUBSET {sorted(subset)} -> done_now={sorted(self._done)}")
         self.set_progress_list(self.labels, done=self._done)
 
 
     def set_progress_list(self, wall_labels=None, done=None, cross=None, tick=None):
-        """
-        Render the 2×N progress grid.
-        If 'done' is provided, replace internal ticks with it.
-        If 'done' is None, keep the existing ticks.
-        """
         import html as _html
         self._ensure_init()
-
         if wall_labels is not None:
             self.labels = [str(x).strip() for x in wall_labels]
-
         if done is not None:
             self._done = {str(x).strip() for x in done}
-
         cross = self.cross_icon_path if cross is None else cross
         tick  = self.tick_icon_path  if tick  is None else tick
-
         rows = [self.labels[i:i+2] for i in range(0, len(self.labels), 2)]
-
         parts = [
             "<div style='font-weight:700;margin-bottom:8px;font-size:20px'>Progress:</div>",
             "<table cellspacing='0' cellpadding='6' style='border-collapse:collapse;table-layout:fixed;width:100%;max-width:520px;'>"
         ]
-
         def _cell_html(label_str: str) -> str:
             esc = _html.escape(label_str, quote=True)
             is_done = (label_str in self._done)
@@ -104,13 +83,11 @@ class ProgressUI(QObject):
                 f"  <span style='font-size:20px;'>Wall {esc}</span>"
                 "</td>"
             )
-
         for pair in rows:
             parts.append("<tr>")
             parts.append(_cell_html(pair[0]))
             parts.append(_cell_html(pair[1]) if len(pair) == 2 else "<td style='width:50%;'></td>")
             parts.append("</tr>")
-
         parts.append("</table>")
         self.set_progress_sig.emit("".join(parts))
 
@@ -138,7 +115,6 @@ class ProgressUI(QObject):
         self.set_warning_sig.emit(html_msg)
 
     def set_done_for_subset(self, subset: set) -> None:
-        """Accumulate ticks for subset and refresh."""
         subset = {str(x).strip() for x in (subset or set()) if str(x).strip()}
         self._done |= subset
         self.set_progress_list(self.labels, done=self._done)

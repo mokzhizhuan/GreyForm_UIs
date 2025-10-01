@@ -18,26 +18,20 @@ class UiRosBridge(QObject):
     def __init__(self, pui, walls_ordered, parent=None):
         try: super().__init__(parent)
         except TypeError: super().__init__(None)
-
         self.pui   = pui
         self.walls = [self._canon(w) for w in walls_ordered]
         self.done  = set()
         self._active_subset = set()
         self._prev_started = None  # track last started wall
-
         self._started_ui.connect(self._on_started_ui, type=Qt.QueuedConnection)
         self._done_ui.connect(self._on_done_ui,       type=Qt.QueuedConnection)
         self._finish_ui.connect(self._finalize_ui,    type=Qt.QueuedConnection)
-
         if not rospy.core.is_initialized():
             rospy.init_node("ui_ros_bridge", anonymous=True, disable_signals=True)
         rospy.Subscriber("/ui/wall_started", String, self._on_started_ros)
         rospy.Subscriber("/ui/wall_done",    String, self._on_done_ros)
         rospy.Subscriber("/ui/all_done",     Bool,   self._on_all_done_ros)
-
-        self._log(f"[bridge] INIT walls={self.walls}, done={sorted(self.done)}")
         self.pui.set_progress_list(self.walls, done=self.done)
-        self._log("[bridge] INIT subscribers ready")
 
     @staticmethod
     def _canon(s: str) -> str:
@@ -55,24 +49,16 @@ class UiRosBridge(QObject):
         self._active_subset = {
             self._canon(x) for x in (labels_for_this_placement or []) if str(x).strip()
         }
-        self._log(f"[bridge] ACTIVE SUBSET SET -> {sorted(self._active_subset)}")
 
-    # ============== ROS THREAD ==============
     def _on_started_ros(self, msg: String):
         lab = self._canon(getattr(msg, "data", ""))
         prev = getattr(self, "_prev_started", None)
-
-        self._log(f"[bridge:ROS] /ui/wall_started -> '{lab}' (prev={prev})")
-
-        # ✅ only tick when moving from one wall to the next
         if prev and prev != lab:
             if prev not in self.done and (not self._active_subset or prev in self._active_subset):
                 self.done.add(prev)
                 self._log(f"[bridge:ROS] TICK previous '{prev}', done_now={sorted(self.done)}")
                 self.pui.set_progress_list(self.walls, done=self.done)
                 self._done_ui.emit(prev)
-
-        # spinner for current wall
         try:
             self.pui.set_processing_warning(lab, img="processing.png")
         except Exception:
@@ -83,12 +69,9 @@ class UiRosBridge(QObject):
 
     def _on_done_ros(self, msg: String):
         lab = self._canon(getattr(msg, "data", ""))
-        self._log(f"[bridge:ROS] /ui/wall_done -> '{lab}' (subset={sorted(self._active_subset)})")
-
         if self._active_subset and (lab not in self._active_subset):
             self._log(f"[bridge:ROS] IGNORE '{lab}' (not in active subset)")
             return
-
         if lab and (lab not in self.done):
             self.done.add(lab)
             self._log(f"[bridge:ROS] ADDED '{lab}', done_now={sorted(self.done)}")
@@ -99,7 +82,6 @@ class UiRosBridge(QObject):
         if getattr(msg, "data", False):
             self._finish_ui.emit()
 
-    # ============== UI THREAD ==============
     def _on_started_ui(self, lab: str):
         self._log(f"[bridge:UI] START slot '{lab}'")
 
