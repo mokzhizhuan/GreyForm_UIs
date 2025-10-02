@@ -65,6 +65,7 @@ class mainwindowbuttonUI(object):
         self.args = args
         self.wall_numbers_by_placement = wall_numbers_by_placement
         self.n = 0
+        self.spacing = "\n"
         self._pui = None
         self._ros_bridge = None
         self.button_UI()
@@ -338,7 +339,13 @@ class mainwindowbuttonUI(object):
             self.mainwindow.imageplacelabel.setText(htmlindicator)
             self.nextstepButton.clicked.connect(self._finish_and_close)
         else:
-            self.nextstepButton.setText("Proceed to the next Placement")
+            message = (
+                "Marking of the walls at placement 1 is completed."
+                "<br/>To continue marking the rest of the walls,"
+                "<br/>the robot needs to be moved to placement 2."
+            )
+            self._pui.set_all_done(message, "processing.png")
+            self.nextstepButton.setText("I am ready to move the robot")
             self.nextstepButton.clicked.connect(lambda: (
                 setattr(self, "n", self.n + 1),
                 self.movetothenextstep()

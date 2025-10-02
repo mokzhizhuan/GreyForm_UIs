@@ -164,7 +164,7 @@ export default function Status() {
       fd.append("ifc_path", path);
       fd.append("model_sides", String(selectedModel));
 
-      const res = await axios.post(`${API}/api/checkifc`, fd, { timeout: 80000 });
+      const res = await axios.post(`${API}/api/checkifc`, fd, { timeout: 20000 });
 
       if (res.data?.ok) {
         setIsValidated(true);

@@ -105,11 +105,16 @@ class ProgressUI(QObject):
         if message is None:
             message = f"All {n} walls have been marked. Marking is completed."
         html_msg = (
-            "<div style='font-size:20px'>"
-            f"<img src='{check_icon_path}' width='40' height='40' "
-            "style='vertical-align:middle;margin-right:8px'/>"
-            f"{message}"
-            "</div>"
+            "<table cellspacing='0' cellpadding='0' style='border-collapse:collapse;'>"
+            "  <tr>"
+            f"    <td style='vertical-align:top;padding-right:8px;'>"
+            f"      <img src='{check_icon_path}' width='40' height='40'/>"
+            "    </td>"
+            f"    <td style='font-size:20px; line-height:1.4;'>"
+            f"      {message}"
+            "    </td>"
+            "  </tr>"
+            "</table>"
         )
         self.warninglabel.setTextFormat(Qt.RichText)
         self.set_warning_sig.emit(html_msg)
