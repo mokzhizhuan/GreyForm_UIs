@@ -13,9 +13,10 @@ import material as mats
 import ifcopenshell , re , heapq
 
 class data_draft(object):
-    def __init__(self, ifc_file, model_sides):
+    def __init__(self, ifc_file, model_sides, usb_path):
         self.ifc_file = ifc_file
         self.model_sides = model_sides
+        self.usb_path = usb_path
 
     def analysis(self):
         ifc_file = ifcopenshell.open(self.ifc_file)
@@ -334,7 +335,7 @@ class data_draft(object):
         )
         df_combined = df_combined[~mask_remove].copy()
         df_combined_all = pd.concat([df_combined, df_fitting], ignore_index=True)
-        with pd.ExcelWriter("PBU_TERRAHL2.xlsx", engine="openpyxl") as writer:
+        with pd.ExcelWriter(f"{self.usb_path}/PBU_TERRAHL2.xlsx", engine="openpyxl") as writer:
             for df, sheet in [(df_combined, "Stage 2"), (df_fitting, "Stage 3")]:
                 df.reset_index(drop=True, inplace=True)
                 df.index += 1

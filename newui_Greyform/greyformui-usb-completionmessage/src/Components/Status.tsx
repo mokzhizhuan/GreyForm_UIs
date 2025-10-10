@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import ModelSelection from "./ModelSelection";
-import RobotIPInput from "./RobotIPInput";
-import ABBHOMEImage from '../assets/ABB Robot placeholder image.jpg';
 
 const svg = `
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
@@ -34,21 +32,17 @@ type UsbState =
   | "launching"
   | "shutdown"
   | "checked_ok"    // ✅ validated, can launch
-  | "invalid_model"
-  | "robot_connected"
-  | "home_verified";
+  | "invalid_model";
 
 const views = {
   waiting:  { title: "Please insert a USB drive to continue", message: "Click Start to detect a USB drive.", variant: "primary", primaryText: "Start", showSpinner: false },
   reading:  { title: "Reading USB drive...", message: "Please wait while we read the contents of the USB drive.", variant: "info",    primaryText: "Cancel",       showSpinner: true },
   success:  { title: "USB drive detected",    message: "Select the correct model, then click Check selection.",   variant: "success", primaryText: "Check selection", showSpinner: false },
   invalid_model: { title: "Wrong model type", message: "Please change the model and Check selection again.",       variant: "error",   primaryText: "Check selection", showSpinner: false },
-  checked_ok: { title: "Selection verified",  message: "Model matches the IFC. Please enter the Robot IP Address.",            variant: "success", primaryText: "Launch UI", showSpinner: false },
+  checked_ok: { title: "Selection verified",  message: "Model matches the IFC. You can now Launch UI.",            variant: "success", primaryText: "Launch UI", showSpinner: false },
   error:    { title: "Error reading USB drive", message: "Please plug in your drive",                              variant: "error",   primaryText: "Try Again", showSpinner: false },
   launching:{ title: "Loading…", message: "", variant: "info", primaryText: "Loading…", showSpinner: true },
-  shutdown: { title: "Please power off the machine", message: "The operation is completed successfully",           variant: "neutral", primaryText: "", showSpinner: false },
-  robot_connected: { title: "Robot Connected", message: "Robot is successfully connected.", variant: "success", primaryText: "Verify HOME position", showSpinner: false },
-  home_verified: { title: "Robot in HOME position", message: "You can now launch the UI.", variant: "success", primaryText: "Start UI", showSpinner: false },
+  shutdown: { title: "Please power off the machine", message: "The operation is completed successfully 100% completed",           variant: "neutral", primaryText: "", showSpinner: false },
 } as const;
 
 export default function Status() {
@@ -77,8 +71,6 @@ export default function Status() {
   const [isChecking, setIsChecking] = useState(false);
   const [ifcPath, setIfcPath] = useState<string | null>(null);
 
-  const [robotIP, setRobotIP] = useState<string | null>(null);
-
   const http = useMemo(() => {
   const base = (import.meta.env.VITE_API_URL ?? "http://localhost:8000").replace(/\/+$/,"");
   return axios.create({
@@ -87,12 +79,6 @@ export default function Status() {
   });
 }, [])
 
-  function handleRobotConnect(ip: string) {
-    setRobotIP(ip);       // Save the IP for future use
-    setState("robot_connected");  // Main state updated
-    setResponseMessage(`✅ Connected to robot at ${ip}`);
-    setErrorDetails("");  // Clear errors
-  }
 
   // Debug log
   useEffect(() => {
@@ -178,7 +164,7 @@ export default function Status() {
       fd.append("ifc_path", path);
       fd.append("model_sides", String(selectedModel));
 
-      const res = await axios.post(`${API}/api/checkifc`, fd, { timeout: 20000 });
+      const res = await axios.post(`${API}/api/checkifc`, fd, { timeout: 0 });
 
       if (res.data?.ok) {
         setIsValidated(true);
@@ -204,12 +190,8 @@ export default function Status() {
       setIsChecking(false);
     }
   };
-
-  const verifyHomePosition = () => {
-    setState("home_verified");
-    setResponseMessage("✅ Robot HOME position verified. You can now launch the UI.");
-  };
-
+ 
+  
   const launchUI = async () => {
     if (!(isValidated && state === "checked_ok") || !ifcPath || !usbPath) {
       setResponseMessage("❌ Please validate the selection first.");
@@ -268,6 +250,23 @@ export default function Status() {
   }, [shouldPoll, uiPid, API]);
   const canShowPicker = state === "success" || state === "invalid_model" || state === "checked_ok";
   const canLaunch = isValidated && !!usbPath && !!ifcPath && state === "checked_ok";
+  const [progressPct, setProgressPct] = useState<number | null>(null);
+
+// --- add this effect to run when we enter 'shutdown' ---
+// show % on shutdown
+useEffect(() => {
+  if (state !== "shutdown" || !usbPath) return;
+  (async () => {
+    const r = await axios.get(`${API}/api/progress`, { params: { usb_path: usbPath } });
+    if (r.data?.ok) setProgressPct(r.data.percent);
+  })();
+}, [state, usbPath, API]);
+
+// open Excel (view-only, no PDF)
+const openExcelViewOnly = async () => {
+  await axios.post(`${API}/api/open_excel`, { usb_path: usbPath });
+};
+
 
   // UI (balanced braces/parens)
   return (
@@ -276,7 +275,15 @@ export default function Status() {
       <div className="hero-content text-neutral-content text-center relative">
         <div className="max-w-2xl space-y-5">
           <h1 className="text-4xl md:text-5xl font-bold">{v.title}</h1>
-          <p className="opacity-90">{v.message}</p>
+          {state === "shutdown" ? (
+            <p className="opacity-90">
+              The operation is completed successfully.<br />
+              {progressPct !== null ? <>Completed: <span className="font-semibold">{progressPct}%</span></> : "Checking completion…"}
+            </p>
+          ) : (
+            <p className="opacity-90">{v.message}</p>
+          )}
+
 
           {(responseMessage || errorDetails) && (
             <div className="mt-2">
@@ -291,7 +298,7 @@ export default function Status() {
             </div>
           )}
 
-          {canShowPicker && state !== "checked_ok" && (
+          {canShowPicker && (
             <>
               <ModelSelection value={selectedModel} onChange={setSelectedModel} />
 
@@ -329,35 +336,15 @@ export default function Status() {
               )}
             </>
           )}
-
-          {state === "checked_ok" && (
-            <RobotIPInput onConnect={handleRobotConnect} />
-          )}
-
-          {state === "robot_connected" && (
-            <div>
-              <div className="card bg-base-100 w-96 shadow-sm">
-                <div className="card-body">
-                  <h2 className="card-title text-black">Is the ABB Robot in HOME position?</h2>
-                  <p className="text-black">Please verify that the ABB robot is in the HOME position as illustrated in the photo below.</p>
-                </div>
-                <figure>
-                  <img
-                    src={ABBHOMEImage}
-                    alt="ABB Robot HOME position" />
-                </figure>
-              </div>
-              <div className="divider" />
-              <button
-                className={`btn btn-${v.variant} md:btn-md lg:btn-lg`}
-                onClick={verifyHomePosition}
-              >
-                {v.primaryText}
+          {/* NEW: shutdown actions */}
+          {state === "shutdown" && (
+            <div className="flex gap-3 justify-center mt-3">
+              <button className="btn btn-outline" onClick={openExcelViewOnly}>
+                Open Excel (view-only)
               </button>
             </div>
           )}
-
-          {!canShowPicker && state !== "shutdown" && state !== "robot_connected" && (
+          {!canShowPicker && state !== "shutdown" && (
             <div>
               <button
                 className={`btn btn-${v.variant} md:btn-md lg:btn-lg`}

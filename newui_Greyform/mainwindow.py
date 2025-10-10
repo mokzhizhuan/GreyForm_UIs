@@ -28,6 +28,7 @@ class Ui_MainWindow(QMainWindow):
 
     # setup UI
     def setupUi(self):
+        print(self.args.output_excel)
         self.mainwindow.progresslabel.hide()
         self.mainwindow.nextstepButton.hide()
         iconindicator = "placementindicator1.png"

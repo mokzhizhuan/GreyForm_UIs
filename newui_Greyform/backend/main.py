@@ -4,11 +4,53 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional, List, Dict, Union, Tuple
 import dataanalysis as datadraft
-import pwd, grp
+import pwd, grp , requests
+import subprocess, shlex
+#import httpx
+from requests.auth import HTTPDigestAuth
 from errno import errorcode
 from fastapi.responses import JSONResponse
-from fastapi import FastAPI, Form, HTTPException, Query, Request
+from fastapi import FastAPI, Form, HTTPException, Query, Request , HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
+"""app = FastAPI() 
+BASE = "http://<robot-ip>" 
+AUTH = HTTPDigestAuth("Default User","robotics") @app.get("/api/rws/mechunits") 
+def mechunits(): 
+    r = requests.get(f"{BASE}/rw/motionsystem/mechunits", params={"json":"1"}, auth=AUTH, timeout=5) 
+    if not r.ok: 
+        raise HTTPException(r.status_code, r.text) 
+    return r.json() 
+
+@app.get("/api/rws/robtarget") 
+def robtarget(mech: str = Query("ROB_1")): 
+    r = requests.get(f"{BASE}/rw/motionsystem/mechunits/{mech}/robtarget", params={"json":"1"}, auth=AUTH, timeout=5) 
+    if not r.ok: 
+        raise HTTPException(r.status_code, r.text) 
+    return r.json()
+ 
+@app.get("/api/rws/jointtarget") 
+def jointtarget(mech: str = Query("ROB_1")): 
+    r = requests.get(f"{BASE}/rw/motionsystem/mechunits/{mech}/jointtarget", params={"json":"1"}, auth=AUTH, timeout=5) 
+    if not r.ok: 
+        raise HTTPException(r.status_code, r.text) 
+    return r.json() """
+
+"""ROBOT = "http://<robot-ip>"
+AUTH  = httpx.DigestAuth("Default User", "robotics")"""
+
+"""@app.get("/api/motionsystem")
+async def get_motion_system():
+    try:
+        async with httpx.AsyncClient(auth=AUTH, timeout=10) as client:
+            # establish session (gets ABBCX)
+            await client.get(f"{ROBOT}/rw?json=1")
+            # fetch motionsystem
+            r = await client.get(f"{ROBOT}/rw/motionsystem?json=1")
+            r.raise_for_status()
+            return r.json()
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=str(e))"""
 
 
 app = FastAPI()
@@ -30,6 +72,121 @@ IFC_CACHE: Dict[str, Dict[str, float]] = {}
 _CACHE = {"ts": 0.0, "preferred": None, "choices": []}
 _CACHE_TTL = 5.0  # seconds
 PROJECT_DIR = Path(__file__).resolve().parent.parent  
+
+LAST_USB_PATH: Optional[Path] = None
+
+
+def _get_usb_base(override: Optional[str] = None) -> Path:
+    if override:
+        cand = Path(override).resolve()
+        if not cand.exists():
+            raise HTTPException(
+                status_code=400,
+                detail=f"usb_path not visible to backend: {override} (bind-mount it into this container)"
+            )
+        return cand if cand.is_dir() else cand.parent
+    if LAST_USB_PATH and LAST_USB_PATH.exists():
+        return LAST_USB_PATH
+    raise HTTPException(
+        status_code=400,
+        detail="usb_path not known. Pass ?usb_path= (or excel=) or call /api/launch_ui first."
+    )
+# --- helper: where the output Excel lives (reuse the same path as launch_ui) ---
+def _excel_output_path(usb_path: Optional[str] = None, excel: Optional[str] = None) -> Path:
+    base = _get_usb_base(usb_path) 
+    return (base / "PBU_TERRAHL2.xlsx").resolve()
+
+# --- NEW: open Excel in view-only mode (no edits) ---
+@app.post("/api/open_excel")
+def open_excel_view_only():
+    p = _excel_output_path()
+    _require_exists("excel_output", p)
+
+    # Prefer LibreOffice view-only mode; fall back to xdg-open
+    # --view is read-only; we also add flags to avoid lock dialogs
+    candidates = [
+        f"soffice --view --norestore --nolockcheck --nodefault {shlex.quote(str(p))}",
+        f"libreoffice --view --norestore --nolockcheck --nodefault {shlex.quote(str(p))}",
+        f"xdg-open {shlex.quote(str(p))}",
+    ]
+    launched = False
+    for cmd in candidates:
+        try:
+            subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            launched = True
+            break
+        except Exception:
+            continue
+    if not launched:
+        raise HTTPException(status_code=500, detail="No office viewer found (tried soffice/libreoffice/xdg-open).")
+    return {"ok": True, "path": str(p)}
+
+# --- NEW: compute % completed by reading the Excel (read-only) ---
+@app.get("/api/progress")
+def progress():
+    p = _excel_output_path()
+    _require_exists("excel_output", p)
+
+    # Try openpyxl first (no writes), fall back to pandas if available.
+    done = 0
+    total = 0
+    tried = []
+
+    try:
+        import openpyxl  # type: ignore
+        tried.append("openpyxl")
+        wb = openpyxl.load_workbook(str(p), read_only=True, data_only=True)
+        for ws in wb.worksheets:
+            # Find header row (first non-empty row)
+            header = None
+            for row in ws.iter_rows(min_row=1, max_row=1, values_only=True):
+                header = [str(c).strip() if c is not None else "" for c in row]
+                break
+            if not header:
+                continue
+            # Find 'Status' column (case-insensitive)
+            idx = None
+            for i, name in enumerate(header):
+                if name.lower() == "status":
+                    idx = i
+                    break
+            if idx is None:
+                continue
+            # Count rows
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                val = row[idx] if idx < len(row) else None
+                if val is None or (isinstance(val, str) and not val.strip()):
+                    continue
+                total += 1
+                if str(val).strip().lower() in {"done", "completed", "ok", "true", "yes"}:
+                    done += 1
+        wb.close()
+    except Exception as e1:
+        err1 = str(e1)
+        try:
+            import pandas as pd  # type: ignore
+            tried.append("pandas")
+            xls = pd.ExcelFile(str(p))
+            for sheet in xls.sheet_names:
+                df = pd.read_excel(xls, sheet_name=sheet)
+                # Look for a 'Status' column (case-insensitive)
+                status_col = next((c for c in df.columns if str(c).strip().lower() == "status"), None)
+                if status_col is None:
+                    continue
+                col = df[status_col].dropna().astype(str).str.strip()
+                total += int(col.shape[0])
+                done  += int(col.str.lower().isin(["done", "completed", "ok", "true", "yes"]).sum())
+        except Exception as e2:
+            return {
+                "ok": False,
+                "error": f"Failed to read Excel with {tried}: openpyxl='{err1}', pandas='{str(e2)}'",
+                "done": 0,
+                "total": 0,
+                "percent": 0.0,
+            }
+
+    percent = float(done) / float(total) * 100.0 if total > 0 else 0.0  
+    return {"ok": True, "done": done, "total": total, "percent": round(percent, 1)}
 
 def _is_mountpoint(p: Path) -> bool:
     try:
@@ -135,12 +292,6 @@ def _cheap_list(d: Path, exts: List[str], limit: int = 200) -> List[str]:
         pass
     return out
 
-def _has_entries(d: Path) -> bool:
-    try:
-        with os.scandir(d) as it:
-            return next(it, None) is not None
-    except Exception:
-        return False
 
 def _iter_files(root: Path, max_depth: int = 3):
     base = root.resolve()
@@ -392,7 +543,6 @@ def detect_usb(
         roots += [Path(p) for p in glob.glob("/run/media/*")]
         roots += [Path(p) for p in glob.glob("/run/media/*/*")]
     seen = set()
-    seen = set()
     for d in roots:
         try:
             rp = d.resolve()
@@ -449,7 +599,7 @@ async def data_checker(
     model_sides: int = Form(...),
     force: bool = Form(False),
 ):
-    datadrafter = datadraft.data_draft(ifc_path, model_sides)
+    datadrafter = datadraft.data_draft(ifc_path, model_sides, usb_path)
     df_combined_data = datadrafter.analysis()
     if df_combined_data is None:
         raise HTTPException(
@@ -470,30 +620,67 @@ async def launch_ui(
         base = Path(usb_path).resolve()
         if not base.exists() or not base.is_dir():
             raise HTTPException(status_code=400, detail=f"usb_path not found or not a directory: {usb_path}")
+
+        # pick or validate IFC
         if ifc_path:
             ifc = Path(ifc_path).resolve()
         else:
             ifc = pick_ifc(base, recursive=True, max_depth=8)
             if ifc is None:
                 raise HTTPException(status_code=404, detail="No IFC file found on the USB drive")
+
+        # IFC must live inside the USB
         try:
             _ = ifc.resolve().relative_to(base)
         except ValueError:
             raise HTTPException(status_code=400, detail="IFC must be inside usb_path")
+
+        # Build Excel output path ON THE USB (optionally put in a subfolder)
+        # results_dir = base / "GreyForm"  # uncomment if you want a folder
+        results_dir = base
+        results_dir.mkdir(parents=True, exist_ok=True)
+
+        # filename (no spaces is safer for some environments)
+        # fname = f"PBU_TERRAHL2_{datetime.now():%Y%m%d-%H%M}.xlsx"
+        fname = "PBU_TERRAHL2.xlsx"
+        excel_output = (results_dir / fname).resolve()
+
+        # security: must still be under the USB root
+        try:
+            excel_output.relative_to(base)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Output path escapes usb_path")
+
+        # basic writability check
+        if not os.access(results_dir, os.W_OK):
+            raise HTTPException(status_code=500, detail=f"USB path not writable: {results_dir}")
+
         main_py = (PROJECT_DIR / "mainwindow.py").resolve()
         ui_file = (PROJECT_DIR / "UI_Design" / "greyform_sweefeng.ui").resolve()
         excel_checklist = (PROJECT_DIR / "Greyform TERRAHL2(JMB)-T1a BOM Checklist 20231211.xlsx").resolve()
-        excel_output = (PROJECT_DIR / "PBU_TERRAHL2(final).xlsx").resolve()
+
         if not main_py.exists():
             raise HTTPException(500, detail=f"mainwindow.py not found: {main_py}")
         if not ui_file.exists():
             raise HTTPException(500, detail=f"UI .ui file not found: {ui_file}")
+
         env = os.environ.copy()
         env.setdefault("DISPLAY", ":0")
         env.setdefault("QT_QPA_PLATFORM", "xcb")
-        args = ["python3", str(main_py), str(ui_file), str(ifc), str(excel_checklist), str(excel_output)]
+
+        # pass the USB output path to your app
+        args = [
+            "python3",
+            str(main_py),
+            str(ui_file),
+            str(ifc),
+            str(excel_checklist),
+            str(excel_output),
+        ]
+        print(excel_output)
         LOGFILE.parent.mkdir(parents=True, exist_ok=True)
         log_f = open(LOGFILE, "ab", buffering=0)
+
         if LOCKFILE.exists():
             LOCKFILE.unlink(missing_ok=True)
         if PIDFILE.exists():
@@ -503,6 +690,7 @@ async def launch_ui(
                     return {"status": "running", "message": f"UI already running (pid {saved})", "pid": saved}
             except Exception:
                 pass
+
         proc = subprocess.Popen(
             args,
             cwd=str(PROJECT_DIR),
@@ -517,12 +705,13 @@ async def launch_ui(
             "message": f"UI started (pid {proc.pid})",
             "pid": proc.pid,
             "ifc_path": str(ifc),
+            "excel_output": str(excel_output),  # <-- returned for UI visibility if needed
             "log_file": str(LOGFILE),
         }
     except HTTPException:
         raise
-    except Exception:
-        raise HTTPException(status_code=500, detail=f"Exception launching with usb_path={usb_path}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Exception launching with usb_path={usb_path}: {e}")
 
 @app.post("/api/ui_closed")
 def ui_closed(pid: int = Form(...)):

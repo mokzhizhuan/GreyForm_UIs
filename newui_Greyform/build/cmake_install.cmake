@@ -1,8 +1,8 @@
-# Install script for directory: /root/catkin_ws/newui_Greyform/src
+# Install script for directory: /root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/root/catkin_ws/newui_Greyform/install")
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -12,7 +12,7 @@ if(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
     string(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
            CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
   else()
-    set(CMAKE_INSTALL_CONFIG_NAME "")
+    set(CMAKE_INSTALL_CONFIG_NAME "Debug")
   endif()
   message(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
 endif()
@@ -49,38 +49,38 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/root/catkin_ws/newui_Greyform/install/_setup_util.py")
+   "/usr/local/_setup_util.py")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/root/catkin_ws/newui_Greyform/install" TYPE PROGRAM FILES "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/_setup_util.py")
+file(INSTALL DESTINATION "/usr/local" TYPE PROGRAM FILES "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/_setup_util.py")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/root/catkin_ws/newui_Greyform/install/env.sh")
+   "/usr/local/env.sh")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/root/catkin_ws/newui_Greyform/install" TYPE PROGRAM FILES "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/env.sh")
+file(INSTALL DESTINATION "/usr/local" TYPE PROGRAM FILES "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/env.sh")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/root/catkin_ws/newui_Greyform/install/setup.bash;/root/catkin_ws/newui_Greyform/install/local_setup.bash")
+   "/usr/local/setup.bash;/usr/local/local_setup.bash")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/root/catkin_ws/newui_Greyform/install" TYPE FILE FILES
+file(INSTALL DESTINATION "/usr/local" TYPE FILE FILES
     "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/setup.bash"
     "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/local_setup.bash"
     )
@@ -88,14 +88,14 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/root/catkin_ws/newui_Greyform/install/setup.sh;/root/catkin_ws/newui_Greyform/install/local_setup.sh")
+   "/usr/local/setup.sh;/usr/local/local_setup.sh")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/root/catkin_ws/newui_Greyform/install" TYPE FILE FILES
+file(INSTALL DESTINATION "/usr/local" TYPE FILE FILES
     "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/setup.sh"
     "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/local_setup.sh"
     )
@@ -103,14 +103,14 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/root/catkin_ws/newui_Greyform/install/setup.zsh;/root/catkin_ws/newui_Greyform/install/local_setup.zsh")
+   "/usr/local/setup.zsh;/usr/local/local_setup.zsh")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/root/catkin_ws/newui_Greyform/install" TYPE FILE FILES
+file(INSTALL DESTINATION "/usr/local" TYPE FILE FILES
     "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/setup.zsh"
     "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/local_setup.zsh"
     )
@@ -118,14 +118,14 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/root/catkin_ws/newui_Greyform/install/setup.fish;/root/catkin_ws/newui_Greyform/install/local_setup.fish")
+   "/usr/local/setup.fish;/usr/local/local_setup.fish")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/root/catkin_ws/newui_Greyform/install" TYPE FILE FILES
+file(INSTALL DESTINATION "/usr/local" TYPE FILE FILES
     "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/setup.fish"
     "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/local_setup.fish"
     )
@@ -133,21 +133,77 @@ endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/root/catkin_ws/newui_Greyform/install/.rosinstall")
+   "/usr/local/.rosinstall")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/root/catkin_ws/newui_Greyform/install" TYPE FILE FILES "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/.rosinstall")
+file(INSTALL DESTINATION "/usr/local" TYPE FILE FILES "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/.rosinstall")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/msg" TYPE FILE FILES
+    "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg"
+    "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg"
+    )
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/srv" TYPE FILE FILES "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/srv/SetLed.srv")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/cmake" TYPE FILE FILES "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/my_robot_wallinterfaces-msg-paths.cmake")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "/root/catkin_ws/newui_Greyform/build/devel/include/my_robot_wallinterfaces")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/roseus/ros" TYPE DIRECTORY FILES "/root/catkin_ws/newui_Greyform/build/devel/share/roseus/ros/my_robot_wallinterfaces")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/common-lisp/ros" TYPE DIRECTORY FILES "/root/catkin_ws/newui_Greyform/build/devel/share/common-lisp/ros/my_robot_wallinterfaces")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/gennodejs/ros" TYPE DIRECTORY FILES "/root/catkin_ws/newui_Greyform/build/devel/share/gennodejs/ros/my_robot_wallinterfaces")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  execute_process(COMMAND "/root/.venvs/py39/bin/python3" -m compileall "/root/catkin_ws/newui_Greyform/build/devel/lib/python3/dist-packages/my_robot_wallinterfaces")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/python3/dist-packages" TYPE DIRECTORY FILES "/root/catkin_ws/newui_Greyform/build/devel/lib/python3/dist-packages/my_robot_wallinterfaces")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/my_robot_wallinterfaces.pc")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/cmake" TYPE FILE FILES "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/my_robot_wallinterfaces-msg-extras.cmake")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/cmake" TYPE FILE FILES
+    "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/my_robot_wallinterfacesConfig.cmake"
+    "/root/catkin_ws/newui_Greyform/build/catkin_generated/installspace/my_robot_wallinterfacesConfig-version.cmake"
+    )
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces" TYPE FILE FILES "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/package.xml")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/root/catkin_ws/newui_Greyform/build/gtest/cmake_install.cmake")
-  include("/root/catkin_ws/newui_Greyform/build/my_robot_wallinterfaces/cmake_install.cmake")
-  include("/root/catkin_ws/newui_Greyform/build/talker_listener/cmake_install.cmake")
 
 endif()
 

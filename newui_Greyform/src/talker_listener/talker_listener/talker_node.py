@@ -7,8 +7,8 @@ class TalkerNode:
     def __init__(self):
         if not rospy.core.is_initialized():
             rospy.init_node("talker_node", anonymous=True, disable_signals=True)
-        self.file_pub = rospy.Publisher("file_extraction_topic", FileExtractionMessage, queue_size=10)
-        self.sel_pub  = rospy.Publisher("selection_wall_topic",   SelectionWall,        queue_size=10)
+        self.file_pub = rospy.Publisher("/file_extraction_topic", FileExtractionMessage, queue_size=10)
+        self.sel_pub  = rospy.Publisher("/selection_wall_topic",   SelectionWall,        queue_size=10)
         self.ui_wall_started_pub = rospy.Publisher("/ui/wall_started", String, queue_size=10, latch=True)
         self.ui_wall_done_pub    = rospy.Publisher("/ui/wall_done",    String, queue_size=10, latch=True)
         self.ui_all_done_pub     = rospy.Publisher("/ui/all_done",     Bool,   queue_size=10, latch=True)

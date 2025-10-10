@@ -20,14 +20,11 @@ BUILD_GMOCK:BOOL=ON
 //Build dynamically-linked binaries
 BUILD_SHARED_LIBS:BOOL=ON
 
-//List of ';' separated packages to exclude
-CATKIN_BLACKLIST_PACKAGES:STRING=
-
-//catkin devel space
-CATKIN_DEVEL_PREFIX:PATH=/root/catkin_ws/newui_Greyform/devel
-
 //Catkin enable testing
 CATKIN_ENABLE_TESTING:BOOL=ON
+
+//Prefix to apply to package generated via gendebian
+CATKIN_PACKAGE_PREFIX:STRING=
 
 //Catkin skip testing
 CATKIN_SKIP_TESTING:BOOL=OFF
@@ -36,18 +33,14 @@ CATKIN_SKIP_TESTING:BOOL=OFF
 // using symlinks instead of copying resources
 CATKIN_SYMLINK_INSTALL:BOOL=OFF
 
-//List of ';' separated packages to build
-CATKIN_WHITELIST_PACKAGES:STRING=
-
 //Path to a program.
 CMAKE_ADDR2LINE:FILEPATH=/usr/bin/addr2line
 
 //Path to a program.
 CMAKE_AR:FILEPATH=/usr/bin/ar
 
-//Choose the type of build, options are: None Debug Release RelWithDebInfo
-// MinSizeRel ...
-CMAKE_BUILD_TYPE:STRING=
+//No help, variable specified on the command line.
+CMAKE_BUILD_TYPE:STRING=Debug
 
 //Enable/Disable color output during build.
 CMAKE_COLOR_MAKEFILE:BOOL=ON
@@ -122,8 +115,8 @@ CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=
 //Flags used by the linker during RELWITHDEBINFO builds.
 CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 
-//Enable/Disable output of compile commands during generation.
-CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=OFF
+//No help, variable specified on the command line.
+CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE
 
 //User executables (bin)
 CMAKE_INSTALL_BINDIR:PATH=bin
@@ -162,7 +155,7 @@ CMAKE_INSTALL_MANDIR:PATH=
 CMAKE_INSTALL_OLDINCLUDEDIR:PATH=/usr/include
 
 //Install path prefix, prepended onto install directories.
-CMAKE_INSTALL_PREFIX:PATH=/root/catkin_ws/newui_Greyform/install
+CMAKE_INSTALL_PREFIX:PATH=/usr/local
 
 //Run-time variable data (LOCALSTATEDIR/run)
 CMAKE_INSTALL_RUNSTATEDIR:PATH=
@@ -218,7 +211,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=Project
+CMAKE_PROJECT_NAME:STATIC=my_robot_wallinterfaces
 
 //Value Computed by CMake
 CMAKE_PROJECT_VERSION:STATIC=1.10.0
@@ -361,12 +354,6 @@ PYTHON_VERSION:STRING=3
 //Location of Python module em
 PY_EM:STRING=/root/.venvs/py39/lib/python3.9/site-packages/em.py
 
-//Value Computed by CMake
-Project_BINARY_DIR:STATIC=/root/catkin_ws/newui_Greyform/build
-
-//Value Computed by CMake
-Project_SOURCE_DIR:STATIC=/root/catkin_ws/newui_Greyform/src
-
 //Path to a library.
 RT_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/librt.so
 
@@ -474,10 +461,7 @@ message_generation_DIR:PATH=/opt/ros/noetic/share/message_generation/cmake
 message_runtime_DIR:PATH=/opt/ros/noetic/share/message_runtime/cmake
 
 //Value Computed by CMake
-my_robot_wallinterfaces_BINARY_DIR:STATIC=/root/catkin_ws/newui_Greyform/build/my_robot_wallinterfaces
-
-//The directory containing a CMake configuration file for my_robot_wallinterfaces.
-my_robot_wallinterfaces_DIR:PATH=/root/catkin_ws/newui_Greyform/devel/share/my_robot_wallinterfaces/cmake
+my_robot_wallinterfaces_BINARY_DIR:STATIC=/root/catkin_ws/newui_Greyform/build
 
 //Value Computed by CMake
 my_robot_wallinterfaces_SOURCE_DIR:STATIC=/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces
@@ -488,20 +472,11 @@ roscpp_serialization_DIR:PATH=/opt/ros/noetic/share/roscpp_serialization/cmake
 //The directory containing a CMake configuration file for roscpp_traits.
 roscpp_traits_DIR:PATH=/opt/ros/noetic/share/roscpp_traits/cmake
 
-//The directory containing a CMake configuration file for rospy.
-rospy_DIR:PATH=/opt/ros/noetic/share/rospy/cmake
-
 //The directory containing a CMake configuration file for rostime.
 rostime_DIR:PATH=/opt/ros/noetic/share/rostime/cmake
 
 //The directory containing a CMake configuration file for std_msgs.
 std_msgs_DIR:PATH=/opt/ros/noetic/share/std_msgs/cmake
-
-//Value Computed by CMake
-talker_listener_BINARY_DIR:STATIC=/root/catkin_ws/newui_Greyform/build/talker_listener
-
-//Value Computed by CMake
-talker_listener_SOURCE_DIR:STATIC=/root/catkin_ws/newui_Greyform/src/talker_listener
 
 
 ########################
@@ -599,7 +574,7 @@ CMAKE_HAVE_PTHREAD_CREATE:INTERNAL=1
 CMAKE_HAVE_PTHREAD_H:INTERNAL=1
 //Source directory with the top level CMakeLists.txt file for this
 // project
-CMAKE_HOME_DIRECTORY:INTERNAL=/root/catkin_ws/newui_Greyform/src
+CMAKE_HOME_DIRECTORY:INTERNAL=/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces
 //ADVANCED property for variable: CMAKE_INSTALL_BINDIR
 CMAKE_INSTALL_BINDIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_INSTALL_DATADIR
@@ -651,7 +626,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=6
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=4
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -697,7 +672,7 @@ CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Details about finding PY_em
 FIND_PACKAGE_MESSAGE_DETAILS_PY_em:INTERNAL=[/root/.venvs/py39/lib/python3.9/site-packages/em.py][v()]
 //Details about finding PythonInterp
-FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/root/.venvs/py39/bin/python3][v3.9.23()]
+FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/root/.venvs/py39/bin/python3][v3.9.5()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 GMOCK_FROM_SOURCE_FOUND:INTERNAL=TRUE
@@ -735,7 +710,7 @@ PYTHON_EXECUTABLE-ADVANCED:INTERNAL=1
 // it will install things.
 PYTHON_INSTALL_DIR:INTERNAL=lib/python3/dist-packages
 //CMAKE_INSTALL_PREFIX during last run
-_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/root/catkin_ws/newui_Greyform/install
+_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/usr/local
 //ADVANCED property for variable: gmock_build_tests
 gmock_build_tests-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: gtest_build_samples
