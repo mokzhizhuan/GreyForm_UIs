@@ -205,7 +205,6 @@ class ListenerNode:
             self.pending = (wall, typ)
             if not self.retry_timer:
                 self.retry_timer = rospy.Timer(rospy.Duration(0.5), self._retry_pending)
-            return
         if self._scan_and_mark(excel, wall, typ):
             self.ui_wall_done_pub.publish(String(data=str(wall)))
 

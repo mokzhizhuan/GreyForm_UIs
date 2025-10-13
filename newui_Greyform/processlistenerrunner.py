@@ -86,15 +86,6 @@ class ListenerNodeRunner:
 
             # Publish the STARTED event
             self.talker_node.publish_selection_message(wn, picked_position, markingtype)
-
-            # 👉 No "done" publish here.
-            # The bridge will tick the previous wall automatically
-            # when the next /ui/wall_started arrives.
-
-            # Run your actual marking for `wn` here...
-            # robot.mark_wall(wn, ...)
-
-        # ✅ After loop, explicitly send all_done so the last wall ticks
         self.talker_node.publish_all_done(True)
 
 

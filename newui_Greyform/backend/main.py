@@ -2,7 +2,7 @@
 import os, stat , json , time , glob , shutil, traceback , subprocess
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, List, Dict, Union, Tuple
+from typing import Optional, List, Dict, Union, Tuple , Any
 import dataanalysis as datadraft
 import pwd, grp , requests
 import subprocess, shlex
@@ -10,47 +10,31 @@ import subprocess, shlex
 from requests.auth import HTTPDigestAuth
 from errno import errorcode
 from fastapi.responses import JSONResponse
-from fastapi import FastAPI, Form, HTTPException, Query, Request , HTTPException
+from fastapi import FastAPI, Form, HTTPException, Query, Request , HTTPException , Body
 from fastapi.middleware.cors import CORSMiddleware
 
-"""app = FastAPI() 
-BASE = "http://<robot-ip>" 
-AUTH = HTTPDigestAuth("Default User","robotics") @app.get("/api/rws/mechunits") 
-def mechunits(): 
-    r = requests.get(f"{BASE}/rw/motionsystem/mechunits", params={"json":"1"}, auth=AUTH, timeout=5) 
-    if not r.ok: 
-        raise HTTPException(r.status_code, r.text) 
-    return r.json() 
+"""class ConnectPayload(BaseModel):
+    ip: IPvAnyAddress = Field(..., description="Robot IPv4/IPv6 address")
+    # Optional: add creds if you want to probe ABB Web Services
+    username: str | None = None
+    password: str | None = None
+    # Optional: which port to probe for a basic connectivity check
+    port: int = 80
+    timeout_sec: float = 1.5
 
-@app.get("/api/rws/robtarget") 
-def robtarget(mech: str = Query("ROB_1")): 
-    r = requests.get(f"{BASE}/rw/motionsystem/mechunits/{mech}/robtarget", params={"json":"1"}, auth=AUTH, timeout=5) 
-    if not r.ok: 
-        raise HTTPException(r.status_code, r.text) 
-    return r.json()
- 
-@app.get("/api/rws/jointtarget") 
-def jointtarget(mech: str = Query("ROB_1")): 
-    r = requests.get(f"{BASE}/rw/motionsystem/mechunits/{mech}/jointtarget", params={"json":"1"}, auth=AUTH, timeout=5) 
-    if not r.ok: 
-        raise HTTPException(r.status_code, r.text) 
-    return r.json() """
+class ConnectResponse(BaseModel):
+    ip: str
+    reachable: bool
+    detail: str
 
-"""ROBOT = "http://<robot-ip>"
-AUTH  = httpx.DigestAuth("Default User", "robotics")"""
-
-"""@app.get("/api/motionsystem")
-async def get_motion_system():
+@app.post("/api/robot/connect", response_model=ConnectResponse)
+def connect_robot(payload: ConnectPayload):
+    # Basic TCP reachability probe (non-privileged; no ICMP required)
     try:
-        async with httpx.AsyncClient(auth=AUTH, timeout=10) as client:
-            # establish session (gets ABBCX)
-            await client.get(f"{ROBOT}/rw?json=1")
-            # fetch motionsystem
-            r = await client.get(f"{ROBOT}/rw/motionsystem?json=1")
-            r.raise_for_status()
-            return r.json()
-    except httpx.HTTPError as e:
-        raise HTTPException(status_code=502, detail=str(e))"""
+        with socket.create_connection((str(payload.ip), payload.port), timeout=payload.timeout_sec):
+            return ConnectResponse(ip=str(payload.ip), reachable=True, detail=f"TCP {payload.port} open")
+    except OSError as e:
+        raise HTTPException(status_code=502, detail=f"Cannot reach {payload.ip}:{payload.port} - {e}")"""
 
 
 app = FastAPI()
@@ -76,83 +60,133 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 LAST_USB_PATH: Optional[Path] = None
 
 
-def _get_usb_base(override: Optional[str] = None) -> Path:
-    if override:
-        cand = Path(override).resolve()
-        if not cand.exists():
+def _get_usb_base(usb_path: Optional[str] = None) -> Path:
+    """
+    Return a valid base directory or file path.
+    Accepts either a folder (/media/.../USB) or a direct file (/media/.../USB/PBU_TERRAHL2.xlsx).
+    """
+    if usb_path:
+        p = Path(usb_path).resolve()
+        if not p.exists():
             raise HTTPException(
                 status_code=400,
-                detail=f"usb_path not visible to backend: {override} (bind-mount it into this container)"
+                detail=f"usb_path not visible: {usb_path}. Check that it is mounted inside the container."
             )
-        return cand if cand.is_dir() else cand.parent
-    if LAST_USB_PATH and LAST_USB_PATH.exists():
-        return LAST_USB_PATH
-    raise HTTPException(
-        status_code=400,
-        detail="usb_path not known. Pass ?usb_path= (or excel=) or call /api/launch_ui first."
-    )
-# --- helper: where the output Excel lives (reuse the same path as launch_ui) ---
+        return p
+
+    # If no usb_path provided, fall back to global (optional)
+    if 'LAST_USB_PATH' in globals() and globals()['LAST_USB_PATH']:
+        return globals()['LAST_USB_PATH']
+
+    raise HTTPException(status_code=400, detail="usb_path not provided and no cached path available.")
+
 def _excel_output_path(usb_path: Optional[str] = None, excel: Optional[str] = None) -> Path:
-    base = _get_usb_base(usb_path) 
-    return (base / "PBU_TERRAHL2.xlsx").resolve()
+    # 1) Direct excel path provided
+    if excel:
+        f = Path(excel).resolve()
+        if f.exists() and f.is_file():
+            return f
+        if usb_path:
+            f2 = (Path(usb_path).resolve() / excel).resolve()
+            if f2.exists() and f2.is_file():
+                return f2
+        raise HTTPException(status_code=404, detail=f"Excel file not found: {excel}")
+
+    # 2) Only usb_path provided
+    if usb_path:
+        base = Path(usb_path).resolve()
+        if not base.exists():
+            raise HTTPException(status_code=400, detail=f"usb_path not visible: {usb_path}")
+        for name in ("PBU_TERRAHL2(final).xlsx", "PBU_TERRAHL2.xlsx"):
+            f = base / name
+            if f.exists() and f.is_file():
+                return f
+        raise HTTPException(status_code=404, detail=f"No Excel file found under {usb_path}")
+
+    # 3) Fallback to cached LAST_USB_PATH (optional)
+    base = globals().get("LAST_USB_PATH")
+    if base and base.exists():
+        for name in ("PBU_TERRAHL2(final).xlsx", "PBU_TERRAHL2.xlsx"):
+            f = base / name
+            if f.exists() and f.is_file():
+                return f
+
+    raise HTTPException(status_code=400, detail="Neither excel nor usb_path provided, and nothing cached.")
+
+def _have_gui_env() -> bool:
+    return bool(os.environ.get("DISPLAY")) and os.path.exists("/tmp/.X11-unix")
+
+def _find_viewer() -> str:
+    for prog in ("soffice", "libreoffice", "xdg-open"):
+        if shutil.which(prog):
+            return prog
+    raise HTTPException(status_code=404, detail="No office viewer found (install 'libreoffice').")
+
+def _launch(cmd: str) -> None:
+    try:
+        subprocess.Popen(cmd, shell=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to launch: {e}")
 
 # --- NEW: open Excel in view-only mode (no edits) ---
 @app.post("/api/open_excel")
-def open_excel_view_only():
-    p = _excel_output_path()
-    _require_exists("excel_output", p)
+def open_excel_view_only(payload: Dict[str, Any] = Body(default={})):
+    """
+    Open Excel in read-only mode. Accepts either 'excel' (file) or 'usb_path' (dir).
+    """
+    excel = payload.get("excel")
+    usb_path = payload.get("usb_path")
 
-    # Prefer LibreOffice view-only mode; fall back to xdg-open
-    # --view is read-only; we also add flags to avoid lock dialogs
-    candidates = [
-        f"soffice --view --norestore --nolockcheck --nodefault {shlex.quote(str(p))}",
-        f"libreoffice --view --norestore --nolockcheck --nodefault {shlex.quote(str(p))}",
-        f"xdg-open {shlex.quote(str(p))}",
-    ]
-    launched = False
-    for cmd in candidates:
-        try:
-            subprocess.Popen(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            launched = True
-            break
-        except Exception:
-            continue
-    if not launched:
-        raise HTTPException(status_code=500, detail="No office viewer found (tried soffice/libreoffice/xdg-open).")
-    return {"ok": True, "path": str(p)}
+    # 👇 THIS is the missing line in your current code
+    p = _excel_output_path(usb_path=usb_path, excel=excel)
+
+    if not _have_gui_env():
+        raise HTTPException(status_code=409,
+            detail="GUI not available (DISPLAY or /tmp/.X11-unix missing).")
+
+    viewer = _find_viewer()
+    if viewer in ("soffice", "libreoffice"):
+        cmd = f"{viewer} --view --norestore --nolockcheck --nodefault {shlex.quote(str(p))}"
+    else:
+        cmd = f"xdg-open {shlex.quote(str(p))}"
+
+    _launch(cmd)
+    return {"ok": True, "viewer": viewer, "excel": str(p),
+            "note": "Opened in view-only mode" if viewer in ("soffice","libreoffice")
+                     else "Opened via xdg-open"}
 
 # --- NEW: compute % completed by reading the Excel (read-only) ---
 @app.get("/api/progress")
-def progress():
-    p = _excel_output_path()
-    _require_exists("excel_output", p)
+def progress(
+    excel: Optional[str] = Query(None, description="Full path to .xlsx, absolute or relative to usb_path"),
+    usb_path: Optional[str] = Query(None, description="USB mount root (dir) if excel not provided"),
+):
+    # IMPORTANT: pass the params through to the resolver
+    p = _excel_output_path(usb_path=usb_path, excel=excel)
 
-    # Try openpyxl first (no writes), fall back to pandas if available.
     done = 0
     total = 0
     tried = []
 
+    # Try openpyxl first (read-only)
     try:
         import openpyxl  # type: ignore
         tried.append("openpyxl")
         wb = openpyxl.load_workbook(str(p), read_only=True, data_only=True)
         for ws in wb.worksheets:
-            # Find header row (first non-empty row)
+            # header row
             header = None
             for row in ws.iter_rows(min_row=1, max_row=1, values_only=True):
                 header = [str(c).strip() if c is not None else "" for c in row]
                 break
             if not header:
                 continue
-            # Find 'Status' column (case-insensitive)
-            idx = None
-            for i, name in enumerate(header):
-                if name.lower() == "status":
-                    idx = i
-                    break
-            if idx is None:
+            # Status column (case-insensitive)
+            try:
+                idx = next(i for i, name in enumerate(header) if name.lower() == "status")
+            except StopIteration:
                 continue
-            # Count rows
             for row in ws.iter_rows(min_row=2, values_only=True):
                 val = row[idx] if idx < len(row) else None
                 if val is None or (isinstance(val, str) and not val.strip()):
@@ -169,7 +203,6 @@ def progress():
             xls = pd.ExcelFile(str(p))
             for sheet in xls.sheet_names:
                 df = pd.read_excel(xls, sheet_name=sheet)
-                # Look for a 'Status' column (case-insensitive)
                 status_col = next((c for c in df.columns if str(c).strip().lower() == "status"), None)
                 if status_col is None:
                     continue
@@ -177,16 +210,13 @@ def progress():
                 total += int(col.shape[0])
                 done  += int(col.str.lower().isin(["done", "completed", "ok", "true", "yes"]).sum())
         except Exception as e2:
-            return {
-                "ok": False,
-                "error": f"Failed to read Excel with {tried}: openpyxl='{err1}', pandas='{str(e2)}'",
-                "done": 0,
-                "total": 0,
-                "percent": 0.0,
-            }
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to read Excel with {tried}: openpyxl='{err1}', pandas='{str(e2)}'"
+            )
 
-    percent = float(done) / float(total) * 100.0 if total > 0 else 0.0  
-    return {"ok": True, "done": done, "total": total, "percent": round(percent, 1)}
+    percent = float(done) / float(total) * 100.0 if total > 0 else 0.0
+    return {"ok": True, "done": done, "total": total, "percent": round(percent, 1), "excel": str(p)}
 
 def _is_mountpoint(p: Path) -> bool:
     try:
