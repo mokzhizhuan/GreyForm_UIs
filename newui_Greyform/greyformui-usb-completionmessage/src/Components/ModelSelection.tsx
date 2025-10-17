@@ -1,5 +1,4 @@
 // src/components/ModelSelection.tsx
-import React from 'react';
 import img6sides from '../assets/6sides_labelled_PBU.png';
 import img4sides from '../assets/4sides_labelled_PBU.png';
 

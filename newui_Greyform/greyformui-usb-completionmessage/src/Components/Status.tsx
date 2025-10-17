@@ -3,6 +3,11 @@ import axios from "axios";
 import ModelSelection from "./ModelSelection";
 import RobotIPInput from "./RobotIPInput";
 import ABBHOMEImage from '../assets/ABB Robot placeholder image.jpg';
+import LevellerImage from '../assets/Leveller.jpeg';
+import RemoteControlImage from '../assets/Remote Control.jpeg';
+import HomePositionCheck from "./HomePositionCheck";
+import PushIntoPBUAndLevel from "./PushIntoPBUAndLevel";
+import pushRobotIntoPBUImage from '../assets/push_robot_into_PBU.png';
 
 const svg = `
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
@@ -48,11 +53,11 @@ const views = {
   launching:{ title: "Loading…", message: "", variant: "info", primaryText: "Loading…", showSpinner: true },
   shutdown: { title: "Please power off the machine", message: "The operation is completed successfully",           variant: "neutral", primaryText: "", showSpinner: false },
   robot_connected: { title: "Robot Connected", message: "Robot is successfully connected.", variant: "success", primaryText: "Verify HOME position", showSpinner: false },
-  home_verified: { title: "Robot in HOME position", message: "You can now launch the UI.", variant: "success", primaryText: "Start UI", showSpinner: false },
+  home_verified: { title: "Robot in HOME position", message: "You may now proceed to push the robot into the PBU.", variant: "success", primaryText: "I have completed the above steps. (Launch UI)", showSpinner: false },
 } as const;
 
 export default function Status() {
-  const [state, setState] = useState<UsbState>("waiting");
+  const [state, setState] = useState<UsbState>("robot_connected");
   const v = views[state] ?? views.shutdown;
 
   const API = useMemo(() => {
@@ -77,7 +82,7 @@ export default function Status() {
   const [isChecking, setIsChecking] = useState(false);
   const [ifcPath, setIfcPath] = useState<string | null>(null);
 
-  const [robotIP, setRobotIP] = useState<string | null>(null);
+  const [robotIP, setRobotIP] = useState<string | null>(null); 
 
   const http = useMemo(() => {
   const base = (import.meta.env.VITE_API_URL ?? "http://localhost:8000").replace(/\/+$/,"");
@@ -205,7 +210,11 @@ function handleRobotConnect(ip: string) {
       setIsChecking(false);
     }
   };
- 
+
+  const verifyHomePosition = () => {
+    setState("home_verified");
+    setResponseMessage("Please push the robot into the PBU.");
+  };
   
   const launchUI = async () => {
     if (!(isValidated && state === "checked_ok") || !ifcPath || !usbPath) {
@@ -299,7 +308,6 @@ const openExcelViewOnly = async () => {
             <p className="opacity-90">{v.message}</p>
           )}
 
-
           {(responseMessage || errorDetails) && (
             <div className="mt-2">
               <p className="text-sm opacity-90" aria-live="polite">
@@ -351,6 +359,7 @@ const openExcelViewOnly = async () => {
               )}
             </>
           )}
+
           {/* NEW: shutdown actions */}
           {state === "shutdown" && (
             <div className="flex gap-3 justify-center mt-3">
@@ -359,31 +368,28 @@ const openExcelViewOnly = async () => {
               </button>
             </div>
           )}
+
           {/*{state === "checked_ok" && (
             <RobotIPInput onConnect={handleRobotConnect} />
           )}*/}
+
           {state === "robot_connected" && (
-            <div>
-              <div className="card bg-base-100 w-96 shadow-sm">
-                <div className="card-body">
-                  <h2 className="card-title text-black">Is the ABB Robot in HOME position?</h2>
-                  <p className="text-black">Please verify that the ABB robot is in the HOME position as illustrated in the photo below.</p>
-                </div>
-                <figure>
-                  <img
-                    src={ABBHOMEImage}
-                    alt="ABB Robot HOME position" />
-                </figure>
-              </div>
-              <div className="divider" />
-              <button
-                className={`btn btn-${v.variant} md:btn-md lg:btn-lg`}
-                onClick={verifyHomePosition}
-              >
-                {v.primaryText}
-              </button>
-            </div>
+            <HomePositionCheck
+              ABBHOMEImage={ABBHOMEImage}
+              v={v}
+              verifyHomePosition={verifyHomePosition} // This can call your REST API
+            />
           )}
+
+          {state === "home_verified" && (
+            <PushIntoPBUAndLevel
+              pushRobotIntoPBUImage={pushRobotIntoPBUImage}
+              LevellerImage={LevellerImage}
+              RemoteControlImage={RemoteControlImage}
+              v={v}
+            />
+          )}
+          
           {!canShowPicker && state !== "shutdown" && state !== "robot_connected" && (
             <div>
               <button
