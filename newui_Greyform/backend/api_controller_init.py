@@ -8,16 +8,19 @@ router = APIRouter()
 _pub = None
 _ready = False
 
-_cp_ready = False
-_cp_pub = None
+_ctrl_ready = False
+_ctrl_pub = None
+_state_lock = threading.Lock()
 
-def _ensure_cp_pub():
-    global _cp_ready, _cp_pub
-    if _cp_ready:
+def _ensure_ctrl_pub():
+    global _ctrl_ready, _ctrl_pub
+    if _ctrl_ready:
         return
-    rospy.init_node("http_cp_bridge", anonymous=True, disable_signals=True)
-    _cp_pub = rospy.Publisher("/cp/json", RosString, queue_size=1, latch=True)
-    _cp_ready = True
+    # one ROS node in this process; disable signals so FastAPI keeps running
+    rospy.init_node("http_controller_init_bridge", anonymous=True, disable_signals=True)
+    _ctrl_pub = rospy.Publisher("/controller/init", RosString, queue_size=1, latch=True)
+    _ctrl_ready = True
+
     
 def _ensure_ros():
     """Initialize one ROS node for HTTP bridge and a latched /controller/init publisher."""

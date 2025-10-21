@@ -795,31 +795,31 @@ def _build_cp_view(book, mode="columns", key="Type"):
 def _frames_to_json(book: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
     return {name: df.to_dict(orient="records") for name, df in book.items()}
 
-    
+def frames_to_json_safe(book):
+    out = {}
+    for name, df in (book or {}).items():
+        if df is None:
+            continue
+        df2 = df.copy()
+        df2 = df2.where(df2.notna(), None)  # NaN/NaT -> None
+        for col in df2.select_dtypes(include=["datetime64[ns]", "datetime64[ns, tz]"]).columns:
+            df2[col] = df2[col].apply(lambda x: x.isoformat() if x else None)
+        out[name] = df2.to_dict(orient="records")
+    return out
 
 @app.post("/api/ui_initailzecamdriver")
 def ui_initailzecamdriver(
     usb_path: str = Form(...),
     ifc_path: Optional[str] = Form(None),
-    model_sides: int = Form(...),
+    model_sides: int = Form(...),     # <-- REQUIRED here
     force: bool = Form(False),
     cp_mode: str = Form("columns"),
     cp_key: str = Form("Type"),
 ):
-    """
-    Initialize UI by loading Excel from a USB path.
-    - usb_path can be a drive root (e.g., E:\\) or a full file path (e.g., E:\\data\\master.xlsx)
-    - cp_mode controls how the CP-only view is created (columns | rows_by_col_equals | rows_any_cell_contains)
-    - cp_key is used when cp_mode = 'rows_by_col_equals'
-    - 'force' = True will reload even if already initialized
-    - ifc_path accepted but optional (not used here; you can stash it in state if needed)
-    """
-
     try:
         excel_file = _find_excel_from_usb(usb_path)
 
         with _state_lock:
-            # If already loaded and not forcing, skip reload
             already_loaded = getattr(app.state, "excel_source", None) == str(excel_file)
             if already_loaded and not force:
                 cp_json = _frames_to_json(getattr(app.state, "book_cp", {}))
@@ -829,22 +829,45 @@ def ui_initailzecamdriver(
                     "sheets": list(getattr(app.state, "book_full", {}).keys()),
                     "cp_mode": getattr(app.state, "cp_mode", "columns"),
                     "cp_key": getattr(app.state, "cp_key", "Type"),
-                    "cp_preview": {k: v[:3] for k, v in cp_json.items()},  # small preview
+                    "cp_preview": {k: v[:3] for k, v in cp_json.items()},
                 }
 
-            # Load workbook
+            # 1) Load workbook and CP view
             book_full = _load_workbook(excel_file)
-            book_cp = _build_cp_view(book_full, mode=cp_mode, key=cp_key)
+            book_cp   = _build_cp_view(book_full, mode=cp_mode, key=cp_key)
 
-            # Cache in app.state for other routes
+            # 2) Cache
             app.state.book_full = book_full
             app.state.book_cp = book_cp
             app.state.excel_source = str(excel_file)
             app.state.cp_mode = cp_mode
             app.state.cp_key = cp_key
-            app.state.ifc_path = ifc_path  # stash if you’ll use it later
+            app.state.ifc_path = ifc_path
+            app.state.model_sides = int(model_sides)
 
-            cp_json = _frames_to_json(book_cp)
+            # 3) Convert CP frames to JSON-safe
+            cp_json = _frames_to_json(book_cp)  # or frames_to_json_safe(book_cp)
+
+        # 4) Derive expected walls strictly from model_sides (no floor)
+        expected_walls = [str(i) for i in range(1, int(model_sides) + 1)]
+
+        # 5) Publish a controller init payload including model_sides and cp_json
+        payload = {
+            "excel_path": str(excel_file),
+            "model_sides": int(model_sides),
+            "expected_walls": expected_walls,     # optional; controller can derive if omitted
+            "stl_path": None,                     # fill if you have one
+            "typeselection": None,                # fill if you have one
+            "cp_json": cp_json,                   # <<—— CP dataframe as JSON
+        }
+        try:
+            _ensure_ctrl_pub()
+            _ctrl_pub.publish(RosString(data=json.dumps(payload, ensure_ascii=False)))
+            published = True
+        except Exception as e:
+            published = False
+
+        # 6) Return a lean response (keep full CP on separate GET if you want)
         return {
             "status": "initialized",
             "excel": str(excel_file),
@@ -852,10 +875,12 @@ def ui_initailzecamdriver(
             "sheets": list(book_full.keys()),
             "cp_mode": cp_mode,
             "cp_key": cp_key,
-            # keep the JSON small here; build a dedicated endpoint to fetch all CP data
+            "model_sides": int(model_sides),
+            "expected_walls": expected_walls,
+            "published_to_controller": published,
             "cp_preview": {k: v[:3] for k, v in cp_json.items()},
         }
-    # Friendly error mapping
+
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
