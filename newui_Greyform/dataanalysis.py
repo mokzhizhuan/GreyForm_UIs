@@ -329,11 +329,6 @@ class data_draft(object):
                 df_combined[col] = ""   # create the column if missing
             else:
                 df_combined[col] = df_combined[col].fillna("").astype(str)
-        mask_remove = (
-            df_combined["Name"].str.contains("Basic Wall|CP|Floor:BSS", case=False, na=False)
-            & (df_combined["Marking Type"] != "Tiles Point")
-        )
-        df_combined = df_combined[~mask_remove].copy()
         df_combined_all = pd.concat([df_combined, df_fitting], ignore_index=True)
         with pd.ExcelWriter(f"{self.usb_path}/PBU_TERRAHL2.xlsx", engine="openpyxl") as writer:
             for df, sheet in [(df_combined, "Stage 2"), (df_fitting, "Stage 3")]:

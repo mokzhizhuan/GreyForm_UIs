@@ -8,6 +8,7 @@ import RemoteControlImage from '../assets/Remote Control.jpeg';
 import HomePositionCheck from "./HomePositionCheck";
 import PushIntoPBUAndLevel from "./PushIntoPBUAndLevel";
 import pushRobotIntoPBUImage from '../assets/push_robot_into_PBU.png';
+type CPBook = Record<string, Record<string, any>[]>;
 
 const svg = `
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'>
@@ -228,7 +229,6 @@ function handleRobotConnect(ip: string) {
       fd.append("usb_path", usbPath);
       fd.append("ifc_path", ifcPath);
       const res = await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
-
       const pid = Number(res.data?.pid ?? 0);
       if (pid > 0) setUiPid(pid);
       sessionStorage.setItem("uiPoll", "1");
@@ -275,6 +275,40 @@ function handleRobotConnect(ip: string) {
   const canShowPicker = state === "success" || state === "invalid_model" || state === "checked_ok";
   const canLaunch = isValidated && !!usbPath && !!ifcPath && state === "checked_ok";
   const [progressPct, setProgressPct] = useState<number | null>(null);
+  const [cpJson, setCpJson] = useState<Record<string, any[]> | null>(null);
+  const [message, setMessage] = useState("");
+  const initAndGetCP = async () => {
+    try {
+      if (!usbPath) throw new Error("No USB path selected.");
+
+      // If you already found a valid IFC, reuse it; else omit it (backend allows None)
+      const fd = new FormData();
+      fd.append("usb_path", usbPath);
+      if (ifcPath) fd.append("ifc_path", ifcPath);
+      fd.append("force", "true");         // FormData values must be strings
+      fd.append("cp_mode", "columns");    // or rows_by_col_equals / rows_any_cell_contains
+      fd.append("cp_key", "Type");        // used only for rows_by_col_equals
+      fd.append("include_cp", "true");    // <— tell backend to return CP JSON now
+
+      // Use your axios instance with baseURL already set
+      const res = await http.post(`/api/ui_initailzecamdriver`, fd, {
+        // DO NOT set Content-Type; browser sets multipart boundaries for FormData
+        timeout: 0,
+      });
+
+      if (!res?.data) throw new Error("Empty response from backend.");
+      const cp = res.data.cp_json ?? null;
+      setCpJson(cp);
+      setResponseMessage(`✅ CP JSON ready (${res.data.status}).`);
+      setErrorDetails("");
+    } catch (e: any) {
+      const detail = e?.response?.data?.detail || e?.message || "unknown error";
+      setResponseMessage(`❌ initAndGetCP failed: ${detail}`);
+      setErrorDetails(
+        typeof e?.response?.data === "object" ? JSON.stringify(e.response.data, null, 2) : String(detail)
+      );
+    }
+  };
 
 // --- add this effect to run when we enter 'shutdown' ---
 // show % on shutdown
@@ -389,7 +423,9 @@ const openExcelViewOnly = async () => {
               v={v}
             />
           )}
-          
+          <button className="btn btn-outline" onClick={initAndGetCP} disabled={!usbPath || state==="launching"}>
+            Init & Fetch CP JSON
+          </button>
           {!canShowPicker && state !== "shutdown" && state !== "robot_connected" && (
             <div>
               <button

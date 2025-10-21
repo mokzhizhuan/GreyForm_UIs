@@ -1,20 +1,4 @@
 #!/usr/bin/env python3
-"""
-Listener node that receives file-extraction and selection messages and updates Excel sheets.
-
-- Subscribes to:
-  - /file_extraction_topic : FileExtractionMessage  (updates latest Excel path param)
-  - /selection_wall_topic  : SelectionWall         (requests marking a wall as 'done')
-
-- Publishes UI status on:
-  - /ui/wall_started
-  - /ui/wall_done
-  - /ui/all_done
-
-The node safely reads/writes the Excel (.xlsx) using a shadow copy and retries to
-handle transient file I/O issues. It normalizes wall tokens and can search across
-multiple sheets in the workbook.
-"""
 import rospy, pandas as pd 
 from std_msgs.msg import String, Bool
 from my_robot_wallinterfaces.msg import FileExtractionMessage, SelectionWall
@@ -32,21 +16,6 @@ UI_DONE    = "/ui/wall_done"
 UI_ALLDONE = "/ui/all_done"
 
 def _normalize_wall_token(v: object) -> str:
-    """
-    Normalize a wall identifier into a canonical token used for matching.
-
-    Rules applied:
-    - Convert to string, strip whitespace, uppercase.
-    - If digits are present, return only the digits (first match).
-    - Map certain floor-like names ("F", "FL", "FLOOR", "FLOOR/SLAB") to "F".
-    - Otherwise return the cleaned string.
-
-    Parameters:
-    - v: any object representing the wall token.
-
-    Returns:
-    - str: normalized token suitable for comparison/matching.
-    """
     s = str(v).strip().upper()
     m = re.search(r'(\d+)', s)
     if m:
@@ -56,17 +25,6 @@ def _normalize_wall_token(v: object) -> str:
     return s
 
 def _resolve_sheet_name(xl_sheets: dict, typeselection: str) -> str:
-    """
-    Resolve a typeselection value to an exact sheet name from the loaded Excel dict.
-
-    Parameters:
-    - xl_sheets: dict mapping sheet names to DataFrames (as returned by pandas.read_excel(..., sheet_name=None))
-    - typeselection: user-provided typeselection string which is matched case-insensitively
-                     against available sheet names.
-
-    Returns:
-    - str: the exact sheet name if found (matching lowercased key), otherwise empty string.
-    """
     if not typeselection:
         return ""
     key = str(typeselection).strip().lower()
@@ -75,23 +33,6 @@ def _resolve_sheet_name(xl_sheets: dict, typeselection: str) -> str:
 
 class ListenerNode:
     def __init__(self):
-        """
-        Initialize the ListenerNode.
-
-        Responsibilities:
-        - Initialize a rospy node (listener_node).
-        - Initialize state variables used for pending selections, retry timers,
-          and tracking expected/done walls.
-        - Create subscribers for FILE_TOPIC and SEL_TOPIC and UI publishers.
-
-        Behavior:
-        - The listener maintains self.latest_excel which is the path to the current
-          Excel workbook (either from an incoming FileExtractionMessage or the
-          /excel_path parameter).
-        - On receiving a SelectionWall message it will attempt to mark the corresponding
-          wall row(s) "done" in the workbook (searching across sheets if necessary).
-        - If the workbook is not yet available, it defers processing and periodically retries.
-        """
         rospy.init_node("listener_node", anonymous=True)
         self.latest_excel = None
         self.pending = None
@@ -106,16 +47,6 @@ class ListenerNode:
         self.ui_all_done_pub     = rospy.Publisher(UI_ALLDONE, Bool,   queue_size=10)
 
     def _get_excel_path(self):
-        """
-        Return the current Excel path to use for reads/writes.
-
-        Priority:
-        - If self.latest_excel is set (e.g., from a received FileExtractionMessage), return it.
-        - Otherwise check the ROS parameter '/excel_path' and mirror it into self.latest_excel.
-
-        Returns:
-        - str or None: the path to the Excel file, or None if not known.
-        """
         if self.latest_excel:
             return self.latest_excel
         p = rospy.get_param("/excel_path", None)
@@ -126,47 +57,17 @@ class ListenerNode:
         return None
     
     def __post_init_io(self):
-        """
-        Internal initialization for I/O related parameters and locks.
-
-        Sets:
-        - self._io_lock: threading.Lock protecting file read/write/safe operations.
-        - self._IO_RETRY_TRIES: number of attempts to check file stability.
-        - self._IO_RETRY_SLEEP: sleep seconds between stability checks.
-        """
         self._io_lock = threading.Lock()
         self._IO_RETRY_TRIES = 8
         self._IO_RETRY_SLEEP = 0.25
 
     def _is_valid_zip(self, path: str) -> bool:
-        """
-        Heuristic check that a .xlsx file is a valid zip archive and of reasonable size.
-
-        Parameters:
-        - path: filesystem path to check.
-
-        Returns:
-        - bool: True if file exists, size > 1024 and zipfile.is_zipfile returns True; False otherwise.
-        """
         try:
             return os.path.getsize(path) > 1024 and zipfile.is_zipfile(path)
         except Exception:
             return False
 
     def _wait_stable(self, path: str, tries=None, sleep=None) -> bool:
-        """
-        Wait until the given file path stops changing size (stable), or until tries exhausted.
-
-        This helps avoid reading a file that is still being written.
-
-        Parameters:
-        - path: filesystem path to monitor.
-        - tries: maximum number of checks (defaults to self._IO_RETRY_TRIES).
-        - sleep: seconds between checks (defaults to self._IO_RETRY_SLEEP).
-
-        Returns:
-        - bool: True if the file size was stable (>0) across two consecutive checks, False otherwise.
-        """
         tries = tries or self._IO_RETRY_TRIES
         sleep = sleep or self._IO_RETRY_SLEEP
         last = -1
@@ -181,21 +82,6 @@ class ListenerNode:
         return False
 
     def _shadow_copy(self, src: str) -> str:
-        """
-        Make a shadow copy of the given file in the same directory and return the temporary path.
-
-        This is used to avoid locking/partial-write problems when reading Excel files.
-
-        Parameters:
-        - src: source file path.
-
-        Returns:
-        - str: path to the temporary shadow copy.
-
-        Notes:
-        - The temporary file is created with prefix ".shadow_" and suffix ".xlsx".
-        - The caller is responsible for removing the returned temporary file.
-        """
         d = os.path.dirname(src) or "."
         fd, tmp = tempfile.mkstemp(prefix=".shadow_", suffix=".xlsx", dir=d)
         os.close(fd)
@@ -203,23 +89,6 @@ class ListenerNode:
         return tmp
 
     def _safe_read_xl_dict(self, excel_path: str):
-        """
-        Safely read an Excel file and return a dict of sheet_name -> DataFrame.
-
-        Strategy:
-        - Wait for the file to be stable and check it's a valid zipped .xlsx.
-        - Create a shadow copy and attempt to read via pandas.read_excel with openpyxl engine.
-        - If pandas.read_excel fails but openpyxl is available, attempt a fallback manual read using openpyxl.
-
-        Parameters:
-        - excel_path: path to .xlsx file.
-
-        Returns:
-        - dict: mapping sheet name to pandas.DataFrame.
-
-        Raises:
-        - IOError or underlying exceptions when reading/parsing fails.
-        """
         if not self._wait_stable(excel_path):
             raise IOError("file not stable")
         if not self._is_valid_zip(excel_path):
@@ -252,19 +121,6 @@ class ListenerNode:
                 except Exception: pass
 
     def _safe_write_xl_dict(self, excel_path: str, sheets: dict):
-        """
-        Safely write a dictionary of sheets to an Excel file in a crash-safe manner.
-
-        Strategy:
-        - Write to a temporary file in the same directory, then atomically replace the target path.
-
-        Parameters:
-        - excel_path: destination .xlsx path.
-        - sheets: mapping of sheet_name -> tabular data (pandas DataFrame or convertible).
-
-        Raises:
-        - Exceptions from pandas/OpenPyXL or os.replace will propagate to caller.
-        """
         d = os.path.dirname(excel_path) or "."
         fd, tmp = tempfile.mkstemp(prefix=".tmp_", suffix=".xlsx", dir=d)
         os.close(fd)
@@ -279,28 +135,6 @@ class ListenerNode:
             raise
 
     def _scan_and_mark(self, excel_path: str, wall: str, typ: str) -> bool:
-        """
-        Scan the given Excel workbook and mark rows matching the wall token as 'done'.
-
-        Procedure:
-        - Read the workbook via _safe_read_xl_dict (protected by self._io_lock).
-        - Resolve typeselection to a specific sheet name if provided; otherwise search all sheets.
-        - For each applicable sheet, normalize the "Wall Number" column and set "Status" to "done"
-          for rows that match the normalized token.
-        - If any sheet was changed, write back the modified workbook using _safe_write_xl_dict.
-
-        Parameters:
-        - excel_path: path to the workbook.
-        - wall: wall token (stringable) to match (e.g., "1", "F").
-        - typ: typeselection string that may designate a sheet to limit the search.
-
-        Returns:
-        - bool: True if at least one row was updated and the workbook was written, False otherwise.
-
-        Side effects:
-        - Writes to excel_path if modified.
-        - Logs info/debug messages about matches and failures.
-        """
         target = _normalize_wall_token(wall)
         with self._io_lock:  
             try:
@@ -348,16 +182,6 @@ class ListenerNode:
                 return False
 
     def _retry_pending(self, _evt):
-        """
-        Timer callback that retries processing a previously pending selection.
-
-        Called periodically by rospy.Timer when a selection was deferred because
-        an Excel path was not yet available. If processing succeeds, publishes
-        ui_wall_done and clears the pending state and timer.
-
-        Parameters:
-        - _evt: rospy.TimerEvent passed by rospy.Timer (unused).
-        """
         if not self.pending:
             if self.retry_timer:
                 self.retry_timer.shutdown()
@@ -375,17 +199,6 @@ class ListenerNode:
             self.retry_timer = None
 
     def _process_selection(self, wall: str, typ: str):
-        """
-        Process a selection request immediately if possible; otherwise defer.
-
-        If no Excel path is available, the selection is stored in self.pending and
-        a retry timer is created to periodically attempt processing. If processing
-        succeeds, a /ui/wall_done is published.
-
-        Parameters:
-        - wall: wall token to process.
-        - typ: typeselection string to resolve to sheet name when searching.
-        """
         excel = self._get_excel_path()
         if not excel:
             rospy.logwarn(f"[listener] No Excel path yet; deferring selection wall={wall!r}, typ={typ!r}")
@@ -396,15 +209,6 @@ class ListenerNode:
             self.ui_wall_done_pub.publish(String(data=str(wall)))
 
     def file_cb(self, msg: FileExtractionMessage):
-        """
-        Callback for FileExtractionMessage messages.
-
-        Stores the incoming Excel path in self.latest_excel, mirrors it to the ROS
-        parameter '/excel_path' for robustness, and attempts processing any pending selection.
-
-        Parameters:
-        - msg: FileExtractionMessage with fields 'excelfile' and 'stl_data' (stl_data unused here).
-        """
         self.latest_excel = msg.excelfile
         rospy.set_param("/excel_path", self.latest_excel)  # mirror to param for robustness
         rospy.loginfo(f"[listener] Received Excel path: {self.latest_excel!r}")
@@ -413,17 +217,6 @@ class ListenerNode:
             self._process_selection(wall, typ)
 
     def selection_cb(self, msg: SelectionWall):
-        """
-        Callback for SelectionWall messages.
-
-        - Publishes /ui/wall_started immediately.
-        - If excel path is missing, defer processing and start the retry timer.
-        - Otherwise attempt to mark the matching wall(s) as done and publish /ui/wall_done.
-        - Track completed walls and publish /ui/all_done when expected set satisfied.
-
-        Parameters:
-        - msg: SelectionWall message with at least wallselection and typeselection fields.
-        """
         wall = str(msg.wallselection)          # may be '1', '6', 'F'
         typ  = str(msg.typeselection or "")    # may be 'Stage 2', 'Stage 3', or '1' (non-sheet)
         self.ui_wall_started_pub.publish(String(data=wall))
@@ -442,9 +235,6 @@ class ListenerNode:
                 self.ui_all_done_pub.publish(Bool(data=True))
 
 def main():
-    """
-    Module entrypoint to start the ListenerNode and enter rospy.spin().
-    """
     ListenerNode()
     rospy.spin()
 

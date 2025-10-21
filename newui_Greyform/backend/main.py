@@ -6,6 +6,9 @@ from typing import Optional, List, Dict, Union, Tuple , Any
 import dataanalysis as datadraft
 import pwd, grp , requests
 import subprocess, shlex
+import pandas as pd
+import re
+import threading
 #import httpx
 from requests.auth import HTTPDigestAuth
 from errno import errorcode
@@ -56,7 +59,7 @@ IFC_CACHE: Dict[str, Dict[str, float]] = {}
 _CACHE = {"ts": 0.0, "preferred": None, "choices": []}
 _CACHE_TTL = 5.0  # seconds
 PROJECT_DIR = Path(__file__).resolve().parent.parent  
-
+_state_lock = threading.Lock()
 LAST_USB_PATH: Optional[Path] = None
 
 
@@ -619,7 +622,6 @@ def detect_usb(
                 "found": True, "preferred": info["path"],
                 "choices": choices, "checked": checked, "cached": False
             }
-
     return {"found": False, "preferred": None, "choices": choices, "checked": checked, "cached": False}
 
 @app.post("/api/checkifc")
@@ -742,6 +744,146 @@ async def launch_ui(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Exception launching with usb_path={usb_path}: {e}")
+    
+def _load_workbook(path: Path) -> Dict[str, pd.DataFrame]:
+    # Sheet dict: {sheet_name: DataFrame}
+    return pd.read_excel(path, sheet_name=None)
+    
+def _find_excel_from_usb(usb_path: str) -> Path:
+    """
+    Accepts either:
+      - a directory path (e.g., 'E:\\' or '/media/usb')
+      - a direct file path (e.g., 'E:\\project\\master.xlsx')
+    Returns a Path to an existing Excel file.
+    Selection rule for directories: newest *.xlsx or *.xls by modified time.
+    """
+    p = Path(usb_path).expanduser()
+    if not p.exists():
+        raise FileNotFoundError(f"Path not found: {p}")
+
+    if p.is_file():
+        if p.suffix.lower() in (".xlsx", ".xls"):
+            return p
+        raise ValueError(f"Not an Excel file: {p}")
+
+    # Directory: pick most recent Excel
+    candidates = list(p.rglob("*.xlsx")) + list(p.rglob("*.xls"))
+    if not candidates:
+        raise FileNotFoundError(f"No Excel files found under: {p}")
+
+    # newest by mtime
+    candidates.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+    return candidates[0]
+
+def _load_workbook(path: Path) -> Dict[str, pd.DataFrame]:
+    # Sheet dict: {sheet_name: DataFrame}
+    return pd.read_excel(path, sheet_name=None)
+
+
+def _build_cp_view(
+    book: Dict[str, pd.DataFrame],
+    mode: str = "columns",
+    key: str = "Type",
+) -> Dict[str, pd.DataFrame]:
+    """
+    CP filtering modes:
+      - 'columns': keep only columns with header containing 'CP'
+      - 'rows_by_col_equals': keep rows where df[key] == 'CP' (case-insensitive)
+      - 'rows_any_cell_contains': keep rows where any cell contains 'CP'
+    """
+    out: Dict[str, pd.DataFrame] = {}
+    for name, df in book.items():
+        if df.empty:
+            out[name] = df.copy()
+            continue
+
+        if mode == "columns":
+            cp_cols = [c for c in df.columns if "cp" in str(c).lower()]
+            out[name] = df[cp_cols].copy() if cp_cols else pd.DataFrame(columns=[])
+        elif mode == "rows_by_col_equals":
+            if key in df.columns:
+                out[name] = df[df[key].astype(str).str.fullmatch(r"(?i)CP")].copy()
+            else:
+                out[name] = df.iloc[0:0].copy()
+        elif mode == "rows_any_cell_contains":
+            mask = df.apply(lambda col: col.astype(str).str.contains(r"\bCP\b", flags=re.I, na=False))
+            out[name] = df[mask.any(axis=1)].copy()
+        else:
+            raise ValueError(f"Unknown CP mode: {mode}")
+    return out
+
+
+def _frames_to_json(book: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
+    return {name: df.to_dict(orient="records") for name, df in book.items()}
+    
+
+@app.post("/api/ui_initailzecamdriver")
+def ui_initailzecamdriver(
+    usb_path: str = Form(...),
+    ifc_path: Optional[str] = Form(None),
+    force: bool = Form(False),
+    cp_mode: str = Form("columns"),
+    cp_key: str = Form("Type"),
+):
+    """
+    Initialize UI by loading Excel from a USB path.
+    - usb_path can be a drive root (e.g., E:\\) or a full file path (e.g., E:\\data\\master.xlsx)
+    - cp_mode controls how the CP-only view is created (columns | rows_by_col_equals | rows_any_cell_contains)
+    - cp_key is used when cp_mode = 'rows_by_col_equals'
+    - 'force' = True will reload even if already initialized
+    - ifc_path accepted but optional (not used here; you can stash it in state if needed)
+    """
+    try:
+        excel_file = _find_excel_from_usb(usb_path)
+
+        with _state_lock:
+            # If already loaded and not forcing, skip reload
+            already_loaded = getattr(app.state, "excel_source", None) == str(excel_file)
+            if already_loaded and not force:
+                cp_json = _frames_to_json(getattr(app.state, "book_cp", {}))
+                return {
+                    "status": "already_initialized",
+                    "excel": str(excel_file),
+                    "sheets": list(getattr(app.state, "book_full", {}).keys()),
+                    "cp_mode": getattr(app.state, "cp_mode", "columns"),
+                    "cp_key": getattr(app.state, "cp_key", "Type"),
+                    "cp_preview": {k: v[:3] for k, v in cp_json.items()},  # small preview
+                }
+
+            # Load workbook
+            book_full = _load_workbook(excel_file)
+            book_cp = _build_cp_view(book_full, mode=cp_mode, key=cp_key)
+
+            # Cache in app.state for other routes
+            app.state.book_full = book_full
+            app.state.book_cp = book_cp
+            app.state.excel_source = str(excel_file)
+            app.state.cp_mode = cp_mode
+            app.state.cp_key = cp_key
+            app.state.ifc_path = ifc_path  # stash if you’ll use it later
+
+            cp_json = _frames_to_json(book_cp)
+
+        return {
+            "status": "initialized",
+            "excel": str(excel_file),
+            "sheet_count": len(book_full),
+            "sheets": list(book_full.keys()),
+            "cp_mode": cp_mode,
+            "cp_key": cp_key,
+            # keep the JSON small here; build a dedicated endpoint to fetch all CP data
+            "cp_preview": {k: v[:3] for k, v in cp_json.items()},
+        }
+
+    # Friendly error mapping
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Initialization failed: {e}")
+
+    
 
 @app.post("/api/ui_closed")
 def ui_closed(pid: int = Form(...)):
