@@ -1,76 +1,95 @@
 #!/usr/bin/env python3
 """
 Controller node that orchestrates wall processing and publishes the Excel + STL file.
-It now waits for an initialization payload (JSON on /controller/init) OR uses existing ROS params.
+It waits for an initialization payload (JSON on /controller/init) OR uses existing ROS params.
+Also republishes CP JSON on a dedicated, latched topic /cp/json for the camera driver.
 """
 
 import os
 import json
-import rospy
 import threading
+from typing import List
+
+import rospy
 from std_msgs.msg import String, Bool
 from my_robot_wallinterfaces.msg import FileExtractionMessage, SelectionWall
-
 from talker_node import TalkerNode  # reuse existing publisher helpers
 
+# Topics
 FILE_TOPIC   = "/file_extraction_topic"
 SEL_TOPIC    = "/selection_wall_topic"
 UI_STARTED   = "/ui/wall_started"
 UI_DONE      = "/ui/wall_done"
 UI_ALLDONE   = "/ui/all_done"
-CTRL_INIT    = "/controller/init"   # <— NEW: API publishes JSON init here
+CTRL_INIT    = "/controller/init"   # API publishes init JSON here
+CP_TOPIC     = "/cp/json"           # dedicated CP JSON topic (latched)
 
 class ControllerNode:
     def __init__(self):
         rospy.init_node("controller_node", anonymous=True)
 
-        # Use TalkerNode publishers/helpers
+        # Publishers/helpers
         self.talker = TalkerNode()
+        self.cp_pub = rospy.Publisher(CP_TOPIC, String, queue_size=1, latch=True)
 
-        # Defaults from params (act as fallback if no /controller/init message is sent)
-        self.expected_walls = rospy.get_param("~expected_walls", [])   # e.g., ["1","2","3","F"]
+        # Params (act as fallbacks if no init message is received)
+        self.expected_walls = rospy.get_param("~expected_walls", [])    # e.g. ["1","2","3"]
         self.typeselection  = rospy.get_param("~typeselection", "")
         self.excel_path     = rospy.get_param("~excel_path", None)
         self.stl_path       = rospy.get_param("~stl_path", None)
+        self.model_sides    = rospy.get_param("~model_sides", None)     # 4 or 6 (optional)
 
+        # Optional latched file publisher
         self.latch_file_publish = rospy.get_param("~latch_file_publish", False)
-        if self.latch_file_publish:
-            self.latched_file_pub = rospy.Publisher(FILE_TOPIC, FileExtractionMessage, queue_size=1, latch=True)
-        else:
-            self.latched_file_pub = None
+        self.latched_file_pub = (rospy.Publisher(FILE_TOPIC, FileExtractionMessage, queue_size=1, latch=True)
+                                 if self.latch_file_publish else None)
 
-        # timing and retries
+        # Timing
         self.per_wall_timeout = rospy.get_param("~per_wall_timeout", 8.0)
         self.per_wall_retries = rospy.get_param("~per_wall_retries", 2)
         self.delay_between_publishes = rospy.get_param("~delay_between_publishes", 0.2)
 
-        # events/locks
+        # State & sync
         self._done_event = threading.Event()
-        self._init_event = threading.Event()     # <— NEW: wait here until init arrives
+        self._init_event = threading.Event()
         self._last_done_wall = None
         self._lock = threading.Lock()
+        self.cp_json = None  # cache of CP JSON if provided in init
 
-        # Subscribe to UI done confirmations
+        # Subscriptions
         rospy.Subscriber(UI_DONE, String, self._ui_done_cb, queue_size=10)
-
-        # Subscribe to controller init payload (JSON)
         rospy.Subscriber(CTRL_INIT, String, self._on_init_cb, queue_size=1)
 
-        # If we already have an excel_path via params, consider initialized
-        if self.excel_path:
+        # If params already provide enough info, derive walls if needed and mark initialized
+        if self.excel_path and (self.expected_walls or self.model_sides):
+            if not self.expected_walls and self.model_sides:
+                self.expected_walls = self._compute_walls(int(self.model_sides))
+                rospy.set_param("~expected_walls", self.expected_walls)
             self._init_event.set()
 
-        rospy.loginfo("[controller] Init; expected_walls=%r excel=%r stl=%r", self.expected_walls, self.excel_path, self.stl_path)
+        rospy.loginfo("[controller] Init; excel=%r stl=%r type=%r walls=%r sides=%r",
+                      self.excel_path, self.stl_path, self.typeselection,
+                      self.expected_walls, self.model_sides)
 
-    # ---------- NEW: init message handling ----------
+    # ---------- helpers ----------
+    @staticmethod
+    def _compute_walls(model_sides: int) -> List[str]:
+        if model_sides not in (4, 6):
+            rospy.logwarn("[controller] model_sides must be 4 or 6; got %r", model_sides)
+            return []
+        return [str(i) for i in range(1, model_sides + 1)]
+
+    # ---------- subscribers ----------
     def _on_init_cb(self, msg: String):
         """
         Expected JSON example:
         {
           "excel_path": "/media/USB/master.xlsx",
-          "stl_path": "/media/USB/empty_pbu.stl",        # optional
-          "typeselection": "Stage2",                      # optional
-          "expected_walls": ["1","2","3","4","F"]         # optional
+          "stl_path": "/media/USB/empty_pbu.stl",    # optional
+          "typeselection": "Stage2",                 # optional
+          "expected_walls": ["1","2","3","4"],       # optional; else use model_sides
+          "model_sides": 4,                          # optional; used when expected_walls absent
+          "cp_json": {...}                           # optional; forwarded to /cp/json
         }
         """
         try:
@@ -79,15 +98,17 @@ class ControllerNode:
             rospy.logerr("[controller] Bad JSON on %s: %s", CTRL_INIT, e)
             return
 
-        excel_path = payload.get("excel_path")
-        stl_path   = payload.get("stl_path")
-        typeselection = payload.get("typeselection")
+        excel_path     = payload.get("excel_path")
+        stl_path       = payload.get("stl_path")
+        typeselection  = payload.get("typeselection")
         expected_walls = payload.get("expected_walls")
+        model_sides    = payload.get("model_sides")
+        cp_json        = payload.get("cp_json")
 
-        # Update internal state from payload if provided
+        # Update internal state
         if excel_path:
             self.excel_path = excel_path
-            rospy.set_param("~excel_path", self.excel_path)  # optional visibility
+            rospy.set_param("~excel_path", self.excel_path)
 
         if stl_path is not None:
             self.stl_path = stl_path
@@ -97,25 +118,52 @@ class ControllerNode:
             self.typeselection = str(typeselection)
             rospy.set_param("~typeselection", self.typeselection)
 
+        if model_sides is not None:
+            try:
+                self.model_sides = int(model_sides)
+                rospy.set_param("~model_sides", self.model_sides)
+            except Exception:
+                rospy.logwarn("[controller] model_sides not an int: %r", model_sides)
+
+        # Prefer explicit walls; otherwise derive from model_sides
         if expected_walls is not None:
-            # Normalize to list of strings
             try:
                 self.expected_walls = [str(w) for w in list(expected_walls)]
                 rospy.set_param("~expected_walls", self.expected_walls)
             except Exception:
                 rospy.logwarn("[controller] expected_walls in init is not a list; ignoring")
+        elif self.model_sides:
+            self.expected_walls = self._compute_walls(int(self.model_sides))
+            rospy.set_param("~expected_walls", self.expected_walls)
 
-        rospy.loginfo("[controller] Received init: excel=%r stl=%r type=%r walls=%r",
-                      self.excel_path, self.stl_path, self.typeselection, self.expected_walls)
+        # Forward CP JSON to separate topic if provided
+        if cp_json is not None:
+            self.cp_json = cp_json
+            try:
+                self.cp_pub.publish(String(data=json.dumps(self.cp_json, ensure_ascii=False)))
+                rospy.loginfo("[controller] Published CP JSON to %s (sheets=%d)",
+                              CP_TOPIC, len(self.cp_json or {}))
+            except Exception as e:
+                rospy.logerr("[controller] Failed to publish CP JSON: %s", e)
+
+        rospy.loginfo("[controller] Received init: excel=%r stl=%r type=%r walls=%r sides=%r",
+                      self.excel_path, self.stl_path, self.typeselection,
+                      self.expected_walls, self.model_sides)
 
         # Signal run() that we’re good to start
-        if self.excel_path:
+        if self.excel_path and self.expected_walls:
             self._init_event.set()
         else:
-            rospy.logwarn("[controller] Init received but no excel_path set; still waiting...")
+            rospy.logwarn("[controller] Init received but missing excel_path or expected_walls; still waiting...")
 
-    # ------------------------------------------------
+    def _ui_done_cb(self, msg):
+        wall = str(msg.data).strip()
+        rospy.loginfo_throttle(5, "[controller] Received UI done for %r", wall)
+        with self._lock:
+            self._last_done_wall = wall
+            self._done_event.set()
 
+    # ---------- publishes ----------
     def publish_file_message(self):
         if not self.excel_path:
             rospy.logwarn("[controller] No excel_path; skipping file publish")
@@ -126,7 +174,7 @@ class ControllerNode:
             try:
                 rospy.loginfo("[controller] Publishing STL (%s) + Excel (%s)", self.stl_path, self.excel_path)
                 self.talker.publish_file_message(self.stl_path, self.excel_path)
-                if self.latch_file_publish and self.latched_file_pub:
+                if self.latched_file_pub:
                     latched_msg = FileExtractionMessage()
                     with open(self.stl_path, "rb") as f:
                         latched_msg.stl_data = f.read()
@@ -143,16 +191,9 @@ class ControllerNode:
         msg.excelfile = str(self.excel_path)
         rospy.loginfo("[controller] Publishing Excel path via FileExtractionMessage: %s", msg.excelfile)
         self.talker.file_pub.publish(msg)
-        if self.latch_file_publish and self.latched_file_pub:
+        if self.latched_file_pub:
             self.latched_file_pub.publish(msg)
         rospy.sleep(self.delay_between_publishes)
-
-    def _ui_done_cb(self, msg):
-        wall = str(msg.data).strip()
-        rospy.loginfo_throttle(5, "[controller] Received UI done for %r", wall)
-        with self._lock:
-            self._last_done_wall = wall
-            self._done_event.set()
 
     def _publish_selection(self, wall):
         self.talker.publish_selection_message(
@@ -161,22 +202,24 @@ class ControllerNode:
         rospy.loginfo("[controller] Published selection for wall=%r", wall)
         rospy.sleep(self.delay_between_publishes)
 
+    # ---------- main ----------
     def run(self):
-        # === NEW: wait for initialization ===
+        # Wait for initialization
         if not self._init_event.is_set():
-            rospy.loginfo("[controller] Waiting for init on %s or param ~excel_path ...", CTRL_INIT)
+            rospy.loginfo("[controller] Waiting for init on %s or params (~excel_path + (expected_walls|model_sides)) ...", CTRL_INIT)
             while not rospy.is_shutdown() and not self._init_event.wait(timeout=0.2):
                 pass
         if rospy.is_shutdown():
             return
 
-        # Now initialized → publish file info first
+        # Publish Excel/STL first
         self.publish_file_message()
 
         if not self.expected_walls:
             rospy.loginfo("[controller] No expected_walls; nothing to do.")
             return
 
+        # Process each wall
         for wall in self.expected_walls:
             if rospy.is_shutdown():
                 return

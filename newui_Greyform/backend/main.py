@@ -43,6 +43,7 @@ def connect_robot(payload: ConnectPayload):
 
 
 app = FastAPI()
+app.include_router(controller_router) 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -752,28 +753,16 @@ def _load_workbook(path: Path) -> Dict[str, pd.DataFrame]:
     return pd.read_excel(path, sheet_name=None)
     
 def _find_excel_from_usb(usb_path: str) -> Path:
-    """
-    Accepts either:
-      - a directory path (e.g., 'E:\\' or '/media/usb')
-      - a direct file path (e.g., 'E:\\project\\master.xlsx')
-    Returns a Path to an existing Excel file.
-    Selection rule for directories: newest *.xlsx or *.xls by modified time.
-    """
     p = Path(usb_path).expanduser()
     if not p.exists():
         raise FileNotFoundError(f"Path not found: {p}")
-
     if p.is_file():
         if p.suffix.lower() in (".xlsx", ".xls"):
             return p
         raise ValueError(f"Not an Excel file: {p}")
-
-    # Directory: pick most recent Excel
     candidates = list(p.rglob("*.xlsx")) + list(p.rglob("*.xls"))
     if not candidates:
         raise FileNotFoundError(f"No Excel files found under: {p}")
-
-    # newest by mtime
     candidates.sort(key=lambda f: f.stat().st_mtime, reverse=True)
     return candidates[0]
 
@@ -782,23 +771,12 @@ def _load_workbook(path: Path) -> Dict[str, pd.DataFrame]:
     return pd.read_excel(path, sheet_name=None)
 
 
-def _build_cp_view(
-    book: Dict[str, pd.DataFrame],
-    mode: str = "columns",
-    key: str = "Type",
-) -> Dict[str, pd.DataFrame]:
-    """
-    CP filtering modes:
-      - 'columns': keep only columns with header containing 'CP'
-      - 'rows_by_col_equals': keep rows where df[key] == 'CP' (case-insensitive)
-      - 'rows_any_cell_contains': keep rows where any cell contains 'CP'
-    """
-    out: Dict[str, pd.DataFrame] = {}
+def _build_cp_view(book, mode="columns", key="Type"):
+    out = {}
     for name, df in book.items():
         if df.empty:
             out[name] = df.copy()
             continue
-
         if mode == "columns":
             cp_cols = [c for c in df.columns if "cp" in str(c).lower()]
             out[name] = df[cp_cols].copy() if cp_cols else pd.DataFrame(columns=[])
@@ -814,15 +792,16 @@ def _build_cp_view(
             raise ValueError(f"Unknown CP mode: {mode}")
     return out
 
-
 def _frames_to_json(book: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
     return {name: df.to_dict(orient="records") for name, df in book.items()}
+
     
 
 @app.post("/api/ui_initailzecamdriver")
 def ui_initailzecamdriver(
     usb_path: str = Form(...),
     ifc_path: Optional[str] = Form(None),
+    model_sides: int = Form(...),
     force: bool = Form(False),
     cp_mode: str = Form("columns"),
     cp_key: str = Form("Type"),
@@ -835,6 +814,7 @@ def ui_initailzecamdriver(
     - 'force' = True will reload even if already initialized
     - ifc_path accepted but optional (not used here; you can stash it in state if needed)
     """
+
     try:
         excel_file = _find_excel_from_usb(usb_path)
 
@@ -865,7 +845,6 @@ def ui_initailzecamdriver(
             app.state.ifc_path = ifc_path  # stash if you’ll use it later
 
             cp_json = _frames_to_json(book_cp)
-
         return {
             "status": "initialized",
             "excel": str(excel_file),
@@ -876,8 +855,6 @@ def ui_initailzecamdriver(
             # keep the JSON small here; build a dedicated endpoint to fetch all CP data
             "cp_preview": {k: v[:3] for k, v in cp_json.items()},
         }
-    app = FastAPI()
-    app.include_router(controller_router) 
     # Friendly error mapping
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))

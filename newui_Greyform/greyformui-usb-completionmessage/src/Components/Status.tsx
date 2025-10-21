@@ -286,6 +286,7 @@ function handleRobotConnect(ip: string) {
       fd.append("usb_path", usbPath);
       if (ifcPath) fd.append("ifc_path", ifcPath);
       fd.append("force", "true");         // FormData values must be strings
+      fd.append("model_sides", String(selectedModel));
       fd.append("cp_mode", "columns");    // or rows_by_col_equals / rows_any_cell_contains
       fd.append("cp_key", "Type");        // used only for rows_by_col_equals
       fd.append("include_cp", "true");    // <— tell backend to return CP JSON now
