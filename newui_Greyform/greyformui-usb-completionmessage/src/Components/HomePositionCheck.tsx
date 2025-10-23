@@ -8,11 +8,27 @@ interface Props {
   };
   verifyHomePosition: () => void | Promise<void>;
 }
+{/* for verifying home pos*/ }
 export async function verifyHomePosition() {
-  const res = await fetch("/verify-home");
-  const { home } = await res.json();
-  alert(home ? "Robot is at HOME ✅" : "Robot is NOT at HOME ❌");
+  const res = await fetch("http://localhost:8000/verify-home");
+  if (!res.ok) throw new Error("Backend not reachable");
+  return (await res.json()) as { home: boolean; reason: string; stamp: number };
 }
+
+export async function getFlexLink(subpath?: string, query?: Record<string, string>) {
+  const url = new URL("http://localhost:8000/flexpendant/link");
+  if (subpath) url.searchParams.set("subpath", subpath);
+  if (query) {
+    const qstr = Object.entries(query)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+      .join("&");
+    url.searchParams.set("q", qstr);
+  }
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error("Cannot get link");
+  return (await res.json()) as { url: string; reachable: boolean };
+}
+
 const HomePositionCheck: React.FC<Props> = ({
   ABBHOMEImage,
   v,
