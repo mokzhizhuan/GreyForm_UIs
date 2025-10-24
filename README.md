@@ -40,7 +40,7 @@ https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Colcon-Tutori
 https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html<br>
 
 ##
-launch UI(will setup in the subcommand later): <br>
+Launch the UI(will setup in the subcommand later): <br>
 Terminal 1: <br> <br>
 colocon build <br>
 source devel/setup.bash <br>
