@@ -42,7 +42,7 @@ https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-A-Wo
 ##
 Launch the UI(will setup in the subcommand later): <br>
 Terminal 1: <br> <br>
-colocon build <br>
+catkin_make <br>
 source devel/setup.bash <br>
 python3 launcher.py(this program will launch the fastapi uvicorn)(important) <br>
 Terminal 2: <br> <br>
