@@ -1,8 +1,10 @@
 import pandas as pd
+import compute_wall_center as wc
 
 
 def getstage2andstage3(
     all_objs,
+    args,
     visited,
     walls_bss50,
     internal_x_width,
@@ -30,11 +32,17 @@ def getstage2andstage3(
     y_iter = iter(internal_y_width) if six else None
     curr_xw = next(x_iter, 0) if six else None
     curr_yw = next(y_iter, 0) if six else None
+    wallcenterpoints = [] 
+    centerrows = [] 
     for i, wall_dict in enumerate(visited):
+        posz_cp = 1000
         name, w = _first_kv(wall_dict)
         axis = w["axis"]
         width = 0
         if six:
+            wallcenterpoints = wc.compute_wall_centerpoints_six(
+                internal_x_width, internal_y_width, visited, posz_cp
+            )
             width = curr_xw if axis == "X" else curr_yw
             countersxy += 1
             if countersxy == 2:
@@ -57,7 +65,6 @@ def getstage2andstage3(
             "Height": w["area"][2],
         }
         stage2_rows.append(row)
-        posz_cp = 1000
         if axis == "X":
             dist_needed = -(w["y"] + origin_y)
             y_wallsurface = (w["y"] + origin_y) + dist_needed
@@ -67,6 +74,17 @@ def getstage2andstage3(
                 "GX": (internalxmax_width / 2)+ thickness,
                 "GY": y_wallsurface,
                 "GZ": posz_cp,
+                "Wall Number": i + 1,
+                "Shape Type" : "",
+                "Width": width,
+                "Height": w["area"][2],
+            })
+            centerrows.append({
+                "Marking Type": "CenterWallPoint",
+                "Name": f"WallCP{i + 1}({name})",
+                "X": wallcenterpoints[i]["GX"]/1000,
+                "Y": wallcenterpoints[i]["GY"]/1000,
+                "Z": wallcenterpoints[i]["GZ"]/1000,
                 "Wall Number": i + 1,
                 "Shape Type" : "",
                 "Width": width,
@@ -92,6 +110,17 @@ def getstage2andstage3(
                 "Wall Number": i + 1,
                 "Shape Type" : "",
                 "Width": width, 
+                "Height": w["area"][2],
+            })
+            centerrows.append({
+                "Marking Type": "CenterWallPoint",
+                "Name": f"WallCP{i + 1}({name})",
+                "X": wallcenterpoints[i]["GX"]/1000,
+                "Y": wallcenterpoints[i]["GY"]/1000,
+                "Z": wallcenterpoints[i]["GZ"]/1000,
+                "Wall Number": i + 1,
+                "Shape Type" : "",
+                "Width": width,
                 "Height": w["area"][2],
             })
             centerpoint_rows.append({
@@ -144,7 +173,7 @@ def getstage2andstage3(
         "Width": internalxmax_width,
         "Height": internalymax_width,
     })
-    checklist_file = pd.ExcelFile("Greyform TERRAHL2(JMB)-T1a BOM Checklist 20231211.xlsx")
+    checklist_file = pd.ExcelFile(args.excel_checklist)
     df_checklist = checklist_file.parse("Sheet1")
     item_names = df_checklist.iloc[1:, 3].dropna().unique().tolist()
     filtered_item_names = [n for n in item_names
@@ -156,4 +185,4 @@ def getstage2andstage3(
         for o in all_objs
         if any(f in o["name"] for f in filtered_item_names)
     ]
-    return stage2_rows, centerpoint_rows, stage3_objects, df_checklist
+    return stage2_rows, centerpoint_rows, stage3_objects, df_checklist , centerrows

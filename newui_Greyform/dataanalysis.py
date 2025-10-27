@@ -10,6 +10,7 @@ from ifcopenshell.util.placement import get_local_placement
 import robot_pos as setuprobot
 import annotation as modellines
 import material as mats
+import wall_center as wc
 import ifcopenshell , re , heapq
 
 class data_draft(object):
@@ -140,9 +141,10 @@ class data_draft(object):
                 walls_facing_minus_y, internal_y_width, count_plus_y, count_minus_y
             )
         thickness = walls_bss50[0]["area"][1] + walls_bss20[1]["area"][1]
-        stage2_rows, centerpoint_rows, stage3_objects, df_checklist = (
+        stage2_rows, centerpoint_rows, stage3_objects, df_checklist , wall_center = (
             stage_val.getstage2andstage3(
                 all_objs,
+                args,
                 visited,
                 walls_bss50,
                 internal_x_width,
@@ -160,6 +162,7 @@ class data_draft(object):
                 thickness
             )
         )
+        wc.write_json(wall_center, "wall_centerpoints.json")
         glass_walls = [
             obj
             for obj in all_objs
@@ -339,3 +342,4 @@ class data_draft(object):
 
 if __name__ == "__main__":
     main()
+

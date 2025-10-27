@@ -11,6 +11,8 @@ import mainwindowbuttoninteraction as mainwindowbuttonUIinteraction
 from src.talker_listener.talker_listener import talker_node as RosPublisher
 import argsfiles as fileimport
 import exceldatavtk as dataplacement
+import import_joint as jointvalues
+from typing import Dict, List, TypedDict, Literal
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -24,6 +26,10 @@ class Ui_MainWindow(QMainWindow):
         self.stl_file = self.args.ifc_file
         self.renderer = vtk.vtkRenderer()
         self.ros_node = ros_node
+        poses_path = ("check_poses.json")
+        home_only = jointvalues.load_home_only(poses_path)
+        home_only = jointvalues.load_home_only(poses_path)
+        jointvalues.print_home_sections(home_only)
         self.setupUi()
 
     # setup UI

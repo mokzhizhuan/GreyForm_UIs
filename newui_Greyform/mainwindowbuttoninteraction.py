@@ -170,7 +170,7 @@ class mainwindowbuttonUI(object):
         icon_left = "left.png"
         icon_right = "right.png"
         text_left = "The robot is not correctly centered. Please move the robot to the left."
-        text_right = "The robot is not correctly centered. Please move the robot to the left."
+        text_right = "The robot is not correctly centered. Please move the robot to the right."
         text = "The robot is now correctly centered and is ready to mark the wall."
         html = f'<div style="text-align:center;"><img src="{icon}" width="50" height="50" style="display:block; margin:0 auto;">{text}</div>'
         self.warninglabel.setTextFormat(Qt.RichText)
