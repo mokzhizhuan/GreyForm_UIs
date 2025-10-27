@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import ModelSelection from "./ModelSelection";
-import RobotIPInput from "./RobotIPInput";
 import ABBHOMEImage from '../assets/ABB Robot placeholder image.jpg';
 import LevellerImage from '../assets/Leveller.jpeg';
 import RemoteControlImage from '../assets/Remote Control.jpeg';
 import HomePositionCheck from "./HomePositionCheck";
 import PushIntoPBUAndLevel from "./PushIntoPBUAndLevel";
 import pushRobotIntoPBUImage from '../assets/push_robot_into_PBU.png';
+import RobotIPDetection from "./RobotIPDetection";
 type CPBook = Record<string, Record<string, any>[]>;
 
 const svg = `
@@ -49,7 +49,7 @@ const views = {
   reading:  { title: "Reading USB drive...", message: "Please wait while we read the contents of the USB drive.", variant: "info",    primaryText: "Cancel",       showSpinner: true },
   success:  { title: "USB drive detected",    message: "Select the correct model, then click Check selection.",   variant: "success", primaryText: "Check selection", showSpinner: false },
   invalid_model: { title: "Wrong model type", message: "Please change the model and Check selection again.",       variant: "error",   primaryText: "Check selection", showSpinner: false },
-  checked_ok: { title: "Selection verified",  message: "Model matches the IFC. Please enter the Robot IP Address.",            variant: "success", primaryText: "Launch UI", showSpinner: false },
+  checked_ok: { title: "Selection verified",  message: "Model matches the IFC. Please wait while we detect the Robot IP Address.",            variant: "success", primaryText: "Launch UI", showSpinner: false },
   error:    { title: "Error reading USB drive", message: "Please plug in your drive",                              variant: "error",   primaryText: "Try Again", showSpinner: false },
   launching:{ title: "Loading…", message: "", variant: "info", primaryText: "Loading…", showSpinner: true },
   shutdown: { title: "Please power off the machine", message: "The operation is completed successfully",           variant: "neutral", primaryText: "", showSpinner: false },
@@ -58,7 +58,7 @@ const views = {
 } as const;
 
 export default function Status() {
-  const [state, setState] = useState<UsbState>("robot_connected");
+  const [state, setState] = useState<UsbState>("waiting");
   const v = views[state] ?? views.shutdown;
 
   const API = useMemo(() => {
@@ -98,8 +98,33 @@ function handleRobotConnect(ip: string) {
     setState("robot_connected");  // Main state updated
     setResponseMessage(`✅ Connected to robot at ${ip}`);
     setErrorDetails("");  // Clear errors
-  }
+}
 
+// This function is used to connect to the robot via the IP address
+const detectRobotIP = async () => {
+  setResponseMessage("🔍 Connecting to robot...");
+  setErrorDetails("");
+  try {
+    // Call login endpoint (assume it returns status and IP)
+    const loginResp = await axios.post(`${API}/api/robot_login`, {
+      proto: "https://",
+      host: "192.168.1.200",
+    }, { timeout: 5000 });
+
+    if (loginResp.data?.ok) {
+      const ip = loginResp.data?.ip ?? "192.168.1.200";
+      // Optionally: Call get_request (if you need to probe further)
+      // const getResp = await axios.post(`${API}/api/robot_get_request`, { uri: "/status", proto: "https://", host: ip }, { timeout: 5000 });
+      handleRobotConnect(ip); // switches to "robot_connected"
+    } else {
+      setResponseMessage("❌ Failed to connect to robot.");
+      setErrorDetails(loginResp.data?.error || "Unknown error");
+    }
+  } catch (err: any) {
+    setResponseMessage("❌ Error connecting to robot.");
+    setErrorDetails(err?.message || String(err));
+  }
+};
 
   // Debug log
   useEffect(() => {
@@ -190,7 +215,7 @@ function handleRobotConnect(ip: string) {
       if (res.data?.ok) {
         setIsValidated(true);
         setState("checked_ok");
-        setResponseMessage(`✅ Selection is valid${res.data.model ? ` (model: ${res.data.model})` : ""}. You can now Launch UI.`);
+        setResponseMessage(`✅ Selection is valid${res.data.model ? ` (model: ${res.data.model})` : ""}. Detecting the Robot IP Address...`);
         setErrorDetails("");
       } else {
         throw new Error("Backend did not confirm selection");
@@ -272,7 +297,7 @@ function handleRobotConnect(ip: string) {
     const id = setInterval(check, pollMs);
     return () => { cancelled = true; clearInterval(id); };
   }, [shouldPoll, uiPid, API]);
-  const canShowPicker = state === "success" || state === "invalid_model" || state === "checked_ok";
+  const canShowPicker = state === "success" || state === "invalid_model";
   const canLaunch = isValidated && !!usbPath && !!ifcPath && state === "checked_ok";
   const [progressPct, setProgressPct] = useState<number | null>(null);
   const [cpJson, setCpJson] = useState<Record<string, any[]> | null>(null);
@@ -345,17 +370,18 @@ const openExcelViewOnly = async () => {
     <div className="hero min-h-screen relative bg-cover bg-center" style={{ backgroundImage: `url("${bgDataUri}")` }}>
       <div className={`hero-overlay ${state === "reading" || state === "launching" ? "bg-neutral/60" : "bg-neutral/40"}`} />
       <div className="hero-content text-neutral-content text-center relative">
-        <div className="max-w-2xl space-y-5">
+        <div className="max-w-3xl space-y-5">
           <h1 className="text-4xl md:text-5xl font-bold">{v.title}</h1>
-          {state === "shutdown" ? (
-            <p className="opacity-90">
-              The operation is completed successfully.<br />
-              {progressPct !== null ? <>Completed: <span className="font-semibold">{progressPct}%</span></> : "Checking completion…"}
-            </p>
-          ) : (
-            <p className="opacity-90">{v.message}</p>
-          )}
-
+            {(state === "waiting" || state === "error") && (
+              <div>
+                <button
+                  className={`btn btn-${v.variant} md:btn-md lg:btn-lg`}
+                  onClick={detectUsb}
+                >
+                  {v.primaryText}
+                </button>
+              </div>
+            )}
           {(responseMessage || errorDetails) && (
             <div className="mt-2">
               <p className="text-sm opacity-90" aria-live="polite">
@@ -394,17 +420,7 @@ const openExcelViewOnly = async () => {
                     "Check selection"
                   )}
                 </button>
-
-                <button className="btn btn-primary" onClick={launchUI} disabled={isChecking || !canLaunch}>
-                  Launch UI
-                </button>
               </div>
-
-              {!isChecking && !canLaunch && (
-                <p className="text-xs opacity-80 mt-1">
-                  Select a model and click <span className="font-semibold">Check selection</span> to enable Launch UI.
-                </p>
-              )}
             </>
           )}
 
@@ -417,9 +433,9 @@ const openExcelViewOnly = async () => {
             </div>
           )}
 
-          {/*{state === "checked_ok" && (
-            <RobotIPInput onConnect={handleRobotConnect} />
-          )}*/}
+          {state === "checked_ok" && (
+            <RobotIPDetection onDetect={detectRobotIP} />
+          )}
 
           {state === "robot_connected" && (
             <HomePositionCheck
@@ -430,27 +446,31 @@ const openExcelViewOnly = async () => {
           )}
 
           {state === "home_verified" && (
-            <PushIntoPBUAndLevel
-              pushRobotIntoPBUImage={pushRobotIntoPBUImage}
-              LevellerImage={LevellerImage}
-              RemoteControlImage={RemoteControlImage}
-              v={v}
-            />
-          )}
-          <button className="btn btn-outline" onClick={initAndGetCP} disabled={!usbPath || state==="launching"}>
-            Init & Fetch CP JSON
-          </button>
-          {!canShowPicker && state !== "shutdown" && state !== "robot_connected" && (
-            <div>
+            <>
+              <PushIntoPBUAndLevel
+                pushRobotIntoPBUImage={pushRobotIntoPBUImage}
+                LevellerImage={LevellerImage}
+                RemoteControlImage={RemoteControlImage}
+                v={v}
+              />
               <button
                 className={`btn btn-${v.variant} md:btn-md lg:btn-lg`}
-                onClick={detectUsb}
-                disabled={state === "launching"}
+                onClick={launchUI}
               >
                 {v.primaryText}
               </button>
-            </div>
+            </>
           )}
+
+          {state === "shutdown" ? (
+            <p className="opacity-90">
+              The operation is completed successfully.<br />
+              {progressPct !== null ? <>Completed: <span className="font-semibold">{progressPct}%</span></> : "Checking completion…"}
+            </p>
+          ) : (
+            <p className="opacity-90">{v.message}</p>
+          )}
+
         </div>
       </div>
     </div>
