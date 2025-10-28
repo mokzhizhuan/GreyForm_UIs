@@ -18,30 +18,6 @@ from fastapi import FastAPI, Form, HTTPException, Query, Request , HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from api_controller_init import router as controller_router 
 
-"""class ConnectPayload(BaseModel):
-    ip: IPvAnyAddress = Field(..., description="Robot IPv4/IPv6 address")
-    # Optional: add creds if you want to probe ABB Web Services
-    username: str | None = None
-    password: str | None = None
-    # Optional: which port to probe for a basic connectivity check
-    port: int = 80
-    timeout_sec: float = 1.5
-
-class ConnectResponse(BaseModel):
-    ip: str
-    reachable: bool
-    detail: str
-
-@app.post("/api/robot/connect", response_model=ConnectResponse)
-def connect_robot(payload: ConnectPayload):
-    # Basic TCP reachability probe (non-privileged; no ICMP required)
-    try:
-        with socket.create_connection((str(payload.ip), payload.port), timeout=payload.timeout_sec):
-            return ConnectResponse(ip=str(payload.ip), reachable=True, detail=f"TCP {payload.port} open")
-    except OSError as e:
-        raise HTTPException(status_code=502, detail=f"Cannot reach {payload.ip}:{payload.port} - {e}")"""
-
-
 app = FastAPI()
 app.include_router(controller_router) 
 app.add_middleware(
@@ -679,30 +655,24 @@ async def launch_ui(
         # fname = f"PBU_TERRAHL2_{datetime.now():%Y%m%d-%H%M}.xlsx"
         fname = "PBU_TERRAHL2.xlsx"
         excel_output = (results_dir / fname).resolve()
-
         # security: must still be under the USB root
         try:
             excel_output.relative_to(base)
         except ValueError:
             raise HTTPException(status_code=400, detail="Output path escapes usb_path")
-
         # basic writability check
         if not os.access(results_dir, os.W_OK):
             raise HTTPException(status_code=500, detail=f"USB path not writable: {results_dir}")
-
         main_py = (PROJECT_DIR / "mainwindow.py").resolve()
         ui_file = (PROJECT_DIR / "UI_Design" / "greyform_sweefeng.ui").resolve()
         excel_checklist = (PROJECT_DIR / "Greyform TERRAHL2(JMB)-T1a BOM Checklist 20231211.xlsx").resolve()
-
         if not main_py.exists():
             raise HTTPException(500, detail=f"mainwindow.py not found: {main_py}")
         if not ui_file.exists():
             raise HTTPException(500, detail=f"UI .ui file not found: {ui_file}")
-
         env = os.environ.copy()
         env.setdefault("DISPLAY", ":0")
         env.setdefault("QT_QPA_PLATFORM", "xcb")
-
         # pass the USB output path to your app
         args = [
             "python3",
@@ -712,7 +682,6 @@ async def launch_ui(
             str(excel_checklist),
             str(excel_output),
         ]
-        print(excel_output)
         LOGFILE.parent.mkdir(parents=True, exist_ok=True)
         log_f = open(LOGFILE, "ab", buffering=0)
 
@@ -725,7 +694,6 @@ async def launch_ui(
                     return {"status": "running", "message": f"UI already running (pid {saved})", "pid": saved}
             except Exception:
                 pass
-
         proc = subprocess.Popen(
             args,
             cwd=str(PROJECT_DIR),
@@ -769,125 +737,6 @@ def _find_excel_from_usb(usb_path: str) -> Path:
 def _load_workbook(path: Path) -> Dict[str, pd.DataFrame]:
     # Sheet dict: {sheet_name: DataFrame}
     return pd.read_excel(path, sheet_name=None)
-
-
-def _build_cp_view(book, mode="columns", key="Type"):
-    out = {}
-    for name, df in book.items():
-        if df.empty:
-            out[name] = df.copy()
-            continue
-        if mode == "columns":
-            cp_cols = [c for c in df.columns if "cp" in str(c).lower()]
-            out[name] = df[cp_cols].copy() if cp_cols else pd.DataFrame(columns=[])
-        elif mode == "rows_by_col_equals":
-            if key in df.columns:
-                out[name] = df[df[key].astype(str).str.fullmatch(r"(?i)CP")].copy()
-            else:
-                out[name] = df.iloc[0:0].copy()
-        elif mode == "rows_any_cell_contains":
-            mask = df.apply(lambda col: col.astype(str).str.contains(r"\bCP\b", flags=re.I, na=False))
-            out[name] = df[mask.any(axis=1)].copy()
-        else:
-            raise ValueError(f"Unknown CP mode: {mode}")
-    return out
-
-def _frames_to_json(book: Dict[str, pd.DataFrame]) -> Dict[str, Any]:
-    return {name: df.to_dict(orient="records") for name, df in book.items()}
-
-def frames_to_json_safe(book):
-    out = {}
-    for name, df in (book or {}).items():
-        if df is None:
-            continue
-        df2 = df.copy()
-        df2 = df2.where(df2.notna(), None)  # NaN/NaT -> None
-        for col in df2.select_dtypes(include=["datetime64[ns]", "datetime64[ns, tz]"]).columns:
-            df2[col] = df2[col].apply(lambda x: x.isoformat() if x else None)
-        out[name] = df2.to_dict(orient="records")
-    return out
-
-@app.post("/api/ui_initailzecamdriver")
-def ui_initailzecamdriver(
-    usb_path: str = Form(...),
-    ifc_path: Optional[str] = Form(None),
-    model_sides: int = Form(...),     # <-- REQUIRED here
-    force: bool = Form(False),
-    cp_mode: str = Form("columns"),
-    cp_key: str = Form("Type"),
-):
-    try:
-        excel_file = _find_excel_from_usb(usb_path)
-
-        with _state_lock:
-            already_loaded = getattr(app.state, "excel_source", None) == str(excel_file)
-            if already_loaded and not force:
-                cp_json = _frames_to_json(getattr(app.state, "book_cp", {}))
-                return {
-                    "status": "already_initialized",
-                    "excel": str(excel_file),
-                    "sheets": list(getattr(app.state, "book_full", {}).keys()),
-                    "cp_mode": getattr(app.state, "cp_mode", "columns"),
-                    "cp_key": getattr(app.state, "cp_key", "Type"),
-                    "cp_preview": {k: v[:3] for k, v in cp_json.items()},
-                }
-
-            # 1) Load workbook and CP view
-            book_full = _load_workbook(excel_file)
-            book_cp   = _build_cp_view(book_full, mode=cp_mode, key=cp_key)
-
-            # 2) Cache
-            app.state.book_full = book_full
-            app.state.book_cp = book_cp
-            app.state.excel_source = str(excel_file)
-            app.state.cp_mode = cp_mode
-            app.state.cp_key = cp_key
-            app.state.ifc_path = ifc_path
-            app.state.model_sides = int(model_sides)
-
-            # 3) Convert CP frames to JSON-safe
-            cp_json = _frames_to_json(book_cp)  # or frames_to_json_safe(book_cp)
-
-        # 4) Derive expected walls strictly from model_sides (no floor)
-        expected_walls = [str(i) for i in range(1, int(model_sides) + 1)]
-
-        # 5) Publish a controller init payload including model_sides and cp_json
-        payload = {
-            "excel_path": str(excel_file),
-            "model_sides": int(model_sides),
-            "expected_walls": expected_walls,     # optional; controller can derive if omitted
-            "stl_path": None,                     # fill if you have one
-            "typeselection": None,                # fill if you have one
-            "cp_json": cp_json,                   # <<—— CP dataframe as JSON
-        }
-        try:
-            _ensure_ctrl_pub()
-            _ctrl_pub.publish(RosString(data=json.dumps(payload, ensure_ascii=False)))
-            published = True
-        except Exception as e:
-            published = False
-
-        # 6) Return a lean response (keep full CP on separate GET if you want)
-        return {
-            "status": "initialized",
-            "excel": str(excel_file),
-            "sheet_count": len(book_full),
-            "sheets": list(book_full.keys()),
-            "cp_mode": cp_mode,
-            "cp_key": cp_key,
-            "model_sides": int(model_sides),
-            "expected_walls": expected_walls,
-            "published_to_controller": published,
-            "cp_preview": {k: v[:3] for k, v in cp_json.items()},
-        }
-
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Initialization failed: {e}")
-
     
 
 @app.post("/api/ui_closed")
@@ -929,3 +778,4 @@ def reset_lock():
         return {"ok": True, "message": "Lock cleared."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to clear lock: {e}")
+
