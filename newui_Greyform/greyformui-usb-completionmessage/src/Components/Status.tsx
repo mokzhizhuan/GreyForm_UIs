@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import ModelSelection from "./ModelSelection";
-import RobotIPInput from "./RobotIPInput";
 import ABBHOMEImage from '../assets/ABB Robot placeholder image.jpg';
 import LevellerImage from '../assets/Leveller.jpeg';
 import RemoteControlImage from '../assets/Remote Control.jpeg';
@@ -69,7 +68,7 @@ export default function Status() {
   const [usbPath, setUsbPath] = useState<string>("");
   const [uiPid, setUiPid] = useState<number | null>(null);
   const [shouldPoll, setShouldPoll] = useState(false);
-
+  const excel_checklist = "Greyform TERRAHL2(JMB)-T1a BOM Checklist 20231211.xlsx"
   const [responseMessage, setResponseMessage] = useState("Ready");
   const [errorDetails, setErrorDetails] = useState("");
   const prevUsbRef = useRef<string>("");
@@ -184,6 +183,7 @@ function handleRobotConnect(ip: string) {
       fd.append("usb_path", usbPath);
       fd.append("ifc_path", path);
       fd.append("model_sides", String(selectedModel));
+      fd.append("excel_checklist", excel_checklist)
 
       const res = await axios.post(`${API}/api/checkifc`, fd, { timeout: 0 });
 

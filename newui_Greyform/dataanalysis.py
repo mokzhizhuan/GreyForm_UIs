@@ -1,26 +1,34 @@
 import pandas as pd
 import ifcopenshell
+from pyparsing import Dict, Optional
 import methodifcfindings as ifc_findings
 import loadtmp6sides as tmps6sidesPBU
 import fitting_width as fitting
 import gettmps as tmps
 import getstagesvar as stage_val
 import fitting_pointbox as pointbox
+import getmodelname as modelnames
 from ifcopenshell.util.placement import get_local_placement
+import compute_wall_center as wc
 import robot_pos as setuprobot
 import annotation as modellines
 import material as mats
-import wall_center as wc
-import ifcopenshell , re , heapq
+import ifcopenshell
+import re
+import heapq
+
 
 class data_draft(object):
-    def __init__(self, ifc_file, model_sides, usb_path):
+    def __init__(self, ifc_file, model_sides, usb_path, excel_checklist):
         self.ifc_file = ifc_file
         self.model_sides = model_sides
         self.usb_path = usb_path
+        self.excel_checklist = excel_checklist
 
     def analysis(self):
         ifc_file = ifcopenshell.open(self.ifc_file)
+        modelattr = modelnames.extract_ifcproject(self.ifc_file)
+        modelname = modelattr.get("LongName")
         # get the data  wall , opening , floor
         all_walls = ifc_findings.process_elements(
             ifc_file.by_type("IfcWall"), "basic wall:bss"
@@ -116,7 +124,9 @@ class data_draft(object):
             if self.model_sides != len(visited):
                 return None
         if len(visited) == 6:
-            top_twofloor_z = heapq.nlargest(2, (f["z"] for f in other_floor if f["z"] < 0))
+            top_twofloor_z = heapq.nlargest(
+                2, (f["z"] for f in other_floor if f["z"] < 0)
+            )
         walls_facing_plus_y = [
             list(w.values())[0]
             for w in visited
@@ -127,7 +137,9 @@ class data_draft(object):
             for w in visited
             if list(w.values())[0]["facingaxis"] == "-Y"
         ]
-        count_plus_y, count_minus_y = len(walls_facing_plus_y), len(walls_facing_minus_y)
+        count_plus_y, count_minus_y = len(walls_facing_plus_y), len(
+            walls_facing_minus_y
+        )
         if count_minus_y == 2:
             ifc_findings.swap_last_two(internal_x_width)
             internal_y_width.sort()
@@ -138,12 +150,11 @@ class data_draft(object):
             internal_y_width = fitting.compare_width_y(
                 walls_facing_minus_y, internal_y_width, count_plus_y, count_minus_y
             )
-    thickness = walls_bss50[0]["area"][1] + walls_bss20[1]["area"][1]
         thickness = walls_bss50[0]["area"][1] + walls_bss20[1]["area"][1]
         stage2_rows, centerpoint_rows, stage3_objects, df_checklist = (
             stage_val.getstage2andstage3(
                 all_objs,
-                args,
+                self.excel_checklist,
                 visited,
                 origin_x,
                 origin_y,
@@ -162,7 +173,9 @@ class data_draft(object):
             obj
             for obj in all_objs
             if "glass" in obj["name"].lower()
-            and not (obj.get("x", 0) == 0 and obj.get("y", 0) == 0 and obj.get("z", 0) == 0)
+            and not (
+                obj.get("x", 0) == 0 and obj.get("y", 0) == 0 and obj.get("z", 0) == 0
+            )
         ]
         df_checklist.columns = df_checklist.iloc[0]
         axes_by_wallnum: Dict[int, Optional[str]] = {}
@@ -233,12 +246,16 @@ class data_draft(object):
         )
         model_lines_walls.sort(
             key=lambda x: (
-                int(x["Wall Number"]) if str(x["Wall Number"]).isdigit() else float("inf")
+                int(x["Wall Number"])
+                if str(x["Wall Number"]).isdigit()
+                else float("inf")
             )
         )
         fitting_stage3.sort(
             key=lambda x: (
-                int(x["Wall Number"]) if str(x["Wall Number"]).isdigit() else float("inf")
+                int(x["Wall Number"])
+                if str(x["Wall Number"]).isdigit()
+                else float("inf")
             )
         )
         if len(visited) == 4:
@@ -283,7 +300,9 @@ class data_draft(object):
         for i, wall_dict in enumerate(visited):
             raw_name = str(wall_dict.get("name", ""))  # or wall_dict.get("Name", "")
             include_name = "basic wall:bss.50" in raw_name.lower()  # case-insensitive
-            name_field = f"WallCP{i + 1}({raw_name})" if include_name else f"WallCP{i + 1}"
+            name_field = (
+                f"WallCP{i + 1}({raw_name})" if include_name else f"WallCP{i + 1}"
+            )
             centerrows.append(
                 {
                     "Marking Type": "CenterWallPoint",
@@ -333,32 +352,55 @@ class data_draft(object):
         df_fitting = setuprobot.insert_L_cols_between_GZ_and_width(df_fitting)
         df_combined[["Position X", "Position Y", "Position Z"]] = df_combined.apply(
             lambda row: setuprobot.setuprobotposition(
-                row, stage2_rows, visited, internalxmax_width, internalymax_width, thickness , origin_x, origin_y
+                row,
+                stage2_rows,
+                visited,
+                internalxmax_width,
+                internalymax_width,
+                thickness,
+                origin_x,
+                origin_y,
             ),
             axis=1,
         )
         df_fitting[["Position X", "Position Y", "Position Z"]] = df_fitting.apply(
             lambda row: setuprobot.setuprobotposition_fitting(
-                row, stage2_rows, visited, internalxmax_width, internalymax_width, thickness , origin_x, origin_y
-            ),  
+                row,
+                stage2_rows,
+                visited,
+                internalxmax_width,
+                internalymax_width,
+                thickness,
+                origin_x,
+                origin_y,
+            ),
             axis=1,
         )
-        df_combined = df_combined.dropna(subset=["Position X", "Position Y", "Position Z"])
-        df_fitting = df_fitting.dropna(subset=["Position X", "Position Y", "Position Z"])
-        df_combined = df_combined.drop(columns=["GX", "GY", "GZ", "Type"], errors="ignore")
+        df_combined = df_combined.dropna(
+            subset=["Position X", "Position Y", "Position Z"]
+        )
+        df_fitting = df_fitting.dropna(
+            subset=["Position X", "Position Y", "Position Z"]
+        )
+        df_combined = df_combined.drop(
+            columns=["GX", "GY", "GZ", "Type"], errors="ignore"
+        )
         df_fitting = df_fitting.drop(columns=["GX", "GY", "GZ"], errors="ignore")
         for col in ["Orientation", "Diameter"]:
             if col not in df_combined.columns:
-                df_combined[col] = ""   # create the column if missing
+                df_combined[col] = ""  # create the column if missing
             else:
                 df_combined[col] = df_combined[col].fillna("").astype(str)
         df_combined_all = pd.concat([df_combined, df_fitting], ignore_index=True)
-        with pd.ExcelWriter(f"{self.usb_path}/{modelname}_out.xlsx", engine="openpyxl") as writer:
+        with pd.ExcelWriter(
+            f"{self.usb_path}/{modelname}_out.xlsx", engine="openpyxl"
+        ) as writer:
             for df, sheet in [(df_combined, "Stage 2"), (df_fitting, "Stage 3")]:
                 df.reset_index(drop=True, inplace=True)
                 df.index += 1
                 df.to_excel(writer, index=True, sheet_name=sheet)
         return df_combined_all
+
 
 if __name__ == "__main__":
     main()

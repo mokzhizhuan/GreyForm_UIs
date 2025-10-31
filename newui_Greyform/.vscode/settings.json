@@ -1,4 +1,3 @@
 {
-    "cmake.sourceDirectory": "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces",
-    "github.copilot.chat.codeGeneration.useInstructionFiles": true
+    "cmake.sourceDirectory": "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces"
 }
