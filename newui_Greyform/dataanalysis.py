@@ -113,10 +113,10 @@ class data_draft(object):
                 visited.append({next_w["name"]: next_w})
                 unvisited = [w for w in unvisited if w["name"] != next_w["name"]]
                 curr = next_w
-        if self.model_sides != len(visited):
-            return None
+            if self.model_sides != len(visited):
+                return None
         if len(visited) == 6:
-            top_twofloor_z = heapq.nlargest(2, (f["z"] for f in floors))
+            top_twofloor_z = heapq.nlargest(2, (f["z"] for f in other_floor if f["z"] < 0))
         walls_facing_plus_y = [
             list(w.values())[0]
             for w in visited
@@ -127,9 +127,7 @@ class data_draft(object):
             for w in visited
             if list(w.values())[0]["facingaxis"] == "-Y"
         ]
-        count_plus_y, count_minus_y = len(walls_facing_plus_y), len(
-            walls_facing_minus_y
-        )
+        count_plus_y, count_minus_y = len(walls_facing_plus_y), len(walls_facing_minus_y)
         if count_minus_y == 2:
             ifc_findings.swap_last_two(internal_x_width)
             internal_y_width.sort()
@@ -140,15 +138,13 @@ class data_draft(object):
             internal_y_width = fitting.compare_width_y(
                 walls_facing_minus_y, internal_y_width, count_plus_y, count_minus_y
             )
+    thickness = walls_bss50[0]["area"][1] + walls_bss20[1]["area"][1]
         thickness = walls_bss50[0]["area"][1] + walls_bss20[1]["area"][1]
-        stage2_rows, centerpoint_rows, stage3_objects, df_checklist , wall_center = (
+        stage2_rows, centerpoint_rows, stage3_objects, df_checklist = (
             stage_val.getstage2andstage3(
                 all_objs,
                 args,
                 visited,
-                walls_bss50,
-                internal_x_width,
-                internal_y_width,
                 origin_x,
                 origin_y,
                 internalx_width,
@@ -159,27 +155,35 @@ class data_draft(object):
                 other_floor,
                 top_twofloor_z,
                 floor_offset,
-                thickness
+                thickness,
             )
         )
-        wc.write_json(wall_center, "wall_centerpoints.json")
         glass_walls = [
             obj
             for obj in all_objs
             if "glass" in obj["name"].lower()
-            and not (
-                obj.get("x", 0) == 0 and obj.get("y", 0) == 0 and obj.get("z", 0) == 0
-            )
+            and not (obj.get("x", 0) == 0 and obj.get("y", 0) == 0 and obj.get("z", 0) == 0)
         ]
         df_checklist.columns = df_checklist.iloc[0]
+        axes_by_wallnum: Dict[int, Optional[str]] = {}
+        for i, wall_dict in enumerate(visited):
+            w = (
+                next(iter(wall_dict.values()))
+                if isinstance(wall_dict, dict) and wall_dict
+                else {}
+            )
+            axis = w.get("axis")  # <-- only axis
+            axes_by_wallnum[i + 1] = axis
         wall_info = [
             {
-                "Wall Number": row["Wall Number"],
-                "Width": row["Width"],
-                "Height": row["Height"],
+                "Wall Number": int(row["Wall Number"]),
+                "Width": row.get("Width"),
+                "Height": row.get("Height"),
+                "Axis": axes_by_wallnum.get(int(row["Wall Number"]), None),
             }
             for row in stage2_rows
-            if isinstance(row["Wall Number"], int)
+            if isinstance(row.get("Wall Number"), int)
+            and str(row.get("Marking Type", "")).strip().lower() == "wall"
         ]
         fitting_stage3 = fitting.assign_nearest_fitting(
             visited,
@@ -229,16 +233,12 @@ class data_draft(object):
         )
         model_lines_walls.sort(
             key=lambda x: (
-                int(x["Wall Number"])
-                if str(x["Wall Number"]).isdigit()
-                else float("inf")
+                int(x["Wall Number"]) if str(x["Wall Number"]).isdigit() else float("inf")
             )
         )
         fitting_stage3.sort(
             key=lambda x: (
-                int(x["Wall Number"])
-                if str(x["Wall Number"]).isdigit()
-                else float("inf")
+                int(x["Wall Number"]) if str(x["Wall Number"]).isdigit() else float("inf")
             )
         )
         if len(visited) == 4:
@@ -246,16 +246,14 @@ class data_draft(object):
                 all_objs,
                 visited,
                 walls_bss20,
-                materials,
-                model_lines_walls, 
+                origin_x,
+                origin_y,
                 other_floor,
                 centerpoint_rows,
                 storeys,
                 externalxmax_width,
                 externalymax_width,
                 door,
-                origin_x,
-                origin_y
             )
             tmptemp = Tmpholder.returntmp()
         else:
@@ -266,19 +264,41 @@ class data_draft(object):
                 walls_bss20,
                 walls_bss_no_tile,
                 materials,
-                model_lines_walls, 
+                model_lines_walls,
                 other_floor,
                 storeys,
-                centerpoint_rows,
                 fallback,
                 boxup,
                 walls_bss20_wall_num,
                 externalxmax_width,
                 externalymax_width,
                 origin_x,
-                origin_y
+                origin_y,
             )
-            tmptemp, thickness = Tmpholder.returnalltmps()
+            tmptemp, thickness, internalmax_width = Tmpholder.returnalltmps()
+        pts = wc.compute_wall_centerpoints_from_axis(
+            internalmax_width, visited, posz_cp=1000
+        )
+        centerrows = []
+        for i, wall_dict in enumerate(visited):
+            raw_name = str(wall_dict.get("name", ""))  # or wall_dict.get("Name", "")
+            include_name = "basic wall:bss.50" in raw_name.lower()  # case-insensitive
+            name_field = f"WallCP{i + 1}({raw_name})" if include_name else f"WallCP{i + 1}"
+            centerrows.append(
+                {
+                    "Marking Type": "CenterWallPoint",
+                    "Name": name_field,
+                    "X": pts[i]["GX"] / 1000.0,
+                    "Y": pts[i]["GY"] / 1000.0,
+                    "Z": pts[i]["GZ"] / 1000.0,
+                    "Wall Number": i + 1,
+                    "Shape Type": "",
+                    "Width": internalmax_width[i]["Internal Max Width"],
+                    "Height": w["area"][2],
+                    "Rotation_Axis": pts[i].get("Facing_Axis"),
+                }
+            )
+        wc.write_json(centerrows, "wall_centerpoints.json")
         df_tmptemp = pd.DataFrame(tmptemp)
         df_visited = pd.DataFrame(stage2_rows)
         df_fitting = pd.DataFrame(fitting_stage3)
@@ -333,7 +353,7 @@ class data_draft(object):
             else:
                 df_combined[col] = df_combined[col].fillna("").astype(str)
         df_combined_all = pd.concat([df_combined, df_fitting], ignore_index=True)
-        with pd.ExcelWriter(f"{self.usb_path}/PBU_TERRAHL2.xlsx", engine="openpyxl") as writer:
+        with pd.ExcelWriter(f"{self.usb_path}/{modelname}_out.xlsx", engine="openpyxl") as writer:
             for df, sheet in [(df_combined, "Stage 2"), (df_fitting, "Stage 3")]:
                 df.reset_index(drop=True, inplace=True)
                 df.index += 1
@@ -342,4 +362,3 @@ class data_draft(object):
 
 if __name__ == "__main__":
     main()
-

@@ -252,10 +252,13 @@ def assign_nearest_line(
         match = next(
             (w for w in wall_info if w["Wall Number"] == nearestwallindex), None
         )
+        wall_info_axis = None
         if match:
             width, height = match["Width"], match["Height"]
+            wall_info_axis = match.get("Axis", None)
         else:
             width, height = (0, 0) if nearestwallindex == "F" else (width, height)
+        length = line["EndX_local"] - line["StartX_local"] if wall_info_axis == "X" else line["EndY_local"] - line["StartY_local"]
         stage3_results.append(
             {
                 "Wall Number": nearestwallindex,
@@ -267,8 +270,7 @@ def assign_nearest_line(
                 "EGX": line["EndX_local"],
                 "EGY": line["EndY_local"],
                 "EGZ": line["EndZ_local"],
-                "Width": width,
-                "Height": height,
+                "Length": length,
             }
         )
     return stage3_results
@@ -426,36 +428,21 @@ def compute_area_from_vertices(obj):
     return (width, depth, height)
 
 
-def applyexternal(row, ymaxwidths, xmaxwidths, walls):
-    counters, width, height, countersxy = 0, row["Width"], row["Height"], 0
-    wall_number, name = row["Wall Number"], row["Name"]
-    if (
-        "basic wall" not in name.lower()
-        and "floor" not in name.lower()
-        and "box-up" not in name.lower()
-    ):
-        for i, wall_dict in enumerate(walls):
-            height = list(wall_dict.values())[0]["area"][2]
-            if len(walls) == 6:
-                if list(wall_dict.values())[0]["axis"] == "X":
-                    if i + 1 == wall_number:
-                        width = xmaxwidths[counters]
-                    countersxy += 1
-                elif list(wall_dict.values())[0]["axis"] == "Y":
-                    if i + 1 == wall_number:
-                        width = ymaxwidths[counters]
-                    countersxy += 1
-                if countersxy == 2:
-                    countersxy = 0
-                    counters += 1
-            elif len(walls) == 4:
-                if list(wall_dict.values())[0]["axis"] == "X":
-                    if i + 1 == wall_number:
-                        width = xmaxwidths[counters]
-                else:
-                    if i + 1 == wall_number:
-                        width = ymaxwidths[counters]
-                counters += 1
+def applyexternal(row, internalmax_width, walls):
+    width, height = row["Width"], row["Height"]
+    internal_map = {
+        d["Wall Number"]: float(d["Internal Max Width"])
+        for d in internalmax_width
+    }
+    max_x_width = max(float(d["Internal Max Width"]) for d in internalmax_width if str(d["Axis"]).upper() == "X")
+    max_y_width = max(float(d["Internal Max Width"]) for d in internalmax_width if str(d["Axis"]).upper() == "Y")
+    wall_number, name = row["Wall Number"], str(row.get("Name", "")).lower()
+    if ("basic wall" in name) or ("floor" in name) or ("box-up" in name):
+        return pd.Series([width, height])
+    if isinstance(wall_number, int):
+        width = internal_map.get(wall_number, width)
+    for i, wall_dict in enumerate(walls):
+        height = list(wall_dict.values())[0]["area"][2]
     if wall_number == "F":
-        width, height = max(xmaxwidths), max(ymaxwidths)
+        width, height = max_x_width, max_y_width
     return pd.Series([width, height])

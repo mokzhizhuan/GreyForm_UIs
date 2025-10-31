@@ -18,6 +18,30 @@ from fastapi import FastAPI, Form, HTTPException, Query, Request , HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from api_controller_init import router as controller_router 
 
+"""class ConnectPayload(BaseModel):
+    ip: IPvAnyAddress = Field(..., description="Robot IPv4/IPv6 address")
+    # Optional: add creds if you want to probe ABB Web Services
+    username: str | None = None
+    password: str | None = None
+    # Optional: which port to probe for a basic connectivity check
+    port: int = 80
+    timeout_sec: float = 1.5
+
+class ConnectResponse(BaseModel):
+    ip: str
+    reachable: bool
+    detail: str
+
+@app.post("/api/robot/connect", response_model=ConnectResponse)
+def connect_robot(payload: ConnectPayload):
+    # Basic TCP reachability probe (non-privileged; no ICMP required)
+    try:
+        with socket.create_connection((str(payload.ip), payload.port), timeout=payload.timeout_sec):
+            return ConnectResponse(ip=str(payload.ip), reachable=True, detail=f"TCP {payload.port} open")
+    except OSError as e:
+        raise HTTPException(status_code=502, detail=f"Cannot reach {payload.ip}:{payload.port} - {e}")"""
+
+
 app = FastAPI()
 app.include_router(controller_router) 
 app.add_middleware(
@@ -778,4 +802,3 @@ def reset_lock():
         return {"ok": True, "message": "Lock cleared."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to clear lock: {e}")
-

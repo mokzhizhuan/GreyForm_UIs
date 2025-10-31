@@ -18,7 +18,6 @@ class loadTMP6sides:
         model_lines_walls,
         floor,
         storeys,
-        centerpoint_rows,
         opening,
         box_up,
         walls_bss_wall_num,
@@ -47,7 +46,6 @@ class loadTMP6sides:
         self.origin_x = origin_x
         self.origin_y = origin_y
         self.wall_bss_wall_num = walls_bss_wall_num
-        self.centerpoint_rows = centerpoint_rows
         self.max_depth = max(wall["area"][2] for wall in self.wall_bss20)
         self.center_depth = (self.max_depth - self.height20) / 2
         self.center_depth_wall = self.center_depth - (self.wallsheight50 * 2)
@@ -61,18 +59,7 @@ class loadTMP6sides:
             name = w.get("Name")
             if num in self.duplicates:
                 self.dupe_details[num].append({"index": i, "name": name})
-        x_widths = [
-            w["centerpointwidth"]
-            for w in self.centerpoint_rows
-            if "X" in w["AxisDirection"]
-        ]
-        y_widths = [
-            w["centerpointwidth"]
-            for w in self.centerpoint_rows
-            if "Y" in w["AxisDirection"]
-        ]
-        self.x_maxinternalwidth = (max(x_widths)) * 2
-        self.y_maxinternalwidth = (max(y_widths)) * 2
+        self.internalmax_width =[]
         self.externalxmax_width = externalxmax_width
         self.externalymax_width = externalymax_width
         self.storey_min_height = min(
@@ -200,6 +187,22 @@ class loadTMP6sides:
         except (TypeError, ValueError):
             return default
 
+    def minmax_x(self, rows, tol=0.0, ignore_zeros=True, lower_bound=None):
+        xs = []
+        for r in rows:
+            if not (str(r.get("Type","")).lower()=="line" or str(r.get("Name","")).startswith("Model Lines")):
+                continue
+            for x in (r.get("SGX"), r.get("EGX")):
+                if x is None:
+                    continue
+                xv = float(x)
+                if ignore_zeros and xv == 0.0:
+                    continue
+                if lower_bound is not None and xv < lower_bound:
+                    continue
+                xs.append(xv)
+        return (min(xs), max(xs)) if xs else (None, None)
+
     def _build_wall(self, wall_idx):
         wall_dict = self.walls[wall_idx]
         wall_obj = list(wall_dict.values())[0]
@@ -219,7 +222,7 @@ class loadTMP6sides:
         origin = self.origin_x if axis_letter == "x" else self.origin_y
         a_min, a_max, z_min, z_max = poscheckPBU.getopeningvert(opening, axis_obj)
         added_wall_names = set()
-        if width > self.x_maxinternalwidth:
+        if width > (self.externalxmax_width-(self.thickness*2)):
             first_w, _ = ifc_findings.find_closest_wall(wall_obj, self.wall_bss20)
             second_w, _ = (
                 ifc_findings.find_closest_wall(first_w, self.wall_bss20)
@@ -250,6 +253,14 @@ class loadTMP6sides:
                     if wname not in added_wall_names:
                         self.setgetwall(w, wall_idx)
                         added_wall_names.add(wname)
+                min_x, max_x = self.minmax_x(model_lines)
+                internal_length = max_x - min_x 
+                self.internalmax_width.append({
+                    "Wall Number": wall_idx + 1,
+                    "Internal Max Width": internal_length,
+                    "Axis": axis_letter.upper(),
+                    "Facing_Axis": wall_obj.get("facingaxis", ""),
+                })
                 axis_vals = [
                     (
                         self._num(r.get("EGX", r.get("SGX", 0)))
@@ -387,9 +398,13 @@ class loadTMP6sides:
                 key = "SGX" if sweep_axis == "x" else "SGY"
                 endkey = "EGX" if sweep_axis == "x" else "EGY"
                 seen_vals, tiles = set(), []
+                length , maxlength = 0, 0
                 for r in model_lines:
                     v = r.get(key, 0)
                     vend = r.get(endkey, 0)
+                    length = r.get("Length", 0) 
+                    if length > maxlength:
+                        maxlength = length
                     if v in seen_vals:
                         continue
                     seen_vals.add(v)
@@ -424,7 +439,14 @@ class loadTMP6sides:
                         boxup_verts = box.get("vertices", [])
                         boxup_x = float(box.get("GX", 0) or 0.0)
                         boxup_z = float(box.get("GZ", 0) or 0.0)
+                        maxlength = w2.get("area")[0]
                         break
+                self.internalmax_width.append({
+                    "Wall Number": wall_idx + 1,
+                    "Internal Max Width": maxlength,
+                    "Axis": axis_letter.upper(),
+                    "Facing_Axis": wall_obj.get("facingaxis", ""),
+                })
                 boxupx_span, boxupz_span = poscheckPBU._safe_boxup_extents(boxup_verts)
                 cap_x = boxup_x + boxupx_span
                 cap_z = boxup_z + boxupz_span
@@ -630,4 +652,4 @@ class loadTMP6sides:
         self.returnalltmps()
 
     def returnalltmps(self):
-        return self.tmptemp, self.thickness
+        return self.tmptemp, self.thickness , self.internalmax_width
