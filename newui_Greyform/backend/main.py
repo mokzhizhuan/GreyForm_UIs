@@ -6,19 +6,19 @@ from typing import Optional, List, Dict, Union, Tuple , Any
 import dataanalysis as datadraft
 import pwd, grp , requests
 import subprocess, shlex
-import pandas as pd
-import re
 import threading
-#import httpx
-from requests.auth import HTTPDigestAuth
 from errno import errorcode
 from src.talker_listener.talker_listener import talker_node as RosPublisher
 from fastapi.responses import JSONResponse
 from fastapi import FastAPI, Form, HTTPException, Query, Request , HTTPException , Body
 from fastapi.middleware.cors import CORSMiddleware
+from roscore_service import start_roscore, stop_roscore, is_master_up, ROS_MASTER_URI
+import processlistenerrunner as ListenerNode
+from backend.rosapp import app as ros_app
 
 
-app = FastAPI()
+
+app = FastAPI(title="Main API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,6 +26,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.mount("/ros", ros_app)
 PIDFILE = Path("/tmp/greyform_ui.pid")
 LOCKFILE = Path("/tmp/greyform_ui.lock")
 LOGFILE = Path("/tmp/greyform_ui.log")
@@ -346,6 +347,18 @@ def _first_existing(*cands: Union[str, Path]) -> Optional[Path]:
             return p
     return None
 
+def execute_marking(file: str, excel_path: str, rows: List[Dict[str, Any]]):
+    collected: list[str] = []
+
+    def status_cb(msg: str):
+        collected.append(str(msg))
+
+    runner = ListenerNode.ListenerNodeRunner(file=file, status_cb=status_cb)
+    if not runner.listener_started:
+        runner.run_listener_node()
+    runner.run_execution(rows, excel_path)
+    return collected
+
 def _require_exists(label: str, p: Path):
     if not p.exists():
         raise HTTPException(status_code=400, detail=f"{label} not found: {p}")
@@ -620,124 +633,30 @@ async def data_checker(
     return {"ok": True, "model": model_sides , "cached": True}
         
 
+async def run_execution_ros(datarows, 
+                            excel_path: str = Form(...),):      
 
-@app.post("/api/launch_ui")
-async def launch_ui(
-    usb_path: str = Form(...),
-    ifc_path: Optional[str] = Form(None),
-    force: bool = Form(False),
-):
+@app.get("/roscore/status")
+def status():
+    return {
+        "master_uri": ROS_MASTER_URI,
+        "up": is_master_up(),
+    }
+
+@app.post("/roscore/start")
+def start():
     try:
-        base = Path(usb_path).resolve()
-        if not base.exists() or not base.is_dir():
-            raise HTTPException(status_code=400, detail=f"usb_path not found or not a directory: {usb_path}")
-
-        # pick or validate IFC
-        if ifc_path:
-            ifc = Path(ifc_path).resolve()
-        else:
-            ifc = pick_ifc(base, recursive=True, max_depth=8)
-            if ifc is None:
-                raise HTTPException(status_code=404, detail="No IFC file found on the USB drive")
-
-        # IFC must live inside the USB
-        try:
-            _ = ifc.resolve().relative_to(base)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="IFC must be inside usb_path")
-
-        # Build Excel output path ON THE USB (optionally put in a subfolder)
-        # results_dir = base / "GreyForm"  # uncomment if you want a folder
-        results_dir = base
-        results_dir.mkdir(parents=True, exist_ok=True)
-
-        # filename (no spaces is safer for some environments)
-        # fname = f"PBU_TERRAHL2_{datetime.now():%Y%m%d-%H%M}.xlsx"
-        fname = "PBU_TERRAHL2.xlsx"
-        excel_output = (results_dir / fname).resolve()
-        # security: must still be under the USB root
-        try:
-            excel_output.relative_to(base)
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Output path escapes usb_path")
-        # basic writability check
-        if not os.access(results_dir, os.W_OK):
-            raise HTTPException(status_code=500, detail=f"USB path not writable: {results_dir}")
-        main_py = (PROJECT_DIR / "mainwindow.py").resolve()
-        ui_file = (PROJECT_DIR / "UI_Design" / "greyform_sweefeng.ui").resolve()
-        excel_checklist = (PROJECT_DIR / "Greyform TERRAHL2(JMB)-T1a BOM Checklist 20231211.xlsx").resolve()
-        if not main_py.exists():
-            raise HTTPException(500, detail=f"mainwindow.py not found: {main_py}")
-        if not ui_file.exists():
-            raise HTTPException(500, detail=f"UI .ui file not found: {ui_file}")
-        env = os.environ.copy()
-        env.setdefault("DISPLAY", ":0")
-        env.setdefault("QT_QPA_PLATFORM", "xcb")
-        # pass the USB output path to your app
-        args = [
-            "python3",
-            str(main_py),
-            str(ui_file),
-            str(ifc),
-            str(excel_checklist),
-            str(excel_output),
-        ]
-        LOGFILE.parent.mkdir(parents=True, exist_ok=True)
-        log_f = open(LOGFILE, "ab", buffering=0)
-
-        if LOCKFILE.exists():
-            LOCKFILE.unlink(missing_ok=True)
-        if PIDFILE.exists():
-            try:
-                saved = int(PIDFILE.read_text().strip())
-                if _pid_running(saved):
-                    return {"status": "running", "message": f"UI already running (pid {saved})", "pid": saved}
-            except Exception:
-                pass
-        proc = subprocess.Popen(
-            args,
-            cwd=str(PROJECT_DIR),
-            env=env,
-            stdout=log_f,
-            stderr=subprocess.STDOUT,
-            start_new_session=True,
-        )
-        PIDFILE.write_text(str(proc.pid))
-        return {
-            "status": "started",
-            "message": f"UI started (pid {proc.pid})",
-            "pid": proc.pid,
-            "ifc_path": str(ifc),
-            "excel_output": str(excel_output),  # <-- returned for UI visibility if needed
-            "log_file": str(LOGFILE),
-        }
-    except HTTPException:
-        raise
+        start_roscore(log=True)
+        return {"status": "started", "uri": ROS_MASTER_URI}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Exception launching with usb_path={usb_path}: {e}")
-    
-def _load_workbook(path: Path) -> Dict[str, pd.DataFrame]:
-    # Sheet dict: {sheet_name: DataFrame}
-    return pd.read_excel(path, sheet_name=None)
-    
-def _find_excel_from_usb(usb_path: str) -> Path:
-    p = Path(usb_path).expanduser()
-    if not p.exists():
-        raise FileNotFoundError(f"Path not found: {p}")
-    if p.is_file():
-        if p.suffix.lower() in (".xlsx", ".xls"):
-            return p
-        raise ValueError(f"Not an Excel file: {p}")
-    candidates = list(p.rglob("*.xlsx")) + list(p.rglob("*.xls"))
-    if not candidates:
-        raise FileNotFoundError(f"No Excel files found under: {p}")
-    candidates.sort(key=lambda f: f.stat().st_mtime, reverse=True)
-    return candidates[0]
+        raise HTTPException(status_code=500, detail=str(e))
 
-def _load_workbook(path: Path) -> Dict[str, pd.DataFrame]:
-    # Sheet dict: {sheet_name: DataFrame}
-    return pd.read_excel(path, sheet_name=None)
-    
+@app.post("/roscore/stop")
+def stop():
+    stop_roscore()
+    return {"status": "stopped"}
+  
+
 
 @app.post("/api/ui_closed")
 def ui_closed(pid: int = Form(...)):
