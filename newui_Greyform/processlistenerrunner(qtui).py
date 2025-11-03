@@ -88,7 +88,8 @@ class ListenerNodeRunner:
             self.talker_node.publish_selection_message(wn, picked_position, markingtype)
         self.talker_node.publish_all_done(True)
 
-
+    def run_jointvalues(self, jointvalues, placementcoord):
+        self.talker_node.publish_jointvalues_msg(jointvalues, placementcoord)
 
     def _run_process(self):
         env = os.environ.copy()

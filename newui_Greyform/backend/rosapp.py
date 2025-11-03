@@ -29,6 +29,15 @@ def execute(excel_path: str, rows: List[Dict[str, Any]], background: BackgroundT
     r = _runner_instance()
     if not r.listener_started:
         return {"ok": False, "error": "Listener not started. Call /ros/listener/start first."}
-    def job(): r.run_execution(rows, excel_path)
+    def job(): r.run_execution_data(rows, excel_path)
     background.add_task(job)
     return {"ok": True, "queued": True}
+
+@app.post("api/getjoint_values")
+def getjoint_values(jointvalues , placementcoord, background: BackgroundTasks):
+    r = _runner_instance()
+    if not r.listener_started:
+        return {"ok": False, "error": "Listener not started. Call /ros/listener/start first."}
+    def jobs(): r.run_jointvalues(jointvalues, placementcoord)
+    background.add_task(jobs)
+    return {"ok": True, "queued": True}    

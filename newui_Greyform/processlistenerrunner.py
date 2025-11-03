@@ -43,7 +43,7 @@ class ListenerNodeRunner:
                 self._emit("Please wait, robot is calculating its position")
         self.process = None
 
-    def run_execution(self, rows, excel_path):
+    def run_execution_data(self, rows, excel_path):
         self.talker_node.publish_file_message(self.file, excel_path)
 
         for data in rows:
@@ -59,6 +59,10 @@ class ListenerNodeRunner:
             # Publish the STARTED event
             self.talker_node.publish_selection_message(wn, picked_position, markingtype)
         self.talker_node.publish_all_done(True)
+
+    def run_jointvalues(self, jointvalues, placementcoord):
+        self.talker_node.publish_jointvalues_msg(jointvalues, placementcoord)
+        
 
     def _run_process(self) -> None:
         env = os.environ.copy()

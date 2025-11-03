@@ -1,17 +1,35 @@
 # talker_node.py
 import rospy
 from std_msgs.msg import String, Int32, Bool
-from my_robot_wallinterfaces.msg import FileExtractionMessage, SelectionWall
+from my_robot_wallinterfaces.msg import (
+    FileExtractionMessage,
+    SelectionWall,
+    jointvaluesextract,
+)
+
 
 class TalkerNode:
     def __init__(self):
         if not rospy.core.is_initialized():
             rospy.init_node("talker_node", anonymous=True, disable_signals=True)
-        self.file_pub = rospy.Publisher("/file_extraction_topic", FileExtractionMessage, queue_size=10)
-        self.sel_pub  = rospy.Publisher("/selection_wall_topic",   SelectionWall,        queue_size=10)
-        self.ui_wall_started_pub = rospy.Publisher("/ui/wall_started", String, queue_size=10, latch=True)
-        self.ui_wall_done_pub    = rospy.Publisher("/ui/wall_done",    String, queue_size=10, latch=True)
-        self.ui_all_done_pub     = rospy.Publisher("/ui/all_done",     Bool,   queue_size=10, latch=True)
+        self.file_pub = rospy.Publisher(
+            "/file_extraction_topic", FileExtractionMessage, queue_size=10
+        )
+        self.sel_pub = rospy.Publisher(
+            "/selection_wall_topic", SelectionWall, queue_size=10
+        )
+        self.jointval_pub = rospy.Publisher(
+            "/joint_values_topic", SelectionWall, queue_size=10
+        )
+        self.ui_wall_started_pub = rospy.Publisher(
+            "/ui/wall_started", String, queue_size=10, latch=True
+        )
+        self.ui_wall_done_pub = rospy.Publisher(
+            "/ui/wall_done", String, queue_size=10, latch=True
+        )
+        self.ui_all_done_pub = rospy.Publisher(
+            "/ui/all_done", Bool, queue_size=10, latch=True
+        )
 
     def _wait_for_subscribers(self, pubs, timeout=1.0):
         start = rospy.Time.now().to_sec()
@@ -24,9 +42,15 @@ class TalkerNode:
         with open(stl_file_path, "rb") as f:
             ifc_bytes = f.read()
         msg = FileExtractionMessage()
-        msg.stl_data  = ifc_bytes
+        msg.stl_data = ifc_bytes
         msg.excelfile = excel_path
         self.file_pub.publish(msg)
+
+    def publish_jointvalues_msg(self, joint_values, placementcoord):
+        msg = jointvaluesextract()
+        msg.joint_values = joint_values
+        msg.placementcoord = placementcoord
+        self.jointval_pub.publish(msg)
 
     def publish_selection_message(self, wallselection, picked_position, typeselection):
         lab = str(wallselection)
@@ -38,12 +62,18 @@ class TalkerNode:
         msg = SelectionWall()
         msg.wallselection = lab
         msg.typeselection = str(typeselection)
-        try:    msg.sectionselection = 0
-        except: pass
-        try:    msg.picked_position = [int(v) for v in picked_position]
-        except: msg.picked_position = []
-        try:    msg.default_position = []
-        except: pass
+        try:
+            msg.sectionselection = 0
+        except:
+            pass
+        try:
+            msg.picked_position = [int(v) for v in picked_position]
+        except:
+            msg.picked_position = []
+        try:
+            msg.default_position = []
+        except:
+            pass
         self.sel_pub.publish(msg)
 
     def publish_wall_done(self, wallselection):
