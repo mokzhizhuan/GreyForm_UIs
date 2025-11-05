@@ -1,8 +1,10 @@
 # backend/rosapp.py
 from fastapi import FastAPI, BackgroundTasks
 from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field
 from processlistenerrunner import ListenerNodeRunner
-import backend.placementcoord as placementcoord_json
+from backend import placementcoord as placementcoord_json
+
 
 app = FastAPI(title="ROS API")
 _runner: Optional[ListenerNodeRunner] = None
