@@ -51,7 +51,6 @@ class JointValuesBody(BaseModel):
     jointvalues: List[Union[float, str]] = Field(
         ..., description="Array of joint values; no rounding/validation"
     )
-    json_path: str = Field("wall_centerpoints.json", description="Path to CP JSON")
 
 
 @app.post("/api/getjoint_values")
@@ -65,14 +64,14 @@ def getjoint_values(req: JointValuesBody, background: BackgroundTasks):
 
     # Load placementcoord (first/last CenterWallPoint) from JSON
     try:
-        placementcoord = placementcoord_json.placementcoord_from_json(req.json_path)
+        placementcoord = placementcoord_json.placementcoord_from_json("wall_centerpoints.json")
         if not placementcoord:
             return {
                 "ok": False,
-                "error": f"No CenterWallPoint found in {req.json_path} (need ≥2).",
+                "error": f"No CenterWallPoint found in wall_centerpoints.json (need ≥2).",
             }
     except FileNotFoundError:
-        return {"ok": False, "error": f"JSON file not found: {req.json_path}"}
+        return {"ok": False, "error": f"JSON file not found: wall_centerpoints.json"}
     except Exception as e:
         return {"ok": False, "error": f"Failed to parse placementcoord: {e!r}"}
 
@@ -94,3 +93,4 @@ def getjoint_values(req: JointValuesBody, background: BackgroundTasks):
         "jointvalues_display_2dp": two_dp_display,  # just for UI (optional)
         "placementcoord": placementcoord,
     }
+
