@@ -1,10 +1,9 @@
 # backend/rosapp.py
 from fastapi import FastAPI, BackgroundTasks
 from typing import List, Dict, Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from processlistenerrunner import ListenerNodeRunner
 from backend import placementcoord as placementcoord_json
-
 
 app = FastAPI(title="ROS API")
 _runner: Optional[ListenerNodeRunner] = None
@@ -48,43 +47,50 @@ def execute(excel_path: str, rows: List[Dict[str, Any]], background: BackgroundT
 
 
 class JointValuesBody(BaseModel):
-    jointvalues: Any = Field(
-        ..., description="Single pose or list/sequence of joint frames"
+    # Accept numbers or strings; we won't validate or round.
+    jointvalues: List[Union[float, str]] = Field(
+        ..., description="Array of joint values; no rounding/validation"
     )
-    json_path: str = Field(
-        "wall_centerpoints.json", description="Path to the CP JSON file"
-    )
+    json_path: str = Field("wall_centerpoints.json", description="Path to CP JSON")
 
 
 @app.post("/api/getjoint_values")
 def getjoint_values(req: JointValuesBody, background: BackgroundTasks):
     r = _runner_instance()
-    json_path = "wall_centerpoints.json"
     if not r.listener_started:
         return {
             "ok": False,
             "error": "Listener not started. Call /ros/listener/start first.",
         }
 
-    # Load placementcoord (first/last WallCP) from JSON
+    # Load placementcoord (first/last CenterWallPoint) from JSON
     try:
-        placementcoord = placementcoord_json.placementcoord_from_json(json_path)
+        placementcoord = placementcoord_json.placementcoord_from_json(req.json_path)
         if not placementcoord:
             return {
                 "ok": False,
-                "error": f"No CenterWallPoint found in {req.json_path} (need at least two).",
+                "error": f"No CenterWallPoint found in {req.json_path} (need ≥2).",
             }
     except FileNotFoundError:
         return {"ok": False, "error": f"JSON file not found: {req.json_path}"}
     except Exception as e:
-        return {
-            "ok": False,
-            "error": f"Failed to parse placementcoord from {req.json_path}: {e!r}",
-        }
+        return {"ok": False, "error": f"Failed to parse placementcoord: {e!r}"}
 
-    # Queue the publishing job
+    # Convert to floats ONLY for ROS publishing (no rounding/truncation; just float())
+    def _as_floats(seq: List[Union[float, str]]) -> List[float]:
+        return [float(x) for x in seq]
+
     def job():
-        r.run_jointvalues(req.jointvalues, placementcoord)
+        r.run_jointvalues(_as_floats(req.jointvalues), placementcoord)
 
     background.add_task(job)
-    return {"ok": True, "queued": True, "placementcoord": placementcoord}
+
+    two_dp_display = [f"{float(x):.2f}" for x in req.jointvalues]
+
+    return {
+        "ok": True,
+        "queued": True,
+        "jointvalues": req.jointvalues,  # exactly what you sent (nums/strings)
+        "jointvalues_display_2dp": two_dp_display,  # just for UI (optional)
+        "placementcoord": placementcoord,
+    }

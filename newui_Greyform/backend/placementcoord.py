@@ -79,4 +79,3 @@ def strict_index_loop_1_2(runner, placementcoord, dwell_s=0.5):
         time.sleep(dwell_s)  # small dwell between 1 and 2
 
     runner._emit("✅ Strict index loop (1 → 2) complete.")
-

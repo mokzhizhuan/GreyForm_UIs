@@ -43,7 +43,7 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces
+CMAKE_SOURCE_DIR = /root/catkin_ws/newui_Greyform/src
 
 # The top-level build directory on which CMake was run.
 CMAKE_BINARY_DIR = /root/catkin_ws/newui_Greyform/build
@@ -54,7 +54,7 @@ CMAKE_BINARY_DIR = /root/catkin_ws/newui_Greyform/build
 include CMakeFiles/clean_test_results.dir/progress.make
 
 CMakeFiles/clean_test_results:
-	/root/.venvs/py39/bin/python3 /opt/ros/noetic/share/catkin/cmake/test/remove_test_results.py /root/catkin_ws/newui_Greyform/build/test_results
+	/root/catkin_ws/newui_Greyform/.venv/bin/python3 /opt/ros/noetic/share/catkin/cmake/test/remove_test_results.py /root/catkin_ws/newui_Greyform/build/test_results
 
 clean_test_results: CMakeFiles/clean_test_results
 clean_test_results: CMakeFiles/clean_test_results.dir/build.make
@@ -71,6 +71,6 @@ CMakeFiles/clean_test_results.dir/clean:
 .PHONY : CMakeFiles/clean_test_results.dir/clean
 
 CMakeFiles/clean_test_results.dir/depend:
-	cd /root/catkin_ws/newui_Greyform/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces /root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces /root/catkin_ws/newui_Greyform/build /root/catkin_ws/newui_Greyform/build /root/catkin_ws/newui_Greyform/build/CMakeFiles/clean_test_results.dir/DependInfo.cmake --color=$(COLOR)
+	cd /root/catkin_ws/newui_Greyform/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/catkin_ws/newui_Greyform/src /root/catkin_ws/newui_Greyform/src /root/catkin_ws/newui_Greyform/build /root/catkin_ws/newui_Greyform/build /root/catkin_ws/newui_Greyform/build/CMakeFiles/clean_test_results.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/clean_test_results.dir/depend
 

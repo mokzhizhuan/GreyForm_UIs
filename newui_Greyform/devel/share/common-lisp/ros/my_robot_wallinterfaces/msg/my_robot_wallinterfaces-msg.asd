@@ -8,4 +8,6 @@
     (:file "_package_FileExtractionMessage" :depends-on ("_package"))
     (:file "SelectionWall" :depends-on ("_package_SelectionWall"))
     (:file "_package_SelectionWall" :depends-on ("_package"))
+    (:file "jointvaluesextract" :depends-on ("_package_jointvaluesextract"))
+    (:file "_package_jointvaluesextract" :depends-on ("_package"))
   ))

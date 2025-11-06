@@ -43,7 +43,7 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces
+CMAKE_SOURCE_DIR = /root/catkin_ws/newui_Greyform/src
 
 # The top-level build directory on which CMake was run.
 CMAKE_BINARY_DIR = /root/catkin_ws/newui_Greyform/build
@@ -67,6 +67,6 @@ CMakeFiles/doxygen.dir/clean:
 .PHONY : CMakeFiles/doxygen.dir/clean
 
 CMakeFiles/doxygen.dir/depend:
-	cd /root/catkin_ws/newui_Greyform/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces /root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces /root/catkin_ws/newui_Greyform/build /root/catkin_ws/newui_Greyform/build /root/catkin_ws/newui_Greyform/build/CMakeFiles/doxygen.dir/DependInfo.cmake --color=$(COLOR)
+	cd /root/catkin_ws/newui_Greyform/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /root/catkin_ws/newui_Greyform/src /root/catkin_ws/newui_Greyform/src /root/catkin_ws/newui_Greyform/build /root/catkin_ws/newui_Greyform/build /root/catkin_ws/newui_Greyform/build/CMakeFiles/doxygen.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/doxygen.dir/depend
 

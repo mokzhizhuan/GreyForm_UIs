@@ -89,7 +89,7 @@ def compute_wall_centerpoints_from_axis(
                 GX = safe(X, e - 1) + safe(X, e) / 2.0
                 GY = safe(Y, e)
             else:  # second in bin e
-                GX = safe(X, e)
+                GX = safe(X, 0)
                 GY = safe(Y, e) / 2.0
         points.append(
             {"GX": GX, "GY": GY, "GZ": posz_cp, "Facing_Axis": internalmax_axis[i]}

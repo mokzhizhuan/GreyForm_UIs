@@ -40,6 +40,7 @@ endif()
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/msg" TYPE FILE FILES
     "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg"
+    "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg"
     "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg"
     )
 endif()
@@ -69,7 +70,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  execute_process(COMMAND "/root/.venvs/py39/bin/python3" -m compileall "/root/catkin_ws/newui_Greyform/devel/lib/python3/dist-packages/my_robot_wallinterfaces")
+  execute_process(COMMAND "/root/catkin_ws/newui_Greyform/.venv/bin/python3" -m compileall "/root/catkin_ws/newui_Greyform/devel/lib/python3/dist-packages/my_robot_wallinterfaces")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
