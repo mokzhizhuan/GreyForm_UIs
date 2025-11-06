@@ -1,6 +1,6 @@
 # backend/rosapp.py
 from fastapi import FastAPI, BackgroundTasks
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional , Union
 from pydantic import BaseModel, Field, validator
 from processlistenerrunner import ListenerNodeRunner
 from backend import placementcoord as placementcoord_json
