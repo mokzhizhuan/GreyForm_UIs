@@ -1,2 +1,2 @@
-set(my_robot_wallinterfaces_MESSAGE_FILES "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg;/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg;/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg")
+set(my_robot_wallinterfaces_MESSAGE_FILES "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg;/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg")
 set(my_robot_wallinterfaces_SERVICE_FILES "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/srv/SetLed.srv")

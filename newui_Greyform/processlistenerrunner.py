@@ -8,8 +8,7 @@ from src.talker_listener.talker_listener import talker_node as RosPublisher
 
 
 class ListenerNodeRunner:
-    def __init__(self, file: str, status_cb: Optional[Callable[[str], None]] = None):
-        self.file = file
+    def __init__(self, status_cb: Optional[Callable[[str], None]] = None):
         self.status_cb = status_cb or (lambda m: print(m, flush=True))
         self.listener_started = False
         self.spacing = "\n"
@@ -43,8 +42,10 @@ class ListenerNodeRunner:
                 self._emit("Please wait, robot is calculating its position")
         self.process = None
 
-    def run_execution_data(self, rows, excel_path):
-        self.talker_node.publish_file_message(self.file, excel_path)
+    def file_selection_data(self, directory,  excel_path):
+        self.talker_node.publish_file_message(directory, excel_path)
+
+    def run_execution_data(self, rows):
 
         for data in rows:
             wn = data.get("Wall Number")
@@ -60,9 +61,6 @@ class ListenerNodeRunner:
             self.talker_node.publish_selection_message(wn, picked_position, markingtype)
         self.talker_node.publish_all_done(True)
 
-    def run_jointvalues(self, jointvalues, placementcoord):
-        self.talker_node.publish_jointvalues_msg(jointvalues, placementcoord)
-        
 
     def _run_process(self) -> None:
         env = os.environ.copy()

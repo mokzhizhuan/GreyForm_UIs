@@ -24,19 +24,19 @@ struct FileExtractionMessage_
   typedef FileExtractionMessage_<ContainerAllocator> Type;
 
   FileExtractionMessage_()
-    : stl_data()
+    : directory()
     , excelfile()  {
     }
   FileExtractionMessage_(const ContainerAllocator& _alloc)
-    : stl_data(_alloc)
+    : directory(_alloc)
     , excelfile(_alloc)  {
   (void)_alloc;
     }
 
 
 
-   typedef std::vector<uint8_t, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<uint8_t>> _stl_data_type;
-  _stl_data_type stl_data;
+   typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> _directory_type;
+  _directory_type directory;
 
    typedef std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>> _excelfile_type;
   _excelfile_type excelfile;
@@ -70,7 +70,7 @@ return s;
 template<typename ContainerAllocator1, typename ContainerAllocator2>
 bool operator==(const ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAllocator1> & lhs, const ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAllocator2> & rhs)
 {
-  return lhs.stl_data == rhs.stl_data &&
+  return lhs.directory == rhs.directory &&
     lhs.excelfile == rhs.excelfile;
 }
 
@@ -128,12 +128,12 @@ struct MD5Sum< ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAlloca
 {
   static const char* value()
   {
-    return "81c918b74dbfb64e2d1abc77031a354e";
+    return "d217064ce75170f28ac78f629dbe4223";
   }
 
   static const char* value(const ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0x81c918b74dbfb64eULL;
-  static const uint64_t static_value2 = 0x2d1abc77031a354eULL;
+  static const uint64_t static_value1 = 0xd217064ce75170f2ULL;
+  static const uint64_t static_value2 = 0x8ac78f629dbe4223ULL;
 };
 
 template<class ContainerAllocator>
@@ -152,7 +152,7 @@ struct Definition< ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAl
 {
   static const char* value()
   {
-    return "uint8[] stl_data\n"
+    return "string directory\n"
 "string excelfile\n"
 ;
   }
@@ -172,7 +172,7 @@ namespace serialization
   {
     template<typename Stream, typename T> inline static void allInOne(Stream& stream, T m)
     {
-      stream.next(m.stl_data);
+      stream.next(m.directory);
       stream.next(m.excelfile);
     }
 
@@ -194,19 +194,8 @@ struct Printer< ::my_robot_wallinterfaces::FileExtractionMessage_<ContainerAlloc
   {
     if (false || !indent.empty())
       s << std::endl;
-    s << indent << "stl_data: ";
-    if (v.stl_data.empty() || true)
-      s << "[";
-    for (size_t i = 0; i < v.stl_data.size(); ++i)
-    {
-      if (true && i > 0)
-        s << ", ";
-      else if (!true)
-        s << std::endl << indent << "  -";
-      Printer<uint8_t>::stream(s, true ? std::string() : indent + "    ", v.stl_data[i]);
-    }
-    if (v.stl_data.empty() || true)
-      s << "]";
+    s << indent << "directory: ";
+    Printer<std::basic_string<char, std::char_traits<char>, typename std::allocator_traits<ContainerAllocator>::template rebind_alloc<char>>>::stream(s, indent + "  ", v.directory);
     if (true || !indent.empty())
       s << std::endl;
     s << indent << "excelfile: ";

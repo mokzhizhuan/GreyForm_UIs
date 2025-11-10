@@ -40,7 +40,6 @@ endif()
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/my_robot_wallinterfaces/msg" TYPE FILE FILES
     "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg"
-    "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg"
     "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg"
     )
 endif()

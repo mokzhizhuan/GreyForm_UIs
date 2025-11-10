@@ -1,2 +1,2 @@
-uint8[] stl_data
+string directory
 string excelfile

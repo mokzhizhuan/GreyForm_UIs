@@ -1,6 +1,6 @@
 # generated from genmsg/cmake/pkg-genmsg.context.in
 
-messages_str = "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg;/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg;/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg"
+messages_str = "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg;/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg"
 services_str = "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/srv/SetLed.srv"
 pkg_name = "my_robot_wallinterfaces"
 dependencies_str = "std_msgs"

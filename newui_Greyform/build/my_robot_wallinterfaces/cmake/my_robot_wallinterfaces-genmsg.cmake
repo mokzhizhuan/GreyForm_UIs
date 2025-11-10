@@ -1,6 +1,6 @@
 # generated from genmsg/cmake/pkg-genmsg.cmake.em
 
-message(STATUS "my_robot_wallinterfaces: 3 messages, 1 services")
+message(STATUS "my_robot_wallinterfaces: 2 messages, 1 services")
 
 set(MSG_I_FLAGS "-Imy_robot_wallinterfaces:/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg;-Istd_msgs:/opt/ros/noetic/share/std_msgs/cmake/../msg")
 
@@ -22,11 +22,6 @@ add_custom_target(_my_robot_wallinterfaces_generate_messages_check_deps_${_filen
   COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "my_robot_wallinterfaces" "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg" ""
 )
 
-get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg" NAME_WE)
-add_custom_target(_my_robot_wallinterfaces_generate_messages_check_deps_${_filename}
-  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "my_robot_wallinterfaces" "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg" ""
-)
-
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg" NAME_WE)
 add_custom_target(_my_robot_wallinterfaces_generate_messages_check_deps_${_filename}
   COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "my_robot_wallinterfaces" "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg" ""
@@ -45,12 +40,6 @@ add_custom_target(_my_robot_wallinterfaces_generate_messages_check_deps_${_filen
 ### Generating Messages
 _generate_msg_cpp(my_robot_wallinterfaces
   "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg"
-  "${MSG_I_FLAGS}"
-  ""
-  ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/my_robot_wallinterfaces
-)
-_generate_msg_cpp(my_robot_wallinterfaces
-  "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg"
   "${MSG_I_FLAGS}"
   ""
   ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/my_robot_wallinterfaces
@@ -84,8 +73,6 @@ add_dependencies(my_robot_wallinterfaces_generate_messages my_robot_wallinterfac
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg" NAME_WE)
 add_dependencies(my_robot_wallinterfaces_generate_messages_cpp _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
-get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg" NAME_WE)
-add_dependencies(my_robot_wallinterfaces_generate_messages_cpp _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg" NAME_WE)
 add_dependencies(my_robot_wallinterfaces_generate_messages_cpp _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/srv/SetLed.srv" NAME_WE)
@@ -102,12 +89,6 @@ list(APPEND ${PROJECT_NAME}_EXPORTED_TARGETS my_robot_wallinterfaces_generate_me
 ### Generating Messages
 _generate_msg_eus(my_robot_wallinterfaces
   "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg"
-  "${MSG_I_FLAGS}"
-  ""
-  ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/my_robot_wallinterfaces
-)
-_generate_msg_eus(my_robot_wallinterfaces
-  "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg"
   "${MSG_I_FLAGS}"
   ""
   ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/my_robot_wallinterfaces
@@ -141,8 +122,6 @@ add_dependencies(my_robot_wallinterfaces_generate_messages my_robot_wallinterfac
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg" NAME_WE)
 add_dependencies(my_robot_wallinterfaces_generate_messages_eus _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
-get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg" NAME_WE)
-add_dependencies(my_robot_wallinterfaces_generate_messages_eus _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg" NAME_WE)
 add_dependencies(my_robot_wallinterfaces_generate_messages_eus _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/srv/SetLed.srv" NAME_WE)
@@ -159,12 +138,6 @@ list(APPEND ${PROJECT_NAME}_EXPORTED_TARGETS my_robot_wallinterfaces_generate_me
 ### Generating Messages
 _generate_msg_lisp(my_robot_wallinterfaces
   "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg"
-  "${MSG_I_FLAGS}"
-  ""
-  ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/my_robot_wallinterfaces
-)
-_generate_msg_lisp(my_robot_wallinterfaces
-  "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg"
   "${MSG_I_FLAGS}"
   ""
   ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/my_robot_wallinterfaces
@@ -198,8 +171,6 @@ add_dependencies(my_robot_wallinterfaces_generate_messages my_robot_wallinterfac
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg" NAME_WE)
 add_dependencies(my_robot_wallinterfaces_generate_messages_lisp _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
-get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg" NAME_WE)
-add_dependencies(my_robot_wallinterfaces_generate_messages_lisp _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg" NAME_WE)
 add_dependencies(my_robot_wallinterfaces_generate_messages_lisp _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/srv/SetLed.srv" NAME_WE)
@@ -216,12 +187,6 @@ list(APPEND ${PROJECT_NAME}_EXPORTED_TARGETS my_robot_wallinterfaces_generate_me
 ### Generating Messages
 _generate_msg_nodejs(my_robot_wallinterfaces
   "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg"
-  "${MSG_I_FLAGS}"
-  ""
-  ${CATKIN_DEVEL_PREFIX}/${gennodejs_INSTALL_DIR}/my_robot_wallinterfaces
-)
-_generate_msg_nodejs(my_robot_wallinterfaces
-  "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg"
   "${MSG_I_FLAGS}"
   ""
   ${CATKIN_DEVEL_PREFIX}/${gennodejs_INSTALL_DIR}/my_robot_wallinterfaces
@@ -255,8 +220,6 @@ add_dependencies(my_robot_wallinterfaces_generate_messages my_robot_wallinterfac
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg" NAME_WE)
 add_dependencies(my_robot_wallinterfaces_generate_messages_nodejs _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
-get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg" NAME_WE)
-add_dependencies(my_robot_wallinterfaces_generate_messages_nodejs _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg" NAME_WE)
 add_dependencies(my_robot_wallinterfaces_generate_messages_nodejs _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/srv/SetLed.srv" NAME_WE)
@@ -273,12 +236,6 @@ list(APPEND ${PROJECT_NAME}_EXPORTED_TARGETS my_robot_wallinterfaces_generate_me
 ### Generating Messages
 _generate_msg_py(my_robot_wallinterfaces
   "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg"
-  "${MSG_I_FLAGS}"
-  ""
-  ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/my_robot_wallinterfaces
-)
-_generate_msg_py(my_robot_wallinterfaces
-  "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg"
   "${MSG_I_FLAGS}"
   ""
   ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/my_robot_wallinterfaces
@@ -311,8 +268,6 @@ add_dependencies(my_robot_wallinterfaces_generate_messages my_robot_wallinterfac
 
 # add dependencies to all check dependencies targets
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/FileExtractionMessage.msg" NAME_WE)
-add_dependencies(my_robot_wallinterfaces_generate_messages_py _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
-get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/jointvaluesextract.msg" NAME_WE)
 add_dependencies(my_robot_wallinterfaces_generate_messages_py _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces/msg/SelectionWall.msg" NAME_WE)
 add_dependencies(my_robot_wallinterfaces_generate_messages_py _my_robot_wallinterfaces_generate_messages_check_deps_${_filename})

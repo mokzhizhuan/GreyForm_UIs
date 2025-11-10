@@ -1,6 +1,6 @@
 (cl:in-package my_robot_wallinterfaces-msg)
-(cl:export '(STL_DATA-VAL
-          STL_DATA
+(cl:export '(DIRECTORY-VAL
+          DIRECTORY
           EXCELFILE-VAL
           EXCELFILE
 ))

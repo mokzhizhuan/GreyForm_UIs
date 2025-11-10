@@ -38,19 +38,11 @@ class TalkerNode:
                 return
             rospy.sleep(0.05)
 
-    def publish_file_message(self, stl_file_path: str, excel_path: str):
-        with open(stl_file_path, "rb") as f:
-            ifc_bytes = f.read()
+    def publish_file_message(self, directory: str, excel_path: str):
         msg = FileExtractionMessage()
-        msg.stl_data = ifc_bytes
+        msg.directory = directory
         msg.excelfile = excel_path
         self.file_pub.publish(msg)
-
-    def publish_jointvalues_msg(self, joint_values, placementcoord):
-        msg = jointvaluesextract()
-        msg.joint_values = joint_values
-        msg.placementcoord = placementcoord
-        self.jointval_pub.publish(msg)
 
     def publish_selection_message(self, wallselection, picked_position, typeselection):
         lab = str(wallselection)
