@@ -1,19 +1,38 @@
 # backend/main.py
-import os, stat, json, time, glob, shutil, traceback, subprocess
+import os, subprocess, importlib
 from pathlib import Path
-from datetime import datetime
-from typing import Optional, List, Dict, Union, Tuple, Any
-import dataanalysis as datadraft
-import pwd, grp, requests
+from typing import Optional, Dict
+import pwd, grp
 import subprocess, shlex
-import threading
-from errno import errorcode
-from fastapi import FastAPI, Form, HTTPException, Query, Request, HTTPException, Body
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from roscore_service import start_roscore, stop_roscore, is_master_up, ROS_MASTER_URI
-from backend.rosapp import app as ros_app
 from backend.build_subapp import build_app as catkin_builder
+WS = Path("/root/catkin_ws/newui_Greyform")
+SCRIPT = WS / "safe_catkin_make.sh"
+ENV_SNAPSHOT = WS / ".env_after_build"
 
+def _run(cmd: str):
+    # Run a bash login shell to ensure /etc/profile is respected if needed
+    subprocess.run(["bash", "-lc", cmd], check=True)
+
+def ensure_built():
+    # Build if first run OR if devel/setup.bash missing
+    need = not (WS / "devel/setup.bash").exists()
+    if need:
+        _run(f"source /opt/ros/noetic/setup.bash && {shlex.quote(str(SCRIPT))}")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 1) Ensure build completed (blocks startup until done)
+    ensure_built()
+    # 2) Only now import and mount ros app (lazy import after build)
+    ros_module = importlib.import_module("backend.rosapp")
+    ros_app = getattr(ros_module, "app")
+    app.mount("/ros", ros_app)
+    yield
+    # (optional) shutdown cleanup
 
 app = FastAPI(title="Main API")
 app.add_middleware(
@@ -23,7 +42,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.mount("/ros", ros_app)
+
 app.mount("/build", catkin_builder)
 PIDFILE = Path("/tmp/greyform_ui.pid")
 LOCKFILE = Path("/tmp/greyform_ui.lock")

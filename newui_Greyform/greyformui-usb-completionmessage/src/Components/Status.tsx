@@ -61,7 +61,7 @@ export default function Status() {
   const v = views[state] ?? views.shutdown;
 
   const API = useMemo(() => {
-    const base = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+    const base = import.meta.env.VITE_API_URL ?? "http://localhost:800";
     return base.replace(/\/+$/, "");
   }, []);
 

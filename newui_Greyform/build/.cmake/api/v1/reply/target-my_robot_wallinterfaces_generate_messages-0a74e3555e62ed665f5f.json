@@ -45,12 +45,6 @@
 			{
 				"command" : 3,
 				"file" : 0,
-				"line" : 169,
-				"parent" : 3
-			},
-			{
-				"command" : 3,
-				"file" : 0,
 				"line" : 218,
 				"parent" : 3
 			},
@@ -58,6 +52,12 @@
 				"command" : 3,
 				"file" : 0,
 				"line" : 267,
+				"parent" : 3
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 169,
 				"parent" : 3
 			},
 			{
@@ -78,15 +78,15 @@
 	[
 		{
 			"backtrace" : 5,
-			"id" : "my_robot_wallinterfaces_generate_messages_lisp::@23ade3bbf8bd65bb1437"
-		},
-		{
-			"backtrace" : 6,
 			"id" : "my_robot_wallinterfaces_generate_messages_nodejs::@23ade3bbf8bd65bb1437"
 		},
 		{
-			"backtrace" : 7,
+			"backtrace" : 6,
 			"id" : "my_robot_wallinterfaces_generate_messages_py::@23ade3bbf8bd65bb1437"
+		},
+		{
+			"backtrace" : 7,
+			"id" : "my_robot_wallinterfaces_generate_messages_lisp::@23ade3bbf8bd65bb1437"
 		},
 		{
 			"backtrace" : 8,

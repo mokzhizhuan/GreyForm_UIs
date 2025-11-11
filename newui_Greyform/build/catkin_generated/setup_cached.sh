@@ -8,6 +8,9 @@
 
 # modified environment variables
 export CMAKE_PREFIX_PATH="/root/catkin_ws/newui_Greyform/build/devel:$CMAKE_PREFIX_PATH"
+export LD_LIBRARY_PATH="/root/catkin_ws/newui_Greyform/build/devel/lib:$LD_LIBRARY_PATH"
+export PKG_CONFIG_PATH="/root/catkin_ws/newui_Greyform/build/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
 export PWD='/root/catkin_ws/newui_Greyform/build'
+export PYTHONPATH="/root/catkin_ws/newui_Greyform/build/devel/lib/python3/dist-packages:$PYTHONPATH"
 export ROSLISP_PACKAGE_DIRECTORIES='/root/catkin_ws/newui_Greyform/build/devel/share/common-lisp'
 export ROS_PACKAGE_PATH="/root/catkin_ws/newui_Greyform/src:$ROS_PACKAGE_PATH"

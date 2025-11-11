@@ -1,15 +1,65 @@
+[fix] CMake cache referenced a package — resetting cache files
+-- The C compiler identification is GNU 9.4.0
+-- The CXX compiler identification is GNU 9.4.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Using CATKIN_DEVEL_PREFIX: /root/catkin_ws/newui_Greyform/build/devel
+-- Using CMAKE_PREFIX_PATH: /opt/ros/noetic
+-- This workspace overlays: /opt/ros/noetic
+-- Found PythonInterp: /root/.venvs/py39/bin/python3 (found suitable version "3.9.5", minimum required is "3") 
+-- Using PYTHON_EXECUTABLE: /root/.venvs/py39/bin/python3
+-- Using Debian Python package layout
+-- Found PY_em: /root/.venvs/py39/lib/python3.9/site-packages/em.py  
+-- Using empy: /root/.venvs/py39/lib/python3.9/site-packages/em.py
+-- Using CATKIN_ENABLE_TESTING: ON
+-- Call enable_testing()
+-- Using CATKIN_TEST_RESULTS_DIR: /root/catkin_ws/newui_Greyform/build/test_results
+-- Forcing gtest/gmock from source, though one was otherwise available.
+-- Found gtest sources under '/usr/src/googletest': gtests will be built
+-- Found gmock sources under '/usr/src/googletest': gmock will be built
+-- Found PythonInterp: /root/.venvs/py39/bin/python3 (found version "3.9.5") 
+-- Found Threads: TRUE  
+-- Using Python nosetests: /usr/bin/nosetests3
+-- catkin 0.8.12
+-- BUILD_SHARED_LIBS is on
+-- BUILD_SHARED_LIBS is on
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~  traversing 2 packages in topological order:
+-- ~~  - my_robot_wallinterfaces
+-- ~~  - talker_listener
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- +++ processing catkin package: 'my_robot_wallinterfaces'
+-- ==> add_subdirectory(my_robot_wallinterfaces)
+-- Using these message generators: gencpp;geneus;genlisp;gennodejs;genpy
+-- my_robot_wallinterfaces: 2 messages, 1 services
+-- +++ processing catkin package: 'talker_listener'
+-- ==> add_subdirectory(talker_listener)
+-- Using these message generators: gencpp;geneus;genlisp;gennodejs;genpy
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /root/catkin_ws/newui_Greyform/build
 [  0%] Built target std_msgs_generate_messages_cpp
-[  0%] Built target std_msgs_generate_messages_eus
-[  0%] Built target _my_robot_wallinterfaces_generate_messages_check_deps_SetLed
-[  0%] Built target _my_robot_wallinterfaces_generate_messages_check_deps_FileExtractionMessage
-[  0%] Built target _my_robot_wallinterfaces_generate_messages_check_deps_SelectionWall
+[  0%] Built target std_msgs_generate_messages_nodejs
 [  0%] Built target std_msgs_generate_messages_py
 [  0%] Built target std_msgs_generate_messages_lisp
-[  0%] Built target std_msgs_generate_messages_nodejs
-[ 16%] Built target my_robot_wallinterfaces_generate_messages_cpp
-[ 38%] Built target my_robot_wallinterfaces_generate_messages_eus
-[ 55%] Built target my_robot_wallinterfaces_generate_messages_nodejs
-[ 83%] Built target my_robot_wallinterfaces_generate_messages_py
+[  0%] Built target std_msgs_generate_messages_eus
+[  0%] Built target _my_robot_wallinterfaces_generate_messages_check_deps_SetLed
+[  0%] Built target _my_robot_wallinterfaces_generate_messages_check_deps_SelectionWall
+[  0%] Built target _my_robot_wallinterfaces_generate_messages_check_deps_FileExtractionMessage
+[ 27%] Built target my_robot_wallinterfaces_generate_messages_py
+[ 50%] Built target my_robot_wallinterfaces_generate_messages_eus
+[ 77%] Built target my_robot_wallinterfaces_generate_messages_cpp
+[ 83%] Built target my_robot_wallinterfaces_generate_messages_nodejs
 [100%] Built target my_robot_wallinterfaces_generate_messages_lisp
 [100%] Built target my_robot_wallinterfaces_generate_messages
 Base path: /root/catkin_ws/newui_Greyform
