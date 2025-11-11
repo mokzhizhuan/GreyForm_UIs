@@ -1,7 +1,7 @@
 file(REMOVE_RECURSE
-  "/root/catkin_ws/newui_Greyform/devel/share/common-lisp/ros/my_robot_wallinterfaces/msg/FileExtractionMessage.lisp"
-  "/root/catkin_ws/newui_Greyform/devel/share/common-lisp/ros/my_robot_wallinterfaces/msg/SelectionWall.lisp"
-  "/root/catkin_ws/newui_Greyform/devel/share/common-lisp/ros/my_robot_wallinterfaces/srv/SetLed.lisp"
+  "../devel/share/common-lisp/ros/my_robot_wallinterfaces/msg/FileExtractionMessage.lisp"
+  "../devel/share/common-lisp/ros/my_robot_wallinterfaces/msg/SelectionWall.lisp"
+  "../devel/share/common-lisp/ros/my_robot_wallinterfaces/srv/SetLed.lisp"
   "CMakeFiles/my_robot_wallinterfaces_generate_messages_lisp"
 )
 

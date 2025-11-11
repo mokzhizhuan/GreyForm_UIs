@@ -1,0 +1,26 @@
+[  0%] Built target std_msgs_generate_messages_cpp
+[  0%] Built target std_msgs_generate_messages_eus
+[  0%] Built target _my_robot_wallinterfaces_generate_messages_check_deps_SetLed
+[  0%] Built target _my_robot_wallinterfaces_generate_messages_check_deps_FileExtractionMessage
+[  0%] Built target _my_robot_wallinterfaces_generate_messages_check_deps_SelectionWall
+[  0%] Built target std_msgs_generate_messages_py
+[  0%] Built target std_msgs_generate_messages_lisp
+[  0%] Built target std_msgs_generate_messages_nodejs
+[ 16%] Built target my_robot_wallinterfaces_generate_messages_cpp
+[ 38%] Built target my_robot_wallinterfaces_generate_messages_eus
+[ 55%] Built target my_robot_wallinterfaces_generate_messages_nodejs
+[ 83%] Built target my_robot_wallinterfaces_generate_messages_py
+[100%] Built target my_robot_wallinterfaces_generate_messages_lisp
+[100%] Built target my_robot_wallinterfaces_generate_messages
+Base path: /root/catkin_ws/newui_Greyform
+Source space: /root/catkin_ws/newui_Greyform/src
+Build space: /root/catkin_ws/newui_Greyform/build
+Devel space: /root/catkin_ws/newui_Greyform/devel
+Install space: /root/catkin_ws/newui_Greyform/install
+####
+#### Running command: "make cmake_check_build_system" in "/root/catkin_ws/newui_Greyform/build"
+####
+####
+#### Running command: "make -j8 -l8" in "/root/catkin_ws/newui_Greyform/build"
+####
+[safe] build complete; overlay sourced. Env snapshot: /root/catkin_ws/newui_Greyform/.env_after_build

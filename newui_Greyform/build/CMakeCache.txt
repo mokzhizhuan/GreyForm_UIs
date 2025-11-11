@@ -23,9 +23,6 @@ BUILD_SHARED_LIBS:BOOL=ON
 //List of ';' separated packages to exclude
 CATKIN_BLACKLIST_PACKAGES:STRING=
 
-//catkin devel space
-CATKIN_DEVEL_PREFIX:PATH=/root/catkin_ws/newui_Greyform/devel
-
 //Catkin enable testing
 CATKIN_ENABLE_TESTING:BOOL=ON
 
@@ -162,7 +159,7 @@ CMAKE_INSTALL_MANDIR:PATH=
 CMAKE_INSTALL_OLDINCLUDEDIR:PATH=/usr/include
 
 //Install path prefix, prepended onto install directories.
-CMAKE_INSTALL_PREFIX:PATH=/root/catkin_ws/newui_Greyform/install
+CMAKE_INSTALL_PREFIX:PATH=/usr/local
 
 //Run-time variable data (LOCALSTATEDIR/run)
 CMAKE_INSTALL_RUNSTATEDIR:PATH=
@@ -477,7 +474,7 @@ message_runtime_DIR:PATH=/opt/ros/noetic/share/message_runtime/cmake
 my_robot_wallinterfaces_BINARY_DIR:STATIC=/root/catkin_ws/newui_Greyform/build/my_robot_wallinterfaces
 
 //The directory containing a CMake configuration file for my_robot_wallinterfaces.
-my_robot_wallinterfaces_DIR:PATH=/root/catkin_ws/newui_Greyform/devel/share/my_robot_wallinterfaces/cmake
+my_robot_wallinterfaces_DIR:PATH=/root/catkin_ws/newui_Greyform/build/devel/share/my_robot_wallinterfaces/cmake
 
 //Value Computed by CMake
 my_robot_wallinterfaces_SOURCE_DIR:STATIC=/root/catkin_ws/newui_Greyform/src/my_robot_wallinterfaces
@@ -735,7 +732,7 @@ PYTHON_EXECUTABLE-ADVANCED:INTERNAL=1
 // it will install things.
 PYTHON_INSTALL_DIR:INTERNAL=lib/python3/dist-packages
 //CMAKE_INSTALL_PREFIX during last run
-_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/root/catkin_ws/newui_Greyform/install
+_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/usr/local
 //ADVANCED property for variable: gmock_build_tests
 gmock_build_tests-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: gtest_build_samples

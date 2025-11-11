@@ -7,7 +7,7 @@
 # new environment variables
 
 # modified environment variables
-export CMAKE_PREFIX_PATH="/root/catkin_ws/newui_Greyform/devel:$CMAKE_PREFIX_PATH"
+export CMAKE_PREFIX_PATH="/root/catkin_ws/newui_Greyform/build/devel:$CMAKE_PREFIX_PATH"
 export PWD='/root/catkin_ws/newui_Greyform/build'
-export ROSLISP_PACKAGE_DIRECTORIES='/root/catkin_ws/newui_Greyform/devel/share/common-lisp'
+export ROSLISP_PACKAGE_DIRECTORIES='/root/catkin_ws/newui_Greyform/build/devel/share/common-lisp'
 export ROS_PACKAGE_PATH="/root/catkin_ws/newui_Greyform/src:$ROS_PACKAGE_PATH"

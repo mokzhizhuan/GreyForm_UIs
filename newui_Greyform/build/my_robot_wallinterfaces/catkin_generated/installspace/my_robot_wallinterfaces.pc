@@ -1,4 +1,4 @@
-prefix=/root/catkin_ws/newui_Greyform/install
+prefix=/usr/local
 
 Name: my_robot_wallinterfaces
 Description: Description of my_robot_wallinterfaces

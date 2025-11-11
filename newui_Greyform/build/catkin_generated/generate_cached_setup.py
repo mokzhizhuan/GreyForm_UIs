@@ -19,7 +19,7 @@ except ImportError:
             break
     from catkin.environment_cache import generate_environment_script
 
-code = generate_environment_script('/root/catkin_ws/newui_Greyform/devel/env.sh')
+code = generate_environment_script('/root/catkin_ws/newui_Greyform/build/devel/env.sh')
 
 output_filename = '/root/catkin_ws/newui_Greyform/build/catkin_generated/setup_cached.sh'
 with open(output_filename, 'w') as f:
