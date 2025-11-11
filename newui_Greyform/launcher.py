@@ -8,7 +8,7 @@ import subprocess
 from pathlib import Path
 
 HOST     = os.getenv("HOST", "0.0.0.0")
-PORT     = int(os.getenv("PORT", "8000"))
+PORT     = int(os.getenv("PORT", "800"))
 APP      = os.getenv("APP", "backend.main:app")
 WORKERS  = int(os.getenv("WORKERS", "1"))          # uvicorn --workers
 RELOAD   = os.getenv("RELOAD", "0") == "1"         # uvicorn --reload (dev)
