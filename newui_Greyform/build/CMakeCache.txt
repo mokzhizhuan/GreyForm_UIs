@@ -304,7 +304,7 @@ DOXYGEN_EXECUTABLE:FILEPATH=DOXYGEN_EXECUTABLE-NOTFOUND
 EMPY_EXECUTABLE:FILEPATH=EMPY_EXECUTABLE-NOTFOUND
 
 //Empy script
-EMPY_SCRIPT:STRING=/root/catkin_ws/newui_Greyform/.venv/lib/python3.9/site-packages/em.py
+EMPY_SCRIPT:STRING=/root/.venvs/py39/lib/python3.9/site-packages/em.py
 
 //Path to a library.
 GMOCK_LIBRARY:FILEPATH=GMOCK_LIBRARY-NOTFOUND
@@ -353,13 +353,13 @@ LSB_RELEASE_EXECUTABLE:FILEPATH=/usr/bin/lsb_release
 NOSETESTS:FILEPATH=/usr/bin/nosetests3
 
 //Path to a program.
-PYTHON_EXECUTABLE:FILEPATH=/root/catkin_ws/newui_Greyform/.venv/bin/python3
+PYTHON_EXECUTABLE:FILEPATH=/root/.venvs/py39/bin/python3
 
 //Specify specific Python version to use ('major.minor' or 'major')
 PYTHON_VERSION:STRING=3
 
 //Location of Python module em
-PY_EM:STRING=/root/catkin_ws/newui_Greyform/.venv/lib/python3.9/site-packages/em.py
+PY_EM:STRING=/root/.venvs/py39/lib/python3.9/site-packages/em.py
 
 //Value Computed by CMake
 Project_BINARY_DIR:STATIC=/root/catkin_ws/newui_Greyform/build
@@ -695,9 +695,9 @@ CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Details about finding PY_em
-FIND_PACKAGE_MESSAGE_DETAILS_PY_em:INTERNAL=[/root/catkin_ws/newui_Greyform/.venv/lib/python3.9/site-packages/em.py][v()]
+FIND_PACKAGE_MESSAGE_DETAILS_PY_em:INTERNAL=[/root/.venvs/py39/lib/python3.9/site-packages/em.py][v()]
 //Details about finding PythonInterp
-FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/root/catkin_ws/newui_Greyform/.venv/bin/python3][v3.9.5()]
+FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/root/.venvs/py39/bin/python3][v3.9.5()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 GMOCK_FROM_SOURCE_FOUND:INTERNAL=TRUE

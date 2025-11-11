@@ -4,7 +4,6 @@ from std_msgs.msg import String, Int32, Bool
 from my_robot_wallinterfaces.msg import (
     FileExtractionMessage,
     SelectionWall,
-    jointvaluesextract,
 )
 
 
@@ -17,9 +16,6 @@ class TalkerNode:
         )
         self.sel_pub = rospy.Publisher(
             "/selection_wall_topic", SelectionWall, queue_size=10
-        )
-        self.jointval_pub = rospy.Publisher(
-            "/joint_values_topic", SelectionWall, queue_size=10
         )
         self.ui_wall_started_pub = rospy.Publisher(
             "/ui/wall_started", String, queue_size=10, latch=True

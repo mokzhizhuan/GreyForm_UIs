@@ -27,23 +27,25 @@ def start_listener(restart: bool = False):
         return {"ok": True, "message": "Listener starting"}
     return {"ok": True, "message": "Listener already running"}
 
+class FileExecBody(BaseModel):
+    directory: str
+    excel_path: str
+
 @app.post("/file_execute_data")
-def file_execute_data(directory: str, excel_path: str , background: BackgroundTasks):
+def file_execute_data(body: FileExecBody, background: BackgroundTasks):
     r = _runner_instance()
     if not r.listener_started:
-        return {
-            "ok": False,
-            "error": "Listener not started. Call /ros/listener/start first.",
-        }
+        return {"ok": False, "error": "Listener not started. Call /ros/listener/start first."}
 
     def job():
-        r.file_selection_data(directory , excel_path)
+        r.file_selection_data(body.directory, body.excel_path)
+
     background.add_task(job)
     return {"ok": True, "queued": True}
 
 
-@app.post("/execute_wall_data")
-def execute_wall_data(rows: List[Dict[str, Any]], background: BackgroundTasks):
+@app.post("/execute_data")
+def execute_data(rows: List[Dict[str, Any]], background: BackgroundTasks):
     r = _runner_instance()
     if not r.listener_started:
         return {
@@ -55,12 +57,5 @@ def execute_wall_data(rows: List[Dict[str, Any]], background: BackgroundTasks):
         r.run_execution_data(rows)
     background.add_task(job)
     return {"ok": True, "queued": True}
-
-
-class JointValuesBody(BaseModel):
-    # Accept numbers or strings; we won't validate or round.
-    jointvalues: List[Union[float, str]] = Field(
-        ..., description="Array of joint values; no rounding/validation"
-    )
 
 
