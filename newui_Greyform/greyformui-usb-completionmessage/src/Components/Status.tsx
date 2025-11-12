@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import ModelSelection from "./ModelSelection";
 import ABBHOMEImage from '../assets/ABB Robot placeholder image.jpg';
 import LevellerImage from '../assets/Leveller.jpeg';
@@ -56,6 +56,28 @@ const views = {
   home_verified: { title: "Robot in HOME position", message: "You may now proceed to push the robot into the PBU.", variant: "success", primaryText: "I have completed the above steps. (Launch UI)", showSpinner: false },
 } as const;
 
+async function postWithRetries(
+  url: string,
+  data?: any,
+  config?: AxiosRequestConfig,
+  tries = 10,
+  delayMs = 400
+) {
+  let lastErr: any;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await axios.post(url, data, { timeout: 8000, ...(config || {}) });
+    } catch (e: any) {
+      lastErr = e;
+      // if it's a 4xx other than 409, don't retry (likely a real client error)
+      const code = e?.response?.status;
+      if (code && code !== 409 && code < 500) break;
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+  }
+  throw lastErr;
+}
+
 export default function Status() {
   const [state, setState] = useState<UsbState>("robot_connected");
   const v = views[state] ?? views.shutdown;
@@ -64,6 +86,33 @@ export default function Status() {
     const base = import.meta.env.VITE_API_URL ?? "http://localhost:800";
     return base.replace(/\/+$/, "");
   }, []);
+  const ran = useRef(false); // avoid double-run in React 18 StrictMode (dev)
+  useEffect(() => {
+    if (ran.current) return;
+    ran.current = true;
+
+    (async () => {
+      try {
+        // 1) Start ROS core (no restart param on your route)
+        await postWithRetries(`${API}/roscore/start`);
+        console.log("[auto] roscore started");
+      } catch (e: any) {
+        console.warn("[auto] roscore error:", e?.response?.data || e?.message);
+      }
+      try {
+        await postWithRetries(`${API}/build/start`);
+        console.log("[auto] build started");
+      } catch (e: any) {
+        console.warn("[auto] build error:", e?.response?.data || e?.message);
+      }
+
+      try {
+        await postWithRetries(`${API}/ros/listener/start`, null, { params: { restart: true } });
+        console.log("[auto] listener started");
+      } catch (e: any) {
+        console.warn("[auto] listener error:", e?.response?.data || e?.message);
+      }
+    })})
 
   const [usbPath, setUsbPath] = useState<string>("");
   const [uiPid, setUiPid] = useState<number | null>(null);
@@ -81,17 +130,21 @@ export default function Status() {
   const [isValidated, setIsValidated] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [ifcPath, setIfcPath] = useState<string | null>(null);
-
   const [robotIP, setRobotIP] = useState<string | null>(null); 
 
   const http = useMemo(() => {
-  const base = (import.meta.env.VITE_API_URL ?? "http://localhost:8000").replace(/\/+$/,"");
+  const base = (import.meta.env.VITE_API_URL ?? "http://localhost:800").replace(/\/+$/,"");
   return axios.create({
     baseURL: base,
     timeout: 0,        // no client-side timeout by default
   });
 }, [])
-
+async function autoKickOff() {
+  const buildRes = await axios.post(`${API}/build/start`);
+  console.log("[auto] build:", buildRes.data);
+  const listenerRes = await axios.post(`${API}/ros/listener/start`, null, { params: { restart: true }});
+  console.log("[auto] listener:", listenerRes.data);
+}
 function handleRobotConnect(ip: string) {
     setRobotIP(ip);       // Save the IP for future use
     setState("robot_connected");  // Main state updated
@@ -99,7 +152,7 @@ function handleRobotConnect(ip: string) {
     setErrorDetails("");  // Clear errors
   }
 
-
+  
   // Debug log
   useEffect(() => {
     console.log("[Status]", { state, usbPath, ifcPath, selectedModel, isValidated });
