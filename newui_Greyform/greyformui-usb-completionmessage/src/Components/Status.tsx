@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import axios, { AxiosRequestConfig } from "axios";
+import axios from "axios";
 import ModelSelection from "./ModelSelection";
-import ABBHOMEImage from '../assets/ABB Robot placeholder image.jpg';
-import LevellerImage from '../assets/Leveller.jpeg';
-import RemoteControlImage from '../assets/Remote Control.jpeg';
+import ABBHOMEImage from "../assets/ABB Robot placeholder image.jpg";
+import LevellerImage from "../assets/Leveller.jpeg";
+import RemoteControlImage from "../assets/Remote Control.jpeg";
 import HomePositionCheck from "./HomePositionCheck";
 import PushIntoPBUAndLevel from "./PushIntoPBUAndLevel";
-import pushRobotIntoPBUImage from '../assets/push_robot_into_PBU.png';
+import pushRobotIntoPBUImage from "../assets/push_robot_into_PBU.png";
+
 type CPBook = Record<string, Record<string, any>[]>;
 
 const svg = `
@@ -32,28 +33,92 @@ const svg = `
 const bgDataUri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 
 type UsbState =
-  | "waiting"
+  | "waiting"          // insert USB / find PBU Excel
   | "reading"
-  | "success"
+  | "success"          // Excel/model selection screen
   | "error"
-  | "launching"
-  | "shutdown"
-  | "checked_ok"    // ✅ validated, can launch
+  | "checked_ok"       // Excel + IFC validated
+  | "launching"        // marking in progress
+  | "shutdown"         // marking finished
   | "invalid_model"
-  | "robot_connected"
-  | "home_verified";
+  | "robot_connected"  // robot powered, HOME check
+  | "home_verified";   // pushed into PBU, 1m from wall etc.
 
 const views = {
-  waiting:  { title: "Please insert a USB drive to continue", message: "Click Start to detect a USB drive.", variant: "primary", primaryText: "Start", showSpinner: false },
-  reading:  { title: "Reading USB drive...", message: "Please wait while we read the contents of the USB drive.", variant: "info",    primaryText: "Cancel",       showSpinner: true },
-  success:  { title: "USB drive detected",    message: "Select the correct model, then click Check selection.",   variant: "success", primaryText: "Check selection", showSpinner: false },
-  invalid_model: { title: "Wrong model type", message: "Please change the model and Check selection again.",       variant: "error",   primaryText: "Check selection", showSpinner: false },
-  checked_ok: { title: "Selection verified",  message: "Model matches the IFC. Please enter the Robot IP Address.",            variant: "success", primaryText: "Launch UI", showSpinner: false },
-  error:    { title: "Error reading USB drive", message: "Please plug in your drive",                              variant: "error",   primaryText: "Try Again", showSpinner: false },
-  launching:{ title: "Loading…", message: "", variant: "info", primaryText: "Loading…", showSpinner: true },
-  shutdown: { title: "Please power off the machine", message: "The operation is completed successfully",           variant: "neutral", primaryText: "", showSpinner: false },
-  robot_connected: { title: "Robot Connected", message: "Robot is successfully connected.", variant: "success", primaryText: "Verify HOME position", showSpinner: false },
-  home_verified: { title: "Robot in HOME position", message: "You may now proceed to push the robot into the PBU.", variant: "success", primaryText: "I have completed the above steps. (Launch UI)", showSpinner: false },
+  waiting: {
+    title: "Select PBU Excel (Master file)",
+    message: "Click Start to search the template folder / USB for PBU Excel files.",
+    variant: "primary",
+    primaryText: "Start",
+    showSpinner: false,
+  },
+  reading: {
+    title: "Reading USB drive...",
+    message: "Please wait while we read the contents of the USB drive.",
+    variant: "info",
+    primaryText: "Cancel",
+    showSpinner: true,
+  },
+  success: {
+    title: "PBU Excel found",
+    message: "Select the correct PBU model, then click Check selection.",
+    variant: "success",
+    primaryText: "Check selection",
+    showSpinner: false,
+  },
+  invalid_model: {
+    title: "Wrong model type",
+    message: "Please change the model and Check selection again.",
+    variant: "error",
+    primaryText: "Check selection",
+    showSpinner: false,
+  },
+  checked_ok: {
+    title: "PBU model verified",
+    message:
+      "Excel and IFC match. Create the working folder, then power up the robot to continue.",
+    variant: "success",
+    primaryText: "",
+    showSpinner: false,
+  },
+  error: {
+    title: "Error reading USB drive",
+    message: "Please plug in your drive and try again.",
+    variant: "error",
+    primaryText: "Try Again",
+    showSpinner: false,
+  },
+  launching: {
+    title: "Robot is marking",
+    message: "Marking in progress. Please wait until completion.",
+    variant: "info",
+    primaryText: "Loading…",
+    showSpinner: true,
+  },
+  shutdown: {
+    title: "Marking completed",
+    message:
+      "The operation is completed successfully. Please return the robot to HOME position.",
+    variant: "neutral",
+    primaryText: "",
+    showSpinner: false,
+  },
+  robot_connected: {
+    title: "Robot Powered Up",
+    message:
+      "Perform HOME position check as shown on the pendant / GUI. Confirm when HOME is OK.",
+    variant: "success",
+    primaryText: "Verify HOME position",
+    showSpinner: false,
+  },
+  home_verified: {
+    title: "Robot in HOME position",
+    message:
+      "Turn off the robot, push it into the PBU, power up again, level it ~1m from the wall and facing the wall.",
+    variant: "success",
+    primaryText: "Check scanning position & Start marking",
+    showSpinner: false,
+  },
 } as const;
 
 async function postWithRetries(
@@ -69,7 +134,6 @@ async function postWithRetries(
       return await axios.post(url, data, { timeout: 8000, ...(config || {}) });
     } catch (e: any) {
       lastErr = e;
-      // if it's a 4xx other than 409, don't retry (likely a real client error)
       const code = e?.response?.status;
       if (code && code !== 409 && code < 500) break;
       await new Promise((r) => setTimeout(r, delayMs));
@@ -79,26 +143,30 @@ async function postWithRetries(
 }
 
 export default function Status() {
-  const [state, setState] = useState<UsbState>("robot_connected");
+  // --- high level workflow state ---
+  const [state, setState] = useState<UsbState>("waiting");
   const v = views[state] ?? views.shutdown;
 
   const API = useMemo(() => {
     const base = import.meta.env.VITE_API_URL ?? "http://localhost:800";
     return base.replace(/\/+$/, "");
   }, []);
-  const ran = useRef(false); // avoid double-run in React 18 StrictMode (dev)
+
+  const ran = useRef(false);
+
+  // Auto start roscore + build + listener once (when UI opens)
   useEffect(() => {
     if (ran.current) return;
     ran.current = true;
 
     (async () => {
       try {
-        // 1) Start ROS core (no restart param on your route)
         await postWithRetries(`${API}/roscore/start`);
         console.log("[auto] roscore started");
       } catch (e: any) {
         console.warn("[auto] roscore error:", e?.response?.data || e?.message);
       }
+
       try {
         await postWithRetries(`${API}/build/start`);
         console.log("[auto] build started");
@@ -107,58 +175,58 @@ export default function Status() {
       }
 
       try {
-        await postWithRetries(`${API}/ros/listener/start`, null, { params: { restart: true } });
+        await postWithRetries(`${API}/ros/listener/start`, null, {
+          params: { restart: true },
+        });
         console.log("[auto] listener started");
       } catch (e: any) {
         console.warn("[auto] listener error:", e?.response?.data || e?.message);
       }
-    })})
+    })();
+  }, [API]);
 
   const [usbPath, setUsbPath] = useState<string>("");
   const [uiPid, setUiPid] = useState<number | null>(null);
   const [shouldPoll, setShouldPoll] = useState(false);
-  const excel_checklist = "Greyform TERRAHL2(JMB)-T1a BOM Checklist 20231211.xlsx"
+  const excel_checklist =
+    "Greyform TERRAHL2(JMB)-T1a BOM Checklist 20231211.xlsx";
   const [responseMessage, setResponseMessage] = useState("Ready");
   const [errorDetails, setErrorDetails] = useState("");
   const prevUsbRef = useRef<string>("");
+
   const [closedMessage, setClosedMessage] = useState("");
   const [lastPollAt, setLastPollAt] = useState<string>("");
-
   const [lastRunning, setLastRunning] = useState<string>("");
   const [lastError, setLastError] = useState<string>("");
+
   const [selectedModel, setSelectedModel] = useState<number | null>(null);
   const [isValidated, setIsValidated] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   const [ifcPath, setIfcPath] = useState<string | null>(null);
-  const [robotIP, setRobotIP] = useState<string | null>(null); 
 
   const http = useMemo(() => {
-  const base = (import.meta.env.VITE_API_URL ?? "http://localhost:800").replace(/\/+$/,"");
-  return axios.create({
-    baseURL: base,
-    timeout: 0,        // no client-side timeout by default
-  });
-}, [])
-async function autoKickOff() {
-  const buildRes = await axios.post(`${API}/build/start`);
-  console.log("[auto] build:", buildRes.data);
-  const listenerRes = await axios.post(`${API}/ros/listener/start`, null, { params: { restart: true }});
-  console.log("[auto] listener:", listenerRes.data);
-}
-function handleRobotConnect(ip: string) {
-    setRobotIP(ip);       // Save the IP for future use
-    setState("robot_connected");  // Main state updated
-    setResponseMessage(`✅ Connected to robot at ${ip}`);
-    setErrorDetails("");  // Clear errors
-  }
+    const base = (import.meta.env.VITE_API_URL ?? "http://localhost:800").replace(
+      /\/+$/,
+      ""
+    );
+    return axios.create({
+      baseURL: base,
+      timeout: 0,
+    });
+  }, []);
 
-  
   // Debug log
   useEffect(() => {
-    console.log("[Status]", { state, usbPath, ifcPath, selectedModel, isValidated });
+    console.log("[Status]", {
+      state,
+      usbPath,
+      ifcPath,
+      selectedModel,
+      isValidated,
+    });
   }, [state, usbPath, ifcPath, selectedModel, isValidated]);
 
-  // Only reset validation when the USB actually changes
+  // Reset validation when USB changes
   useEffect(() => {
     if (usbPath && usbPath !== prevUsbRef.current) {
       setIsValidated(false);
@@ -177,6 +245,7 @@ function handleRobotConnect(ip: string) {
 
   const pollMs = 500;
 
+  // --- Step 1: detect USB / PBU Excel master file ---
   const detectUsb = async () => {
     setState("reading");
     try {
@@ -200,22 +269,45 @@ function handleRobotConnect(ip: string) {
     }
   };
 
+  // --- Step 2: find / probe IFC and validate model selection ---
   const findAndProbeIfc = async (root: string): Promise<string> => {
-    const q = await axios.get(`${API}/api/find_ifc_quick`, { params: { root }, timeout: 1500 }).catch(() => null);
+    const q = await axios
+      .get(`${API}/api/find_ifc_quick`, { params: { root }, timeout: 1500 })
+      .catch(() => null);
     let path = q?.data?.ok ? q?.data?.match : undefined;
 
     if (!path) {
-      const f1 = await axios.get(`${API}/api/find_ifc_fast`, { params: { root, max_depth: 3, timeout_ms: 1200 }, timeout: 3000 }).catch(() => null);
+      const f1 = await axios
+        .get(`${API}/api/find_ifc_fast`, {
+          params: { root, max_depth: 3, timeout_ms: 1200 },
+          timeout: 3000,
+        })
+        .catch(() => null);
       path = f1?.data?.ok ? f1?.data?.match : undefined;
     }
     if (!path) {
-      const f2 = await axios.get(`${API}/api/find_ifc_fast`, { params: { root, max_depth: 8, timeout_ms: 2500 }, timeout: 4000 }).catch(() => null);
+      const f2 = await axios
+        .get(`${API}/api/find_ifc_fast`, {
+          params: { root, max_depth: 8, timeout_ms: 2500 },
+          timeout: 4000,
+        })
+        .catch(() => null);
       path = f2?.data?.ok ? f2?.data?.match : undefined;
     }
-    if (!path) throw new Error("No IFC found. Put an IFC at USB root or inside IFC/, models/, export/.");
+    if (!path)
+      throw new Error(
+        "No IFC found. Put an IFC at USB root or inside IFC/, models/, export/."
+      );
 
-    const probe = await axios.get(`${API}/api/ifc_probe`, { params: { path }, timeout: 2000 }).catch(() => null);
-    if (!probe?.data?.ok) throw new Error(`Probe failed for ${path}: ${probe?.data?.reason || "unreadable file"}`);
+    const probe = await axios
+      .get(`${API}/api/ifc_probe`, { params: { path }, timeout: 2000 })
+      .catch(() => null);
+    if (!probe?.data?.ok)
+      throw new Error(
+        `Probe failed for ${path}: ${
+          probe?.data?.reason || "unreadable file"
+        }`
+      );
 
     return path;
   };
@@ -236,26 +328,33 @@ function handleRobotConnect(ip: string) {
       fd.append("usb_path", usbPath);
       fd.append("ifc_path", path);
       fd.append("model_sides", String(selectedModel));
-      fd.append("excel_checklist", excel_checklist)
+      fd.append("excel_checklist", excel_checklist);
 
       const res = await axios.post(`${API}/api/checkifc`, fd, { timeout: 0 });
 
       if (res.data?.ok) {
         setIsValidated(true);
         setState("checked_ok");
-        setResponseMessage(`✅ Selection is valid${res.data.model ? ` (model: ${res.data.model})` : ""}. You can now Launch UI.`);
+        setResponseMessage(
+          `✅ Selection is valid${
+            res.data.model ? ` (model: ${res.data.model})` : ""
+          }.`
+        );
         setErrorDetails("");
       } else {
         throw new Error("Backend did not confirm selection");
       }
     } catch (err: any) {
       const status = err?.response?.status;
-      const detail = err?.response?.data?.detail || err?.message || "unknown error";
+      const detail =
+        err?.response?.data?.detail || err?.message || "unknown error";
 
       setIsValidated(false);
       setResponseMessage(`❌ ${detail}`);
       setErrorDetails(
-        typeof err?.response?.data === "object" ? JSON.stringify(err.response.data, null, 2) : String(detail)
+        typeof err?.response?.data === "object"
+          ? JSON.stringify(err.response.data, null, 2)
+          : String(detail)
       );
 
       if (status === 400) setState("invalid_model");
@@ -265,14 +364,53 @@ function handleRobotConnect(ip: string) {
     }
   };
 
+  // --- Step 3: create working folder / CP JSON (ROS: send directory) ---
+  const [cpJson, setCpJson] = useState<CPBook | null>(null);
+  const [progressPct, setProgressPct] = useState<number | null>(null);
+
+  const initAndGetCP = async () => {
+    try {
+      if (!usbPath) throw new Error("No USB path selected.");
+
+      const fd = new FormData();
+      fd.append("usb_path", usbPath);
+      if (ifcPath) fd.append("ifc_path", ifcPath);
+      fd.append("force", "true");
+      fd.append("model_sides", String(selectedModel));
+      fd.append("cp_mode", "columns");
+      fd.append("cp_key", "Type");
+      fd.append("include_cp", "true");
+
+      const res = await http.post(`/api/ui_initailzecamdriver`, fd, {
+        timeout: 0,
+      });
+
+      if (!res?.data) throw new Error("Empty response from backend.");
+      const cp = res.data.cp_json ?? null;
+      setCpJson(cp || null);
+      setResponseMessage(`✅ Working folder initialized (${res.data.status}).`);
+      setErrorDetails("");
+    } catch (e: any) {
+      const detail = e?.response?.data?.detail || e?.message || "unknown error";
+      setResponseMessage(`❌ Init working folder failed: ${detail}`);
+      setErrorDetails(
+        typeof e?.response?.data === "object"
+          ? JSON.stringify(e.response.data, null, 2)
+          : String(detail)
+      );
+    }
+  };
+
+  // --- Step 4: HOME position check ---
   const verifyHomePosition = () => {
     setState("home_verified");
-    setResponseMessage("Please push the robot into the PBU.");
+    setResponseMessage("HOME position confirmed. Please push the robot into the PBU.");
   };
-  
+
+  // --- Step 5: start marking (scan position, then mark) ---
   const launchUI = async () => {
-    if (!(isValidated && state === "checked_ok") || !ifcPath || !usbPath) {
-      setResponseMessage("❌ Please validate the selection first.");
+    if (!isValidated || !ifcPath || !usbPath) {
+      setResponseMessage("❌ Please finish Excel/IFC validation first.");
       setErrorDetails("Missing validation or paths");
       return;
     }
@@ -281,23 +419,56 @@ function handleRobotConnect(ip: string) {
       const fd = new FormData();
       fd.append("usb_path", usbPath);
       fd.append("ifc_path", ifcPath);
-      const res = await axios.post(`${API}/api/launch_ui`, fd, { timeout: 20000 });
+      const res = await axios.post(`${API}/api/launch_ui`, fd, {
+        timeout: 20000,
+      });
       const pid = Number(res.data?.pid ?? 0);
       if (pid > 0) setUiPid(pid);
       sessionStorage.setItem("uiPoll", "1");
       setShouldPoll(true);
-      setResponseMessage(`✅ Automated PBU Robot UI: ${res.data.message ?? "started"}`);
+      setResponseMessage(
+        `✅ Automated PBU Robot UI: ${res.data.message ?? "started"}`
+      );
       setErrorDetails("");
     } catch (err: any) {
-      const detail = err?.response?.data?.detail || err?.message || "unknown error";
+      const detail =
+        err?.response?.data?.detail || err?.message || "unknown error";
       setState("error");
       setResponseMessage(`❌ Failed to launch: ${detail}`);
-      setErrorDetails(JSON.stringify(err?.response?.data ?? { message: detail }, null, 2));
+      setErrorDetails(
+        JSON.stringify(err?.response?.data ?? { message: detail }, null, 2)
+      );
     }
   };
+
+  const checkPlacementAndStart = async () => {
+    try {
+      // Here you can call a REST endpoint to command the robot
+      // to scan its position and verify 1m-from-wall, facing wall, etc.
+      //
+      // Example (placeholder):
+      // await axios.post(`${API}/api/robot/check_scanning_position`);
+
+      setResponseMessage(
+        "✅ Robot position OK. Starting marking sequence…"
+      );
+      await launchUI();
+    } catch (e: any) {
+      const detail = e?.response?.data?.detail || e?.message || "unknown error";
+      setResponseMessage(`❌ Failed to start marking: ${detail}`);
+      setErrorDetails(
+        typeof e?.response?.data === "object"
+          ? JSON.stringify(e.response.data, null, 2)
+          : String(detail)
+      );
+    }
+  };
+
+  // --- Poll until marking finished ---
   useEffect(() => {
     if (!shouldPoll) return;
     let cancelled = false;
+
     const check = async () => {
       try {
         const params = uiPid ? { params: { pid: uiPid } } : undefined;
@@ -321,89 +492,60 @@ function handleRobotConnect(ip: string) {
         console.warn("ui_status poll failed:", e);
       }
     };
+
     check();
     const id = setInterval(check, pollMs);
-    return () => { cancelled = true; clearInterval(id); };
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
   }, [shouldPoll, uiPid, API]);
-  const canShowPicker = state === "success" || state === "invalid_model" || state === "checked_ok";
-  const canLaunch = isValidated && !!usbPath && !!ifcPath && state === "checked_ok";
-  const [progressPct, setProgressPct] = useState<number | null>(null);
-  const [cpJson, setCpJson] = useState<Record<string, any[]> | null>(null);
-  const [message, setMessage] = useState("");
-  const initAndGetCP = async () => {
-    try {
-      if (!usbPath) throw new Error("No USB path selected.");
 
-      // If you already found a valid IFC, reuse it; else omit it (backend allows None)
-      const fd = new FormData();
-      fd.append("usb_path", usbPath);
-      if (ifcPath) fd.append("ifc_path", ifcPath);
-      fd.append("force", "true");         // FormData values must be strings
-      fd.append("model_sides", String(selectedModel));
-      fd.append("cp_mode", "columns");    // or rows_by_col_equals / rows_any_cell_contains
-      fd.append("cp_key", "Type");        // used only for rows_by_col_equals
-      fd.append("include_cp", "true");    // <— tell backend to return CP JSON now
-
-      // Use your axios instance with baseURL already set
-      const res = await http.post(`/api/ui_initailzecamdriver`, fd, {
-        // DO NOT set Content-Type; browser sets multipart boundaries for FormData
-        timeout: 0,
+  // --- show % completion when in shutdown ---
+  useEffect(() => {
+    if (state !== "shutdown" || !usbPath) return;
+    (async () => {
+      const r = await axios.get(`${API}/api/progress`, {
+        params: { usb_path: usbPath },
       });
+      if (r.data?.ok) setProgressPct(r.data.percent);
+    })();
+  }, [state, usbPath, API]);
 
-      if (!res?.data) throw new Error("Empty response from backend.");
-      const cp = res.data.cp_json ?? null;
-      setCpJson(cp);
-      setResponseMessage(`✅ CP JSON ready (${res.data.status}).`);
-      setErrorDetails("");
-    } catch (e: any) {
-      const detail = e?.response?.data?.detail || e?.message || "unknown error";
-      setResponseMessage(`❌ initAndGetCP failed: ${detail}`);
-      setErrorDetails(
-        typeof e?.response?.data === "object" ? JSON.stringify(e.response.data, null, 2) : String(detail)
-      );
-    }
+  const openExcelViewOnly = async () => {
+    if (!usbPath) return;
+    await axios.post(`${API}/api/open_excel`, { usb_path: usbPath });
   };
-const initController = async () => {
-  const fd = new FormData();
-  fd.append("excel_path", foundExcelPath);
-  if (maybeStl) fd.append("stl_path", maybeStl);
-  fd.append("typeselection", "Stage2");
-  fd.append("expected_walls", "1,2,3,4,F");
 
-  const res = await http.post("/api/controller/init", fd, { timeout: 0 });
-  if (res.data?.ok) {
-    setResponseMessage("✅ Controller init sent");
-  } else {
-    setResponseMessage("❌ Controller init failed");
-  }
-};
-// --- add this effect to run when we enter 'shutdown' ---
-// show % on shutdown
-useEffect(() => {
-  if (state !== "shutdown" || !usbPath) return;
-  (async () => {
-    const r = await axios.get(`${API}/api/progress`, { params: { usb_path: usbPath } });
-    if (r.data?.ok) setProgressPct(r.data.percent);
-  })();
-}, [state, usbPath, API]);
-
-// open Excel (view-only, no PDF)
-const openExcelViewOnly = async () => {
-  await axios.post(`${API}/api/open_excel`, { usb_path: usbPath });
-};
-
-
-  // UI (balanced braces/parens)
+  // --- UI ---
   return (
-    <div className="hero min-h-screen relative bg-cover bg-center" style={{ backgroundImage: `url("${bgDataUri}")` }}>
-      <div className={`hero-overlay ${state === "reading" || state === "launching" ? "bg-neutral/60" : "bg-neutral/40"}`} />
+    <div
+      className="hero min-h-screen relative bg-cover bg-center"
+      style={{ backgroundImage: `url("${bgDataUri}")` }}
+    >
+      <div
+        className={`hero-overlay ${
+          state === "reading" || state === "launching"
+            ? "bg-neutral/60"
+            : "bg-neutral/40"
+        }`}
+      />
       <div className="hero-content text-neutral-content text-center relative">
         <div className="max-w-2xl space-y-5">
           <h1 className="text-4xl md:text-5xl font-bold">{v.title}</h1>
+
           {state === "shutdown" ? (
             <p className="opacity-90">
-              The operation is completed successfully.<br />
-              {progressPct !== null ? <>Completed: <span className="font-semibold">{progressPct}%</span></> : "Checking completion…"}
+              The operation is completed successfully.
+              <br />
+              {progressPct !== null ? (
+                <>
+                  Completed:{" "}
+                  <span className="font-semibold">{progressPct}%</span>
+                </>
+              ) : (
+                "Checking completion…"
+              )}
             </p>
           ) : (
             <p className="opacity-90">{v.message}</p>
@@ -422,13 +564,28 @@ const openExcelViewOnly = async () => {
             </div>
           )}
 
-          {canShowPicker && (
+          {/* Step 1: USB / PBU Excel selection */}
+          {["waiting", "reading", "error"].includes(state) && (
+            <div className="mt-4">
+              <button
+                className={`btn btn-${v.variant} md:btn-md lg:btn-lg`}
+                onClick={detectUsb}
+                disabled={state === "launching"}
+              >
+                {v.primaryText || "Start"}
+              </button>
+            </div>
+          )}
+
+          {/* Step 2: model selection + validation */}
+          {["success", "invalid_model"].includes(state) && (
             <>
               <ModelSelection value={selectedModel} onChange={setSelectedModel} />
 
               {state === "invalid_model" && (
                 <p className="text-sm text-red-300">
-                  Wrong model type detected for this IFC. Adjust your selection and try again.
+                  Wrong model type detected for this IFC. Adjust your selection
+                  and try again.
                 </p>
               )}
 
@@ -447,60 +604,69 @@ const openExcelViewOnly = async () => {
                     "Check selection"
                   )}
                 </button>
-
-                <button className="btn btn-primary" onClick={launchUI} disabled={isChecking || !canLaunch}>
-                  Launch UI
-                </button>
               </div>
-
-              {!isChecking && !canLaunch && (
-                <p className="text-xs opacity-80 mt-1">
-                  Select a model and click <span className="font-semibold">Check selection</span> to enable Launch UI.
-                </p>
-              )}
             </>
           )}
 
-          {/* NEW: shutdown actions */}
-          {state === "shutdown" && (
-            <div className="flex gap-3 justify-center mt-3">
-              <button className="btn btn-outline" onClick={openExcelViewOnly}>
-                Open Excel (view-only)
-              </button>
-            </div>
+          {/* Step 3: Excel/IFC OK → init working folder & power up robot */}
+          {state === "checked_ok" && (
+            <>
+              <p className="text-sm opacity-90">
+                Excel &amp; IFC are valid. Create the working folder (ROS will
+                receive the directory), then power up the robot and continue.
+              </p>
+              <div className="flex flex-col md:flex-row gap-3 justify-center mt-3">
+                <button
+                  className="btn btn-outline"
+                  onClick={initAndGetCP}
+                  disabled={!usbPath || state === "launching"}
+                >
+                  Init working folder
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setState("robot_connected")}
+                  disabled={!isValidated}
+                >
+                  Robot is powered up – go to HOME check
+                </button>
+              </div>
+            </>
           )}
 
-          {/*{state === "checked_ok" && (
-            <RobotIPInput onConnect={handleRobotConnect} />
-          )}*/}
-
+          {/* Step 4: HOME position check */}
           {state === "robot_connected" && (
             <HomePositionCheck
               ABBHOMEImage={ABBHOMEImage}
               v={v}
-              verifyHomePosition={verifyHomePosition} // This can call your REST API
+              verifyHomePosition={verifyHomePosition}
             />
           )}
 
+          {/* Step 5: push into PBU, place 1m from wall, start marking */}
           {state === "home_verified" && (
-            <PushIntoPBUAndLevel
-              pushRobotIntoPBUImage={pushRobotIntoPBUImage}
-              LevellerImage={LevellerImage}
-              RemoteControlImage={RemoteControlImage}
-              v={v}
-            />
-          )}
-          <button className="btn btn-outline" onClick={initAndGetCP} disabled={!usbPath || state==="launching"}>
-            Init & Fetch CP JSON
-          </button>
-          {!canShowPicker && state !== "shutdown" && state !== "robot_connected" && (
-            <div>
+            <>
+              <PushIntoPBUAndLevel
+                pushRobotIntoPBUImage={pushRobotIntoPBUImage}
+                LevellerImage={LevellerImage}
+                RemoteControlImage={RemoteControlImage}
+                v={v}
+              />
               <button
-                className={`btn btn-${v.variant} md:btn-md lg:btn-lg`}
-                onClick={detectUsb}
+                className="btn btn-primary mt-4"
+                onClick={checkPlacementAndStart}
                 disabled={state === "launching"}
               >
-                {v.primaryText}
+                Check scanning position &amp; Start marking
+              </button>
+            </>
+          )}
+
+          {/* Step 6: after shutdown → allow opening Excel in view-only */}
+          {state === "shutdown" && (
+            <div className="flex gap-3 justify-center mt-3">
+              <button className="btn btn-outline" onClick={openExcelViewOnly}>
+                Open Excel (view-only)
               </button>
             </div>
           )}

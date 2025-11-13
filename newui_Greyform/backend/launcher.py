@@ -8,11 +8,11 @@ import subprocess
 from pathlib import Path
 
 HOST     = os.getenv("HOST", "0.0.0.0")
-PORT     = int(os.getenv("PORT", "800"))
+PORT     = 800                                      # <– FORCE 800 here
 APP      = os.getenv("APP", "backend.main:app")
-WORKERS  = int(os.getenv("WORKERS", "1"))          # uvicorn --workers
-RELOAD   = os.getenv("RELOAD", "0") == "1"         # uvicorn --reload (dev)
-EXTRA    = os.getenv("UVICORN_EXTRA", "")          # any extra flags
+WORKERS  = int(os.getenv("WORKERS", "1"))           # uvicorn --workers
+RELOAD   = os.getenv("RELOAD", "0") == "1"          # uvicorn --reload (dev)
+EXTRA    = os.getenv("UVICORN_EXTRA", "")
 CHECK_HOSTS = [
     os.getenv("CHECK_HOST", "127.0.0.1"),
     "localhost",

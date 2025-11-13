@@ -2,9 +2,15 @@
 const { spawn } = require("child_process");
 const path = require("path");
 
-// adjust names here if you rename folders
-const FRONTEND_DIR = path.join(__dirname, "..", "greyformui-usb-completionmessage");
-const LAUNCHER     = process.env.LAUNCHER_PATH || path.join("backend", "launcher.py");
+// root of catkin_ws (two levels up from scripts/)
+const ROOT_DIR = path.resolve(__dirname, "..");
+
+// paths to frontend + backend/launcher.py
+const FRONTEND_DIR = process.env.FRONTEND_DIR
+  || path.join(ROOT_DIR, "greyformui-usb-completionmessage");
+
+const LAUNCHER = process.env.LAUNCHER_PATH
+  || path.join(ROOT_DIR, "backend", "launcher.py");
 
 // choose python executable
 const PYTHON_CMD = process.env.PYTHON_CMD || (process.platform === "win32" ? "python" : "python3");
@@ -13,12 +19,15 @@ const PYTHON_CMD = process.env.PYTHON_CMD || (process.platform === "win32" ? "py
 const API_ENV = {
   ...process.env,
   HOST: process.env.HOST || "127.0.0.1",
-  PORT: process.env.PORT || "8000",
+  PORT: process.env.PORT || "800",
   APP: process.env.APP || "backend.main:app",
   WORKERS: process.env.WORKERS || "1",
-  RELOAD: process.env.RELOAD || "1",            // 1 in dev, 0 in prod
+  RELOAD: process.env.RELOAD || "1",             // 1 in dev, 0 in prod
   UVICORN_EXTRA: process.env.UVICORN_EXTRA || "",// e.g. "--proxy-headers"
+  // 🔴 Add this line:
+  PYTHONPATH: ROOT_DIR + (process.env.PYTHONPATH ? path.delimiter + process.env.PYTHONPATH : ""),
 };
+
 
 function run(cmd, args, name, opts = {}) {
   const child = spawn(cmd, args, {
@@ -49,11 +58,20 @@ let shuttingDown = false;
 
 function startAll() {
   console.log("[manager] starting API via launcher...");
-  apiProc = run(PYTHON_CMD, [LAUNCHER, "start"], "API", { env: API_ENV });
+  apiProc = run(
+    PYTHON_CMD,
+    [LAUNCHER, "start"],
+    "API",
+    {
+      env: API_ENV,
+      cwd: ROOT_DIR,      // 🔴 make sure we start launcher.py from project root
+    }
+  );
 
   console.log("[manager] starting UI (npm start)...");
   uiProc  = run("npm", ["run", "start"], "UI", { cwd: FRONTEND_DIR });
 }
+
 
 async function stopAPI() {
   return new Promise((resolve) => {

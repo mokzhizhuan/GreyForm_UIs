@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node ../scripts/start-all.js",
     "dev": "vite",
+    "start": "vite --host 0.0.0.0 --port 5174",
     "build": "tsc -b && vite build",
-    "dev:all": "node ../scripts/start-all.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
