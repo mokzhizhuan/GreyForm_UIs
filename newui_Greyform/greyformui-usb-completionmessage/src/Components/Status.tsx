@@ -159,7 +159,7 @@ async function getRobotJointTarget(): Promise<JointTargetResponse> {
     }
 } 
 
-interface RunRosResponse {
+interface RunScriptResponse {
   ok: boolean;
   data: string | null;  // matched line or null if nothing triggered
 }
@@ -175,15 +175,17 @@ async function readDirectory(): Promise<ReadDirectoryResponse> {
   // no body, just POST
   console.log("readDirectoryAPI triggered!")
   const res = await axios.post<ReadDirectoryResponse>(`${API}/read_directory`);
-  if (res.data?.ok){ setAppState("home_position_setup")} 
+  if (res.data?.ok){ 
+    console.log(res.data)
+    setAppState("home_position_setup")} 
   else{
       console.warn("readDirectoryAPI returned ok=false", res.data);
     }
 }
 
 // Call /run_ros (no body)
-async function runRos(): Promise<RunRosResponse> {
-  const res = await axios.post<RunRosResponse>(`${API}/run_ros`);
+async function run_script(): Promise<RunScriptResponse> {
+  const res = await axios.post<RunScriptResponse>(`${API}/run_script`);
   return res.data;
 }
 

@@ -5,9 +5,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import requests, subprocess
-import json
-import threading
-import time
+import argparse
+from pathlib import Path
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--rootdir", type=Path, default=Path.cwd())
+args = parser.parse_args()
+
+ROOTDIR = args.rootdir.resolve()
 
 import backend.jointtargetip as jointip
 
@@ -108,7 +113,16 @@ def validate_placement(body: PlacementRequest):
 @app.post("/read_directory")
 def read_directory():
     process = subprocess.Popen(
-        ["ssh", "winsys@192.168.131.5", "ls", "/root/"],
+        [
+            "sshpass",
+            "-p",
+            "winsys",
+            "ssh",
+            "winsys@192.168.131.5",
+            "ls",
+            "/home/",
+            f"{ROOTDIR}/TERRAHL2-FP-MB-T1am(JMB)_out.xlsx",
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
@@ -116,10 +130,9 @@ def read_directory():
     )
 
     lines: list[str] = []
-    if process.stdout is not None:
-        for line in process.stdout:
-            # collect lines from ssh output
-            lines.append(line.rstrip("\n"))
+    for line in process.stdout:
+        # collect lines from ssh output
+        lines.append(line.rstrip("\n"))
 
     process.wait()
 
@@ -136,8 +149,8 @@ def read_directory():
     }
 
 
-@app.post("/run_ros")
-def run_ros():
+@app.post("/run_script")
+def run_script():
     process = subprocess.Popen(
         ["./run-marking.sh", "--pbu", "1", "--wall", "4"],
         stdout=subprocess.PIPE,
