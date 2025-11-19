@@ -3,6 +3,7 @@ import axios from "axios";
 
 import placementOne from "../assets/four_wall_flow/4_wall_flow_placement1.jpg";
 import wallMarking from "../assets/four_wall_flow/wall_marking_4_walls.jpg";
+import { API_BASE_URL } from "./config";
 
 type StepStatus = "idle" | "pending" | "success" | "error";
 
@@ -57,11 +58,6 @@ const FourWallFlow: React.FC = () => {
     };
   }, []);
 
-  const API = useMemo(() => {
-    const base = import.meta.env.VITE_API_URL ?? "http://localhost:800";
-    return base.replace(/\/+$/, "");
-  }, []);
-
   // derive a user-facing status message based on step and status
   const statusMessage = (() => {
     if (status === "pending") {
@@ -114,7 +110,7 @@ const FourWallFlow: React.FC = () => {
     setStatus("pending");
     setProgress(null);
     try {
-      const res = await axios.post(`${API}/validate_placement`, {
+      const res = await axios.post(`${API_BASE_URL}/validate_placement`, {
         step: "placement",
       });
 

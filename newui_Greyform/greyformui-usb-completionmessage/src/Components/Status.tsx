@@ -3,8 +3,8 @@ import axios from "axios";
 import type { AxiosRequestConfig } from "axios";
 
 import SelectPBU from "./SelectPBU";
-import DetectPBU from "./DetectPBU"
-import { getRobotJointTarget } from "../services/robotAPI";
+import DetectPBU from "./DetectPBU";
+import { API_BASE_URL } from "./config";
 import HomePositionCheck from "./HomePositionCheck";
 import HomeVerified from "./HomeVerified";
 import FourWallFlow from "./FourWallFlow";
@@ -134,11 +134,6 @@ export default function Status() {
   >("idle");
   const [autoBootError, setAutoBootError] = useState<string | null>(null);
 
-  const API = useMemo(() => {
-    const base = import.meta.env.VITE_API_URL ?? "http://localhost:800";
-    return base.replace(/\/+$/, "");
-  }, []);
-
 
   
 interface JointTargetResponse {
@@ -150,7 +145,7 @@ interface JointTargetResponse {
 async function getRobotJointTarget(): Promise<JointTargetResponse> {
   console.log("API triggered at /jointtarget/connection");
   const res = await axios.get<JointTargetResponse>(
-    `${API}/jointtarget/connection`
+    `${API_BASE_URL}/jointtarget/connection`
   );
   console.log(res.data)
   if (res.data?.ok){ setAppState("home_verified")} 
@@ -174,7 +169,7 @@ interface ReadDirectoryResponse {
 async function readDirectory(): Promise<ReadDirectoryResponse> {
   // no body, just POST
   console.log("readDirectoryAPI triggered!")
-  const res = await axios.post<ReadDirectoryResponse>(`${API}/read_directory`);
+  const res = await axios.post<ReadDirectoryResponse>(`${API_BASE_URL}/read_directory`);
   if (res.data?.ok){ 
     console.log(res.data)
     setAppState("home_position_setup")} 
@@ -185,7 +180,7 @@ async function readDirectory(): Promise<ReadDirectoryResponse> {
 
 // Call /run_ros (no body)
 async function run_script(): Promise<RunScriptResponse> {
-  const res = await axios.post<RunScriptResponse>(`${API}/run_script`);
+  const res = await axios.post<RunScriptResponse>(`${API_BASE_URL}/run_script`);
   return res.data;
 }
 
