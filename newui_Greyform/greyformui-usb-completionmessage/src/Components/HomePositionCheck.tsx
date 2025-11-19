@@ -1,5 +1,10 @@
 import React from "react";
 
+interface JointTargetResponse {
+  ok: boolean;
+  jointtarget: any;
+}
+
 interface Props {
   ABBHOMEImage: string;
   RobotPowerONOutside: string;
@@ -7,7 +12,7 @@ interface Props {
     variant: string;
     primaryText: string;
   };
-  verifyHomePosition: () => void | Promise<void>;
+  verifyHomePosition: () => void | Promise<JointTargetResponse>;
   loading?: boolean;
   error?: string | null;
   jointTarget?: any | null;

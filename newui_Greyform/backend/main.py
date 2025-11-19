@@ -1,52 +1,20 @@
 # backend/main.py
-import os, importlib, subprocess, shlex
-from pathlib import Path
-from typing import Optional, Dict
-from contextlib import asynccontextmanager
-import sys
-
+import os
 import pwd, grp
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+import requests, subprocess
+import json
+import threading
+import time
 
-from roscore_service import start_roscore, stop_roscore, is_master_up, ROS_MASTER_URI
-from backend.build_subapp import build_app as catkin_builder
+import backend.jointtargetip as jointip
 
-WS = Path("/root/catkin_ws/newui_Greyform")
-SCRIPT = WS / "safe_catkin_make.sh"
-ENV_SNAPSHOT = WS / ".env_after_build"
-
-DEVEL_PYTHON = WS / "devel" / "lib" / "python3" / "dist-packages"
-ROS_PYTHON = Path("/opt/ros/noetic/lib/python3/dist-packages")
-for p in (DEVEL_PYTHON, ROS_PYTHON):
-    if p.exists():
-        p_str = str(p)
-        if p_str not in sys.path:
-            sys.path.insert(0, p_str)
-
-
-def _run(cmd: str):
-    # Run a bash login shell to ensure /etc/profile is respected if needed
-    subprocess.run(["bash", "-lc", cmd], check=True)
-
-def ensure_built():
-    # Build if first run OR if devel/setup.bash missing
-    need = not (WS / "devel/setup.bash").exists()
-    if need:
-        _run(f"source /opt/ros/noetic/setup.bash && {shlex.quote(str(SCRIPT))}")
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # 1) Ensure build completed (blocks startup until done)
-    ensure_built()
-    # 2) Only now import and mount ros app (lazy import after build)
-    ros_module = importlib.import_module("backend.rosapp")
-    ros_app = getattr(ros_module, "app")
-    app.mount("/ros", ros_app)
-    yield
-    # (optional) shutdown cleanup here if needed
-
-app = FastAPI(title="Main API", lifespan=lifespan)
+# ============================================================
+# 🌐 Main FastAPI Application (NO ROS, NO CATKIN)
+# ============================================================
+app = FastAPI(title="Main API (no ROS)")
 
 app.add_middleware(
     CORSMiddleware,
@@ -56,24 +24,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# mount the catkin build sub-app
-app.mount("/build", catkin_builder)
 
-PIDFILE = Path("/tmp/greyform_ui.pid")
-LOCKFILE = Path("/tmp/greyform_ui.lock")
-LOGFILE = Path("/tmp/greyform_ui.log")
-
-WANTED_EXTS = {".ifc", ".ifczip", ".step", ".stp", ".csv", ".xlsx", ".xls"}
-IFC_EXTS = {".ifc", ".ifczip", ".ifcxml"}
-MEDIA_ROOTS = [Path("/media"), Path("/run/media")]
-CACHE_FILE = Path("/tmp/ifc_cache.json")
-IFC_CACHE: Dict[str, Dict[str, float]] = {}
-PROJECT_DIR = Path(__file__).resolve().parent.parent
-LAST_USB_PATH: Optional[Path] = None
-
+# ============================================================
+# 🔹 Simple API Endpoints
+# ============================================================
 @app.get("/api/hello")
 async def hello():
     return {"message": "Hello from FastAPI"}
+
 
 @app.get("/api/whoami")
 def whoami():
@@ -98,26 +56,108 @@ def whoami():
         "user": uname(uid),
         "group": gname(gid),
         "cwd": os.getcwd(),
-        "can_read_media": os.access("/media", os.R_OK | os.X_OK),
-        "can_x_ubuntu": os.access("/media/ubuntu", os.X_OK),
+        "can_read_media": os.access("/media", os.R_OK),
     }
 
-@app.get("/roscore/status")
-def status():
-    return {
-        "master_uri": ROS_MASTER_URI,
-        "up": is_master_up(),
-    }
 
-@app.post("/roscore/start")
-def start():
+# ============================================================
+# 🤖 Robot jointtarget endpoint (NO ROS NEEDED)
+# ============================================================
+@app.get("/jointtarget/connection")
+def jointtarget_connection():
+    session = requests.Session()
     try:
-        start_roscore(log=True)
-        return {"status": "started", "uri": ROS_MASTER_URI}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # Uses baked-in user/pass/IP from jointip.py
+        jointip.login(session)
 
-@app.post("/roscore/stop")
-def stop():
-    stop_roscore()
-    return {"status": "stopped"}
+        data = jointip.get_request(
+            session, "/rw/motionsystem/mechunits/ROB_1/jointtarget"
+        )
+
+        return {
+            "ok": True,
+            "jointtarget": data,
+        }
+
+    except Exception as e:
+        # send error to React
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        session.close()
+    # /rw/motionsystem/mechunits/ROB_1/robtarget ---> end-effector pose in xyz (mm) + quat (rad)
+    # /rw/motionsystem/mechunits/ROB_1/jointtarget -> joint values in degrees
+
+
+class PlacementRequest(BaseModel):
+    step: str
+
+
+# ============================================================
+# 🔍 VALIDATE PLACEMENT
+# ============================================================
+@app.post("/validate_placement")
+def validate_placement(body: PlacementRequest):
+    print("validate_placement called with:", body.step)
+    return {"ok": True}
+
+
+# def confition_is_met(line: str) -> bool:
+# return False
+
+
+@app.post("/read_directory")
+def read_directory():
+    process = subprocess.Popen(
+        ["ssh", "winsys@192.168.131.5", "ls", "/root/"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+
+    lines: list[str] = []
+    if process.stdout is not None:
+        for line in process.stdout:
+            # collect lines from ssh output
+            lines.append(line.rstrip("\n"))
+
+    process.wait()
+
+    if process.returncode != 0:
+        # something went wrong with ssh/ls
+        raise HTTPException(
+            status_code=500,
+            detail=f"read_directory failed with return code {process.returncode}",
+        )
+
+    return {
+        "ok": True,
+        "data": lines,  # an array of file/dir names
+    }
+
+
+@app.post("/run_ros")
+def run_ros():
+    process = subprocess.Popen(
+        ["./run-marking.sh", "--pbu", "1", "--wall", "4"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+
+    matched_line: str | None = None
+
+    lines: list[str] = []
+    if process.stdout is not None:
+        for line in process.stdout:
+            # collect lines from ssh output
+            lines.append(line.rstrip("\n"))
+
+    # (optional) wait for process to actually terminate
+    process.wait()
+
+    return {
+        "ok": True,
+        "data": lines,  # null if no condition matched
+    }

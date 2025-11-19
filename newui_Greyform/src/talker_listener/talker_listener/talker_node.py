@@ -38,6 +38,15 @@ class TalkerNode:
         msg = FileExtractionMessage()
         msg.directory = directory
         msg.excelfile = excel_path
+
+        # 🔸 Make sure listener_node is actually subscribed, otherwise the
+        #     first message can be dropped and /excel_path is never set.
+        try:
+            self._wait_for_subscribers([self.file_pub], timeout=2.0)
+        except Exception:
+            # never crash the caller if waiting fails
+            pass
+
         self.file_pub.publish(msg)
 
     def publish_selection_message(self, wallselection, picked_position, typeselection):
