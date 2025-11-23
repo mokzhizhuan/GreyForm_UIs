@@ -7,6 +7,9 @@ from pydantic import BaseModel, Field
 import requests, subprocess
 import argparse
 from pathlib import Path
+import pandas as pd
+from typing import List, Dict, Any
+from pydantic import BaseModel
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--rootdir", type=Path, default=Path.cwd())
@@ -149,28 +152,84 @@ def read_directory():
     }
 
 
+class FileExecBody(BaseModel):
+    directory: str
+    excelfile: str
+
+class WallInfo(BaseModel):
+    wall: str
+    count: int
+    rows: List[Dict[str, Any]]
+
+class FileExecResponse(BaseModel):
+    ok: bool
+    working_path: str
+    walls: List[WallInfo]
+
+class RunScriptBody(BaseModel):
+    walls: List[WallInfo]
+
 @app.post("/run_script")
-def run_script():
+def run_script(body: RunScriptBody):
+    if not body.walls:
+        raise HTTPException(status_code=400, detail="No walls provided")
+
+    # choose which wall to run:
+    # first wall: body.walls[0]
+    # last wall:  body.walls[-1]
+    target_wall = body.walls[-1]      # e.g. { wall: "4", count: 7, rows: [...] }
+    wall_number = target_wall.wall    # "4" (string)
+
     process = subprocess.Popen(
-        ["./run-marking.sh", "--pbu", "1", "--wall", "4"],
+        ["./run-marking.sh", "--pbu", "1", "--wall", str(wall_number)],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
         bufsize=1,
     )
 
-    matched_line: str | None = None
-
     lines: list[str] = []
     if process.stdout is not None:
         for line in process.stdout:
-            # collect lines from ssh output
             lines.append(line.rstrip("\n"))
 
-    # (optional) wait for process to actually terminate
     process.wait()
 
     return {
         "ok": True,
-        "data": lines,  # null if no condition matched
+        "data": lines,
     }
+
+@app.post("/file_execute_data", response_model=FileExecResponse)
+def file_execute_data(body: FileExecBody):
+    walls: List[WallInfo] = []
+    wall_rows_map: Dict[str, List[Dict[str, Any]]] = {}
+
+    try:
+        xl = pd.read_excel(body.excelfile, sheet_name=None, engine="openpyxl")
+
+        for df in xl.values():
+            if not isinstance(df, pd.DataFrame):
+                continue
+
+            df = df.copy()
+            df.columns = [str(c).strip() for c in df.columns]
+
+            if "Wall Number" not in df.columns:
+                continue
+
+            for _, row in df.iterrows():
+                wall_key = str(row["Wall Number"])
+                wall_rows_map.setdefault(wall_key, []).append(row.to_dict())
+
+        for wall_key, rows in sorted(wall_rows_map.items(), key=lambda kv: kv[0]):
+            walls.append(
+                WallInfo(
+                    wall=wall_key,
+                    count=len(rows),
+                    rows=rows
+                )
+            )
+    except Exception as e:
+        print(f"Wall summary/rows build failed: {e}")
+    return FileExecResponse(ok=True, working_path=body.excelfile, walls=walls)

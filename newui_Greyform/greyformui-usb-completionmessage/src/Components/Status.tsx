@@ -8,6 +8,7 @@ import { API_BASE_URL } from "./config";
 import HomePositionCheck from "./HomePositionCheck";
 import HomeVerified from "./HomeVerified";
 import FourWallFlow from "./FourWallFlow";
+import { WallInfo, ExecuteWallDataResponse } from "./types/walls";
 
 // Import images
 import ABBHOMEImage from "../assets/ABB Robot placeholder image.jpg";
@@ -154,10 +155,6 @@ async function getRobotJointTarget(): Promise<JointTargetResponse> {
     }
 } 
 
-interface RunScriptResponse {
-  ok: boolean;
-  data: string | null;  // matched line or null if nothing triggered
-}
 
 interface ReadDirectoryResponse {
   ok: boolean;
@@ -178,12 +175,45 @@ async function readDirectory(): Promise<ReadDirectoryResponse> {
     }
 }
 
-// Call /run_ros (no body)
-async function run_script(): Promise<RunScriptResponse> {
-  const res = await axios.post<RunScriptResponse>(`${API_BASE_URL}/run_script`);
+interface RunScriptResponse {
+  ok: boolean;
+  data: string[];
+}
+async function executeWallDataForWall(
+  walls: WallInfo[],
+  wallId: string
+): Promise<ExecuteWallDataResponse> {
+  const wallData = walls.find((w) => w.wall === wallId);
+
+  if (!wallData) {
+    throw new Error(`Wall "${wallId}" not found in walls array`);
+  }
+
+  const res = await axios.post<ExecuteWallDataResponse>(
+    `${API_BASE_URL}/execute_wall_data`,
+    wallData.rows
+  );
+
   return res.data;
 }
+// Call /run_ros (no body)
+async function executeWallDataForWall(
+  walls: WallInfo[],
+  wallId: string
+): Promise<ExecuteWallDataResponse> {
+  const wallData = walls.find((w) => w.wall === wallId);
 
+  if (!wallData) {
+    throw new Error(`Wall "${wallId}" not found in walls array`);
+  }
+
+  const res = await axios.post<ExecuteWallDataResponse>(
+    `${API_BASE_URL}/execute_wall_data`,
+    wallData.rows
+  );
+
+  return res.data;
+}
 
   const handleAdvanceToFourWall = () => {
     setAppState("four_wall_flow");
