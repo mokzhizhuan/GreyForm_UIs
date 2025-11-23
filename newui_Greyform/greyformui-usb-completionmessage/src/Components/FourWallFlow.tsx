@@ -1,52 +1,45 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 import placementOne from "../assets/four_wall_flow/4_wall_flow_placement1.jpg";
 import wallMarking from "../assets/four_wall_flow/wall_marking_4_walls.jpg";
 import { API_BASE_URL } from "./config";
 
-type StepStatus = "idle" | "pending" | "success" | "error";
+type StepStatus = "idle" | "pending" | "error";
+
+interface MarkingStatusResponse {
+  // Adjust these fields to match your backend contract
+  currentWall?: number;     // 1 | 2 | 3 | 4 when in progress
+  progressPercent?: number; // 0–100
+  done?: boolean;           // true when all walls finished
+  message?: string;
+}
+
+/**
+ * Step indexes:
+ * 0: Placement
+ * 1: Wall 2
+ * 2: Wall 3
+ * 3: Wall 4
+ * 4: Wall 1
+ * 5: Marking Complete
+ */
+const steps = ["Placement", "Wall 2", "Wall 3", "Wall 4", "Wall 1", "Marking Complete"];
+const images = [placementOne, wallMarking, wallMarking, wallMarking, wallMarking, wallMarking];
 
 const FourWallFlow: React.FC = () => {
-  const steps = ["Placement", "Wall 2", "Wall 3", "Wall 4", "Marking Complete"];
-  const images = [
-    placementOne,
-    wallMarking,
-    wallMarking,
-    wallMarking,
-    wallMarking,
-  ];
-
-  const instructions: React.ReactNode[] = [
-    <>
-      Position the robot facing <strong>wall two</strong> and{" "}
-      <strong>1m away</strong> from the wall.
-    </>,
-    <>
-      Click on next step to start marking <strong>wall 2</strong>.
-    </>,
-    <>
-      Click on next step to start marking <strong>wall 3</strong>.
-    </>,
-    <>
-      Click on next step to start marking <strong>wall 4</strong>.
-    </>,
-    <>Marking complete! You may now proceed to turn off the robot.</>,
-  ];
-
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [status, setStatus] = useState<StepStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
 
-  // completedSteps: whether each step is already done/verified
-  const [completedSteps, setCompletedSteps] = useState<boolean[]>(() =>
-    Array(steps.length).fill(false)
-  );
+  // Whether automatic marking mode has started (after first click)
+  const [autoMode, setAutoMode] = useState<boolean>(false);
 
-  const [closeFailedNote, setCloseFailedNote] = useState<string | null>(null);
+  // Polling refs & lifecycle
   const pollingRef = useRef<number | null>(null);
   const mountedRef = useRef<boolean>(true);
+  const retryCountRef = useRef<number>(0);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -58,159 +51,171 @@ const FourWallFlow: React.FC = () => {
     };
   }, []);
 
-  // derive a user-facing status message based on step and status
-  const statusMessage = (() => {
-    if (status === "pending") {
-      const label = steps[currentStep] ?? "";
-      if (currentStep === 0) return "Validating placement — please wait...";
-      return `Please wait, the robot is now marking ${label}...`;
-    }
-
-    if (status === "success") {
-      if (currentStep === 0)
-        return "Placement verified. Click on Next Step to continue.";
-      return "Step completed. Please proceed to the next step.";
-    }
-
-    if (status === "error") {
-      return errorMessage ? `Error: ${errorMessage}` : "Operation failed";
-    }
-
-    if (currentStep === 0) {
-      return "Checking robot position — please wait...";
-    }
-
-    const wallLabel = steps[currentStep];
-    if (progress != null) {
-      return `Marking ${wallLabel} — ${progress}% complete`;
-    }
-
-    return `Marking ${wallLabel} — in progress...`;
-  })();
-
-  const markStepCompleted = (index: number) => {
-    setCompletedSteps((prev) => {
-      const copy = prev.slice();
-      copy[index] = true;
-      return copy;
-    });
+  // Translate a wall number (2,3,4,1) to a step index
+  const wallNumberToStepIndex = (wall: number): number => {
+    if (wall === 2) return 1;
+    if (wall === 3) return 2;
+    if (wall === 4) return 3;
+    if (wall === 1) return 4;
+    return 0;
   };
 
-  // Utility to cancel any ongoing polling before retrying
-  const cancelPolling = () => {
-    if (pollingRef.current) {
-      clearTimeout(pollingRef.current);
-      pollingRef.current = null;
-    }
+  const scheduleNextPoll = (delayMs: number = 2000) => {
+    if (!mountedRef.current) return;
+    if (pollingRef.current) clearTimeout(pollingRef.current);
+    pollingRef.current = window.setTimeout(fetchMarkingStatus, delayMs);
   };
 
-  // ✅ Only API we keep: validate placement
-  const validatePlacement = async (): Promise<void> => {
-    setErrorMessage(null);
+  const startMarking = async () => {
     setStatus("pending");
+    setErrorMessage(null);
     setProgress(null);
-    try {
-      const res = await axios.post(`${API_BASE_URL}/validate_placement`, {
-        step: "placement",
-      });
 
-      if (res.data?.ok) {
-        setStatus("success");
-        markStepCompleted(0);
-        setTimeout(() => {
-          if (!mountedRef.current) return;
-          setStatus("idle");
-          setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-        }, 350);
+    try {
+      // Backend should trigger SSH script here.
+      const res = await axios.post(`${API_BASE_URL}/start_marking`, {});
+      const initialWall: number | undefined = res.data?.currentWall;
+
+      setAutoMode(true);
+      setStatus("pending");
+
+      if (initialWall && [2, 3, 4, 1].includes(initialWall)) {
+        setCurrentStep(wallNumberToStepIndex(initialWall));
       } else {
-        setStatus("error");
-        setErrorMessage(res.data?.reason || "Placement validation failed");
+        // If backend does not report initial wall, we wait for /marking_status.
       }
+
+      retryCountRef.current = 0;
+      scheduleNextPoll(1000);
     } catch (err: any) {
       setStatus("error");
       setErrorMessage(
-        err?.response?.data?.message || err.message || "Placement API error"
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to start marking process."
       );
+      setAutoMode(false);
     }
   };
 
-  // For steps 1–4: just mark as done locally, no backend call
-  const completeStepLocally = () => {
-    setStatus("success");
-    markStepCompleted(currentStep);
-    setTimeout(() => {
-      if (!mountedRef.current) return;
-      setStatus("idle");
-      setProgress(null);
-      setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-    }, 350);
-  };
+  const fetchMarkingStatus = async () => {
+    if (!mountedRef.current || !autoMode) return;
 
-  const handleNextClick = async () => {
-    if (status === "pending") return;
+    try {
+      const res = await axios.get<MarkingStatusResponse>(
+        `${API_BASE_URL}/marking_status`
+      );
+      const data = res.data;
 
-    // If it just finished successfully, move on
-    if (status === "success") {
-      cancelPolling();
-      setErrorMessage(null);
-      setStatus("idle");
-      setProgress(null);
-      setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-      return;
+      if (data.done) {
+        setProgress(null);
+        setCurrentStep(steps.length - 1); // Marking Complete
+        setStatus("idle");
+        return;
+      }
+
+      if (data.currentWall && [2, 3, 4, 1].includes(data.currentWall)) {
+        const newStep = wallNumberToStepIndex(data.currentWall);
+        if (newStep !== currentStep) {
+          setCurrentStep(newStep);
+        }
+      }
+
+      if (
+        typeof data.progressPercent === "number" &&
+        data.progressPercent >= 0 &&
+        data.progressPercent <= 100
+      ) {
+        setProgress(data.progressPercent);
+      } else {
+        setProgress(null);
+      }
+
+      setStatus("pending");
+      retryCountRef.current = 0;
+      scheduleNextPoll();
+    } catch (err: any) {
+      retryCountRef.current += 1;
+      if (retryCountRef.current > 5) {
+        setStatus("error");
+        setErrorMessage(
+          err?.response?.data?.message ||
+            err?.message ||
+            "Marking status polling failed."
+        );
+        return;
+      }
+      const backoff = Math.min(8000, 2000 * retryCountRef.current);
+      scheduleNextPoll(backoff);
     }
-
-    // If step already completed, just advance
-    if (completedSteps[currentStep]) {
-      cancelPolling();
-      setErrorMessage(null);
-      setStatus("idle");
-      setProgress(null);
-      setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-      return;
-    }
-
-    cancelPolling();
-    setErrorMessage(null);
-
-    // Step 0: call validatePlacement (only backend call)
-    if (currentStep === 0) {
-      await validatePlacement();
-      return;
-    }
-
-    // Steps 1–3: local-only completion (no /file_execute_data, no /execute_wall_data)
-    if (currentStep >= 1 && currentStep <= 3) {
-      completeStepLocally();
-      return;
-    }
-
-    // Final step: just advance (though UI will show Exit button)
-    setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
   };
 
   const handleExit = () => {
-    cancelPolling();
     try {
       window.close();
-      setTimeout(() => {
-        setCloseFailedNote(
-          "If the window did not close automatically, please close the window manually."
-        );
-      }, 300);
-      return;
-    } catch (e) {
-      setCloseFailedNote("Please close the window manually.");
+    } catch {
+      // Fallback if window.close is disallowed
     }
   };
 
   const isFinalStep = currentStep === steps.length - 1;
+
+  const getInstructionContent = (): React.ReactNode => {
+    if (!autoMode) {
+      return (
+        <>
+          Position the robot facing <strong>wall two</strong> and{" "}
+          <strong>1m away</strong> from the wall.
+        </>
+      );
+    }
+
+    if (isFinalStep) {
+      return <>Marking complete! You may now proceed to turn off the robot.</>;
+    }
+
+    if (currentStep >= 1 && currentStep <= 4) {
+      return (
+        <>
+          Currently marking <strong>wall {currentStep === 4 ? 1 : currentStep + 1}</strong> please wait.
+        </>
+      );
+    }
+
+    return <>Starting marking process...</>;
+  };
+
+  const getStatusLine = (): React.ReactNode => {
+    if (!autoMode || isFinalStep) return null;
+
+    if (status === "error") {
+      return (
+        <p className="text-red-600 mt-2">
+          Error: {errorMessage || "Unknown error. Please refresh and retry."}
+        </p>
+      );
+    }
+
+    if (status === "pending") {
+        if (progress != null) {
+          return (
+            <p className="mt-2">
+              Progress: <strong>{progress}%</strong>
+            </p>
+          );
+        }
+        return <p className="mt-2">Progress: In progress...</p>;
+    }
+
+    return null;
+  };
 
   return (
     <>
       <div className="flex flex-col items-center-safe justify-center mb-8">
         <h2 className="text-4xl md:text-5xl font-bold mb-8">Marking of PBU</h2>
 
-        <ul className="steps w-full max-w-lg">
+        <ul className="steps w-full max-w-3xl">
           {steps.map((label, i) => (
             <li
               key={label}
@@ -236,39 +241,34 @@ const FourWallFlow: React.FC = () => {
             <p className="md:text-2xl">
               <b>Instructions:</b>
             </p>
-
-            <p className="text-2xl">
-              {status === "idle" ? instructions[currentStep] : statusMessage}
-            </p>
-
-            {closeFailedNote && (
-              <p className="mt-2 text-sm text-gray-600">{closeFailedNote}</p>
-            )}
+            <p className="text-2xl">{getInstructionContent()}</p>
+            {getStatusLine()}
           </div>
 
-          {isFinalStep ? (
-            <button
-              className="btn btn-error md:btn-md lg:btn-lg py-2 px-4 border-b-4
-                           border-gray-500 hover:border-gray-700 rounded
-                           text-white"
-              onClick={handleExit}
-              disabled={status === "pending"}
-            >
-              Exit
-            </button>
-          ) : (
+          {!autoMode && (
             <button
               className={`btn btn-primary md:btn-md lg:btn-lg py-2 px-4 border-b-4
                            border-gray-500 hover:border-gray-700 rounded 
                            ${status === "pending" ? "loading" : ""}`}
-              onClick={handleNextClick}
-              disabled={currentStep === steps.length - 1 || status === "pending"}
+              onClick={startMarking}
+              disabled={status === "pending"}
             >
               {status === "error"
-                ? "Retry"
+                ? "Retry Start"
                 : status === "pending"
-                ? "Working..."
-                : "Next Step"}
+                ? "Starting..."
+                : "Next"}
+            </button>
+          )}
+
+          {autoMode && isFinalStep && (
+            <button
+              className="btn btn-error md:btn-md lg:btn-lg py-2 px-4 border-b-4
+                         border-gray-500 hover:border-gray-700 rounded
+                         text-white"
+              onClick={handleExit}
+            >
+              Exit
             </button>
           )}
         </div>
