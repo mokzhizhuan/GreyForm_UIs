@@ -8,11 +8,10 @@ import { API_BASE_URL } from "./config";
 import HomePositionCheck from "./HomePositionCheck";
 import HomeVerified from "./HomeVerified";
 import FourWallFlow from "./FourWallFlow";
-import SixWallFlow from "./SixWallFlow";
-//import { WallInfo, ExecuteWallDataResponse } from "./types/walls";
+import { WallInfo, ExecuteWallDataResponse } from "./types/walls";
 
 // Import images
-import ABBHOMEImage from "../assets/ABB_Robot_HOME.jpg";
+import ABBHOMEImage from "../assets/ABB Robot placeholder image.jpg";
 import FlexPendantImage from "../assets/ABB_Robot_FlexPendant.jpg";
 import pushRobotIntoPBUImage from "../assets/PushIntoPBU.jpg";
 import RobotPowerONOutside from "../assets/ABB_Robot_Power_ON_outside.jpg";
@@ -51,8 +50,7 @@ type CurrentState =
   | "invalid_model"
   | "home_position_setup"
   | "home_verified"
-  | "four_wall_flow"
-  | "six_wall_flow";
+  | "four_wall_flow";
 
 const views = {
   select_PBU: {
@@ -62,7 +60,7 @@ const views = {
     showSpinner: false,
   },
   detect_PBU: {
-    title: "Start Menu",
+    title: "PBU detection",
     variant: "primary",
     primaryText: "Start",
     showSpinner: false,
@@ -98,10 +96,7 @@ const views = {
     showSpinner: false,
   },
   four_wall_flow: {
-    title: "Marking of PBU (Four Walls)",
-  },
-  six_wall_flow: {
-    title: "Marking of PBU (Six Walls)",
+    title: "Marking of PBU",
   },
 } as const;
 
@@ -227,7 +222,7 @@ async function executeWallDataForWall(
   // UI
   return (
     <>
-      {appState !== "four_wall_flow" && appState !== "six_wall_flow" && (
+      {appState !== "four_wall_flow" && (
         <div
           className="hero min-h-screen relative bg-cover bg-center"
           style={{ backgroundImage: `url("${bgDataUri}")` }}
@@ -294,7 +289,6 @@ async function executeWallDataForWall(
       )}
 
       {appState === "four_wall_flow" && <FourWallFlow />}
-      {appState === "six_wall_flow" && <SixWallFlow />}
     </>
   );
 }
