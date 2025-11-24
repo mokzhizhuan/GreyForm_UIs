@@ -23,6 +23,9 @@ const DetectPBU: React.FC<Props> = ({
       <div className="w-full flex flex-row overflow-x-auto gap-4">
         <div className="divider" />
       </div>
+      <div>
+        <p>Please click on start to detect the PBU.</p>
+      </div>
       <div className="mt-4">
         <button
           className={`btn btn-${v.variant} md:btn-md lg:btn-lg py-2 px-4 border-b-4

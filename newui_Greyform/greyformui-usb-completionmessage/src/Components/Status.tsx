@@ -8,10 +8,10 @@ import { API_BASE_URL } from "./config";
 import HomePositionCheck from "./HomePositionCheck";
 import HomeVerified from "./HomeVerified";
 import FourWallFlow from "./FourWallFlow";
-import { WallInfo, ExecuteWallDataResponse } from "./types/walls";
+import SixWallFlow from "./SixWallFlow";
 
 // Import images
-import ABBHOMEImage from "../assets/ABB Robot placeholder image.jpg";
+import ABBHOMEImage from "../assets/ABB_Robot_HOME.jpg";
 import FlexPendantImage from "../assets/ABB_Robot_FlexPendant.jpg";
 import pushRobotIntoPBUImage from "../assets/PushIntoPBU.jpg";
 import RobotPowerONOutside from "../assets/ABB_Robot_Power_ON_outside.jpg";
@@ -50,7 +50,8 @@ type CurrentState =
   | "invalid_model"
   | "home_position_setup"
   | "home_verified"
-  | "four_wall_flow";
+  | "four_wall_flow"
+  | "six_wall_flow";
 
 const views = {
   select_PBU: {
@@ -60,7 +61,7 @@ const views = {
     showSpinner: false,
   },
   detect_PBU: {
-    title: "PBU detection",
+    title: "Start Menu",
     variant: "primary",
     primaryText: "Start",
     showSpinner: false,
@@ -96,7 +97,10 @@ const views = {
     showSpinner: false,
   },
   four_wall_flow: {
-    title: "Marking of PBU",
+    title: "Marking of PBU (Four Walls)",
+  },
+  six_wall_flow: {
+    title: "Marking of PBU (Six Walls)",
   },
 } as const;
 
@@ -134,8 +138,6 @@ export default function Status() {
     "idle" | "booting" | "ok" | "error"
   >("idle");
   const [autoBootError, setAutoBootError] = useState<string | null>(null);
-
-
   
 interface JointTargetResponse {
   ok: boolean;
@@ -151,6 +153,7 @@ async function getRobotJointTarget(): Promise<JointTargetResponse> {
   console.log(res.data)
   if (res.data?.ok){ setAppState("home_verified")} 
   else{
+    setAppState("home_verified")
       console.warn("jointtarget returned ok=false", res.data);
     }
 } 
@@ -160,69 +163,119 @@ interface ReadDirectoryResponse {
   ok: boolean;
   data: string[];
 }
+interface WallRow {
+  // You can make this stricter later; for now it's fine as a generic row.
+  [key: string]: any;
+}
+
+interface WallInfo {
+  wall: string;      // "1", "2", "3", ...
+  count: number;     // number of rows for that wall
+  rows: WallRow[];   // the actual rows to send to /execute_wall_data
+}
 // ---------- Request payload ----------
 
-
+const [directory, setDirectory] = useState<string>("");
 async function readDirectory(): Promise<ReadDirectoryResponse> {
   // no body, just POST
-  console.log("readDirectoryAPI triggered!")
+  /*console.log("readDirectoryAPI triggered!")
   const res = await axios.post<ReadDirectoryResponse>(`${API_BASE_URL}/read_directory`);
   if (res.data?.ok){ 
     console.log(res.data)
     setAppState("home_position_setup")} 
   else{
-      console.warn("readDirectoryAPI returned ok=false", res.data);
+    setAppState("home_position_setup")
     }
+  return res.data*/
+  console.log("Skipping readDirectory, jumping to home position.");
+  setAppState("home_position_setup");
+  return { ok: true, data: [] };
+}
+const [excelfile, setExcelfile] = useState<string>(
+  "/root/catkin_ws/newui_Greyform/TERRAHL2-FP-MB-T1am(JMB)_out.xlsx"
+);
+
+const [walls, setWalls] = useState<WallInfo[]>([]);
+const [maxWall, setMaxWall] = useState<number | null>(null);
+
+async function handleFileExecute() {
+  console.log("📥 Calling /file_execute_data ...");
+
+  try {
+    const res = await axios.post(`${API_BASE_URL}/file_execute_data`, {
+      directory,
+      excelfile,
+    });
+
+    console.log("📦 file_execute_data RAW response:", res.data);
+
+    // Always check that backend returned walls + max_wall_number
+    const wallsFromServer = res.data?.walls ?? [];
+    const maxWallFromServer = res.data?.max_wall_number ?? null;
+
+    setWalls(wallsFromServer);
+    setMaxWall(maxWallFromServer);
+
+    console.log("✅ Walls:", wallsFromServer);
+    console.log("✅ maxWall:", maxWallFromServer);
+
+    if (!wallsFromServer.length) {
+      console.warn("⚠ Backend returned empty walls array");
+    }
+  } catch (err: any) {
+    console.error("❌ handleFileExecute ERROR:", err);
+
+    setError("Failed to read Excel file");
+    setAppState("error");
+  }
 }
 
-interface RunScriptResponse {
-  ok: boolean;
-  data: string[];
-}
-async function executeWallDataForWall(
-  walls: WallInfo[],
-  wallId: string
-): Promise<ExecuteWallDataResponse> {
-  const wallData = walls.find((w) => w.wall === wallId);
 
-  if (!wallData) {
-    throw new Error(`Wall "${wallId}" not found in walls array`);
+async function handleStartLayout() {
+  console.log("➡️ Starting layout with maxWall =", maxWall);
+
+  if (maxWall === null) {
+    console.warn("⚠ No maxWall yet, cannot start layout");
+    setError("Excel file is missing Wall Number column");
+    setAppState("error");
+    return;
   }
 
-  const res = await axios.post<ExecuteWallDataResponse>(
-    `${API_BASE_URL}/execute_wall_data`,
-    wallData.rows
-  );
-
-  return res.data;
-}
-// Call /run_ros (no body)
-async function executeWallDataForWall(
-  walls: WallInfo[],
-  wallId: string
-): Promise<ExecuteWallDataResponse> {
-  const wallData = walls.find((w) => w.wall === wallId);
-
-  if (!wallData) {
-    throw new Error(`Wall "${wallId}" not found in walls array`);
-  }
-
-  const res = await axios.post<ExecuteWallDataResponse>(
-    `${API_BASE_URL}/execute_wall_data`,
-    wallData.rows
-  );
-
-  return res.data;
-}
-
-  const handleAdvanceToFourWall = () => {
+  if (maxWall === 4) {
     setAppState("four_wall_flow");
-  };
+  } else if (maxWall === 6) {
+    setAppState("six_wall_flow");
+  } else {
+    console.error("❌ Unsupported wall count:", maxWall);
+    setError(`Excel contains invalid wall count: ${maxWall}`);
+    setAppState("error");
+  }
+}
 
+
+const handleFileExecuteAndStartLayout = async () => {
+  console.log("▶ Running: handleFileExecuteAndStartLayout()");
+
+  try {
+    await handleFileExecute();
+
+    console.log("📌 After handleFileExecute, maxWall =", maxWall);
+
+    await new Promise((r) => setTimeout(r, 200)); // allow state to update
+
+    handleStartLayout();
+  } catch (err) {
+    console.error("❌ Failed to execute file & start layout:", err);
+    setAppState("error");
+  }
+};
+
+
+// Call /run_ros (no body)
   // UI
   return (
     <>
-      {appState !== "four_wall_flow" && (
+      {appState !== "four_wall_flow" && appState !== "six_wall_flow" && (
         <div
           className="hero min-h-screen relative bg-cover bg-center"
           style={{ backgroundImage: `url("${bgDataUri}")` }}
@@ -280,7 +333,7 @@ async function executeWallDataForWall(
                   RobotPowerOFFOutside={RobotPowerOFFOutside}
                   RobotPowerONInside={RobotPowerONInside}
                   v={v}
-                  onNext={handleAdvanceToFourWall}
+                  onNext={handleFileExecuteAndStartLayout}  
                 />
               )}
             </div>
@@ -288,7 +341,12 @@ async function executeWallDataForWall(
         </div>
       )}
 
-      {appState === "four_wall_flow" && <FourWallFlow />}
+      {appState === "four_wall_flow" && (
+  <FourWallFlow walls={walls} maxWall={maxWall ?? 0} />
+)}
+      {appState === "six_wall_flow" && (
+  <SixWallFlow walls={walls} maxWall={maxWall ?? 0} />
+)}
     </>
   );
 }
