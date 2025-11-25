@@ -81,16 +81,65 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
   const [status, setStatus] = useState<StepStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
-
+  const [loading, setLoading] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [currentWall, setCurrentWall] = useState<number | null>(null);
   const [autoModePhase, setAutoModePhase] = useState<0 | 1 | 2>(0); 
   // 0 = not started, 1 = auto marking walls 2-4, 2 = auto marking walls 5-6-1
 
   const pollingRef = useRef<number | null>(null);
   const mountedRef = useRef<boolean>(true);
   const retryCountRef = useRef<number>(0);
+  const [currentWallIndex, setCurrentWallIndex] = useState<number>(1); // start at wall "1"
+  const [error, setError] = useState<string | null>(null);
 
+   const currentWallId = String(currentWallIndex);
+
+  async function runCurrentWall() {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // 👇 HERE is where you pass wallId
+      const result = await executeWallDataForWall(walls, currentWallId);
+      console.log("Executed wall:", currentWallId, result);
+
+      // move to next wall if available
+      if (currentWallIndex < maxWall) {
+        setCurrentWallIndex((prev) => prev + 1);
+      } else {
+        console.log("All walls done");
+      }
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message ?? "Failed to execute wall");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // 1. AUTO START ROS
+  async function startRosAndListener() {
+    try {
+      await axios.post(`${API_BASE_URL}/roscore/start`);
+      console.log("ROS core + listener started");
+    } catch (e) {
+      console.error("Failed to start ROS:", e);
+    }
+  }
+
+  // 2. AUTO SEND WALL ROWS + START MARKING
+
+  // 4. MOUNT LOGIC
   useEffect(() => {
     mountedRef.current = true;
+
+    // Auto-start ROS + listener
+    startRosAndListener();
+
+
+    // Begin polling
+
     return () => {
       mountedRef.current = false;
       if (pollingRef.current) clearTimeout(pollingRef.current);
@@ -99,6 +148,60 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
 
   const isFinalStep = currentStep === steps.length - 1;
 
+  async function executeWallDataForWall(
+  walls: WallInfo[],
+  wallId: string
+): Promise<ExecuteWallDataResponse> {
+  const wallData = walls.find((w) => w.wall === wallId);
+  if (!wallData) {
+    throw new Error(`Wall "${wallId}" not found in walls array`);
+  }
+
+  const res = await axios.post<ExecuteWallDataResponse>(
+    `${API_BASE_URL}/execute_wall_data`,
+    wallData.rows
+  );
+
+  return res.data;
+}
+  const [loadingPause, setLoadingPause] = useState(false);
+  const [loadingContinue, setLoadingContinue] = useState(false);
+
+
+  // ---- HANDLERS ----
+  async function handlePauseClick() {
+    try {
+      setError(null);
+      setLoadingPause(true);
+
+      const res = await axios.post(`${API_BASE_URL}/marking/pause`);
+      // e.g. { ok: true, paused: true, current_wall: 2 }
+      if (res.data?.paused) {
+        setPaused(true);
+      }
+    } catch (e) {
+      console.error("Pause failed:", e);
+      setError("Failed to pause marking");
+    } finally {
+      setLoadingPause(false);
+    }
+  }
+
+  async function handleContinueClick() {
+    try {
+      setError(null);
+      setLoadingContinue(true);
+
+      await axios.post(`${API_BASE_URL}/marking/continue`);
+      // backend resumes next wall → we consider not paused now
+      setPaused(false);
+    } catch (e) {
+      console.error("Continue failed:", e);
+      setError("Failed to continue marking");
+    } finally {
+      setLoadingContinue(false);
+    }
+  }
   // Map wall number to step index for this flow
   const wallNumberToStepIndex = (wall: number): number => {
     switch (wall) {
@@ -112,24 +215,6 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
     }
   };
 
-async function executeWallDataForWall(
-  walls: WallInfo[],
-  wallId: string
-): Promise<ExecuteWallDataResponse> {
-  const wallData = walls.find((w) => w.wall === wallId);
-
-  if (!wallData) {
-    throw new Error(`Wall "${wallId}" not found in walls array`);
-  }
-
-  const res = await axios.post<ExecuteWallDataResponse>(
-    `${API_BASE_URL}/execute_wall_data`,
-    wallData.rows
-  );
-
-  return res.data;
-}
-
   const scheduleNextPoll = (delayMs: number = 2000) => {
     if (!mountedRef.current) return;
     if (pollingRef.current) clearTimeout(pollingRef.current);
@@ -142,9 +227,13 @@ async function executeWallDataForWall(
     setProgress(null);
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/start_marking`, {
+      const res = await axios.post(`${API_BASE_URL}/marking/start`, {
+        max_wall: maxWall,   // 6
         phase: 1,
+        walls,
       });
+      await axios.post(`${API_BASE_URL}/marking/run`);
+      //runCurrentWall()
       const initialWall: number | undefined = res.data?.currentWall;
 
       setAutoModePhase(1);
@@ -172,9 +261,13 @@ async function executeWallDataForWall(
     setProgress(null);
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/resume_marking`, {
+      const res = await axios.post(`${API_BASE_URL}/marking/start`, {
+        max_wall: maxWall,   // 6
         phase: 2,
+        walls,
       });
+      await axios.post(`${API_BASE_URL}/marking/run`);
+      //runCurrentWall()
       const initialWall: number | undefined = res.data?.currentWall;
 
       setAutoModePhase(2);
@@ -204,7 +297,7 @@ async function executeWallDataForWall(
 
     try {
       const res = await axios.get<MarkingStatusResponse>(
-        `${API_BASE_URL}/marking_status`
+        `${API_BASE_URL}/marking/status`
       );
       const data = res.data;
 
@@ -413,7 +506,17 @@ async function executeWallDataForWall(
                 : "Next"}
             </button>
           )}
-
+            <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+              <button onClick={handlePauseClick} disabled={loadingPause || paused}>
+                {loadingPause ? "Pausing..." : "Pause after this wall"}
+              </button>
+              <button
+                onClick={handleContinueClick}
+                disabled={loadingContinue || !paused}
+              >
+                {loadingContinue ? "Continuing..." : "Continue next wall"}
+              </button>
+            </div>
           {currentStep === 4 && (
             <button
               className={`btn btn-primary md:btn-md lg:btn-lg py-2 px-4 border-b-4

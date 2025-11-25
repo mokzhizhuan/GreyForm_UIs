@@ -54,24 +54,73 @@ const FourWallFlow: React.FC<FourWallFlowProps> = ({ walls, maxWall }) => {
   const [status, setStatus] = useState<StepStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [currentWall, setCurrentWall] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [autoModePhase, setAutoModePhase] = useState<0 | 1 | 2>(0); 
+  // 0 = not started, 1 = auto marking walls 2-4, 2 = auto marking walls 5-6-1
 
-  // Whether automatic marking mode has started (after first click)
-  const [autoMode, setAutoMode] = useState<boolean>(false);
-
-  // Polling refs & lifecycle
   const pollingRef = useRef<number | null>(null);
   const mountedRef = useRef<boolean>(true);
   const retryCountRef = useRef<number>(0);
 
+  const [currentWallIndex, setCurrentWallIndex] = useState<number>(1); // start at wall "1"
+
+   const currentWallId = String(currentWallIndex);
+
+  async function runCurrentWall() {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // 👇 HERE is where you pass wallId
+      const result = await executeWallDataForWall(walls, currentWallId);
+      console.log("Executed wall:", currentWallId, result);
+
+      // move to next wall if available
+      if (currentWallIndex < maxWall) {
+        setCurrentWallIndex((prev) => prev + 1);
+      } else {
+        console.log("All walls done");
+      }
+    } catch (e: any) {
+      console.error(e);
+      setError(e.message ?? "Failed to execute wall");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // 1. AUTO START ROS
+  async function startRosAndListener() {
+    try {
+      await axios.post(`${API_BASE_URL}/roscore/start`);
+      console.log("ROS core + listener started");
+    } catch (e) {
+      console.error("Failed to start ROS:", e);
+    }
+  }
+
+  // 2. AUTO SEND WALL ROWS + START MARKING
+
+  // 4. MOUNT LOGIC
   useEffect(() => {
     mountedRef.current = true;
+
+    // Auto-start ROS + listener
+    startRosAndListener();
+
+
+    // Begin polling
+
     return () => {
       mountedRef.current = false;
-      if (pollingRef.current) {
-        clearTimeout(pollingRef.current);
-      }
+      if (pollingRef.current) clearTimeout(pollingRef.current);
     };
   }, []);
+
+
 
   // Translate a wall number (2,3,4,1) to a step index
   const wallNumberToStepIndex = (wall: number): number => {
@@ -104,7 +153,44 @@ async function executeWallDataForWall(
     if (pollingRef.current) clearTimeout(pollingRef.current);
     pollingRef.current = window.setTimeout(fetchMarkingStatus, delayMs);
   };
+  // ---- STATE ----
+  const [loadingPause, setLoadingPause] = useState(false);
+  const [loadingContinue, setLoadingContinue] = useState(false);
 
+  // ---- HANDLERS ----
+  async function handlePauseClick() {
+    try {
+      setError(null);
+      setLoadingPause(true);
+
+      const res = await axios.post(`${API_BASE_URL}/marking/pause`);
+      // e.g. { ok: true, paused: true, current_wall: 2 }
+      if (res.data?.paused) {
+        setPaused(true);
+      }
+    } catch (e) {
+      console.error("Pause failed:", e);
+      setError("Failed to pause marking");
+    } finally {
+      setLoadingPause(false);
+    }
+  }
+
+  async function handleContinueClick() {
+    try {
+      setError(null);
+      setLoadingContinue(true);
+
+      await axios.post(`${API_BASE_URL}/marking/continue`);
+      // backend resumes next wall → we consider not paused now
+      setPaused(false);
+    } catch (e) {
+      console.error("Continue failed:", e);
+      setError("Failed to continue marking");
+    } finally {
+      setLoadingContinue(false);
+    }
+  }
   const startMarking = async () => {
     setStatus("pending");
     setErrorMessage(null);
@@ -112,7 +198,13 @@ async function executeWallDataForWall(
 
     try {
       // Backend should trigger SSH script here.
-      const res = await axios.post(`${API_BASE_URL}/start_marking`, {});
+      const res = await axios.post(`${API_BASE_URL}/marking/start`, {
+        max_wall: maxWall,   // 6
+        walls,
+        // phase omitted or null
+      });
+      await axios.post(`${API_BASE_URL}/marking/run`);
+      runCurrentWall()
       const initialWall: number | undefined = res.data?.currentWall;
 
       setAutoMode(true);
@@ -142,7 +234,7 @@ async function executeWallDataForWall(
 
     try {
       const res = await axios.get<MarkingStatusResponse>(
-        `${API_BASE_URL}/marking_status`
+        `${API_BASE_URL}/marking/status`
       );
       const data = res.data;
 
@@ -283,7 +375,17 @@ async function executeWallDataForWall(
             <p className="text-2xl">{getInstructionContent()}</p>
             {getStatusLine()}
           </div>
-
+            <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+              <button onClick={handlePauseClick} disabled={loadingPause || paused}>
+                {loadingPause ? "Pausing..." : "Pause after this wall"}
+              </button>
+              <button
+                onClick={handleContinueClick}
+                disabled={loadingContinue || !paused}
+              >
+                {loadingContinue ? "Continuing..." : "Continue next wall"}
+              </button>
+            </div>
           {!autoMode && (
             <button
               className={`btn btn-primary md:btn-md lg:btn-lg py-2 px-4 border-b-4

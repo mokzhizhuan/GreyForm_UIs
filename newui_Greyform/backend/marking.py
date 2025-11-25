@@ -3,6 +3,16 @@
 from fastapi import FastAPI, BackgroundTasks, HTTPException
 from typing import List, Dict, Any
 import time
+from src.talker_listener.talker_listener import talker_node as RosPublisher
+from pydantic import BaseModel
+from typing import List, Dict, Any, Optional
+from roscore_service import (
+    ROS_MASTER_URI,
+    is_master_up,
+    start_roscore,
+    stop_roscore,
+    _OWNED,
+)
 
 from backend.runner import Runner
 
@@ -11,6 +21,8 @@ app = FastAPI(title="MarkingApp")
 
 # Shared runner instance for this app
 _runner = Runner()
+_runner.bind_talker(RosPublisher)
+
 
 def _runner_instance() -> Runner:
     return _runner
@@ -71,22 +83,67 @@ def _execute_all_walls(r: Runner) -> None:
 #   { "wall": "2", "rows": [ {...}, {...} ] }
 # ]
 # ------------------------------------------------------
+class StartMarkingBody(BaseModel):
+    walls: List[Dict[str, Any]]   # full walls array from React
+    max_wall: int                 # 4 or 6
+    phase: Optional[int] = None   # only used for 6-wall
+
+
 @app.post("/start")
-def start_marking(walls: List[Dict[str, Any]]):
+def start_marking(body: StartMarkingBody):
     r = _runner_instance()
+
+    if not is_master_up():
+        raise HTTPException(status_code=400, detail="ROS core not running")
 
     if not r.listener_started:
         raise HTTPException(status_code=400, detail="Listener not started.")
 
-    # reset state
-    r.pending_walls = [w.copy() for w in walls]
+    walls = body.walls
+    max_wall = body.max_wall
+    phase = body.phase
+
+    # ---------- 4-wall: NO phase, always run walls as given ----------
+    if max_wall == 4:
+        pending = walls[:]   # just take whatever order came from Excel / UI
+
+    # ---------- 6-wall: optional phase ----------
+    elif max_wall == 6:
+        # If no phase → run everything in the order given
+        if phase is None:
+            pending = walls[:]
+        else:
+            # Phase logic for 6-wall:
+            # phase 1: walls 2,3,4
+            # phase 2: walls 5,6,1
+            if phase == 1:
+                pending_ids = ["2", "3", "4"]
+            elif phase == 2:
+                pending_ids = ["5", "6", "1"]
+            else:
+                raise HTTPException(status_code=400, detail="Invalid phase for 6-wall")
+
+            # Filter only matching walls
+            pending = [w for w in walls if str(w.get("wall")) in pending_ids]
+
+            # Sort in the exact [2,3,4] or [5,6,1] order
+            id_index = {wid: i for i, wid in enumerate(pending_ids)}
+            pending.sort(key=lambda w: id_index[str(w["wall"])])
+
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported max_wall: {max_wall}")
+
+    # Store in runner
+    r.pending_walls = [w.copy() for w in pending]
     r.current_wall = None
     r.current_rows = []
     r.is_paused = False
 
     return {
         "ok": True,
+        "phase": phase,
         "queued_walls": len(r.pending_walls),
+        "pending_ids": [w["wall"] for w in pending],
     }
 
 

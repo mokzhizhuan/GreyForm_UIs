@@ -132,6 +132,9 @@ export default function Status() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [jointTarget, setJointTarget] = useState<any | null>(null);
+  const [walls, setWalls] = useState<WallInfo[]>([]);
+  const [maxWall, setMaxWall] = useState<number | null>(null);
+  const [currentWall, setCurrentWall] = useState<number>(1)
 
   // Small status for auto-boot (optional)
   const [autoBootStatus, setAutoBootStatus] = useState<
@@ -195,10 +198,10 @@ const [excelfile, setExcelfile] = useState<string>(
   "/root/catkin_ws/newui_Greyform/TERRAHL2-FP-MB-T1am(JMB)_out.xlsx"
 );
 
-const [walls, setWalls] = useState<WallInfo[]>([]);
-const [maxWall, setMaxWall] = useState<number | null>(null);
-
-async function handleFileExecute() {
+async function handleFileExecute(): Promise<{
+  walls: any[];
+  maxWall: number | null;
+}> {
   console.log("📥 Calling /file_execute_data ...");
 
   try {
@@ -209,7 +212,6 @@ async function handleFileExecute() {
 
     console.log("📦 file_execute_data RAW response:", res.data);
 
-    // Always check that backend returned walls + max_wall_number
     const wallsFromServer = res.data?.walls ?? [];
     const maxWallFromServer = res.data?.max_wall_number ?? null;
 
@@ -222,54 +224,60 @@ async function handleFileExecute() {
     if (!wallsFromServer.length) {
       console.warn("⚠ Backend returned empty walls array");
     }
+
+    // 🔙 return fresh values so caller can use immediately
+    return { walls: wallsFromServer, maxWall: maxWallFromServer };
   } catch (err: any) {
     console.error("❌ handleFileExecute ERROR:", err);
 
     setError("Failed to read Excel file");
     setAppState("error");
+
+    throw err;
   }
 }
 
+async function handleStartLayout(maxWallValue: number | null) {
+  console.log("➡️ Starting layout with maxWall =", maxWallValue);
 
-async function handleStartLayout() {
-  console.log("➡️ Starting layout with maxWall =", maxWall);
-
-  if (maxWall === null) {
+  if (maxWallValue === null) {
     console.warn("⚠ No maxWall yet, cannot start layout");
     setError("Excel file is missing Wall Number column");
     setAppState("error");
     return;
   }
 
-  if (maxWall === 4) {
+  // ⬅️ if you want starting layout = 1, do it here
+  // setCurrentWall(1); // or whatever state you use for starting wall
+
+  if (maxWallValue === 4) {
     setAppState("four_wall_flow");
-  } else if (maxWall === 6) {
+  } else if (maxWallValue === 6) {
     setAppState("six_wall_flow");
   } else {
-    console.error("❌ Unsupported wall count:", maxWall);
-    setError(`Excel contains invalid wall count: ${maxWall}`);
+    console.error("❌ Unsupported wall count:", maxWallValue);
+    setError(`Excel contains invalid wall count: ${maxWallValue}`);
     setAppState("error");
   }
 }
+
 
 
 const handleFileExecuteAndStartLayout = async () => {
   console.log("▶ Running: handleFileExecuteAndStartLayout()");
 
   try {
-    await handleFileExecute();
+    const { maxWall: maxWallLocal } = await handleFileExecute();
 
-    console.log("📌 After handleFileExecute, maxWall =", maxWall);
+    console.log("📌 After handleFileExecute, maxWallLocal =", maxWallLocal);
 
-    await new Promise((r) => setTimeout(r, 200)); // allow state to update
-
-    handleStartLayout();
+    // no need for setTimeout hack anymore
+    await handleStartLayout(maxWallLocal);
   } catch (err) {
     console.error("❌ Failed to execute file & start layout:", err);
     setAppState("error");
   }
 };
-
 
 // Call /run_ros (no body)
   // UI

@@ -1,9 +1,7 @@
-import os
 import pwd, grp
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
-from backend.marking import app as marking_app
 import subprocess
 import requests
 import pandas as pd
@@ -11,7 +9,21 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from roscore_service import ROS_MASTER_URI, is_master_up, start_roscore, stop_roscore, _OWNED
 import backend.jointtargetip as jointip
+from backend.listenerrunner import start_listener
+import sys
+import os
 
+WS = "/root/catkin_ws/newui_Greyform"
+DEVEL_PYTHON = os.path.join(WS, "devel/lib/python3/dist-packages")
+ROS_PYTHON = "/opt/ros/noetic/lib/python3/dist-packages"
+
+# Inject ROS paths before any ROS import happens
+for p in (DEVEL_PYTHON, ROS_PYTHON):
+    if p not in sys.path:
+        sys.path.insert(0, p)
+
+# NOW import marking
+from backend.marking import app as marking_app
 ROOTDIR = Path(__file__).resolve().parent
 
 # ============================================================
@@ -225,19 +237,43 @@ def run_script(body: RunScriptBody):
 
     return {"ok": True, "data": lines}
 
+_listener_process = None
+
+
 @app.get("/roscore/status")
 def status():
     return {"master_uri": ROS_MASTER_URI, "up": is_master_up(), "owned": _OWNED}
 
+
 @app.post("/roscore/start")
 def start():
+    global _listener_process
+
     try:
         start_roscore(log=True)
-        return {"status": "started", "uri": ROS_MASTER_URI, "owned": _OWNED}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+    # Start listener AFTER sourcing setup.bash
+    if _listener_process is None:
+        _listener_process = start_listener()
+
+    return {
+        "status": "started",
+        "uri": ROS_MASTER_URI,
+        "owned": _OWNED,
+        "listener": "running"
+    }
+
+
 @app.post("/roscore/stop")
 def stop():
+    global _listener_process
+
     stop_roscore()
+
+    if _listener_process:
+        _listener_process.terminate()
+        _listener_process = None
+
     return {"status": "stopped"}
