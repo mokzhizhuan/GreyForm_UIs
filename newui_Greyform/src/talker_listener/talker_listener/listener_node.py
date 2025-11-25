@@ -1,407 +1,160 @@
 #!/usr/bin/env python3
 import os
 import re
-import time
-import zipfile
-import shutil
-import tempfile
 import threading
-from pathlib import Path
+from typing import Dict, Optional
 
-import rospy
 import pandas as pd
+import rospy
+from pathlib import Path
 from std_msgs.msg import String, Bool
 from my_robot_wallinterfaces.msg import FileExtractionMessage, SelectionWall
 
-try:
-    import openpyxl
-except Exception:
-    openpyxl = None
-
 FILE_TOPIC = "/file_extraction_topic"
-SEL_TOPIC  = "/selection_wall_topic"
+SEL_TOPIC = "/selection_wall_topic"
 UI_STARTED = "/ui/wall_started"
-UI_DONE    = "/ui/wall_done"
+UI_DONE = "/ui/wall_done"
 UI_ALLDONE = "/ui/all_done"
 
 
-def _normalize_wall_token(v: object) -> str:
+def _normalize(v):
     s = str(v).strip().upper()
     m = re.search(r"(\d+)", s)
     if m:
-        return m.group(1)  # just the digits
-    if s in {"F", "FL", "FLOOR", "FLOOR/SLAB"}:
+        return m.group(1)
+    if s in {"F", "FLOOR", "FL"}:
         return "F"
     return s
 
 
-def _resolve_sheet_name(xl_sheets: dict, typeselection: str) -> str:
-    if not typeselection:
+def _resolve_sheet(xl_sheets: Dict[str, pd.DataFrame], typ: str):
+    if not typ:
         return ""
-    key = str(typeselection).strip().lower()
-    cmap = {name.strip().lower(): name for name in xl_sheets.keys()}
-    return cmap.get(key, "")
+    t = typ.lower().strip()
+    mapping = {name.lower(): name for name in xl_sheets.keys()}
+    return mapping.get(t, "")
 
 
 class ListenerNode:
     def __init__(self):
         rospy.init_node("listener_node", anonymous=True)
 
-        self.latest_excel = None
-        self.pending = None
-        self.retry_timer = None
-        self.expected_walls = set()
-        self.done_walls = set()
-        self.__post_init_io()
-        self.stored_info = []
-        self.main_store = Path.cwd()
+        self.excel_path: Optional[str] = None
 
-        rospy.Subscriber(FILE_TOPIC, FileExtractionMessage, self.file_cb, queue_size=10)
+        self._io = threading.Lock()
+
+        self.pending_list = []   # many stored until Excel arrives
+
+        self.ui_start_pub = rospy.Publisher(UI_STARTED, String, queue_size=10)
+        self.ui_done_pub = rospy.Publisher(UI_DONE, String, queue_size=10)
+        self.ui_all_pub = rospy.Publisher(UI_ALLDONE, Bool, queue_size=10)
+
+        rospy.Subscriber(FILE_TOPIC, FileExtractionMessage, self.file_cb, queue_size=5)
         rospy.Subscriber(SEL_TOPIC, SelectionWall, self.selection_cb, queue_size=50)
 
-        self.ui_wall_started_pub = rospy.Publisher(UI_STARTED, String, queue_size=10)
-        self.ui_wall_done_pub = rospy.Publisher(UI_DONE, String, queue_size=10)
-        self.ui_all_done_pub = rospy.Publisher(UI_ALLDONE, Bool, queue_size=10)
+        rospy.loginfo("[listener] Started clean listener_node.")
 
-    # ---------------------------------------------------------
-    # Excel path helpers
-    # ---------------------------------------------------------
-    def _get_excel_path(self):
-        if self.latest_excel:
-            return self.latest_excel
+    # ----------------------------------------------------------------------
+    # Excel read/write
+    # ----------------------------------------------------------------------
+    def _read(self):
+        return pd.read_excel(self.excel_path, sheet_name=None, engine="openpyxl")
 
-        p = rospy.get_param("/excel_path", None)
-        if p:
-            self.latest_excel = p
-            rospy.loginfo(f"[listener] Loaded Excel path from param: {p!r}")
-            return p
-        return None
+    def _write(self, sheets):
+        with pd.ExcelWriter(self.excel_path, engine="openpyxl") as w:
+            for name, df in sheets.items():
+                pd.DataFrame(df).to_excel(w, sheet_name=name, index=False)
 
-    def __post_init_io(self):
-        self._io_lock = threading.Lock()
-        self._IO_RETRY_TRIES = 8
-        self._IO_RETRY_SLEEP = 0.25
-
-    # ---------------------------------------------------------
-    # File + Excel helpers
-    # ---------------------------------------------------------
-    def _is_valid_zip(self, path: str) -> bool:
-        try:
-            return os.path.getsize(path) > 1024 and zipfile.is_zipfile(path)
-        except Exception:
+    # ----------------------------------------------------------------------
+    # Mark Excel row(s)
+    # ----------------------------------------------------------------------
+    def _mark(self, wall, typ):
+        if not self.excel_path:
             return False
 
-    def _wait_stable(self, path: str, tries=None, sleep=None) -> bool:
-        tries = tries or self._IO_RETRY_TRIES
-        sleep = sleep or self._IO_RETRY_SLEEP
-        last = -1
-        for _ in range(tries):
-            if not os.path.exists(path):
-                time.sleep(sleep)
-                continue
-            cur = os.path.getsize(path)
-            if cur == last and cur > 0:
-                return True
-            last = cur
-            time.sleep(sleep)
-        return False
+        target = _normalize(wall)
 
-    def _shadow_copy(self, src: str) -> str:
-        d = os.path.dirname(src) or "."
-        fd, tmp = tempfile.mkstemp(prefix=".shadow_", suffix=".xlsx", dir=d)
-        os.close(fd)
-        shutil.copy2(src, tmp)
-        return tmp
-
-    def _safe_read_xl_dict(self, excel_path: str):
-        if not self._wait_stable(excel_path):
-            raise IOError("file not stable")
-        if not self._is_valid_zip(excel_path):
-            raise IOError("not a valid .xlsx zip")
-
-        shadow = None
-        try:
-            shadow = self._shadow_copy(excel_path)
+        with self._io:
             try:
-                return pd.read_excel(shadow, sheet_name=None, engine="openpyxl")
-            except Exception as e1:
-                if openpyxl is None:
-                    raise e1
-                try:
-                    wb = openpyxl.load_workbook(shadow, read_only=True, data_only=True)
-                    out = {}
-                    for ws in wb.worksheets:
-                        rows = list(ws.iter_rows(values_only=True))
-                        if not rows:
-                            out[ws.title] = pd.DataFrame()
-                            continue
-                        header = [str(c) if c is not None else "" for c in rows[0]]
-                        data = rows[1:] if len(rows) > 1 else []
-                        out[ws.title] = pd.DataFrame(data, columns=header)
-                    return out
-                except Exception as e2:
-                    raise e2
-        finally:
-            if shadow and os.path.exists(shadow):
-                try:
-                    os.remove(shadow)
-                except Exception:
-                    pass
-
-    def _safe_write_xl_dict(self, excel_path: str, sheets: dict):
-        d = os.path.dirname(excel_path) or "."
-        fd, tmp = tempfile.mkstemp(prefix=".tmp_", suffix=".xlsx", dir=d)
-        os.close(fd)
-        try:
-            with pd.ExcelWriter(tmp, engine="openpyxl") as w:
-                for name, df in sheets.items():
-                    pd.DataFrame(df).to_excel(w, sheet_name=name, index=False)
-            os.replace(tmp, excel_path)
-        except Exception:
-            try:
-                os.remove(tmp)
-            except Exception:
-                pass
-            raise
-
-    def _initialize_working_copy(self, working_path: str):
-        """
-        Open the working copy, ensure it's ready for marking:
-        - If a sheet has 'Wall Number' but no 'Status', add 'Status' (blank).
-        - Add/update a small control sheet with timestamp.
-        """
-        xl = self._safe_read_xl_dict(working_path)
-        out = dict(xl)
-        changed = False
-
-        for name, df in xl.items():
-            if not isinstance(df, pd.DataFrame):
-                continue
-            df = df.copy()
-            df.columns = [str(c).strip() for c in df.columns]
-            if "Wall Number" in df.columns and "Status" not in df.columns:
-                df["Status"] = ""
-                out[name] = df
-                changed = True
-
-        ctrl_name = "_Control"
-        ctrl_df = pd.DataFrame(
-            {
-                "Key": ["InitializedAt", "Source"],
-                "Value": [
-                    time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "listener_node:file_cb:init",
-                ],
-            }
-        )
-        if out.get(ctrl_name) is None or not ctrl_df.equals(out.get(ctrl_name)):
-            out[ctrl_name] = ctrl_df
-            changed = True
-
-        if changed:
-            self._safe_write_xl_dict(working_path, out)
-
-    def _resolve_master_by_name(self, name: str) -> Path:
-        """Find master by filename within main_store (or treat absolute paths directly)."""
-        p = Path(name)
-        if p.is_absolute():
-            return p.resolve()
-        return (self.main_store / p.name).resolve()
-
-    def _copy_to_dir_with_counter(self, src: Path, dest_dir: Path) -> Path:
-        """Copy src into dest_dir as <stem>_1<suffix>, <stem>_2<suffix>, … (no overwrite)."""
-        if not src.exists():
-            raise FileNotFoundError(f"Master not found: {src}")
-        dest_dir.mkdir(parents=True, exist_ok=True)
-        stem, suffix = src.stem, (src.suffix or ".xlsx")
-        i = 1
-        while True:
-            candidate = dest_dir / f"{stem}_{i}{suffix}"
-            if not candidate.exists():
-                shutil.copy2(src, candidate)
-                return candidate
-            i += 1
-
-    # ---------------------------------------------------------
-    # Marking logic
-    # ---------------------------------------------------------
-    def _scan_and_mark(self, wall: str, typ: str) -> bool:
-        excel_path = self._get_excel_path()
-        if not excel_path:
-            rospy.logwarn(
-                f"[listener] No working Excel for scan_and_mark(wall={wall!r}, typ={typ!r})"
-            )
-            return False
-
-        target = _normalize_wall_token(wall)
-
-        with self._io_lock:
-            try:
-                xl = self._safe_read_xl_dict(excel_path)  # read working copy
+                xl = self._read()
             except Exception as e:
-                rospy.logerr(
-                    f"[listener] Failed to open working Excel '{excel_path}': {e}"
-                )
+                rospy.logerr(f"[listener] XLS read failed: {e}")
                 return False
 
-            chosen_sheet = _resolve_sheet_name(xl, typ)
-            sheets_to_search = [chosen_sheet] if chosen_sheet else list(xl.keys())
-            changed, out = False, dict(xl)
+            changed = False
+            out = dict(xl)
 
-            for sheet_name in sheets_to_search:
-                df = xl.get(sheet_name)
-                if df is None or not isinstance(df, pd.DataFrame):
+            sheet_name = _resolve_sheet(xl, typ)
+            search_list = [sheet_name] if sheet_name else list(xl.keys())
+
+            for name in search_list:
+                df = xl.get(name)
+                if df is None:
                     continue
                 df = df.copy()
                 df.columns = [str(c).strip() for c in df.columns]
-                if "Wall Number" not in df.columns or "Status" not in df.columns:
+
+                if "Wall Number" not in df.columns:
                     continue
 
-                tokens = df["Wall Number"].apply(_normalize_wall_token)
-                mask = tokens == target
+                if "Status" not in df.columns:
+                    df["Status"] = ""
+
+                mask = df["Wall Number"].apply(_normalize) == target
+
                 if mask.any():
                     df.loc[mask, "Status"] = "done"
-                    out[sheet_name] = df
+                    out[name] = df
                     changed = True
 
             if not changed:
-                rospy.loginfo(
-                    f"[listener] No rows matched wall={wall!r} in sheets={sheets_to_search}"
-                )
+                rospy.loginfo(f"[listener] No rows updated for wall={wall}")
                 return False
 
             try:
-                # ✅ write back to the same working copy
-                self._safe_write_xl_dict(excel_path, out)
-                rospy.loginfo(
-                    f"[listener] Marked wall {wall!r} as done in working copy '{excel_path}' "
-                    f"(sheets searched={sheets_to_search})"
-                )
+                self._write(out)
                 return True
             except Exception as e:
-                rospy.logerr(f"[listener] Excel write failed: {e}")
+                rospy.logerr(f"[listener] XLS write failed: {e}")
                 return False
 
-    # ---------------------------------------------------------
-    # Deferred selection handling
-    # ---------------------------------------------------------
-    def _retry_pending(self, _evt):
-        if not self.pending:
-            if self.retry_timer:
-                self.retry_timer.shutdown()
-                self.retry_timer = None
-            return
-
-        wall, typ = self.pending
-        if self._scan_and_mark(wall, typ):
-            self.ui_wall_done_pub.publish(String(data=str(wall)))
-        self.pending = None
-        if self.retry_timer:
-            self.retry_timer.shutdown()
-            self.retry_timer = None
-
-    def _process_selection(self, wall: str, typ: str):
-        if not self._get_excel_path():
-            rospy.logwarn(
-                f"[listener] No working Excel yet; deferring wall={wall!r}, typ={typ!r}"
-            )
-            self.pending = (wall, typ)
-            if not self.retry_timer:
-                self.retry_timer = rospy.Timer(
-                    rospy.Duration(0.5), self._retry_pending
-                )
-            return
-
-        if self._scan_and_mark(wall, typ):
-            self.ui_wall_done_pub.publish(String(data=str(wall)))
-
-    # ---------------------------------------------------------
-    # ROS callbacks
-    # ---------------------------------------------------------
+    # ----------------------------------------------------------------------
+    # ROS Callbacks
+    # ----------------------------------------------------------------------
     def file_cb(self, msg: FileExtractionMessage):
-        dest_dir = Path(os.path.expanduser(msg.directory)).resolve()
-        master = self._resolve_master_by_name(msg.excelfile)
-
-        self.original_excel_file = str(master)
-        rospy.loginfo(f"[listener] Master: {self.original_excel_file}")
-        rospy.loginfo(f"[listener] Dest dir: {str(dest_dir)!r}")
-
-        try:
-            # 1) Copy master -> working (countered) inside msg.directory
-            working = self._copy_to_dir_with_counter(master, dest_dir)
-
-            # 2) Initialize working copy
-            self._initialize_working_copy(str(working))
-
-            # 3) Publish the working copy as the only source-of-truth
-            self.excel_file = str(working)
-            rospy.set_param("/excel_path", self.excel_file)
-            self.latest_excel = self.excel_file
-            rospy.loginfo(
-                f"[listener] Working copy ready & initialized: {self.excel_file}"
-            )
-
-        except Exception as e:
-            rospy.logerr(f"[listener] Failed to prepare working copy: {e}")
-            # Fallback: use master so pipeline can proceed (not ideal)
-            self.excel_file = str(master)
-            rospy.set_param("/excel_path", self.excel_file)
-            self.latest_excel = self.excel_file
+        path = msg.excelfile.strip()
+        if not os.path.exists(path):
+            rospy.logerr(f"[listener] Excel file missing: {path}")
             return
 
-        # Handle any deferred selections
-        if self.pending:
-            wall, typ = self.pending
-            try:
-                self._process_selection(wall, typ)
-            except Exception as e:
-                rospy.logerr(
-                    f"[listener] _process_selection(pending) failed: {e}"
-                )
-            finally:
-                self.pending = None
+        self.excel_path = path
+        rospy.loginfo(f"[listener] Using Excel: {path}")
 
-        for idx, item in enumerate(list(self.stored_info), start=1):
-            try:
-                wall, typ = item
-                rospy.loginfo(
-                    f"[listener] Processing stored #{idx}: wall={wall}, typ={typ}"
-                )
-                self._process_selection(wall, typ)
-            except Exception as e:
-                rospy.logerr(
-                    f"[listener] _process_selection(stored #{idx}) failed: {e}"
-                )
-        self.stored_info.clear()
+        # Process all pending
+        for wall, typ in list(self.pending_list):
+            self._process(wall, typ)
+        self.pending_list.clear()
+
+    def _process(self, wall, typ):
+        if not self.excel_path:
+            rospy.logwarn(f"[listener] No Excel yet; queueing wall={wall} typ={typ}")
+            self.pending_list.append((wall, typ))
+            return
+
+        ok = self._mark(wall, typ)
+        if ok:
+            self.ui_done_pub.publish(String(data=str(wall)))
 
     def selection_cb(self, msg: SelectionWall):
-        wall = str(msg.wallselection)       # may be '1', '6', 'F'
-        typ = str(msg.typeselection or "")  # Stage 2, Stage 3, etc.
+        wall = str(msg.wallselection)
+        typ = str(msg.typeselection or "")
 
-        self.ui_wall_started_pub.publish(String(data=wall))
+        rospy.loginfo(f"[listener] selection_cb: wall={wall}, typ={typ}")
 
-        if not self._get_excel_path():
-            rospy.logwarn(
-                f"[listener] No Excel path yet; deferring selection wall={wall!r}, typ={typ!r}"
-            )
-            self.pending = (wall, typ)
-            if not self.retry_timer:
-                self.retry_timer = rospy.Timer(
-                    rospy.Duration(0.5), self._retry_pending
-                )
-            return
-
-        # ✅ correct call: only (wall, typ)
-        if self._scan_and_mark(wall, typ):
-            self.ui_wall_done_pub.publish(String(data=str(wall)))
-            self.done_walls.add(wall)
-            if self.expected_walls and self.expected_walls.issubset(
-                self.done_walls
-            ):
-                rospy.loginfo(
-                    "[listener] All walls completed, publishing /ui/all_done"
-                )
-                self.ui_all_done_pub.publish(Bool(data=True))
+        self.ui_start_pub.publish(String(data=wall))
+        self._process(wall, typ)
+        rospy.set_param("/ui_last_started_wall", wall)
+        rospy.set_param("/ui_last_done_wall", wall)
 
 
 def main():

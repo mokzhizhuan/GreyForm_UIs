@@ -13,32 +13,25 @@ interface MarkingStatusResponse {
   currentWall?: number | null;
   progressPercent?: number | null;
   done?: boolean;
-  phase?: number | null; // 1 or 2 (optional)
+  paused?: boolean;
   message?: string;
 }
- interface WallRow {
-  // You can make this stricter later; for now it's fine as a generic row.
+
+interface WallRow {
   [key: string]: any;
 }
 
 interface WallInfo {
-  wall: string;      // "1", "2", "3", ...
-  count: number;     // number of rows for that wall
-  rows: WallRow[];   // the actual rows to send to /execute_wall_data
+  wall: string; // "1", "2", "3", ...
+  count: number;
+  rows: WallRow[];
 }
-  interface RunScriptResponse {
-  ok: boolean;
-  data: string[];
-}
-interface ExecuteWallDataResponse {
-  ok: boolean;
-  queued?: boolean;
-  error?: string;
-}
+
 interface SixWallFlowProps {
   walls: WallInfo[];
   maxWall: number;
 }
+
 /**
  * Step indexes (6-wall flow):
  * 0: Placement 1
@@ -63,82 +56,55 @@ const steps = [
   "Marking Complete",
 ];
 
-// Reuse same illustrative image; replace with more specific ones if available.
 const images = [
   placementOne,
   wallMarking1,
   wallMarking1,
   wallMarking1,
-  placementTwo, // second placement illustration (can create a new asset)
+  placementTwo,
   wallMarking2,
   wallMarking2,
   wallMarking2,
   wallMarking2,
 ];
 
-const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
+const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall, excelfile }) => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [status, setStatus] = useState<StepStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const [currentWall, setCurrentWall] = useState<number | null>(null);
-  const [autoModePhase, setAutoModePhase] = useState<0 | 1 | 2>(0); 
-  // 0 = not started, 1 = auto marking walls 2-4, 2 = auto marking walls 5-6-1
+
+  // 0 = idle, 1 = phase1 (walls 2–4), 2 = phase2 (walls 5–6–1)
+  const [autoModePhase, setAutoModePhase] = useState<0 | 1 | 2>(0);
+  const steps = ["Placement 1", "Wall 2", "Wall 3", "Wall 4", "Placement 2", "Wall 5", "Wall 6", "Wall 1", "Marking Complete"];
+  const [paused, setPaused] = useState<boolean>(false);
+  const [pausedAfterWall, setPausedAfterWall] = useState<number | null>(null);
+  const [loadingPause, setLoadingPause] = useState(false);
+  const [loadingContinue, setLoadingContinue] = useState(false);
 
   const pollingRef = useRef<number | null>(null);
-  const mountedRef = useRef<boolean>(true);
+  const mountedRef = useRef<boolean>(false);
   const retryCountRef = useRef<number>(0);
-  const [currentWallIndex, setCurrentWallIndex] = useState<number>(1); // start at wall "1"
-  const [error, setError] = useState<string | null>(null);
+  const phase: 1 | 2 =
+  currentStep <= 3   // Placement + Wall2 + Wall3 + Wall4
+    ? 1              // Phase 1
+    : 2;    
+  const isFinalStep = currentStep === steps.length - 1;
 
-   const currentWallId = String(currentWallIndex);
-
-  async function runCurrentWall() {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // 👇 HERE is where you pass wallId
-      const result = await executeWallDataForWall(walls, currentWallId);
-      console.log("Executed wall:", currentWallId, result);
-
-      // move to next wall if available
-      if (currentWallIndex < maxWall) {
-        setCurrentWallIndex((prev) => prev + 1);
-      } else {
-        console.log("All walls done");
-      }
-    } catch (e: any) {
-      console.error(e);
-      setError(e.message ?? "Failed to execute wall");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // 1. AUTO START ROS
-  async function startRosAndListener() {
-    try {
-      await axios.post(`${API_BASE_URL}/roscore/start`);
-      console.log("ROS core + listener started");
-    } catch (e) {
-      console.error("Failed to start ROS:", e);
-    }
-  }
-
-  // 2. AUTO SEND WALL ROWS + START MARKING
-
-  // 4. MOUNT LOGIC
+  // ------------------------------------
+  // Auto-start ROS core + listener
+  // ------------------------------------
   useEffect(() => {
     mountedRef.current = true;
 
-    // Auto-start ROS + listener
-    startRosAndListener();
-
-
-    // Begin polling
+    (async () => {
+      try {
+        await axios.post(`${API_BASE_URL}/roscore/start`);
+        console.log("ROS core + listener started");
+      } catch (e) {
+        console.error("Failed to start ROS:", e);
+      }
+    })();
 
     return () => {
       mountedRef.current = false;
@@ -146,108 +112,54 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
     };
   }, []);
 
-  const isFinalStep = currentStep === steps.length - 1;
-
-  async function executeWallDataForWall(
-  walls: WallInfo[],
-  wallId: string
-): Promise<ExecuteWallDataResponse> {
-  const wallData = walls.find((w) => w.wall === wallId);
-  if (!wallData) {
-    throw new Error(`Wall "${wallId}" not found in walls array`);
-  }
-
-  const res = await axios.post<ExecuteWallDataResponse>(
-    `${API_BASE_URL}/execute_wall_data`,
-    wallData.rows
-  );
-
-  return res.data;
-}
-  const [loadingPause, setLoadingPause] = useState(false);
-  const [loadingContinue, setLoadingContinue] = useState(false);
-
-
-  // ---- HANDLERS ----
-  async function handlePauseClick() {
-    try {
-      setError(null);
-      setLoadingPause(true);
-
-      const res = await axios.post(`${API_BASE_URL}/marking/pause`);
-      // e.g. { ok: true, paused: true, current_wall: 2 }
-      if (res.data?.paused) {
-        setPaused(true);
-      }
-    } catch (e) {
-      console.error("Pause failed:", e);
-      setError("Failed to pause marking");
-    } finally {
-      setLoadingPause(false);
-    }
-  }
-
-  async function handleContinueClick() {
-    try {
-      setError(null);
-      setLoadingContinue(true);
-
-      await axios.post(`${API_BASE_URL}/marking/continue`);
-      // backend resumes next wall → we consider not paused now
-      setPaused(false);
-    } catch (e) {
-      console.error("Continue failed:", e);
-      setError("Failed to continue marking");
-    } finally {
-      setLoadingContinue(false);
-    }
-  }
-  // Map wall number to step index for this flow
+  // ------------------------------------
+  // Wall -> step index mapping
+  // ------------------------------------
   const wallNumberToStepIndex = (wall: number): number => {
-    switch (wall) {
-      case 2: return 1;
-      case 3: return 2;
-      case 4: return 3;
-      case 5: return 5;
-      case 6: return 6;
-      case 1: return 7;
-      default: return 0;
-    }
-  };
+    if (phase === 1) {
+    if (wall === 2) return 1;
+    if (wall === 3) return 2;
+    if (wall === 4) return 3;
+  }
 
-  const scheduleNextPoll = (delayMs: number = 2000) => {
-    if (!mountedRef.current) return;
-    if (pollingRef.current) clearTimeout(pollingRef.current);
-    pollingRef.current = window.setTimeout(fetchMarkingStatus, delayMs);
-  };
+  // Phase 2 sequence
+  if (phase === 2) {
+    if (wall === 5) return 4;
+    if (wall === 6) return 5;
+    if (wall === 1) return 6;
+  }
 
+  return 0;
+  };
+  // ------------------------------------
+  // Phase 1: mark walls 2, 3, 4
+  // ------------------------------------
   const startPhaseOne = async () => {
     setStatus("pending");
     setErrorMessage(null);
     setProgress(null);
+    setPaused(false);
+    setPausedAfterWall(null);
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/marking/start`, {
-        max_wall: maxWall,   // 6
+      await axios.post(`${API_BASE_URL}/marking/start`, {
+        max_wall: maxWall,
         phase: 1,
         walls,
+        excelfile
       });
+
       await axios.post(`${API_BASE_URL}/marking/run`);
-      //runCurrentWall()
-      const initialWall: number | undefined = res.data?.currentWall;
 
       setAutoModePhase(1);
-      setStatus("pending");
-
-      if (initialWall && [2, 3, 4].includes(initialWall)) {
-        setCurrentStep(wallNumberToStepIndex(initialWall));
-      }
+      setCurrentStep(1); // wall 2
       retryCountRef.current = 0;
       scheduleNextPoll(1000);
     } catch (err: any) {
       setStatus("error");
       setErrorMessage(
-        err?.response?.data?.message ||
+        err?.response?.data?.detail ||
+          err?.response?.data?.message ||
           err?.message ||
           "Failed to start phase 1 marking."
       );
@@ -255,109 +167,157 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
     }
   };
 
+  // ------------------------------------
+  // Pause / Continue
+  // ------------------------------------
+  const handlePauseClick = async () => {
+    try {
+      setLoadingPause(true);
+      setErrorMessage(null);
+
+      // Tell backend: pause after this wall
+      const res = await axios.post(`${API_BASE_URL}/marking/pause`);
+      if (res.data?.paused) {
+        // We don't stop immediately; backend will finish current wall.
+        // UI will react when /status shows paused = true and currentWall stops changing.
+        setPaused(true);
+      }
+    } catch (err: any) {
+      setErrorMessage("Failed to request pause.");
+    } finally {
+      setLoadingPause(false);
+    }
+  };
+
+  const handleContinueClick = async () => {
+    try {
+      setLoadingContinue(true);
+      setErrorMessage(null);
+      setPaused(false);
+      setPausedAfterWall(null);
+
+      // Backend resumes next wall; UI will see that via polling
+      await axios.post(`${API_BASE_URL}/marking/continue`);
+
+      // We DO NOT change step immediately (Option D).
+      // We wait for /marking/status to report the new currentWall.
+      retryCountRef.current = 0;
+      scheduleNextPoll(1000);
+    } catch (err: any) {
+      setErrorMessage("Failed to continue marking.");
+    } finally {
+      setLoadingContinue(false);
+    }
+  };
+
+  // ------------------------------------
+  // Polling
+  // ------------------------------------
+  const scheduleNextPoll = (delayMs: number = 2000) => {
+    if (!mountedRef.current) return;
+    if (pollingRef.current) clearTimeout(pollingRef.current);
+    pollingRef.current = window.setTimeout(fetchMarkingStatus, delayMs);
+  };
+
+  const fetchMarkingStatus = async () => {
+  const res = await axios.get(`${API_BASE_URL}/marking/status`);
+  const data = res.data;
+
+  // ----------------------------------------
+  // ⭐ 1. WALL STARTED  → update UI to correct wall step
+  // ----------------------------------------
+  if (data.startedWall) {
+    const w = Number(data.startedWall);
+
+    let stepIndex = null;
+
+    if (w === 2) stepIndex = 1;
+    if (w === 3) stepIndex = 2;
+    if (w === 4) stepIndex = 3;
+    if (w === 5) stepIndex = 5;
+    if (w === 6) stepIndex = 6;
+    if (w === 1) stepIndex = 7;
+
+    if (stepIndex !== null) {
+      setCurrentStep(stepIndex);
+    }
+  }
+
+  // ----------------------------------------
+  // ⭐ 2. WALL COMPLETED  → detect transitions
+  // ----------------------------------------
+  if (data.doneWall) {
+    const completed = Number(data.doneWall);
+    console.log("Wall completed:", completed);
+
+    // ⭐ After finishing wall 4 → jump to Placement 2 (step 4)
+    if (completed === 4) {
+      setCurrentStep(4);   // Placement 2
+      setPaused(true);     // pause until user presses Start again
+      return;              // stop status polling
+    }
+
+    // ⭐ After finishing wall 1 → go to Marking Complete (step 8)
+    if (completed === 1) {
+      setCurrentStep(8);   // Marking Complete
+      setPaused(true);
+      return;
+    }
+  }
+
+  // Continue polling
+  scheduleNextPoll();
+};
+  // ------------------------------------
+  // Phase 2: mark walls 5, 6, 1
+  // ------------------------------------
   const startPhaseTwo = async () => {
     setStatus("pending");
     setErrorMessage(null);
     setProgress(null);
+    setPaused(false);
+    setPausedAfterWall(null);
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/marking/start`, {
-        max_wall: maxWall,   // 6
+      await axios.post(`${API_BASE_URL}/marking/start`, {
+        max_wall: maxWall,
         phase: 2,
         walls,
+        excelfile
       });
+
       await axios.post(`${API_BASE_URL}/marking/run`);
-      //runCurrentWall()
-      const initialWall: number | undefined = res.data?.currentWall;
 
       setAutoModePhase(2);
-      setStatus("pending");
-
-      if (initialWall && [5, 6, 1].includes(initialWall)) {
-        setCurrentStep(wallNumberToStepIndex(initialWall));
-      } else {
-        // Wait for polling if not provided
-      }
+      setCurrentStep(5); // wall 5
       retryCountRef.current = 0;
       scheduleNextPoll(1000);
     } catch (err: any) {
       setStatus("error");
       setErrorMessage(
-        err?.response?.data?.message ||
+        err?.response?.data?.detail ||
+          err?.response?.data?.message ||
           err?.message ||
           "Failed to start phase 2 marking."
       );
-      // Remain at placement 2 for retry
     }
   };
-
-  const fetchMarkingStatus = async () => {
-    // Only poll during auto phases
-    if (!mountedRef.current || autoModePhase === 0) return;
-
-    try {
-      const res = await axios.get<MarkingStatusResponse>(
-        `${API_BASE_URL}/marking/status`
-      );
-      const data = res.data;
-
-      if (data.done) {
-        setProgress(null);
-        setCurrentStep(steps.length - 1);
-        setStatus("idle");
-        setAutoModePhase(0);
-        return;
-      }
-
-      if (data.currentWall && [2,3,4,5,6,1].includes(data.currentWall)) {
-        const newStep = wallNumberToStepIndex(data.currentWall);
-        if (newStep !== currentStep) setCurrentStep(newStep);
-      }
-
-      if (
-        typeof data.progressPercent === "number" &&
-        data.progressPercent >= 0 &&
-        data.progressPercent <= 100
-      ) {
-        setProgress(data.progressPercent);
-      } else {
-        setProgress(null);
-      }
-
-      setStatus("pending");
-      retryCountRef.current = 0;
-      scheduleNextPoll();
-    } catch (err: any) {
-      retryCountRef.current += 1;
-      if (retryCountRef.current > 5) {
-        setStatus("error");
-        setErrorMessage(
-          err?.response?.data?.message ||
-            err?.message ||
-            "Status polling failed."
-        );
-        return;
-      }
-      const backoff = Math.min(8000, 2000 * retryCountRef.current);
-      scheduleNextPoll(backoff);
-    }
-  };
-
+  // ------------------------------------
+  // Placement "Next" button
+  // ------------------------------------
   const handlePlacementNext = () => {
     if (currentStep === 0) {
+      // Placement 1 → start phase 1 (walls 2, 3, 4)
       startPhaseOne();
     } else if (currentStep === 4) {
+      // Placement 2 → start phase 2 (walls 5, 6, 1)
       startPhaseTwo();
     }
   };
 
-  // When phase 1 finishes (wall 4 complete) backend should stop advancing walls and not set done yet.
-  // Frontend will stay at step 3 until backend indicates pause or operator moves manually to step 4.
-  // Optionally: If backend sends a "phaseComplete":1 we could auto step to Placement 2.
-  // For now, we assume we manually move to step 4 when current wall sequence (2-4) ends.
-  // If you want automatic transition, add logic below (e.g., detect absence of currentWall for >N polls).
-
-  // Instructions content
+  // ------------------------------------
+  // Instruction text
+  // ------------------------------------
   const getInstructionContent = (): React.ReactNode => {
     if (isFinalStep) {
       return <>Marking complete! You may now proceed to turn off the robot.</>;
@@ -367,7 +327,8 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
       return (
         <>
           Position the robot facing <strong>wall two</strong> and{" "}
-          <strong>1m away</strong> from the wall.
+          <strong>1m away</strong> from the wall. Press{" "}
+          <strong>Next</strong> to start marking walls 2, 3 and 4.
         </>
       );
     }
@@ -376,8 +337,18 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
       return (
         <>
           Reposition the robot for <strong>second placement</strong> facing{" "}
-          <strong>wall one</strong> and <strong>1m away</strong>{" "}
-          from the wall. Press Next to continue marking walls 5, 6 and 1.
+          <strong>wall one</strong> and <strong>1m away</strong> from the wall.
+          Press <strong>Next</strong> to continue marking walls 5, 6 and 1.
+        </>
+      );
+    }
+
+    if (paused && pausedAfterWall != null) {
+      return (
+        <>
+          Marking is <strong>paused</strong> after finishing{" "}
+          <strong>wall {pausedAfterWall}</strong>. Press{" "}
+          <strong>Continue</strong> to start the next wall.
         </>
       );
     }
@@ -385,18 +356,17 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
     if (currentStep >= 1 && currentStep <= 3) {
       return (
         <>
-          Currently marking <strong>wall {currentStep + 1}</strong> please wait.
+          Currently marking <strong>wall {currentStep + 1}</strong>. Please
+          wait.
         </>
       );
     }
 
     if (currentStep >= 5 && currentStep <= 7) {
-      // Steps 5->Wall5,6->Wall6,7->Wall1
-      const wallDisplay =
-        currentStep === 7 ? 1 : currentStep === 5 ? 5 : 6;
+      const wallDisplay = currentStep === 7 ? 1 : currentStep === 5 ? 5 : 6;
       return (
         <>
-          Currently marking <strong>wall {wallDisplay}</strong> please wait.
+          Currently marking <strong>wall {wallDisplay}</strong>. Please wait.
         </>
       );
     }
@@ -404,10 +374,13 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
     return <>Starting marking process...</>;
   };
 
+  // ------------------------------------
+  // Status line text
+  // ------------------------------------
   const getStatusLine = (): React.ReactNode => {
     if (isFinalStep) return null;
 
-    // Placement steps show no progress
+    // Placement steps: only show error
     if (currentStep === 0 || currentStep === 4) {
       if (status === "error") {
         return (
@@ -419,7 +392,15 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
       return null;
     }
 
-    // Auto marking steps
+    if (paused && pausedAfterWall != null) {
+      return (
+        <p className="mt-2">
+          Paused after <strong>wall {pausedAfterWall}</strong>. Waiting for
+          user to press Continue.
+        </p>
+      );
+    }
+
     if (status === "error") {
       return (
         <p className="text-red-600 mt-2">
@@ -446,17 +427,22 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
     try {
       window.close();
     } catch {
-      // fallback
+      // no-op
     }
   };
 
+  // ------------------------------------
+  // Render
+  // ------------------------------------
   return (
     <>
-      <div className="flex flex-col items-center-safe justify-center mb-8">
-        <h2 className="text-4xl md:text-5xl font-bold mb-8">
+      {/* Header & Steps */}
+      <div className="flex flex-col items-center justify-center mb-8">
+        <h2 className="text-4xl md:text-5xl font-bold mb-6">
           Marking of PBU (6-Wall Flow)
         </h2>
-        <ul className="steps w-full max-w-5xl">
+
+        <ul className="steps w-full max-w-5xl mb-4">
           {steps.map((label, i) => (
             <li
               key={label}
@@ -468,81 +454,74 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall }) => {
         </ul>
       </div>
 
-      <div className="flex flex-row items-stretch gap-4 w-full">
-        <div className="max-w-2xl card bg-base-100 shadow-sm flex-shrink-0">
+      {/* Main Body */}
+      <div className="flex flex-row gap-6 w-full justify-center">
+        {/* Left: layout image */}
+        <div className="card bg-base-100 shadow-md max-w-2xl">
           <img
             src={images[currentStep]}
             alt={`6 Wall Flow ${steps[currentStep]}`}
-            className="block w-full h-auto max-h-[70vh] object-contain"
+            className="w-full h-auto max-h-[70vh] object-contain"
           />
         </div>
 
-        <div className="flex flex-col justify-between w-max items-center-safe self-stretch">
-          <div className="menu bg-base-200 rounded-box w-full max-h-full p-3 text-black">
-            <p className="md:text-2xl">
-              <b>Instructions:</b>
+        {/* Right: instructions + buttons */}
+        <div className="flex flex-col justify-between w-[420px]">
+          <div className="menu bg-base-200 rounded-box p-5 text-black shadow-md">
+            <p className="text-2xl font-semibold mb-2">Instructions:</p>
+            <p className="text-xl leading-relaxed">
+              {getInstructionContent()}
             </p>
-            <p className="text-2xl">{getInstructionContent()}</p>
-            {getStatusLine()}
+            <div className="mt-3">{getStatusLine()}</div>
           </div>
 
-          {/* Buttons logic:
-              - Placement steps (0 & 4): show Next with start/resume logic.
-              - Final step: Exit.
-              - Auto marking steps: no button.
-          */}
-          {currentStep === 0 && (
-            <button
-              className={`btn btn-primary md:btn-md lg:btn-lg py-2 px-4 border-b-4
-                          border-gray-500 hover:border-gray-700 rounded 
-                          ${status === "pending" ? "loading" : ""}`}
-              onClick={startPhaseOne}
-              disabled={status === "pending"}
-            >
-              {status === "error"
-                ? "Retry Start"
-                : status === "pending"
-                ? "Starting..."
-                : "Next"}
-            </button>
-          )}
-            <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-              <button onClick={handlePauseClick} disabled={loadingPause || paused}>
-                {loadingPause ? "Pausing..." : "Pause after this wall"}
-              </button>
+          <div className="flex flex-col items-center mt-4 gap-4">
+            {/* Placement buttons (0 and 4) */}
+            {(currentStep === 0 || currentStep === 4) && !isFinalStep && (
               <button
-                onClick={handleContinueClick}
-                disabled={loadingContinue || !paused}
+                className="btn btn-primary md:btn-lg px-10 text-lg"
+                onClick={handlePlacementNext}
               >
-                {loadingContinue ? "Continuing..." : "Continue next wall"}
+                {status === "error"
+                  ? "Retry"
+                  : status === "pending"
+                  ? "Starting..."
+                  : "Next"}
               </button>
-            </div>
-          {currentStep === 4 && (
-            <button
-              className={`btn btn-primary md:btn-md lg:btn-lg py-2 px-4 border-b-4
-                          border-gray-500 hover:border-gray-700 rounded 
-                          ${status === "pending" ? "loading" : ""}`}
-              onClick={startPhaseTwo}
-              disabled={status === "pending"}
-            >
-              {status === "error"
-                ? "Retry Resume"
-                : status === "pending"
-                ? "Resuming..."
-                : "Next"}
-            </button>
-          )}
+            )}
 
-          {isFinalStep && (
-            <button
-              className="btn btn-error md:btn-md lg:btn-lg py-2 px-4 border-b-4
-                        border-gray-500 hover:border-gray-700 rounded
-                        text-white"
-              onClick={handleExit}
-            >
-              Exit
-            </button>
-          )}
+            {/* Pause / Continue only during marking steps */}
+            {currentStep !== 0 &&
+              currentStep !== 4 &&
+              !isFinalStep && (
+                <div className="flex gap-4">
+                  <button
+                    className="btn btn-outline"
+                    onClick={handlePauseClick}
+                    disabled={loadingPause || paused}
+                  >
+                    {loadingPause ? "Pausing..." : "Pause after this wall"}
+                  </button>
+                  <button
+                    className="btn btn-outline btn-success"
+                    onClick={handleContinueClick}
+                    disabled={loadingContinue || !paused}
+                  >
+                    {loadingContinue ? "Continuing..." : "Continue next wall"}
+                  </button>
+                </div>
+              )}
+
+            {/* Exit on final step */}
+            {isFinalStep && (
+              <button
+                className="btn btn-error md:btn-lg px-10 text-lg text-white"
+                onClick={handleExit}
+              >
+                Exit
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </>

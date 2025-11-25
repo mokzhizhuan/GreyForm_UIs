@@ -1,55 +1,57 @@
 # backend/marking.py
 
 from fastapi import FastAPI, BackgroundTasks, HTTPException
-from typing import List, Dict, Any
-import time
-from src.talker_listener.talker_listener import talker_node as RosPublisher
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
-from roscore_service import (
-    ROS_MASTER_URI,
-    is_master_up,
-    start_roscore,
-    stop_roscore,
-    _OWNED,
-)
-
+import time
+import rospy
 from backend.runner import Runner
+from roscore_service import is_master_up
+from src.talker_listener.talker_listener import talker_node as RosPublisher
 
-# This is its own FastAPI app
+# --------------------------------------------------------
+# FastAPI app
+# --------------------------------------------------------
 app = FastAPI(title="MarkingApp")
 
-# Shared runner instance for this app
+# --------------------------------------------------------
+# Shared Runner + bind existing ROS talker instance
+# --------------------------------------------------------
+# NOTE: RosPublisher is already a TalkerNode instance imported
+# from src.talker_listener.talker_listener. We DO NOT create
+# a new instance here; we just bind it to the Runner.
 _runner = Runner()
-_runner.bind_talker(RosPublisher)
+_runner.bind_talker(RosPublisher.TalkerNode())
 
 
 def _runner_instance() -> Runner:
     return _runner
 
 
-# ------------------------------------------------------
-# INTERNAL: execute all walls sequentially
-# ------------------------------------------------------
+# --------------------------------------------------------
+# Internal: execute all queued walls
+# --------------------------------------------------------
 def _execute_all_walls(r: Runner) -> None:
+    """
+    Process r.pending_walls in order.
+
+    Each entry in r.pending_walls is expected to be:
+      { "wall": "1", "rows": [ {...}, ... ] }
+
+    We publish SelectionWall for every row, then publish_all_done(True)
+    after each wall finishes (unless paused between walls).
+    """
     while r.pending_walls:
 
-        # Pause requested? stop processing further walls
+        # Pause applies BEFORE starting the next wall
         if r.is_paused:
             break
 
         wall_block = r.pending_walls.pop(0)
-
-        # e.g. wall_block = { "wall": "1", "rows": [ {...}, ... ] }
         r.current_wall = int(wall_block["wall"])
         r.current_rows = wall_block["rows"]
 
-        # ----- Execute this wall's rows -----
         for row in r.current_rows:
-            if r.is_paused:
-                # stop mid-wall; current wall ends after this point loop
-                break
-
             pos = [
                 int(float(row.get("Position X", 0))),
                 int(float(row.get("Position Y", 0))),
@@ -64,76 +66,88 @@ def _execute_all_walls(r: Runner) -> None:
                     marking_type,
                 )
 
-            # small delay to avoid hammering hardware
-            time.sleep(0.05)
+            # Small delay to avoid hammering ROS / hardware
+            time.sleep(0.06)
 
-        # ----- Wall finished -----
+        # Wall finished; tell UI/ROS this wall is done
         if (not r.is_paused) and r.talker_node:
             r.talker_node.publish_all_done(True)
 
-    # clear rows when done or paused
+    # Clear current rows when done (or paused)
     r.current_rows = []
 
 
-# ------------------------------------------------------
-# API: receive all walls & queue them
-# Body example:
-# [
-#   { "wall": "1", "rows": [ {...}, {...} ] },
-#   { "wall": "2", "rows": [ {...}, {...} ] }
-# ]
-# ------------------------------------------------------
+# --------------------------------------------------------
+# Request Body
+# --------------------------------------------------------
 class StartMarkingBody(BaseModel):
-    walls: List[Dict[str, Any]]   # full walls array from React
-    max_wall: int                 # 4 or 6
-    phase: Optional[int] = None   # only used for 6-wall
+    walls: List[Dict[str, Any]]  # wall blocks from React
+    max_wall: int                # 4 or 6
+    phase: Optional[int] = None  # only used for 6-wall
+    excelfile: str               # full path to working Excel
 
 
+# --------------------------------------------------------
+# START marking
+# --------------------------------------------------------
 @app.post("/start")
 def start_marking(body: StartMarkingBody):
     r = _runner_instance()
 
+    # Safety checks
     if not is_master_up():
         raise HTTPException(status_code=400, detail="ROS core not running")
 
     if not r.listener_started:
-        raise HTTPException(status_code=400, detail="Listener not started.")
+        raise HTTPException(status_code=400, detail="Listener not started")
 
+    # 🔥 1) Tell listener which Excel to use BEFORE any selection messages
+    try:
+        # directory is ignored by your new listener_node; we just send excelfile
+        if r.talker_node:
+            r.talker_node.publish_file_message("", body.excelfile)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to send Excel file path to listener: {e}",
+        )
+
+    # 🔥 2) Build pending wall sequence
     walls = body.walls
     max_wall = body.max_wall
     phase = body.phase
 
-    # ---------- 4-wall: NO phase, always run walls as given ----------
+    # -------- 4 WALL FLOW (no phase logic) --------
     if max_wall == 4:
-        pending = walls[:]   # just take whatever order came from Excel / UI
+        # Use whatever order came from Excel/UI
+        pending = walls[:]
 
-    # ---------- 6-wall: optional phase ----------
+    # -------- 6 WALL FLOW (optional two phases) --------
     elif max_wall == 6:
-        # If no phase → run everything in the order given
         if phase is None:
+            # Full automatic: run all walls in the order sent from UI
             pending = walls[:]
         else:
-            # Phase logic for 6-wall:
-            # phase 1: walls 2,3,4
-            # phase 2: walls 5,6,1
+            # Phase 1 → walls 2,3,4
+            # Phase 2 → walls 5,6,1
             if phase == 1:
-                pending_ids = ["2", "3", "4"]
+                order = ["2", "3", "4"]
             elif phase == 2:
-                pending_ids = ["5", "6", "1"]
+                order = ["5", "6", "1"]
             else:
-                raise HTTPException(status_code=400, detail="Invalid phase for 6-wall")
+                raise HTTPException(status_code=400, detail="Invalid phase for 6-wall flow")
 
-            # Filter only matching walls
-            pending = [w for w in walls if str(w.get("wall")) in pending_ids]
+            # Filter to matching walls
+            pending = [w for w in walls if str(w.get("wall")) in order]
 
-            # Sort in the exact [2,3,4] or [5,6,1] order
-            id_index = {wid: i for i, wid in enumerate(pending_ids)}
-            pending.sort(key=lambda w: id_index[str(w["wall"])])
+            # Sort in strict [2,3,4] or [5,6,1] sequence
+            order_index = {wid: i for i, wid in enumerate(order)}
+            pending.sort(key=lambda w: order_index[str(w["wall"])])
 
     else:
-        raise HTTPException(status_code=400, detail=f"Unsupported max_wall: {max_wall}")
+        raise HTTPException(status_code=400, detail=f"Unsupported max_wall={max_wall}")
 
-    # Store in runner
+    # Store on runner
     r.pending_walls = [w.copy() for w in pending]
     r.current_wall = None
     r.current_rows = []
@@ -142,20 +156,19 @@ def start_marking(body: StartMarkingBody):
     return {
         "ok": True,
         "phase": phase,
-        "queued_walls": len(r.pending_walls),
-        "pending_ids": [w["wall"] for w in pending],
+        "queued_walls": [w["wall"] for w in pending],
     }
 
 
-# ------------------------------------------------------
-# API: run (wall1 → wall2 → wall3)
-# ------------------------------------------------------
+# --------------------------------------------------------
+# RUN marking (background task)
+# --------------------------------------------------------
 @app.post("/run")
 def run_marking(background: BackgroundTasks):
     r = _runner_instance()
 
     if not r.listener_started:
-        raise HTTPException(status_code=400, detail="Listener not started.")
+        raise HTTPException(status_code=400, detail="Listener not started")
 
     def job():
         _execute_all_walls(r)
@@ -164,9 +177,9 @@ def run_marking(background: BackgroundTasks):
     return {"ok": True, "started": True}
 
 
-# ------------------------------------------------------
-# API: pause — finish current wall then stop
-# ------------------------------------------------------
+# --------------------------------------------------------
+# PAUSE marking (after current wall)
+# --------------------------------------------------------
 @app.post("/pause")
 def pause_marking():
     r = _runner_instance()
@@ -178,9 +191,9 @@ def pause_marking():
     }
 
 
-# ------------------------------------------------------
-# API: continue — resume from next wall
-# ------------------------------------------------------
+# --------------------------------------------------------
+# CONTINUE marking (next wall onwards)
+# --------------------------------------------------------
 @app.post("/continue")
 def continue_marking(background: BackgroundTasks):
     r = _runner_instance()
@@ -196,14 +209,20 @@ def continue_marking(background: BackgroundTasks):
     }
 
 
-# ------------------------------------------------------
-# API: status — for React polling
-# ------------------------------------------------------
+# --------------------------------------------------------
+# STATUS for React polling
+# --------------------------------------------------------
 @app.get("/status")
 def marking_status():
     r = _runner_instance()
+    last_started = rospy.get_param("/ui_last_started_wall", None)
+    last_done = rospy.get_param("/ui_last_done_wall", None)
+
     return {
         "currentWall": r.current_wall,
         "paused": r.is_paused,
         "pendingCount": len(r.pending_walls),
+        "startedWall": last_started,
+        "doneWall": last_done,
     }
+

@@ -348,13 +348,15 @@ const handleFileExecuteAndStartLayout = async () => {
           </div>
         </div>
       )}
-
+ {/* ---------- FOUR WALL ---------- */}
       {appState === "four_wall_flow" && (
-  <FourWallFlow walls={walls} maxWall={maxWall ?? 0} />
-)}
+        <FourWallFlow walls={walls} maxWall={maxWall ?? 0} excelfile={excelfile} />
+      )}
+
+      {/* ---------- SIX WALL ---------- */}
       {appState === "six_wall_flow" && (
-  <SixWallFlow walls={walls} maxWall={maxWall ?? 0} />
-)}
+        <SixWallFlow walls={walls} maxWall={maxWall ?? 0} excelfile={excelfile} />
+      )}
     </>
   );
 }

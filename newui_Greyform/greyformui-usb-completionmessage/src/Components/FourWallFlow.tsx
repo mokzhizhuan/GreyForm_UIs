@@ -49,7 +49,7 @@ interface FourWallFlowProps {
 const steps = ["Placement", "Wall 2", "Wall 3", "Wall 4", "Wall 1", "Marking Complete"];
 const images = [placementOne, wallMarking, wallMarking, wallMarking, wallMarking, wallMarking];
 
-const FourWallFlow: React.FC<FourWallFlowProps> = ({ walls, maxWall }) => {
+const FourWallFlow: React.FC<FourWallFlowProps> = ({ walls, maxWall ,excelfile}) => {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [status, setStatus] = useState<StepStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -60,7 +60,7 @@ const FourWallFlow: React.FC<FourWallFlowProps> = ({ walls, maxWall }) => {
   const [error, setError] = useState<string | null>(null);
   const [autoModePhase, setAutoModePhase] = useState<0 | 1 | 2>(0); 
   // 0 = not started, 1 = auto marking walls 2-4, 2 = auto marking walls 5-6-1
-
+  
   const pollingRef = useRef<number | null>(null);
   const mountedRef = useRef<boolean>(true);
   const retryCountRef = useRef<number>(0);
@@ -201,6 +201,7 @@ async function executeWallDataForWall(
       const res = await axios.post(`${API_BASE_URL}/marking/start`, {
         max_wall: maxWall,   // 6
         walls,
+        excelfile
         // phase omitted or null
       });
       await axios.post(`${API_BASE_URL}/marking/run`);
@@ -230,56 +231,26 @@ async function executeWallDataForWall(
   };
 
   const fetchMarkingStatus = async () => {
-    if (!mountedRef.current || !autoMode) return;
+  const res = await axios.get(`${API_BASE_URL}/marking/status`);
+  const data = res.data;
 
-    try {
-      const res = await axios.get<MarkingStatusResponse>(
-        `${API_BASE_URL}/marking/status`
-      );
-      const data = res.data;
+  // If ROS says a wall started:
+  if (data.startedWall) {
+    const wall = Number(data.startedWall);
+    console.log("Wall started:", wall);
 
-      if (data.done) {
-        setProgress(null);
-        setCurrentStep(steps.length - 1); // Marking Complete
-        setStatus("idle");
-        return;
-      }
+    // Convert wall number to UI step
+    const stepIndex = wallNumberToStepIndex(wall);
+    setCurrentStep(stepIndex);
+  }
 
-      if (data.currentWall && [2, 3, 4, 1].includes(data.currentWall)) {
-        const newStep = wallNumberToStepIndex(data.currentWall);
-        if (newStep !== currentStep) {
-          setCurrentStep(newStep);
-        }
-      }
+  // When ROS says a wall is done:
+  if (data.doneWall) {
+    console.log("Wall done:", data.doneWall);
+  }
 
-      if (
-        typeof data.progressPercent === "number" &&
-        data.progressPercent >= 0 &&
-        data.progressPercent <= 100
-      ) {
-        setProgress(data.progressPercent);
-      } else {
-        setProgress(null);
-      }
-
-      setStatus("pending");
-      retryCountRef.current = 0;
-      scheduleNextPoll();
-    } catch (err: any) {
-      retryCountRef.current += 1;
-      if (retryCountRef.current > 5) {
-        setStatus("error");
-        setErrorMessage(
-          err?.response?.data?.message ||
-            err?.message ||
-            "Marking status polling failed."
-        );
-        return;
-      }
-      const backoff = Math.min(8000, 2000 * retryCountRef.current);
-      scheduleNextPoll(backoff);
-    }
-  };
+  scheduleNextPoll(1000);
+};
 
   const handleExit = () => {
     try {
@@ -392,7 +363,6 @@ async function executeWallDataForWall(
                            border-gray-500 hover:border-gray-700 rounded 
                            ${status === "pending" ? "loading" : ""}`}
               onClick={startMarking}
-              disabled={status === "pending"}
             >
               {status === "error"
                 ? "Retry Start"
