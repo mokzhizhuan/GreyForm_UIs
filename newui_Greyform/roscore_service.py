@@ -1,108 +1,125 @@
-# roscore_service.py
-import os, signal, socket, subprocess, atexit, time, shutil
+import os
+import signal
+import socket
+import subprocess
+import time
 from typing import Optional
 
+# ============================================================
+# ROS MASTER CONFIG
+# ============================================================
 ROS_MASTER_URI = "http://localhost:11311"
 ROS_PORT = 11311
 
-_PROC: Optional[subprocess.Popen] = None
-_PGID: Optional[int] = None
-_OWNED: bool = False
+_PROC: Optional[subprocess.Popen] = None   # roscore process
+_PGID: Optional[int] = None                # process group ID
+_OWNED = False                             # did WE start roscore?
 
-def is_master_up(host="127.0.0.1", port=ROS_PORT, timeout=0.1) -> bool:
+
+# ============================================================
+# Check if ROS Master is alive
+# ============================================================
+def is_master_up(host: str = "127.0.0.1", port: int = ROS_PORT) -> bool:
     try:
-        with socket.create_connection((host, port), timeout=timeout):
-            return True
+        s = socket.create_connection((host, port), timeout=0.3)
+        s.close()
+        return True
     except OSError:
         return False
 
-def _wait_port_up(host="127.0.0.1", port=ROS_PORT, timeout=10.0) -> bool:
-    end = time.time() + timeout
-    while time.time() < end:
-        if is_master_up(host, port, timeout=0.25):
-            return True
-        time.sleep(0.2)
-    return False
 
-def start_roscore(log: bool = True) -> None:
-    """Start roscore if not running; mark it owned and remember its process group."""
+# ============================================================
+# Start roscore WITH SOURCED environment
+# ============================================================
+def start_roscore(log: bool = False):
+    """
+    Start roscore in a fully sourced ROS environment.
+
+    FIXES:
+    - Must start with `bash -c "source setup.bash && roscore"`
+    - Must run in new process group so FastAPI worker won't kill it accidentally
+    - Must avoid double-starting
+    """
     global _PROC, _PGID, _OWNED
 
-    # If something is already listening -> we don't own it.
+    # Already running?
     if is_master_up():
-        _PROC = None
-        _PGID = None
+        print("[roscore_service] ROS master already running.")
         _OWNED = False
         return
 
-    if shutil.which("roscore") is None:
-        raise RuntimeError("roscore not found. Did you `source /opt/ros/noetic/setup.bash`?")
+    if _PROC is not None:
+        print("[roscore_service] roscore process handle exists — checking...")
+        if _PROC.poll() is None:
+            print("[roscore_service] roscore already alive.")
+            return
+        else:
+            _PROC = None  # stale handle
 
-    env = os.environ.copy()
-    env["ROS_MASTER_URI"] = ROS_MASTER_URI
-    # also helpful:
-    env.setdefault("ROS_HOSTNAME", "localhost")
+    print("[roscore_service] Starting ROS core...")
 
-    # Start in a new process group so we can kill the whole tree later.
-    popen_kwargs = {}
-    if os.name == "posix":
-        popen_kwargs["preexec_fn"] = os.setsid          # new session -> new pgid
-    else:
-        popen_kwargs["creationflags"] = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)
+    # Use bash + sourced environment
+    cmd = (
+        "source /opt/ros/noetic/setup.bash && "
+        "echo '[roscore_service] Environment sourced' && "
+        "roscore"
+    )
 
-    stdout = None if log else subprocess.DEVNULL
-    stderr = None if log else subprocess.DEVNULL
+    # Launch in new process group
+    _PROC = subprocess.Popen(
+        ["bash", "-c", cmd],
+        stdout=subprocess.PIPE if log else subprocess.DEVNULL,
+        stderr=subprocess.STDOUT,
+        text=True,
+        preexec_fn=os.setsid     # NEW PROCESS GROUP
+    )
 
-    _PROC = subprocess.Popen(["roscore"], env=env, stdout=stdout, stderr=stderr, **popen_kwargs)
-    _PGID = os.getpgid(_PROC.pid) if _PROC.pid else None
+    _PGID = os.getpgid(_PROC.pid)
     _OWNED = True
 
-    if not _wait_port_up(timeout=15.0):
-        try:
-            if _PGID is not None and os.name == "posix":
-                os.killpg(_PGID, signal.SIGKILL)
-            elif _PROC and _PROC.poll() is None:
-                _PROC.kill()
-        finally:
-            _PROC = None
-            _PGID = None
-            _OWNED = False
-        raise RuntimeError(f"Failed to start roscore on {ROS_MASTER_URI}")
+    # Wait until master responds (max 10 sec)
+    for _ in range(20):
+        if is_master_up():
+            print("[roscore_service] ROS master is online.")
+            return
+        time.sleep(0.3)
 
-    os.environ["ROS_MASTER_URI"] = ROS_MASTER_URI  # set for this process too
+    raise RuntimeError("Failed to start roscore — ROS master never came online.")
 
-def stop_roscore(grace_seconds: float = 2.0) -> None:
-    """Stop ONLY the roscore we started. No-op if it's external."""
+
+# ============================================================
+# Stop roscore safely
+# ============================================================
+def stop_roscore():
     global _PROC, _PGID, _OWNED
-    if not _OWNED or _PROC is None:
-        return  # external master or nothing to stop
+
+    if not _OWNED:
+        print("[roscore_service] Not stopping roscore — not owned by this process.")
+        return
+
+    if _PROC is None:
+        print("[roscore_service] No roscore process to stop.")
+        return
 
     try:
-        if _PROC.poll() is None:
-            if _PGID is not None and os.name == "posix":
-                os.killpg(_PGID, signal.SIGTERM)
-            else:
-                _PROC.terminate()
+        print("[roscore_service] Stopping ROS core...")
+        os.killpg(_PGID, signal.SIGTERM)
+    except Exception as e:
+        print("[roscore_service] Error during stop:", e)
 
-            t0 = time.time()
-            while time.time() - t0 < grace_seconds:
-                if _PROC.poll() is not None:
-                    break
-                time.sleep(0.1)
+    _PROC = None
+    _PGID = None
+    _OWNED = False
 
-            if _PROC.poll() is None:
-                if _PGID is not None and os.name == "posix":
-                    os.killpg(_PGID, signal.SIGKILL)
-                else:
-                    _PROC.kill()
-    finally:
-        _PROC = None
-        _PGID = None
-        _OWNED = False
+    time.sleep(0.5)
 
-@atexit.register
-def _cleanup():
-    try:
-        stop_roscore()
-    except Exception:
-        pass
+
+# ============================================================
+# Debugging Utility
+# ============================================================
+if __name__ == "__main__":
+    print("Testing roscore start/stop...")
+    start_roscore(log=True)
+    time.sleep(2)
+    print("Stopping roscore...")
+    stop_roscore()

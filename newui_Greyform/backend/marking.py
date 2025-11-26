@@ -51,18 +51,9 @@ def _ensure_talker():
 # Internal: execute all queued walls
 # --------------------------------------------------------
 def _execute_all_walls(r: Runner) -> None:
-    """
-    Process r.pending_walls in order.
-
-    Each entry in r.pending_walls is expected to be:
-      { "wall": "1", "rows": [ {...}, ... ] }
-
-    We publish SelectionWall for every row, then publish_all_done(True)
-    after each wall finishes (unless paused between walls).
-    """
     while r.pending_walls:
 
-        # Pause applies BEFORE starting the next wall
+        # CHECK BEFORE STARTING NEXT WALL
         if r.is_paused:
             break
 
@@ -70,6 +61,7 @@ def _execute_all_walls(r: Runner) -> None:
         r.current_wall = int(wall_block["wall"])
         r.current_rows = wall_block["rows"]
 
+        # PROCESS ALL ROWS
         for row in r.current_rows:
             pos = [
                 int(float(row.get("Position X", 0))),
@@ -85,14 +77,17 @@ def _execute_all_walls(r: Runner) -> None:
                     marking_type,
                 )
 
-            # Small delay to avoid hammering ROS / hardware
             time.sleep(0.06)
 
-        # Wall finished; tell UI/ROS this wall is done
+        # WALL COMPLETED
         if (not r.is_paused) and r.talker_node:
             r.talker_node.publish_all_done(True)
 
-    # Clear current rows when done (or paused)
+        # NEW IMPORTANT CHECK HERE!!!
+        # 🔥 Stop immediately AFTER finishing current wall if paused
+        if r.is_paused:
+            break
+
     r.current_rows = []
 
 
