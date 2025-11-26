@@ -426,8 +426,12 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall, excelfile }) 
   const handleExit = () => {
     try {
       window.close();
-    } catch {
-      // no-op
+      setTimeout(() => {
+        // If still open, alert the user to close manually
+        alert("If the window did not close automatically, please close the window manually.");
+      }, 300);
+    } catch (e) {
+        alert("Please close the window manually.");
     }
   };
 
@@ -479,7 +483,8 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall, excelfile }) 
             {/* Placement buttons (0 and 4) */}
             {(currentStep === 0 || currentStep === 4) && !isFinalStep && (
               <button
-                className="btn btn-primary md:btn-lg px-10 text-lg"
+                className="btn btn-primary md:btn-md lg:btn-lg py-2 px-4 border-b-4
+                           border-gray-500 hover:border-gray-700 rounded"
                 onClick={handlePlacementNext}
               >
                 {status === "error"
@@ -496,14 +501,16 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall, excelfile }) 
               !isFinalStep && (
                 <div className="flex gap-4">
                   <button
-                    className="btn btn-outline"
+                    className="btn btn-warning md:btn-md lg:btn-lg py-2 px-4 border-b-4
+                           border-gray-500 hover:border-gray-700 text-black rounded ? disabled:opacity-0"
                     onClick={handlePauseClick}
                     disabled={loadingPause || paused}
                   >
                     {loadingPause ? "Pausing..." : "Pause after this wall"}
                   </button>
                   <button
-                    className="btn btn-outline btn-success"
+                    className="btn btn-success md:btn-md lg:btn-lg py-2 px-4 border-b-4
+                           border-gray-500 hover:border-gray-700 text-black ? disabled:opacity-0"
                     onClick={handleContinueClick}
                     disabled={loadingContinue || !paused}
                   >
@@ -515,7 +522,9 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall, excelfile }) 
             {/* Exit on final step */}
             {isFinalStep && (
               <button
-                className="btn btn-error md:btn-lg px-10 text-lg text-white"
+                className="btn btn-error md:btn-md lg:btn-lg py-2 px-4 border-b-4
+                         border-gray-500 hover:border-gray-700 rounded
+                         text-white"
                 onClick={handleExit}
               >
                 Exit
