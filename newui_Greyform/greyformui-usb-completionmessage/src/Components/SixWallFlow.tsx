@@ -506,7 +506,7 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall, excelfile }) 
                     onClick={handlePauseClick}
                     disabled={loadingPause || paused}
                   >
-                    {loadingPause ? "Pausing..." : "Pause after this wall"}
+                    {loadingPause ? "Pausing..." : "Pause"}
                   </button>
                   <button
                     className="btn btn-success md:btn-md lg:btn-lg py-2 px-4 border-b-4
@@ -514,7 +514,7 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({ walls, maxWall, excelfile }) 
                     onClick={handleContinueClick}
                     disabled={loadingContinue || !paused}
                   >
-                    {loadingContinue ? "Continuing..." : "Continue next wall"}
+                    {loadingContinue ? "Continuing..." : "Continue"}
                   </button>
                 </div>
               )}
