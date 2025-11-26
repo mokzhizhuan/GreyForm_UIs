@@ -10,9 +10,12 @@ from typing import List, Dict, Any, Optional
 from roscore_service import ROS_MASTER_URI, is_master_up, start_roscore, stop_roscore, _OWNED
 import backend.jointtargetip as jointip
 from backend.listenerrunner import start_listener
+#from backend.marking_app import markers as marking_app
 import sys
 import os
 
+
+#app.mount("/processor", marking_app)
 WS = "/root/catkin_ws/newui_Greyform"
 DEVEL_PYTHON = os.path.join(WS, "devel/lib/python3/dist-packages")
 ROS_PYTHON = "/opt/ros/noetic/lib/python3/dist-packages"
@@ -210,32 +213,6 @@ def file_execute_data(body: FileExecBody):
         max_wall_number=max_wall_number,
     )
 
-
-# ============================================================
-# Run Script (run-marking.sh)
-# ============================================================
-class RunScriptBody(BaseModel):
-    walls: List[WallInfo]
-
-@app.post("/run_script")
-def run_script(body: RunScriptBody):
-    if not body.walls:
-        raise HTTPException(status_code=400, detail="No walls provided")
-
-    target_wall = body.walls[-1]
-    wall_number = target_wall.wall
-
-    process = subprocess.Popen(
-        ["./run-marking.sh", "--pbu", "1", "--wall", str(wall_number)],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-    )
-
-    lines = [line.rstrip("\n") for line in process.stdout]
-    process.wait()
-
-    return {"ok": True, "data": lines}
 
 _listener_process = None
 

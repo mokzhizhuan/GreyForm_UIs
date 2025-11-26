@@ -4,10 +4,11 @@ from fastapi import FastAPI, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import time
-import rospy
+
+import rospy  # safe to import; we don't call init_node here
+
 from backend.runner import Runner
 from roscore_service import is_master_up
-from src.talker_listener.talker_listener import talker_node as RosPublisher
 
 # --------------------------------------------------------
 # FastAPI app
@@ -15,17 +16,35 @@ from src.talker_listener.talker_listener import talker_node as RosPublisher
 app = FastAPI(title="MarkingApp")
 
 # --------------------------------------------------------
-# Shared Runner + bind existing ROS talker instance
+# Shared Runner, but DO NOT create ROS talker at import time
 # --------------------------------------------------------
-# NOTE: RosPublisher is already a TalkerNode instance imported
-# from src.talker_listener.talker_listener. We DO NOT create
-# a new instance here; we just bind it to the Runner.
 _runner = Runner()
-_runner.bind_talker(RosPublisher.TalkerNode())
+_talker_initialized = False  # track if we've bound the ROS talker yet
 
 
 def _runner_instance() -> Runner:
     return _runner
+
+
+def _ensure_talker():
+    """
+    Lazily create and bind the ROS talker only when:
+      - ROS master is up
+      - We actually need to talk to ROS
+    """
+    global _talker_initialized
+
+    if _talker_initialized:
+        return
+
+    if not is_master_up():
+        raise HTTPException(status_code=400, detail="ROS core not running")
+
+    # Import here so we don't trigger rospy.init_node at module import
+    from src.talker_listener.talker_listener import talker_node as RosPublisher
+
+    _runner.bind_talker(RosPublisher.TalkerNode())
+    _talker_initialized = True
 
 
 # --------------------------------------------------------
@@ -88,23 +107,23 @@ class StartMarkingBody(BaseModel):
 
 
 # --------------------------------------------------------
-# START marking
+# START marking: build sequence, send Excel path to listener,
+# but DO NOT start execution yet (that's /run).
 # --------------------------------------------------------
 @app.post("/start")
 def start_marking(body: StartMarkingBody):
     r = _runner_instance()
 
-    # Safety checks
-    if not is_master_up():
-        raise HTTPException(status_code=400, detail="ROS core not running")
+    # Ensure ROS master is up + talker bound
+    _ensure_talker()
 
     if not r.listener_started:
         raise HTTPException(status_code=400, detail="Listener not started")
 
-    # 🔥 1) Tell listener which Excel to use BEFORE any selection messages
+    # 1) Tell listener which Excel to use BEFORE any selection messages
     try:
-        # directory is ignored by your new listener_node; we just send excelfile
         if r.talker_node:
+            # directory is ignored by your listener_node; we just send excelfile
             r.talker_node.publish_file_message("", body.excelfile)
     except Exception as e:
         raise HTTPException(
@@ -112,7 +131,7 @@ def start_marking(body: StartMarkingBody):
             detail=f"Failed to send Excel file path to listener: {e}",
         )
 
-    # 🔥 2) Build pending wall sequence
+    # 2) Build pending wall sequence
     walls = body.walls
     max_wall = body.max_wall
     phase = body.phase
@@ -135,7 +154,9 @@ def start_marking(body: StartMarkingBody):
             elif phase == 2:
                 order = ["5", "6", "1"]
             else:
-                raise HTTPException(status_code=400, detail="Invalid phase for 6-wall flow")
+                raise HTTPException(
+                    status_code=400, detail="Invalid phase for 6-wall flow"
+                )
 
             # Filter to matching walls
             pending = [w for w in walls if str(w.get("wall")) in order]
@@ -167,6 +188,9 @@ def start_marking(body: StartMarkingBody):
 def run_marking(background: BackgroundTasks):
     r = _runner_instance()
 
+    # Ensure ROS + talker
+    _ensure_talker()
+
     if not r.listener_started:
         raise HTTPException(status_code=400, detail="Listener not started")
 
@@ -188,6 +212,7 @@ def pause_marking():
         "ok": True,
         "paused": True,
         "current_wall": r.current_wall,
+        "pendingCount": len(r.pending_walls),
     }
 
 
@@ -197,6 +222,8 @@ def pause_marking():
 @app.post("/continue")
 def continue_marking(background: BackgroundTasks):
     r = _runner_instance()
+    _ensure_talker()
+
     r.is_paused = False
 
     def job():
@@ -215,14 +242,31 @@ def continue_marking(background: BackgroundTasks):
 @app.get("/status")
 def marking_status():
     r = _runner_instance()
-    last_started = rospy.get_param("/ui_last_started_wall", None)
-    last_done = rospy.get_param("/ui_last_done_wall", None)
+
+    if not is_master_up():
+        # ROS not up → don't call rospy.get_param at all
+        return {
+            "ros_up": False,
+            "currentWall": r.current_wall,
+            "paused": r.is_paused,
+            "pendingCount": len(r.pending_walls),
+            "startedWall": None,
+            "doneWall": None,
+        }
+
+    # ROS is up; safe to query params
+    try:
+        last_started = rospy.get_param("/ui_last_started_wall", None)
+        last_done = rospy.get_param("/ui_last_done_wall", None)
+    except Exception:
+        last_started = None
+        last_done = None
 
     return {
+        "ros_up": True,
         "currentWall": r.current_wall,
         "paused": r.is_paused,
         "pendingCount": len(r.pending_walls),
         "startedWall": last_started,
         "doneWall": last_done,
     }
-
