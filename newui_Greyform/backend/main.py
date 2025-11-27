@@ -10,14 +10,14 @@ from typing import List, Dict, Any, Optional
 from roscore_service import ROS_MASTER_URI, is_master_up, start_roscore, stop_roscore, _OWNED
 import backend.jointtargetip as jointip
 from backend.listenerrunner import start_listener
+from backend.marking_controller import app as marking_subapp
 #from backend.marking_app import markers as marking_app
 import sys
 import os
 
 
-#app.mount("/processor", marking_app)
 WS = "/root/catkin_ws/newui_Greyform"
-DEVEL_PYTHON = os.path.join(WS, "devel/lib/python3/dist-packages")
+"""DEVEL_PYTHON = os.path.join(WS, "devel/lib/python3/dist-packages")
 ROS_PYTHON = "/opt/ros/noetic/lib/python3/dist-packages"
 
 # Inject ROS paths before any ROS import happens
@@ -27,7 +27,7 @@ for p in (DEVEL_PYTHON, ROS_PYTHON):
 
 # NOW import marking
 from backend.marking import app as marking_app
-ROOTDIR = Path(__file__).resolve().parent
+ROOTDIR = Path(__file__).resolve().parent"""
 
 # ============================================================
 # 🌐 Main FastAPI Application (NO ROS)
@@ -41,7 +41,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.mount("/marking", marking_app)
+app.mount("/marking", marking_subapp)
 # ============================================================
 # Basic test endpoints
 # ============================================================
@@ -80,25 +80,31 @@ def whoami():
 # ============================================================
 @app.get("/jointtarget/connection")
 def jointtarget_connection():
-    session = requests.Session()
-    try:
-        jointip.login(session)
-        data = jointip.get_request(
-            session,
-            "/rw/motionsystem/mechunits/ROB_1/jointtarget",
+    process = subprocess.Popen(
+        [
+            "sshpass",
+            "-p", "winsys",
+            "ssh", "winsys@192.168.130.5",
+            "python3", "/home/winsys/pbu_marking_ros/catkin_ws/homeposcheck.py",
+            "--file", "/home/winsys/pbu_marking_ros/catkin_ws/poses.json",
+            "--target", "wall_1"
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+
+    lines = [line.rstrip("\n") for line in process.stdout]
+    process.wait()
+
+    if process.returncode != 0:
+        raise HTTPException(
+            status_code=500,
+            detail=f"joint_target failed (code {process.returncode})",
         )
 
-        return {
-            "ok": True,
-            "jointtarget": data,
-        }
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-    finally:
-        session.close()
-
+    return {"ok": True, "data": lines}
+    
 
 # ============================================================
 # Read Directory (SSH)
@@ -109,8 +115,8 @@ def read_directory():
         [
             "sshpass",
             "-p", "winsys",
-            "ssh", "winsys@192.168.131.5",
-            "ls", "/home/",
+            "ssh", "winsys@192.168.130.5",
+            "ls", "/home"
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -141,83 +147,39 @@ class WallInfo(BaseModel):
     count: int
     rows: List[Dict[str, Any]]
 
-class FileExecResponse(BaseModel):
-    ok: bool
-    working_path: str
-    walls: List[WallInfo]
-    max_wall_number: Optional[int] = None
 
-
-@app.post("/file_execute_data", response_model=FileExecResponse)
-def file_execute_data(body: FileExecBody):
-
-    walls: List[WallInfo] = []
-    wall_rows_map: Dict[str, List[Dict[str, Any]]] = {}
-
-    try:
-        xl = pd.read_excel(body.excelfile, sheet_name=None, engine="openpyxl")
-
-        for df in xl.values():
-            if not isinstance(df, pd.DataFrame):
-                continue
-
-            df = df.copy()
-            df.columns = [str(c).strip() for c in df.columns]
-
-            if "Wall Number" not in df.columns:
-                continue
-
-            for _, row in df.iterrows():
-                raw_val = row.get("Wall Number", None)
-
-                # Skip empty / NaN / invalid
-                if raw_val is None:
-                    continue
-                if pd.isna(raw_val):
-                    continue
-
-                # Convert to integer safely
-                try:
-                    numeric = int(raw_val)
-                except:
-                    continue
-
-                wall_key = str(numeric)
-
-                wall_rows_map.setdefault(wall_key, []).append(row.to_dict())
-
-        # Convert map → sorted list
-        for k, rows in sorted(wall_rows_map.items(), key=lambda x: int(x[0])):
-            walls.append(
-                WallInfo(
-                    wall=k,
-                    count=len(rows),
-                    rows=rows,
-                )
-            )
-
-        # Compute MAX wall number safely
-        if wall_rows_map:
-            max_wall_number = max(int(k) for k in wall_rows_map.keys())
-        else:
-            max_wall_number = None
-
-    except Exception as e:
-        print("file_execute_data ERROR:", e)
-        raise HTTPException(status_code=500, detail=str(e))
-
-    return FileExecResponse(
-        ok=True,
-        working_path=body.excelfile,
-        walls=walls,
-        max_wall_number=max_wall_number,
+@app.post("/file_execute_data")
+def file_execute_data():
+    process = subprocess.Popen(
+        [
+            "sshpass",
+            "-p", "winsys",
+            "ssh", "winsys@192.168.130.5",
+            "python3", "/home/winsys/pbu_marking_ros/catkin_ws/detectwalls.py",
+            "--filename", "/home/winsys/pbu_marking_ros/catkin_ws/PBU_TERRAHL2_working.xlsx"
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
     )
 
+    lines = [line.rstrip("\n") for line in process.stdout]
+    process.wait()
+    print(lines)
+    if process.returncode != 0:
+        raise HTTPException(
+            status_code=500,
+            detail=f"read_directory failed (code {process.returncode})",
+        )
 
-_listener_process = None
+    return {"ok": True, "data": lines}
+    
 
 
-@app.get("/roscore/status")
+#_listener_process = None
+
+
+"""@app.get("/roscore/status")
 def status():
     return {"master_uri": ROS_MASTER_URI, "up": is_master_up(), "owned": _OWNED}
 
@@ -253,4 +215,4 @@ def stop():
         _listener_process.terminate()
         _listener_process = None
 
-    return {"status": "stopped"}
+    return {"status": "stopped"}"""

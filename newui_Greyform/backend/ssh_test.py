@@ -2,19 +2,21 @@ import subprocess
 import argparse
 from pathlib import Path
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--rootdir", type=Path, default=Path.cwd())
-args = parser.parse_args()
+process = subprocess.Popen(
+        [
+            "sshpass",
+            "-p", "winsys",
+            "ssh", "winsys@192.168.130.5",
+            "python3", "/home/winsys/pbu_marking_ros/catkin_ws/detectwalls.py",
+            "--filename", "/home/winsys/pbu_marking_ros/catkin_ws/PBU_TERRAHL2_working.xlsx"
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
 
-ROOTDIR = args.rootdir.resolve()
-print("ROOTDIR =", ROOTDIR)
-"""process = subprocess.Popen(
-    ["sshpass", "-p", "winsys", "ssh", "winsys@192.168.131.5", "ls", "/home/"],
-    stdout=subprocess.PIPE,
-    stderr=subprocess.STDOUT,
-    text=True,
-    bufsize=1,
-)
-
-for line in process.stdout:
-    print(line)"""
+lines = [line.rstrip("\n") for line in process.stdout]
+process.wait()
+print(lines)
+if process.returncode != 0:
+    print(f"read_directory failed (code {process.returncode}")

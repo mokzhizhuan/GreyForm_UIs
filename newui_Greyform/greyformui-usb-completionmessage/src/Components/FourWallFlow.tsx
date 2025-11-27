@@ -226,13 +226,13 @@ export default function FourWallFlow({ walls, maxWall, excelfile }: FourWallFlow
           </div>
             <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
               <button onClick={handlePauseClick} disabled={loadingPause || paused}>
-                {loadingPause ? "Pausing..." : "Pause"}
+                {loadingPause ? "Pausing..." : "Pause after this wall"}
               </button>
               <button
                 onClick={handleContinueClick}
                 disabled={loadingContinue || !paused}
               >
-                {loadingContinue ? "Continuing..." : "Continue"}
+                {loadingContinue ? "Continuing..." : "Continue next wall"}
               </button>
             </div>
           {!autoMode && (

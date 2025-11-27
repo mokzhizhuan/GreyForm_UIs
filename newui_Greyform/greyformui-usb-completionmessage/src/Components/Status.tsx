@@ -181,56 +181,48 @@ interface WallInfo {
 const [directory, setDirectory] = useState<string>("");
 async function readDirectory(): Promise<ReadDirectoryResponse> {
   // no body, just POST
-  /*console.log("readDirectoryAPI triggered!")
+  console.log("readDirectoryAPI triggered!")
   const res = await axios.post<ReadDirectoryResponse>(`${API_BASE_URL}/read_directory`);
   if (res.data?.ok){ 
     console.log(res.data)
     setAppState("home_position_setup")} 
   else{
-    setAppState("home_position_setup")
+    console.log(res.data)
     }
-  return res.data*/
-  console.log("Skipping readDirectory, jumping to home position.");
-  setAppState("home_position_setup");
-  return { ok: true, data: [] };
+  return res.data
 }
-const [excelfile, setExcelfile] = useState<string>(
+const [excelfiletest, setExcelfiletest] = useState<string>(
   "/root/catkin_ws/newui_Greyform/TERRAHL2-FP-MB-T1am(JMB)_out.xlsx"
 );
+const [excelfile, setExcelfile] = useState<string>(
+  "/home/ros_user/catkin_ws/TERRAHL2_wall_2.xlsx"
+);
+const [meshfile, setMeshfile] = useState<string>(
+  "/home/ros_user/catkin_ws/SIMTech_L_PBU_1_roof_thicc_50mm.stl"
+);
 
-async function handleFileExecute(): Promise<{
-  walls: any[];
-  maxWall: number | null;
-}> {
-  console.log("📥 Calling /file_execute_data ...");
+async function handleFileExecute(): Promise<string[]> {
+  console.log("📥 Calling /file_execute_data (no-body)...");
 
   try {
-    const res = await axios.post(`${API_BASE_URL}/file_execute_data`, {
-      directory,
-      excelfile,
-    });
+    const res = await axios.post(`${API_BASE_URL}/file_execute_data`);
 
-    console.log("📦 file_execute_data RAW response:", res.data);
+    console.log("📦 RAW response:", res.data);
 
-    const wallsFromServer = res.data?.walls ?? [];
-    const maxWallFromServer = res.data?.max_wall_number ?? null;
-
-    setWalls(wallsFromServer);
-    setMaxWall(maxWallFromServer);
-
-    console.log("✅ Walls:", wallsFromServer);
-    console.log("✅ maxWall:", maxWallFromServer);
-
-    if (!wallsFromServer.length) {
-      console.warn("⚠ Backend returned empty walls array");
+    if (!res.data || !res.data.ok) {
+      throw new Error("Backend returned invalid response");
     }
 
-    // 🔙 return fresh values so caller can use immediately
-    return { walls: wallsFromServer, maxWall: maxWallFromServer };
+    const lines: string[] = res.data.data || [];
+
+    console.log("📄 Received Lines:", lines);
+
+    return lines;
+
   } catch (err: any) {
     console.error("❌ handleFileExecute ERROR:", err);
 
-    setError("Failed to read Excel file");
+    setError("Failed to execute file detection");
     setAppState("error");
 
     throw err;
@@ -355,7 +347,7 @@ const handleFileExecuteAndStartLayout = async () => {
 
       {/* ---------- SIX WALL ---------- */}
       {appState === "six_wall_flow" && (
-        <SixWallFlow walls={walls} maxWall={maxWall ?? 0} excelfile={excelfile} />
+        <SixWallFlow walls={walls} maxWall={maxWall ?? 0} excelfile={excelfile} meshfile = {meshfile}/>
       )}
     </>
   );
