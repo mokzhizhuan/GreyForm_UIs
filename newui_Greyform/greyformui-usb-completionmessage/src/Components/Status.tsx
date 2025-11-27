@@ -201,12 +201,11 @@ const [meshfile, setMeshfile] = useState<string>(
   "/home/ros_user/catkin_ws/SIMTech_L_PBU_1_roof_thicc_50mm.stl"
 );
 
-async function handleFileExecute(): Promise<string[]> {
+async function handleFileExecute(): Promise<void> {
   console.log("📥 Calling /file_execute_data (no-body)...");
 
   try {
     const res = await axios.post(`${API_BASE_URL}/file_execute_data`);
-
     console.log("📦 RAW response:", res.data);
 
     if (!res.data || !res.data.ok) {
@@ -215,17 +214,24 @@ async function handleFileExecute(): Promise<string[]> {
 
     const lines: string[] = res.data.data || [];
 
-    console.log("📄 Received Lines:", lines);
+    // 🔎 last line expected to be JSON from detectwalls.py
+    const lastLine = lines[lines.length - 1];
+    console.log("📄 Last line:", lastLine);
 
-    return lines;
+    const parsed = JSON.parse(lastLine);
+    console.log("✅ Parsed payload:", parsed);
+
+    setWalls(parsed.walls || []);
+    setMaxWall(parsed.max_wall_number ?? null);
+    setExcelfile(parsed.excelfile || "");
+    setMeshfile(parsed.meshfile || "");
+
+    setAppState("six_wall_flow");
 
   } catch (err: any) {
     console.error("❌ handleFileExecute ERROR:", err);
-
-    setError("Failed to execute file detection");
     setAppState("error");
-
-    throw err;
+    // setError("Failed to execute file & read Excel"); // if you have setError
   }
 }
 
