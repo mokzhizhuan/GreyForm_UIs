@@ -201,7 +201,7 @@ const [meshfile, setMeshfile] = useState<string>(
   "/home/ros_user/catkin_ws/SIMTech_L_PBU_1_roof_thicc_50mm.stl"
 );
 
-async function handleFileExecute(): Promise<void> {
+async function handleFileExecute(): Promise<{ maxWall: number | null }> {
   console.log("📥 Calling /file_execute_data (no-body)...");
 
   try {
@@ -213,27 +213,43 @@ async function handleFileExecute(): Promise<void> {
     }
 
     const lines: string[] = res.data.data || [];
+    console.log("📄 SSH lines:", lines);
 
-    // 🔎 last line expected to be JSON from detectwalls.py
-    const lastLine = lines[lines.length - 1];
-    console.log("📄 Last line:", lastLine);
+    // 🔎 Find the line that contains the Excel file path
+    const excelLine = lines.find((line) => line.startsWith("EXCEL_FILE="));
+    const maxWallLine = lines.find((line) => line.startsWith("MAX_WALL="));
 
-    const parsed = JSON.parse(lastLine);
-    console.log("✅ Parsed payload:", parsed);
+    let excelFromLines = "";
+    let maxWallFromLines: number | null = null;
 
-    setWalls(parsed.walls || []);
-    setMaxWall(parsed.max_wall_number ?? null);
-    setExcelfile(parsed.excelfile || "");
-    setMeshfile(parsed.meshfile || "");
+    if (excelLine) {
+      // "EXCEL_FILE=/home/ros_user/catkin_ws/TERRAHL2_wall_2.xlsx"
+      excelFromLines = excelLine.replace("EXCEL_FILE=", "").trim();
+    }
 
-    setAppState("six_wall_flow");
+    if (maxWallLine) {
+      // "MAX_WALL=6"
+      const raw = maxWallLine.replace("MAX_WALL=", "").trim();
+      const n = Number(raw);
+      maxWallFromLines = Number.isNaN(n) ? null : n;
+    }
 
-  } catch (err: any) {
+    console.log("📌 Parsed from SSH → excelfile:", excelFromLines, "maxWall:", maxWallFromLines);
+
+    // ⬇️ Store in state for SixWallFlow
+    setExcelfile(excelFromLines);
+    setMaxWall(maxWallFromLines);
+
+    // (if you also build walls[] from other lines, do it here)
+    // setWalls(wallsFromLines);
+
+    return { maxWall: maxWallFromLines };
+  } catch (err) {
     console.error("❌ handleFileExecute ERROR:", err);
-    setAppState("error");
-    // setError("Failed to execute file & read Excel"); // if you have setError
+    throw err;
   }
 }
+
 
 async function handleStartLayout(maxWallValue: number | null) {
   console.log("➡️ Starting layout with maxWall =", maxWallValue);
