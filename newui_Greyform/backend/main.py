@@ -1,4 +1,3 @@
-import pwd, grp
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
@@ -7,9 +6,8 @@ import requests
 import pandas as pd
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
-from roscore_service import ROS_MASTER_URI, is_master_up, start_roscore, stop_roscore, _OWNED
 import backend.jointtargetip as jointip
-from backend.listenerrunner import start_listener
+#from backend.listenerrunner import start_listener
 from backend.marking_controller import app as marking_subapp
 #from backend.marking_app import markers as marking_app
 import sys
@@ -42,38 +40,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.mount("/marking", marking_subapp)
-# ============================================================
-# Basic test endpoints
-# ============================================================
-@app.get("/api/hello")
-async def hello():
-    return {"message": "Hello from FastAPI"}
-
-@app.get("/api/whoami")
-def whoami():
-    uid = os.geteuid()
-    gid = os.getegid()
-
-    def uname(u):
-        try:
-            return pwd.getpwuid(u).pw_name
-        except:
-            return f"uid:{u}"
-
-    def gname(g):
-        try:
-            return grp.getgrgid(g).gr_name
-        except:
-            return f"gid:{g}"
-
-    return {
-        "uid": uid,
-        "gid": gid,
-        "user": uname(uid),
-        "group": gname(gid),
-        "cwd": os.getcwd(),
-        "can_read_media": os.access("/media", os.R_OK),
-    }
 
 # ============================================================
 # Robot endpoint (NO ROS NEEDED)
@@ -100,7 +66,7 @@ def jointtarget_connection():
     if process.returncode != 0:
         raise HTTPException(
             status_code=500,
-            detail=f"joint_ta"NOT HOME"rget failed (code {process.returncode})",
+            detail=f"joint_target failed (code {process.returncode})",
         )
 
     return {"ok": True, "data": lines}
