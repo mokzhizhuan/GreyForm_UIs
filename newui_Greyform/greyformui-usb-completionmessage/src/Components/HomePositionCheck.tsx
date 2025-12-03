@@ -5,6 +5,8 @@ interface Props {
   RobotPowerONOutside: string;
   v: { variant: string; primaryText: string };
   verifyHomePosition?: () => void | Promise<any>;
+  // parent callback to notify HOME is verified
+  onHomeVerified?: () => void;
 }
 
 const HomePositionCheck: React.FC<Props> = ({
@@ -12,6 +14,7 @@ const HomePositionCheck: React.FC<Props> = ({
   RobotPowerONOutside,
   v,
   verifyHomePosition,
+  onHomeVerified,
 }) => {
   const [loading, setLoading] = useState(false);
   const [rawLines, setRawLines] = useState<string[]>([]);
@@ -22,59 +25,38 @@ const HomePositionCheck: React.FC<Props> = ({
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // --------------------------------------------------------
-  // 1) Extract raw text lines from backend response
-  // --------------------------------------------------------
   const extractLines = (res: any): string[] => {
     if (!res) return ["<empty response>"];
-
     if (Array.isArray(res?.data)) return res.data.map(String);
     if (typeof res?.data === "string") return res.data.split(/\r?\n/);
     if (Array.isArray(res)) return res.map(String);
-
     return ["<unknown response format>"];
   };
 
-  // --------------------------------------------------------
-  // 2) Extract rax values AND j0–j6 from lines
-  // --------------------------------------------------------
   const parseRobotValues = (lines: string[]) => {
     const parsed = {
       rax: null as any,
       joints: null as any,
       inHome: null as any,
     };
-
     for (const ln of lines) {
       const match = ln.match(/\{.*\}/);
       if (!match) continue;
-
       try {
         const json = JSON.parse(match[0]);
-
         if ("rax_1" in json) parsed.rax = json;
         if ("j0" in json) parsed.joints = json;
       } catch (_) {}
     }
-
     return parsed;
   };
 
-  // --------------------------------------------------------
-  // 3) HOME determination logic
-  // Adjust thresholds if needed
-  // --------------------------------------------------------
-
-  // --------------------------------------------------------
-  // 4) Verify button handler
-  // --------------------------------------------------------
   const handleVerify = async () => {
     setLoading(true);
     setError(null);
 
     try {
       let rawRes: any;
-
       if (verifyHomePosition) {
         const maybe = verifyHomePosition();
         rawRes = maybe instanceof Promise ? await maybe : maybe;
@@ -89,19 +71,19 @@ const HomePositionCheck: React.FC<Props> = ({
       const parsed = parseRobotValues(lines);
       setRobotData(parsed);
 
-      const last = rawRes.data.at(-1);
-      
+      const last = rawRes?.data?.at?.(-1);
+
       if (last === "True") {
         setStatus("HOME VERIFIED");
         alert("Robot is in HOME position.");
+        // Notify parent to advance app state
+        onHomeVerified?.();
       } else if (last === "False") {
-        setStatus("HOME VERIFIED");
+        setStatus("NOT HOME");
         alert("Robot is NOT in HOME position.");
       } else {
         setStatus("UNKNOWN");
-        alert(
-          "Could not determine HOME."
-        );
+        alert("Could not determine HOME.");
       }
     } catch (e: any) {
       setError(e.message || String(e));
@@ -110,9 +92,6 @@ const HomePositionCheck: React.FC<Props> = ({
     }
   };
 
-  // --------------------------------------------------------
-  // UI
-  // --------------------------------------------------------
   return (
     <div className="w-full">
       <div className="flex flex-row gap-4 overflow-x-auto">
@@ -157,7 +136,9 @@ const HomePositionCheck: React.FC<Props> = ({
               <span className="text-red-600">✖ Not at HOME</span>
             )}
             {status === "UNKNOWN" && (
-              <span className="text-yellow-600">⚠ Unable to determine the HOME position</span>
+              <span className="text-yellow-600">
+                ⚠ Unable to determine the HOME position
+              </span>
             )}
           </div>
         )}
