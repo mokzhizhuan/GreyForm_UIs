@@ -1,20 +1,19 @@
 # backend/marking_controller.py
+# FINAL VERSION — WALL 1 FIXED, NO SKIPPING WALL 4 OR 1
 
 import subprocess
 import threading
 import re
+import time
 from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-# -------------------------------------------------------------------
-# FastAPI App
-# -------------------------------------------------------------------
 app = FastAPI()
 
 # -------------------------------------------------------------------
-# Global State
+# GLOBAL STATE
 # -------------------------------------------------------------------
 pause_flag = threading.Event()
 running_flag = threading.Event()
@@ -28,93 +27,106 @@ total_walls: int = 0
 
 excel_file_path: str = ""
 mesh_file_path: str = ""
-current_phase: Optional[int] = None   # 1 or 2
+current_phase: Optional[int] = None
 
 state_lock = threading.Lock()
+event_counter = 0   # debug event marker
+
 
 # -------------------------------------------------------------------
-# Request Model
+# MODELS
 # -------------------------------------------------------------------
+class WallPayload(BaseModel):
+    wall: int
+    rows: list  # The UI does not use this, but we keep for future use
+
+
 class MarkingStartBody(BaseModel):
-    walls: List[int]           # e.g. [2,3,4] or [5,6,1]
+    walls: List[WallPayload]
     excelfile: str
     meshfile: str
     max_wall: int
-    phase: Optional[int] = None   # 1 or 2
+    phase: Optional[int] = None
 
 
 # -------------------------------------------------------------------
-# Reader Thread — Detect wall completion
+# READER THREAD — Detect wall completion
 # -------------------------------------------------------------------
 def reader_thread(proc: subprocess.Popen, wall_id: int):
     """
-    Reads stdout from the remote process and detects completion.
-    If no explicit 'wall X finished' text exists, but the process exits RC=0,
-    we treat it as completion of wall_id.
+    Reads all stdout, detects completion, and ensures the UI receives:
+        startedWall == doneWall == wall_id
+    before continuing to the next wall.
     """
-    global last_completed_wall, current_process
+    global last_completed_wall, current_process, event_counter
 
-    detected = False  # whether regex found completion text
+    detected = False
 
     try:
+        # Read live output
         if proc.stdout:
             for raw in proc.stdout:
                 line = raw.rstrip("\n")
                 print(line)
 
-                # Regex-based completion detection
-                if ("wall" in line.lower() and
-                    ("finish" in line.lower() or "done" in line.lower() or "complete" in line.lower())):
-
-                    m = re.search(r"[Ww]all\s*(\d+)", line)
-                    if m:
-                        finished = int(m.group(1))
-                        print(f"[controller] ✔ Detected completion of wall {finished}")
-
-                        with state_lock:
-                            last_completed_wall = finished
-                        detected = True
+                # Universal "wall x" detection
+                m = re.search(r"wall\D*(\d+)", line, re.IGNORECASE)
+                if m:
+                    finished = int(m.group(1))
+                    print(f"[controller] ✔ Detected completion of wall {finished}")
+                    with state_lock:
+                        last_completed_wall = finished
+                        event_counter += 1
+                    detected = True
 
         proc.wait()
         rc = proc.returncode
         print(f"[controller] Process exited RC={rc}")
 
-        # ⭐ If RC=0 and no finish text was detected, mark completion manually
+        # If script exited cleanly but we never saw completion text
         if rc == 0 and not detected:
-            print(f"[controller] ⭐ Auto-marking wall {wall_id} as completed (no finish text detected)")
+            print(f"[controller] ⭐ Auto-marking wall {wall_id} as completed")
             with state_lock:
                 last_completed_wall = wall_id
+                event_counter += 1
 
     finally:
+        # Mark process finished
         with state_lock:
             current_process = None
+            running_flag.clear()
+            # KEEP current_wall AS THE FINISHED WALL
+            # So UI sees startedWall == doneWall for a few seconds
+
+        # Give React a stable window of 3 seconds for polling
+        time.sleep(3.0)
 
         _maybe_start_next_wall_after_finish()
 
 
-
 # -------------------------------------------------------------------
-# Decide whether to start next wall after finishing
+# DECIDE NEXT WALL
 # -------------------------------------------------------------------
 def _maybe_start_next_wall_after_finish():
     with state_lock:
+        print(f"[DEBUG] maybe_start_next: paused={pause_flag.is_set()}, queue={wall_queue}, phase={current_phase}")
+
         if pause_flag.is_set():
-            print("[controller] ⏸ Paused — not starting next wall.")
+            print("[controller] ⏸ Paused — stop scheduling next wall")
             return
 
         if not wall_queue:
-            print("[controller] ✅ All queued walls completed.")
-            running_flag.clear()
+            print("[controller] 🎉 All walls completed for this phase")
             return
 
     start_next_wall()
 
 
 # -------------------------------------------------------------------
-# Start the next wall
+# START NEXT WALL
 # -------------------------------------------------------------------
 def start_next_wall():
-    global current_wall, current_process
+    global current_wall, current_process, last_completed_wall
 
     with state_lock:
         if pause_flag.is_set():
@@ -122,29 +134,34 @@ def start_next_wall():
             return
 
         if not wall_queue:
-            print("[controller] No more walls to run.")
-            running_flag.clear()
+            print("[controller] No more walls")
             current_wall = None
             return
 
-        if not excel_file_path or not mesh_file_path:
-            raise RuntimeError("Excel or mesh path not set!")
-
         wall_id = wall_queue.pop(0)
+
+        print(f"[DEBUG] Starting next wall → {wall_id}, remaining queue={wall_queue}")
+
+        # Reset completion flag
+        last_completed_wall = None
+
         current_wall = wall_id
         running_flag.set()
+
+        if not excel_file_path or not mesh_file_path:
+            raise RuntimeError("Excel or mesh path not set!")
 
         cmd = [
             "sshpass", "-p", "winsys",
             "ssh", "winsys@192.168.130.5",
             "/home/winsys/pbu_marking_ros/run_marking.sh",
-            "--stage", "1",
+            "--stage", "2",
             "--wall", str(wall_id),
             "--excel", excel_file_path,
             "--mesh", mesh_file_path,
         ]
 
-        print("\n[controller] 🚀 Starting Wall:", wall_id)
+        print(f"\n[controller] 🚀 Running wall {wall_id}")
         print("[controller] CMD:", cmd, "\n")
 
         try:
@@ -158,11 +175,11 @@ def start_next_wall():
         except Exception as e:
             running_flag.clear()
             current_wall = None
-            raise RuntimeError(f"Failed to launch marking script: {e}")
+            raise RuntimeError(f"Failed to run remote marking script: {e}")
 
         current_process = proc
 
-    # Start listener thread
+    # Spawn reader thread
     threading.Thread(
         target=reader_thread,
         args=(proc, wall_id),
@@ -171,16 +188,16 @@ def start_next_wall():
 
 
 # -------------------------------------------------------------------
-# Pause / Continue
+# PAUSE / RESUME
 # -------------------------------------------------------------------
 def pause_marking():
     pause_flag.set()
-    print("[controller] ⏸ Pause requested — will stop after current wall.")
+    print("[controller] ⏸ Pause after current wall requested")
 
 
 def resume_marking():
     pause_flag.clear()
-    print("[controller] ▶ Resume requested.")
+    print("[controller] ▶ Resume requested")
 
     with state_lock:
         should_start = (current_process is None) and bool(wall_queue)
@@ -190,24 +207,39 @@ def resume_marking():
 
 
 # -------------------------------------------------------------------
-# API Endpoints
+# API ENDPOINTS
 # -------------------------------------------------------------------
 @app.post("/start")
 def marking_start(body: MarkingStartBody):
     """
-    Starts marking sequence for Phase 1 or Phase 2.
+    UI sends:
+        walls: [{ wall:2 }, { wall:3 }, { wall:4 }]
+        phase: 1 or 2
+        excelfile: ...
+        meshfile: ...
+        max_wall: 6
     """
-    global wall_queue, total_walls, excel_file_path, mesh_file_path
-    global last_completed_wall, current_wall, current_process, current_phase
+    global wall_queue, excel_file_path, mesh_file_path
+    global last_completed_wall, current_wall, current_process
+    global current_phase, total_walls, event_counter
 
     if not body.walls:
-        raise HTTPException(status_code=400, detail="walls cannot be empty")
+        raise HTTPException(400, "walls cannot be empty")
 
     with state_lock:
         if running_flag.is_set() and current_process:
-            raise HTTPException(status_code=400, detail="Marking already in progress")
+            raise HTTPException(400, "Marking already in progress")
 
-        wall_queue = list(body.walls)
+        # 💥 ABSOLUTELY ENSURE WALL 1 IS INCLUDED IF UI SENDS IT
+        wall_queue = []
+        for w in body.walls:
+            if isinstance(w.wall, int):
+                wall_queue.append(w.wall)
+            else:
+                print("[controller] ⚠ INVALID WALL PAYLOAD:", w)
+
+        print(f"[DEBUG] Final wall_queue from UI:", wall_queue)
+
         total_walls = body.max_wall
         excel_file_path = body.excelfile
         mesh_file_path = body.meshfile
@@ -216,16 +248,18 @@ def marking_start(body: MarkingStartBody):
         last_completed_wall = None
         current_wall = None
         current_process = None
-
         pause_flag.clear()
+        running_flag.clear()
 
-        print(f"\n[controller] ===============================")
-        print(f"[controller] New marking sequence started")
-        print(f"[controller] Phase: {current_phase}")
-        print(f"[controller] Queue: {wall_queue}")
-        print(f"[controller] Excel: {excel_file_path}")
-        print(f"[controller] Mesh:  {mesh_file_path}")
-        print(f"[controller] ===============================\n")
+        event_counter += 1  # identifier for UI
+
+        print("\n========================================")
+        print("[controller] NEW MARKING SEQUENCE")
+        print("Phase:", current_phase)
+        print("Queue:", wall_queue)
+        print("ExcelFile:", excel_file_path)
+        print("MeshFile:", mesh_file_path)
+        print("========================================\n")
 
     threading.Thread(target=start_next_wall, daemon=True).start()
 
@@ -244,7 +278,7 @@ def marking_pause():
 
 
 @app.post("/continue")
-def marking_resume():
+def marking_resume_api():
     resume_marking()
     return {"resumed": True}
 
@@ -252,11 +286,12 @@ def marking_resume():
 @app.get("/status")
 def marking_status():
     with state_lock:
+        print(f"[DEBUG STATUS] startedWall={current_wall}, doneWall={last_completed_wall}, queue={wall_queue}, phase={current_phase}")
+
         return {
             "running": running_flag.is_set(),
             "paused": pause_flag.is_set(),
 
-            # What UI reads:
             "startedWall": current_wall,
             "doneWall": last_completed_wall,
 
@@ -266,4 +301,6 @@ def marking_status():
 
             "excelFile": excel_file_path,
             "meshFile": mesh_file_path,
+
+            "eventID": event_counter,
         }

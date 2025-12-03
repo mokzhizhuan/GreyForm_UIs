@@ -85,8 +85,8 @@ def jointtarget_connection():
             "sshpass",
             "-p", "winsys",
             "ssh", "winsys@192.168.130.5",
-            "python3", "/home/winsys/pbu_marking_ros/catkin_ws/homeposcheck.py",
-            "--file", "/home/winsys/pbu_marking_ros/catkin_ws/poses.json",
+            "python3", "/home/winsys/pbu_marking_ros/homeposcheck.py",
+            "--file", "/home/winsys/pbu_marking_ros/pbu_data/mockup/poses.json",
             "--target", "wall_1"
         ],
         stdout=subprocess.PIPE,
@@ -100,7 +100,7 @@ def jointtarget_connection():
     if process.returncode != 0:
         raise HTTPException(
             status_code=500,
-            detail=f"joint_target failed (code {process.returncode})",
+            detail=f"joint_ta"NOT HOME"rget failed (code {process.returncode})",
         )
 
     return {"ok": True, "data": lines}
@@ -150,29 +150,35 @@ class WallInfo(BaseModel):
 
 @app.post("/file_execute_data")
 def file_execute_data():
-    process = subprocess.Popen(
-        [
-            "sshpass",
-            "-p", "winsys",
-            "ssh", "winsys@192.168.130.5",
-            "python3", "/home/winsys/pbu_marking_ros/catkin_ws/detectwalls.py",
-            "--filename", "/home/winsys/pbu_marking_ros/catkin_ws/PBU_TERRAHL2_working.xlsx"
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-    )
-
-    lines = [line.rstrip("\n") for line in process.stdout]
-    process.wait()
-    print(lines)
-    if process.returncode != 0:
-        raise HTTPException(
-            status_code=500,
-            detail=f"read_directory failed (code {process.returncode})",
+    try:
+        process = subprocess.Popen(
+            [
+                "sshpass",
+                "-p", "winsys",
+                "ssh", "winsys@192.168.130.5",
+                "python3", "/home/winsys/pbu_marking_ros/detectwalls.py",
+                "--filename", "/home/winsys/pbu_marking_ros/pbu_data/mockup/PBU_TERRAHL2.xlsx"
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
         )
 
-    return {"ok": True, "data": lines}
+        lines = [line.rstrip("\n") for line in process.stdout]
+        process.wait()
+
+        return {
+            "ok": process.returncode == 0,
+            "returncode": process.returncode,
+            "data": lines,
+        }
+
+    except Exception as e:
+        return {
+            "ok": False,
+            "error": str(e),
+            "data": []
+        }
     
 
 

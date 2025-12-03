@@ -126,7 +126,7 @@ async function postWithRetries(
 }
 
 export default function Status() {
-  const [appState, setAppState] = useState<CurrentState>("detect_PBU");
+  const [appState, setAppState] = useState<CurrentState>("home_verified");
   const v = views[appState];
 
   const [loading, setLoading] = useState(false);
@@ -148,18 +148,21 @@ interface JointTargetResponse {
 }
 
 // 🔹 Simple helper to call FastAPI
-async function getRobotJointTarget(): Promise<JointTargetResponse> {
+async function getRobotJointTarget(): Promise<any> {
   console.log("API triggered at /jointtarget/connection");
-  const res = await axios.get<JointTargetResponse>(
-    `${API_BASE_URL}/jointtarget/connection`
-  );
-  console.log(res.data)
-  if (res.data?.ok){ setAppState("home_verified")} 
-  else{
-    setAppState("home_verified")
-      console.warn("jointtarget returned ok=false", res.data);
-    }
-} 
+
+  try {
+    const res = await axios.get(`${API_BASE_URL}/jointtarget/connection`);
+    console.log("JOINTTARGET RAW RESPONSE:", res.data);
+
+    // 🚨 IMPORTANT: RETURN THE DATA TO HOMEPOSITIONCHECK
+    return res.data;
+
+  } catch (err) {
+    console.error("Error calling /jointtarget/connection:", err);
+    return { ok: false, data: [] };
+  }
+}
 
 
 interface ReadDirectoryResponse {
@@ -200,54 +203,139 @@ const [excelfile, setExcelfile] = useState<string>(
 const [meshfile, setMeshfile] = useState<string>(
   "/home/ros_user/catkin_ws/SIMTech_L_PBU_1_roof_thicc_50mm.stl"
 );
+type WallRowDict = { [key: string]: string };
+interface FileExecuteResult {
+  excelFile: string;
+  maxWall: number;
+  allWalls: number[];
+  wallRows: Record<number, number>;
+  wallDetails: Record<number, WallRowDict[]>; // 👈 now array of lines
+  rawLines: string[];
+}
 
-async function handleFileExecute(): Promise<{ maxWall: number | null }> {
-  console.log("📥 Calling /file_execute_data (no-body)...");
+const [allWalls, setAllWalls] = useState<number[]>([]);
+const [wallRows, setWallRows] = useState<Record<number, number>>({});
+const [wallDetails, setWallDetails] =
+  useState<Record<number, WallRowDict[]>>({})
+async function handleFileExecute(): Promise<FileExecuteResult> {
+  const res = await axios.post(`${API_BASE_URL}/file_execute_data`);
 
-  try {
-    const res = await axios.post(`${API_BASE_URL}/file_execute_data`);
-    console.log("📦 RAW response:", res.data);
+  const lines: string[] = res.data.data || [];
 
-    if (!res.data || !res.data.ok) {
-      throw new Error("Backend returned invalid response");
+  let excelFile = "";
+  let maxWall = 0;
+  let allWalls: number[] = [];
+  let wallRows: Record<number, number> = {};
+
+  // 1) First pass: group lines per wall
+  const wallLines: Record<number, string[]> = {};
+  let currentWall: number | null = null;
+  let currentBlock: string[] = [];
+
+  for (const rawLine of lines) {
+    const line = rawLine ?? "";
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith("ExcelFile:")) {
+      excelFile = trimmed.replace("ExcelFile:", "").trim();
     }
 
-    const lines: string[] = res.data.data || [];
-    console.log("📄 SSH lines:", lines);
-
-    // 🔎 Find the line that contains the Excel file path
-    const excelLine = lines.find((line) => line.startsWith("EXCEL_FILE="));
-    const maxWallLine = lines.find((line) => line.startsWith("MAX_WALL="));
-
-    let excelFromLines = "";
-    let maxWallFromLines: number | null = null;
-
-    if (excelLine) {
-      // "EXCEL_FILE=/home/ros_user/catkin_ws/TERRAHL2_wall_2.xlsx"
-      excelFromLines = excelLine.replace("EXCEL_FILE=", "").trim();
+    if (trimmed.startsWith("Max wall number:")) {
+      maxWall = Number(trimmed.split(":")[1].trim());
     }
 
-    if (maxWallLine) {
-      // "MAX_WALL=6"
-      const raw = maxWallLine.replace("MAX_WALL=", "").trim();
-      const n = Number(raw);
-      maxWallFromLines = Number.isNaN(n) ? null : n;
+    if (trimmed.startsWith("All walls found:")) {
+      const match = trimmed.match(/\[(.*)\]/);
+      if (match) {
+        allWalls = match[1]
+          .split(",")
+          .map((n) => Number(n.trim()))
+          .filter((n) => !isNaN(n));
+      }
     }
 
-    console.log("📌 Parsed from SSH → excelfile:", excelFromLines, "maxWall:", maxWallFromLines);
+    // detect header like "===== WALL 1 - 21 ROWS ====="
+    const upper = trimmed.toUpperCase();
+    if (upper.includes("WALL") && upper.includes("ROWS")) {
+      const noQuotes = trimmed.replace(/^"+|"+$/g, "");
+      const nums = noQuotes.match(/\d+/g);
+      if (nums && nums.length >= 2) {
+        const wallNum = Number(nums[0]);
+        const rowCount = Number(nums[1]);
 
-    // ⬇️ Store in state for SixWallFlow
-    setExcelfile(excelFromLines);
-    setMaxWall(maxWallFromLines);
+        if (currentWall !== null && currentBlock.length > 0) {
+          wallLines[currentWall] = currentBlock;
+        }
 
-    // (if you also build walls[] from other lines, do it here)
-    // setWalls(wallsFromLines);
+        currentWall = wallNum;
+        wallRows[wallNum] = rowCount;
+        currentBlock = [line];
+        continue;
+      }
+    }
 
-    return { maxWall: maxWallFromLines };
-  } catch (err) {
-    console.error("❌ handleFileExecute ERROR:", err);
-    throw err;
+    if (currentWall !== null) {
+      currentBlock.push(line);
+    }
   }
+
+  if (currentWall !== null && currentBlock.length > 0) {
+    wallLines[currentWall] = currentBlock;
+  }
+
+  // 2) Second pass: convert each wall's lines[] into array of row dicts
+  const wallDetails: Record<number, WallRowDict[]> = {};
+
+  for (const [wallStr, linesArr] of Object.entries(wallLines)) {
+    const wall = Number(wallStr);
+    const rows: WallRowDict[] = [];
+    let currentRow: WallRowDict | null = null;
+
+    for (const raw of linesArr) {
+      let clean = (raw ?? "").replace(/^"+|"+$/g, "").trim();
+      if (!clean) continue;
+
+      // "Row 1:" -> start new row
+      const rowMatch = clean.match(/^Row\s+(\d+):/i);
+      if (rowMatch) {
+        if (currentRow) rows.push(currentRow);
+        currentRow = { Row: rowMatch[1] };
+        continue;
+      }
+
+      if (!currentRow) continue;
+
+      // lines like "Marking Type: Wall", "GX: 980.0", "Unnamed: 0: 1.0"
+      clean = clean.replace(/^\s+/, ""); // remove leading spaces
+
+      const kvMatch = clean.match(/^(.+?):\s*(.*)$/);
+      if (kvMatch) {
+        const key = kvMatch[1].trim();     // e.g. "Marking Type"
+        const value = kvMatch[2].trim();   // e.g. "Wall" or "0: 1.0"
+        currentRow[key] = value;
+      }
+    }
+
+    if (currentRow) rows.push(currentRow);
+    wallDetails[wall] = rows;
+  }
+
+  console.log("📌 Parsed:", {
+    excelFile,
+    maxWall,
+    allWalls,
+    wallRows,
+    wallDetails,
+  });
+
+  return {
+    excelFile,
+    maxWall,
+    allWalls,
+    wallRows,
+    wallDetails,
+    rawLines: lines,
+  };
 }
 
 
@@ -281,12 +369,19 @@ const handleFileExecuteAndStartLayout = async () => {
   console.log("▶ Running: handleFileExecuteAndStartLayout()");
 
   try {
-    const { maxWall: maxWallLocal } = await handleFileExecute();
+    const result = await handleFileExecute();
+    setExcelfile(result.excelFile);
+    setMaxWall(result.maxWall);
+    setAllWalls(result.allWalls);
+    setWallRows(result.wallRows);
+    setWallDetails(result.wallDetails);
 
-    console.log("📌 After handleFileExecute, maxWallLocal =", maxWallLocal);
+
+
+    console.log("📌 After handleFileExecute, maxWallLocal =", result.maxWall);
 
     // no need for setTimeout hack anymore
-    await handleStartLayout(maxWallLocal);
+    await handleStartLayout(result.maxWall);
   } catch (err) {
     console.error("❌ Failed to execute file & start layout:", err);
     setAppState("error");
@@ -364,12 +459,12 @@ const handleFileExecuteAndStartLayout = async () => {
       )}
  {/* ---------- FOUR WALL ---------- */}
       {appState === "four_wall_flow" && (
-        <FourWallFlow walls={walls} maxWall={maxWall ?? 0} excelfile={excelfile} meshfile={meshfile} />
+        <FourWallFlow walls={walls} maxWall={maxWall ?? 0} excelfile={excelfile} />
       )}
 
       {/* ---------- SIX WALL ---------- */}
       {appState === "six_wall_flow" && (
-        <SixWallFlow walls={walls} maxWall={maxWall ?? 0} excelfile={excelfile} meshfile = {meshfile}/>
+        <SixWallFlow wallDetails={wallDetails} maxWall={maxWall ?? 0} excelfile={excelfile} meshfile = {meshfile}/>
       )}
     </>
   );
