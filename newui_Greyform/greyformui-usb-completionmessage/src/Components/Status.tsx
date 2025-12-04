@@ -146,6 +146,55 @@ interface JointTargetResponse {
   jointtarget: any;
 }
 
+type FileEntry = {
+  filename: string;   // e.g. "PBU_TERRAHL2_wall_2.xlsx"
+  fullPath: string;   // e.g. "/home/.../PBU_TERRAHL2_wall_2.xlsx"
+};
+
+const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
+const [pathByFilename, setPathByFilename] = useState<Record<string, string>>({});
+
+const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
+const [pathByFilename, setPathByFilename] = useState<Record<string, string>>({});
+async function handleGetDirectory() {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/getdirectory`);
+
+    if (!res.data.ok) {
+      console.error("Backend returned not ok");
+      return;
+    }
+
+    const lines: string[] = res.data.data || [];
+
+    // parse lines -> { filename, fullPath }
+    const entries: FileEntry[] = lines
+      .filter((line) => line.startsWith("Found"))
+      .map((line) => {
+        // remove "Found :" prefix
+        const fullPath = line.replace(/^Found\s*:\s*/, "").trim();
+
+        // get filename from path
+        const parts = fullPath.split("/");
+        const filename = parts[parts.length - 1] || fullPath;
+
+        return { filename, fullPath };
+      });
+
+    // save array of entries
+    setFileEntries(entries);
+
+    // also build map filename -> fullPath
+    const map: Record<string, string> = {};
+    for (const e of entries) {
+      map[e.filename] = e.fullPath;
+    }
+    setPathByFilename(map);
+  } catch (err) {
+    console.error("getdirectory error:", err);
+  }
+}
+
 async function getRobotJointTarget(): Promise<any> {
   console.log("API triggered at /jointtarget/connection");
   try {
