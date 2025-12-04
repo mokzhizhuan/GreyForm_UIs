@@ -60,7 +60,7 @@ const views = {
     primaryText: "Start",
     showSpinner: false,
   },
-  detect_PBU: {
+   detect_PBU: {
     title: "Start Menu",
     variant: "primary",
     primaryText: "Start",
@@ -73,7 +73,7 @@ const views = {
     showSpinner: false,
   },
   error: {
-    title: "Error reading USB drive",
+    title: "An error has occurred",
     variant: "error",
     primaryText: "Try Again",
     showSpinner: false,
@@ -126,7 +126,7 @@ async function postWithRetries(
 }
 
 export default function Status() {
-  const [appState, setAppState] = useState<CurrentState>("home_verified");
+  const [appState, setAppState] = useState<CurrentState>("detect_PBU");
   const v = views[appState];
 
   const [loading, setLoading] = useState(false);
@@ -136,7 +136,6 @@ export default function Status() {
   const [maxWall, setMaxWall] = useState<number | null>(null);
   const [currentWall, setCurrentWall] = useState<number>(1)
 
-  // Small status for auto-boot (optional)
   const [autoBootStatus, setAutoBootStatus] = useState<
     "idle" | "booting" | "ok" | "error"
   >("idle");
@@ -144,46 +143,37 @@ export default function Status() {
   
 interface JointTargetResponse {
   ok: boolean;
-  jointtarget: any;   // change to a stricter type later if you want
+  jointtarget: any;
 }
 
-// 🔹 Simple helper to call FastAPI
 async function getRobotJointTarget(): Promise<any> {
   console.log("API triggered at /jointtarget/connection");
-
   try {
     const res = await axios.get(`${API_BASE_URL}/jointtarget/connection`);
     console.log("JOINTTARGET RAW RESPONSE:", res.data);
-
-    // 🚨 IMPORTANT: RETURN THE DATA TO HOMEPOSITIONCHECK
     return res.data;
-
   } catch (err) {
     console.error("Error calling /jointtarget/connection:", err);
     return { ok: false, data: [] };
   }
 }
 
-
 interface ReadDirectoryResponse {
   ok: boolean;
   data: string[];
 }
 interface WallRow {
-  // You can make this stricter later; for now it's fine as a generic row.
   [key: string]: any;
 }
 
 interface WallInfo {
-  wall: string;      // "1", "2", "3", ...
-  count: number;     // number of rows for that wall
-  rows: WallRow[];   // the actual rows to send to /execute_wall_data
+  wall: string;
+  count: number;
+  rows: WallRow[];
 }
-// ---------- Request payload ----------
 
 const [directory, setDirectory] = useState<string>("");
 async function readDirectory(): Promise<ReadDirectoryResponse> {
-  // no body, just POST
   console.log("readDirectoryAPI triggered!")
   const res = await axios.post<ReadDirectoryResponse>(`${API_BASE_URL}/read_directory`);
   if (res.data?.ok){ 
@@ -209,7 +199,7 @@ interface FileExecuteResult {
   maxWall: number;
   allWalls: number[];
   wallRows: Record<number, number>;
-  wallDetails: Record<number, WallRowDict[]>; // 👈 now array of lines
+  wallDetails: Record<number, WallRowDict[]>;
   rawLines: string[];
 }
 
@@ -219,15 +209,11 @@ const [wallDetails, setWallDetails] =
   useState<Record<number, WallRowDict[]>>({})
 async function handleFileExecute(): Promise<FileExecuteResult> {
   const res = await axios.post(`${API_BASE_URL}/file_execute_data`);
-
   const lines: string[] = res.data.data || [];
-
   let excelFile = "";
   let maxWall = 0;
   let allWalls: number[] = [];
   let wallRows: Record<number, number> = {};
-
-  // 1) First pass: group lines per wall
   const wallLines: Record<number, string[]> = {};
   let currentWall: number | null = null;
   let currentBlock: string[] = [];
@@ -235,15 +221,12 @@ async function handleFileExecute(): Promise<FileExecuteResult> {
   for (const rawLine of lines) {
     const line = rawLine ?? "";
     const trimmed = line.trim();
-
     if (trimmed.startsWith("ExcelFile:")) {
       excelFile = trimmed.replace("ExcelFile:", "").trim();
     }
-
     if (trimmed.startsWith("Max wall number:")) {
       maxWall = Number(trimmed.split(":")[1].trim());
     }
-
     if (trimmed.startsWith("All walls found:")) {
       const match = trimmed.match(/\[(.*)\]/);
       if (match) {
@@ -253,8 +236,6 @@ async function handleFileExecute(): Promise<FileExecuteResult> {
           .filter((n) => !isNaN(n));
       }
     }
-
-    // detect header like "===== WALL 1 - 21 ROWS ====="
     const upper = trimmed.toUpperCase();
     if (upper.includes("WALL") && upper.includes("ROWS")) {
       const noQuotes = trimmed.replace(/^"+|"+$/g, "");
@@ -262,64 +243,48 @@ async function handleFileExecute(): Promise<FileExecuteResult> {
       if (nums && nums.length >= 2) {
         const wallNum = Number(nums[0]);
         const rowCount = Number(nums[1]);
-
         if (currentWall !== null && currentBlock.length > 0) {
           wallLines[currentWall] = currentBlock;
         }
-
         currentWall = wallNum;
         wallRows[wallNum] = rowCount;
         currentBlock = [line];
         continue;
       }
     }
-
     if (currentWall !== null) {
       currentBlock.push(line);
     }
   }
-
   if (currentWall !== null && currentBlock.length > 0) {
     wallLines[currentWall] = currentBlock;
   }
-
-  // 2) Second pass: convert each wall's lines[] into array of row dicts
   const wallDetails: Record<number, WallRowDict[]> = {};
-
   for (const [wallStr, linesArr] of Object.entries(wallLines)) {
     const wall = Number(wallStr);
     const rows: WallRowDict[] = [];
     let currentRow: WallRowDict | null = null;
-
     for (const raw of linesArr) {
       let clean = (raw ?? "").replace(/^"+|"+$/g, "").trim();
       if (!clean) continue;
-
-      // "Row 1:" -> start new row
       const rowMatch = clean.match(/^Row\s+(\d+):/i);
       if (rowMatch) {
         if (currentRow) rows.push(currentRow);
         currentRow = { Row: rowMatch[1] };
         continue;
       }
-
       if (!currentRow) continue;
-
-      // lines like "Marking Type: Wall", "GX: 980.0", "Unnamed: 0: 1.0"
-      clean = clean.replace(/^\s+/, ""); // remove leading spaces
-
+      clean = clean.replace(/^\s+/, "");
       const kvMatch = clean.match(/^(.+?):\s*(.*)$/);
       if (kvMatch) {
-        const key = kvMatch[1].trim();     // e.g. "Marking Type"
-        const value = kvMatch[2].trim();   // e.g. "Wall" or "0: 1.0"
+        const key = kvMatch[1].trim();
+        const value = kvMatch[2].trim();
         currentRow[key] = value;
       }
     }
-
     if (currentRow) rows.push(currentRow);
     wallDetails[wall] = rows;
   }
-
   console.log("📌 Parsed:", {
     excelFile,
     maxWall,
@@ -327,7 +292,6 @@ async function handleFileExecute(): Promise<FileExecuteResult> {
     wallRows,
     wallDetails,
   });
-
   return {
     excelFile,
     maxWall,
@@ -338,20 +302,14 @@ async function handleFileExecute(): Promise<FileExecuteResult> {
   };
 }
 
-
 async function handleStartLayout(maxWallValue: number | null) {
   console.log("➡️ Starting layout with maxWall =", maxWallValue);
-
   if (maxWallValue === null) {
     console.warn("⚠ No maxWall yet, cannot start layout");
     setError("Excel file is missing Wall Number column");
     setAppState("error");
     return;
   }
-
-  // ⬅️ if you want starting layout = 1, do it here
-  // setCurrentWall(1); // or whatever state you use for starting wall
-
   if (maxWallValue === 4) {
     setAppState("four_wall_flow");
   } else if (maxWallValue === 6) {
@@ -363,11 +321,8 @@ async function handleStartLayout(maxWallValue: number | null) {
   }
 }
 
-
-
 const handleFileExecuteAndStartLayout = async () => {
   console.log("▶ Running: handleFileExecuteAndStartLayout()");
-
   try {
     const result = await handleFileExecute();
     setExcelfile(result.excelFile);
@@ -375,21 +330,15 @@ const handleFileExecuteAndStartLayout = async () => {
     setAllWalls(result.allWalls);
     setWallRows(result.wallRows);
     setWallDetails(result.wallDetails);
-
-
-
     console.log("📌 After handleFileExecute, maxWallLocal =", result.maxWall);
-
-    // no need for setTimeout hack anymore
     await handleStartLayout(result.maxWall);
   } catch (err) {
     console.error("❌ Failed to execute file & start layout:", err);
+    setError(err instanceof Error ? err.message : String(err));
     setAppState("error");
   }
 };
 
-// Call /run_ros (no body)
-  // UI
   return (
     <>
       {appState !== "four_wall_flow" && appState !== "six_wall_flow" && (
@@ -402,7 +351,6 @@ const handleFileExecuteAndStartLayout = async () => {
             <div className="max-w-max space-y-5">
               <h1 className="text-4xl md:text-5xl font-bold">{v.title}</h1>
 
-              {/* Auto boot status display (optional) */}
               <div className="text-sm opacity-80">
                 {autoBootStatus === "booting" && (
                   <span className="text-blue-300">
@@ -436,10 +384,8 @@ const handleFileExecuteAndStartLayout = async () => {
                   RobotPowerONOutside={RobotPowerONOutside}
                   v={v}
                   verifyHomePosition={getRobotJointTarget}
-                  loading={loading}
-                  error={error}
-                  jointTarget={jointTarget}
-                  appState={appState}
+                  // NEW: update app state once HOME is verified
+                  onHomeVerified={() => setAppState("home_verified")}
                 />
               )}
 
@@ -453,19 +399,25 @@ const handleFileExecuteAndStartLayout = async () => {
                   onNext={handleFileExecuteAndStartLayout}  
                 />
               )}
+
+              {appState === "error" && (
+                <div className="text-red-400">
+                  <h2 className="text-2xl font-bold mb-2">{error ?? "Unknown error"}</h2>
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
- {/* ---------- FOUR WALL ---------- */}
+
       {appState === "four_wall_flow" && (
         <FourWallFlow walls={walls} maxWall={maxWall ?? 0} excelfile={excelfile} />
       )}
 
-      {/* ---------- SIX WALL ---------- */}
       {appState === "six_wall_flow" && (
-        <SixWallFlow wallDetails={wallDetails} maxWall={maxWall ?? 0} excelfile={excelfile} meshfile = {meshfile}/>
+        <SixWallFlow wallDetails={wallDetails} maxWall={maxWall ?? 0} excelfile={excelfile} meshfile={meshfile} />
       )}
     </>
   );
+
 }
