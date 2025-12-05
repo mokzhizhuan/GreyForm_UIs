@@ -7,11 +7,18 @@ import requests
 import pandas as pd
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
-from roscore_service import ROS_MASTER_URI, is_master_up, start_roscore, stop_roscore, _OWNED
+from roscore_service import (
+    ROS_MASTER_URI,
+    is_master_up,
+    start_roscore,
+    stop_roscore,
+    _OWNED,
+)
 import backend.jointtargetip as jointip
 from backend.listenerrunner import start_listener
 from backend.marking_controller import app as marking_subapp
-#from backend.marking_app import markers as marking_app
+
+# from backend.marking_app import markers as marking_app
 import sys
 import os
 
@@ -42,6 +49,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.mount("/marking", marking_subapp)
+
+
 # ============================================================
 # Robot endpoint (NO ROS NEEDED)
 # ============================================================
@@ -50,10 +59,14 @@ def getdirectory():
     process = subprocess.Popen(
         [
             "sshpass",
-            "-p", "winsys",
-            "ssh", "winsys@192.168.130.5",
-            "python3", "/home/winsys/pbu_marking_ros/directorysearch.py",
-            "--directory", "/home/winsys/pbu_marking_ros/pbu_data/mockup/",
+            "-p",
+            "winsys",
+            "ssh",
+            "winsys@192.168.130.5",
+            "python3",
+            "/home/winsys/pbu_marking_ros/directorysearch.py",
+            "--directory",
+            "/home/winsys/pbu_marking_ros/pbu_data/mockup/",
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -66,22 +79,27 @@ def getdirectory():
     if process.returncode != 0:
         raise HTTPException(
             status_code=500,
-            detail=f"joint_ta"NOT HOME"rget failed (code {process.returncode})",
+            detail=f"joint_target failed (code {process.returncode})",
         )
-    
+
     return {"ok": True, "data": lines}
-    
+
 
 @app.get("/jointtarget/connection")
 def jointtarget_connection():
     process = subprocess.Popen(
         [
             "sshpass",
-            "-p", "winsys",
-            "ssh", "winsys@192.168.130.5",
-            "python3", "/home/winsys/pbu_marking_ros/homeposcheck.py",
-            "--file", "/home/winsys/pbu_marking_ros/pbu_data/mockup/poses.json",
-            "--target", "wall_1"
+            "-p",
+            "winsys",
+            "ssh",
+            "winsys@192.168.130.5",
+            "python3",
+            "/home/winsys/pbu_marking_ros/homeposcheck.py",
+            "--file",
+            "/home/winsys/pbu_marking_ros/pbu_data/mockup/poses.json",
+            "--target",
+            "outside",
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -94,11 +112,11 @@ def jointtarget_connection():
     if process.returncode != 0:
         raise HTTPException(
             status_code=500,
-            detail=f"joint_ta"NOT HOME"rget failed (code {process.returncode})",
+            detail=f"joint_target failed (code {process.returncode})",
         )
 
     return {"ok": True, "data": lines}
-    
+
 
 # ============================================================
 # Read Directory (SSH)
@@ -106,12 +124,7 @@ def jointtarget_connection():
 @app.post("/read_directory")
 def read_directory():
     process = subprocess.Popen(
-        [
-            "sshpass",
-            "-p", "winsys",
-            "ssh", "winsys@192.168.130.5",
-            "ls", "/home"
-        ],
+        ["sshpass", "-p", "winsys", "ssh", "winsys@192.168.130.5", "ls", "/home"],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
@@ -136,22 +149,32 @@ class FileExecBody(BaseModel):
     directory: str
     excelfile: str
 
+
 class WallInfo(BaseModel):
     wall: str
     count: int
     rows: List[Dict[str, Any]]
 
 
+class FileExecuBody(BaseModel):
+    excelfile: str
+
+
 @app.post("/file_execute_data")
-def file_execute_data():
+def file_execute_data(body: FileExecuBody):
+    excelFile = body.excelfile  # <── get from JSON body
     try:
         process = subprocess.Popen(
             [
                 "sshpass",
-                "-p", "winsys",
-                "ssh", "winsys@192.168.130.5",
-                "python3", "/home/winsys/pbu_marking_ros/detectwalls.py",
-                "--filename", "/home/winsys/pbu_marking_ros/pbu_data/mockup/PBU_TERRAHL2.xlsx"
+                "-p",
+                "winsys",
+                "ssh",
+                "winsys@192.168.130.5",
+                "python3",
+                "/home/winsys/pbu_marking_ros/detectwalls.py",
+                "--filename",
+                excelFile,
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -168,15 +191,10 @@ def file_execute_data():
         }
 
     except Exception as e:
-        return {
-            "ok": False,
-            "error": str(e),
-            "data": []
-        }
-    
+        return {"ok": False, "error": str(e), "data": []}
 
 
-#_listener_process = None
+# _listener_process = None
 
 
 """@app.get("/roscore/status")
@@ -216,4 +234,3 @@ def stop():
         _listener_process = None
 
     return {"status": "stopped"}"""
-

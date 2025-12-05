@@ -18,11 +18,13 @@ interface MarkingStatusResponse {
   paused: boolean;
   startedWall: number | null;
   doneWall: number | null;
-  queue: number[];
+  queue: string[];
   maxWalls: number;
   phase: number | null;
   excelFile?: string;
   meshFile?: string;
+  folder?: string;
+  lineCount?: number;
 }
 
 interface WallRow {
@@ -30,14 +32,15 @@ interface WallRow {
 }
 
 interface SixWallFlowProps {
-  wallDetails: Record<number, WallRow[]>;
+  wallDetails: Record<string, WallRow[]>;
   maxWall: number;
   excelfile: string;
   meshfile: string;
+  folderdirectory: string;
 }
 
 // --------------------------------------------------------
-// STEPS
+// UI STEPS
 // --------------------------------------------------------
 const STEPS = [
   "Placement 1",
@@ -52,16 +55,36 @@ const STEPS = [
 ];
 
 const STEP_IMAGES = [
-  placementOne,   // 0
-  wallMarking1,   // 1 (Wall 2)
-  wallMarking1,   // 2 (Wall 3)
-  wallMarking1,   // 3 (Wall 4)
-  placementTwo,   // 4
-  wallMarking2,   // 5 (Wall 5)
-  wallMarking2,   // 6 (Wall 6)
-  wallMarking2,   // 7 (Wall 1)
-  wallMarking2,   // 8 (Complete)
+  placementOne,
+  wallMarking1,
+  wallMarking1,
+  wallMarking1,
+  placementTwo,
+  wallMarking2,
+  wallMarking2,
+  wallMarking2,
+  wallMarking2,
 ];
+
+const STEP_SEQUENCE: Record<number | string, number> = {
+  2: 1,
+  3: 2,
+  4: 3,
+  P2: 4,
+  5: 5,
+  6: 6,
+  1: 7,
+  DONE: 8,
+};
+
+const NEXT_KEY_FOR_WALL: Record<number, number | "P2" | "DONE"> = {
+  2: 3,
+  3: 4,
+  4: "P2",
+  5: 6,
+  6: 1,
+  1: "DONE",
+};
 
 // --------------------------------------------------------
 // COMPONENT
@@ -71,36 +94,23 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
   maxWall,
   excelfile,
   meshfile,
+  folderdirectory,
 }) => {
-  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [currentStep, setCurrentStep] = useState(0);
   const [status, setStatus] = useState<StepStatus>("idle");
   const [paused, setPaused] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [autoCompletedWall, setAutoCompletedWall] = useState<number | null>(null);
 
   const pollingRef = useRef<number | null>(null);
   const mountedRef = useRef(false);
-  const currentStepRef = useRef<number>(0);
+  const currentStepRef = useRef(0);
 
-  const phase1BreakPendingRef = useRef(false);
-  const phase2CompletePendingRef = useRef(false);
-  const lastHandledDoneWall = useRef<number | null>(null);
+  const isFinalStep = currentStep === 8;
 
-  const isFinalStep = currentStep === STEPS.length - 1;
-
-  // --------------------------------------------------------
-  // HELPERS
-  // --------------------------------------------------------
-  const wallToStep = (wall: number): number | null => {
-    switch (wall) {
-      case 2: return 1;
-      case 3: return 2;
-      case 4: return 3;
-      case 5: return 5;
-      case 6: return 6;
-      case 1: return 7;
-      default: return null;
-    }
-  };
+  useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
 
   const isMarkingStep = (step: number) => [1, 2, 3, 5, 6, 7].includes(step);
 
@@ -109,90 +119,181 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
     pollingRef.current = null;
   };
 
-  const schedulePoll = (ms = 2000) => {
+  const schedulePoll = (ms = 1500) => {
     if (!mountedRef.current) return;
     clearPolling();
     pollingRef.current = window.setTimeout(fetchStatus, ms);
   };
 
-  useEffect(() => {
-    currentStepRef.current = currentStep;
-  }, [currentStep]);
+  // --------------------------------------------------------
+  // NORMALIZE wallDetails KEYS
+  // --------------------------------------------------------
+  const normalizedDetails: Record<string, WallRow[]> = {};
+  for (const [key, rows] of Object.entries(wallDetails)) {
+    const match = key.match(/\d+/);
+    const label = match ? `wall_${match[0]}` : key;
+    normalizedDetails[label] = rows ?? [];
+  }
+
+  const getRowCountForWall = (wallNum: number) =>
+    normalizedDetails[`wall_${wallNum}`]?.length ?? 0;
 
   // --------------------------------------------------------
-  // API CALLS: PAUSE & RESUME
+// API: PAUSE / RESUME
+// --------------------------------------------------------
+const pauseMarking = async () => {
+  try {
+    await axios.post(`${API_BASE_URL}/marking/pause`);
+    setPaused(true);
+    schedulePoll(500);   // refresh quickly
+  } catch (err) {
+    console.error("Pause failed:", err);
+    setErrorMessage("Failed to pause marking.");
+  }
+};
+
+const resumeMarking = async () => {
+  try {
+    await axios.post(`${API_BASE_URL}/marking/continue`);
+    setPaused(false);
+    schedulePoll(500);
+  } catch (err) {
+    console.error("Resume failed:", err);
+    setErrorMessage("Failed to resume marking.");
+  }
+};
+
   // --------------------------------------------------------
-  const pauseMarking = async () => {
+  // HOME CHECK (DO NOT MODIFY THIS BLOCK)
+  // --------------------------------------------------------
+  const [homeCurrentRax, setHomeCurrentRax] = useState<Record<string, number> | null>(null);
+  const [homeTargetJoints, setHomeTargetJoints] = useState<Record<string, number> | null>(null);
+
+  const requestHomeCheck = async (phase: number): Promise<boolean> => {
     try {
-      await axios.post(`${API_BASE_URL}/marking/pause`);
-      setPaused(true);
-      // Robot will finish current wall → running stays true until done.
-      schedulePoll(500);
-    } catch (e: any) {
-      setErrorMessage(e.response?.data?.detail || "Failed to pause marking.");
+      const res = await axios.post(`${API_BASE_URL}/marking/homecheck`, { phase });
+
+      console.log("JOINTTARGET RAW RESPONSE:", res.data);
+
+      const output: string = res.data.output ?? "";
+      const arr = output
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      console.log("PARSED LINES:", arr);
+
+      const raxLine = arr.find((line) => line.includes("rax_1"));
+      if (raxLine) {
+        try {
+          const cleaned = raxLine
+            .trim()
+            .replace(/^"+|"+$/g, "")
+            .replace(/^'+|'+$/g, "")
+            .replace(/'/g, '"');
+          console.log("CLEANED RAX:", cleaned);
+          setHomeCurrentRax(JSON.parse(cleaned));
+        } catch (e) {
+          console.warn("Failed to parse RAX JSON:", raxLine, e);
+        }
+      }
+
+      const targetLine = arr.find((line) => line.includes("j0"));
+      if (targetLine) {
+        try {
+          const cleaned = targetLine
+            .trim()
+            .replace(/^"+|"+$/g, "")
+            .replace(/^'+|'+$/g, "")
+            .replace(/'/g, '"');
+          console.log("CLEANED TARGET:", cleaned);
+          setHomeTargetJoints(JSON.parse(cleaned));
+        } catch (e) {
+          console.warn("Failed to parse poses.json:", targetLine, e);
+        }
+      }
+
+      const last = arr[arr.length - 1]?.trim();
+      const inHome = last === "True";
+
+      if (!inHome) {
+        setErrorMessage("Robot is NOT in HOME position. Please move robot to HOME and try again.");
+      } else {
+        setErrorMessage(null);
+      }
+
+      return inHome;
+    } catch (err) {
+      console.error("Home check failed:", err);
+      setErrorMessage("Home check failed. Please try again.");
+      return false;
     }
   };
 
-  const resumeMarking = async () => {
-    try {
-      await axios.post(`${API_BASE_URL}/marking/continue`);
-      setPaused(false);
-      schedulePoll(500);
-    } catch (e: any) {
-      setErrorMessage(e.response?.data?.detail || "Failed to resume marking.");
-    }
-  };
+  // --------------------------------------------------------
+  // BUILD TABLE ROWS
+  // --------------------------------------------------------
+  const homeCheckRows =
+    homeCurrentRax && homeTargetJoints
+      ? Object.entries(homeTargetJoints).map(([key, targetVal], idx) => ({
+          axis: key.toUpperCase(),
+          current: homeCurrentRax[`rax_${idx + 1}`],
+          target: targetVal,
+        }))
+      : [];
 
   // --------------------------------------------------------
-  // API: START PHASE ONE (Walls 2, 3, 4)
+  // START PHASE 1
   // --------------------------------------------------------
   const startPhaseOne = async () => {
-    try {
-      const walls = [2, 3, 4].map(w => ({ wall: w, rows: wallDetails[w] ?? [] }));
+    /*const ok = await requestHomeCheck(1);
+    if (!ok) return;*/
 
-      await axios.post(`${API_BASE_URL}/marking/start`, {
-        walls,
-        excelfile,
-        meshfile,
-        phase: 1,
-        max_wall: 6,
-      });
+    const walls = ["wall_2", "wall_3", "wall_4"].map((label) => ({
+      wall: label,
+      rows: normalizedDetails[label] ?? [],
+    }));
 
-      lastHandledDoneWall.current = null;
-      setCurrentStep(1);
-      schedulePoll(500);
+    await axios.post(`${API_BASE_URL}/marking/start`, {
+      walls,
+      excelfile,
+      meshfile,
+      folder: folderdirectory,
+      phase: 1,
+      max_wall: maxWall,
+    });
 
-    } catch (e: any) {
-      setErrorMessage(e.response?.data?.detail || "Failed to start phase 1.");
-    }
+    setCurrentStep(1);
+    schedulePoll(500);
   };
 
   // --------------------------------------------------------
-  // API: START PHASE TWO (Walls 5, 6, 1)
+  // START PHASE 2
   // --------------------------------------------------------
   const startPhaseTwo = async () => {
-    try {
-      const walls = [5, 6, 1].map(w => ({ wall: w, rows: wallDetails[w] ?? [] }));
+    /*const ok = await requestHomeCheck(2);
+    if (!ok) return;*/
 
-      await axios.post(`${API_BASE_URL}/marking/start`, {
-        walls,
-        excelfile,
-        meshfile,
-        phase: 2,
-        max_wall: 6,
-      });
+    const walls = ["wall_5", "wall_6", "wall_1"].map((label) => ({
+      wall: label,
+      rows: normalizedDetails[label] ?? [],
+    }));
 
-      lastHandledDoneWall.current = null;
-      setCurrentStep(5);
-      schedulePoll(500);
+    await axios.post(`${API_BASE_URL}/marking/start`, {
+      walls,
+      excelfile,
+      meshfile,
+      folder: folderdirectory,
+      phase: 2,
+      max_wall: maxWall,
+    });
 
-    } catch (e: any) {
-      setErrorMessage(e.response?.data?.detail || "Failed to start phase 2.");
-    }
+    setCurrentStep(5);
+    schedulePoll(500);
   };
 
   // --------------------------------------------------------
-  // POLLING LOGIC
+  // POLLING — USE BACKEND'S COUNTER ONLY
   // --------------------------------------------------------
   const fetchStatus = async () => {
     try {
@@ -204,81 +305,49 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
       setPaused(Boolean(data.paused));
       setStatus(data.running ? "pending" : "idle");
 
-      // 1) Robot started wall → move UI
-      if (data.startedWall) {
-        const si = wallToStep(data.startedWall);
-        if (si !== null) {
-          setCurrentStep(si);
-        }
-      }
-
-      // 2) After finishing a wall → handle stage transitions
-      if (data.doneWall) {
-        const completed = data.doneWall;
-
-        if (completed === 4 && data.phase === 1) {
-          phase1BreakPendingRef.current = true;
-        }
-
-        if (completed === 1 && data.phase === 2) {
-          phase2CompletePendingRef.current = true;
-        }
-      }
-
       const stepNow = currentStepRef.current;
 
-      // 🌟 PAUSE LOGIC: If paused but robot still running → WAIT
-      if (paused && data.running) {
+      // ACTIVE MARKING
+      if (data.running && data.startedWall) {
+        const wall = data.startedWall;
+        const lineCount = data.lineCount ?? 0;
+        const total = getRowCountForWall(wall);
+
+        const stepIdx = STEP_SEQUENCE[wall];
+        if (stepIdx !== undefined && stepIdx !== stepNow) {
+          setCurrentStep(stepIdx);
+        }
+
+        // AUTO-ADVANCE WHEN COMPLETED
+        if (total > 0 && lineCount >= total && autoCompletedWall !== wall) {
+          setAutoCompletedWall(wall);
+          const nextKey = NEXT_KEY_FOR_WALL[wall];
+          const nextStep = STEP_SEQUENCE[nextKey];
+          if (nextStep !== undefined) setCurrentStep(nextStep);
+        }
+
         schedulePoll(1000);
         return;
       }
 
-      // 🌟 PAUSE LOGIC: Paused AND robot finished → show Continue button
-      if (paused && !data.running) {
+      // IDLE FALLBACK
+      if (!data.running && data.doneWall !== null) {
+        const wallDone = data.doneWall;
+        const nextKey = NEXT_KEY_FOR_WALL[wallDone];
+        const nextStep = STEP_SEQUENCE[nextKey];
+        if (nextStep !== undefined) setCurrentStep(nextStep);
         schedulePoll(1500);
         return;
       }
 
-      // PHASE BREAK: Wall 4 → Placement 2
-      if (phase1BreakPendingRef.current) {
-        const wall4Step = wallToStep(4);
-        if (stepNow === wall4Step && !data.running) {
-          setCurrentStep(4);
-          setPaused(true);
-          phase1BreakPendingRef.current = false;
-          clearPolling();
-          return;
-        }
-      }
-
-      // PHASE COMPLETE: Wall 1 → Marking Complete
-      if (phase2CompletePendingRef.current) {
-        const wall1Step = wallToStep(1);
-        if (stepNow === wall1Step && !data.running) {
-          setCurrentStep(8);
-          setPaused(true);
-          phase2CompletePendingRef.current = false;
-          clearPolling();
-          return;
-        }
-      }
-
-      // Continue polling if not done
-      if (!isFinalStep) {
-        schedulePoll(2000);
-      } else {
-        clearPolling();
-      }
-
-    } catch (err) {
-      console.error("Polling error:", err);
-      setStatus("error");
+      schedulePoll(1500);
+    } catch {
       schedulePoll(3000);
     }
   };
 
   // --------------------------------------------------------
-  // USER ACTION (Next)
+  // NEXT BUTTON
   // --------------------------------------------------------
   const handlePlacementNext = () => {
     if (currentStep === 0) startPhaseOne();
@@ -289,35 +358,26 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
   // INSTRUCTION TEXT
   // --------------------------------------------------------
   const getInstruction = () => {
-    if (currentStep === 0)
-      return <>Position robot for <b>Wall 2</b>. Press Next.</>;
-    if (currentStep === 4)
-      return <>Reposition robot for <b>Wall 1</b>. Press Next.</>;
+    if (currentStep === 0) return <>Position robot for <b>Wall 2</b>. Press Next.</>;
+    if (currentStep === 4) return <>Reposition robot for <b>Wall 1</b>. Press Next.</>;
+
     if (currentStep >= 1 && currentStep <= 3)
       return <>Currently marking <b>Wall {currentStep + 1}</b>.</>;
+
     if (currentStep >= 5 && currentStep <= 7) {
       const w = currentStep === 5 ? 5 : currentStep === 6 ? 6 : 1;
       return <>Currently marking <b>Wall {w}</b>.</>;
     }
-    if (currentStep === 8)
-      return <>Marking complete! You may turn off the robot.</>;
+
+    if (currentStep === 8) return <>Marking complete!</>;
     return <>...</>;
   };
 
-  // --------------------------------------------------------
-  // EXIT
-  // --------------------------------------------------------
-  const handleExit = () => {
-    try {
-      window.close();
-      setTimeout(() => {
-        alert("If the window did not close automatically, please close manually.");
-      }, 300);
-    } catch {
-      alert("Please close the window manually.");
-    }
-  };
+  const handleExit = () => window.close();
 
+  // --------------------------------------------------------
+  // CLEAN UP ON UNMOUNT
+  // --------------------------------------------------------
   useEffect(() => {
     mountedRef.current = true;
     return () => {
@@ -327,7 +387,7 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
   }, []);
 
   // --------------------------------------------------------
-  // RENDER UI
+  // UI RENDER
   // --------------------------------------------------------
   return (
     <>
@@ -344,7 +404,7 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
       </div>
 
       <div className="flex flex-row gap-6 justify-center">
-        {/* IMG */}
+        {/* MAIN IMAGE */}
         <div className="card bg-base-100 shadow-md max-w-2xl">
           <img
             src={STEP_IMAGES[currentStep]}
@@ -352,44 +412,72 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
           />
         </div>
 
-        {/* SIDE PANEL */}
+        {/* RIGHT PANEL */}
         <div className="flex flex-col justify-between w-[420px]">
           <div className="menu bg-base-200 rounded-box p-5 shadow-md">
             <p className="text-2xl font-semibold">Instructions:</p>
             <p className="text-xl mt-2">{getInstruction()}</p>
-            <p className="text-xl mt-2 text-red-500">{errorMessage}</p>
+
+            {errorMessage && (
+              <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
+            )}
           </div>
 
-          <div className="flex flex-col items-center mt-4 gap-4">
-            
-            {/* Placement steps */}
-            {(currentStep === 0 || currentStep === 4) && !isFinalStep && (
+          {/* HOME CHECK TABLE */}
+          {(currentStep === 0 || currentStep === 4) &&
+            homeCheckRows.length > 0 && (
+              <div className="bg-white rounded-xl shadow-lg mt-4 overflow-hidden">
+                <table className="w-full text-sm text-black">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-4 py-2 text-left">Axis</th>
+                      <th className="px-4 py-2 text-right">Current</th>
+                      <th className="px-4 py-2 text-right">Target</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {homeCheckRows.map((row) => (
+                      <tr key={row.axis} className="border-t border-gray-200">
+                        <td className="px-4 py-2 font-semibold">{row.axis}</td>
+                        <td className="px-4 py-2 text-right">
+                          {row.current !== undefined
+                            ? Number(row.current).toFixed(3) + "°"
+                            : "-"}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          {Number(row.target).toFixed(3) + "°"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+          <div className="flex flex-col items-center mt-6 gap-4">
+            {(currentStep === 0 || currentStep === 4) && (
               <button className="btn btn-primary px-6 py-3" onClick={handlePlacementNext}>
                 Next
               </button>
             )}
 
-            {/* PAUSE BUTTON */}
             {isMarkingStep(currentStep) && !paused && (
               <button className="btn btn-warning px-6 py-3" onClick={pauseMarking}>
                 Pause
               </button>
             )}
 
-            {/* CONTINUE BUTTON */}
             {isMarkingStep(currentStep) && paused && (
               <button className="btn btn-success px-6 py-3" onClick={resumeMarking}>
                 Continue
               </button>
             )}
 
-            {/* FINAL EXIT */}
             {isFinalStep && (
               <button className="btn btn-error px-6 py-3 text-white" onClick={handleExit}>
                 Exit
               </button>
             )}
-
           </div>
         </div>
       </div>
