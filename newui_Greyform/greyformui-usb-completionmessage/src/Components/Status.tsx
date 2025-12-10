@@ -61,7 +61,7 @@ const views = {
     primaryText: "Start",
     showSpinner: false,
   },
-   detect_PBU: {
+  detect_PBU: {
     title: "Start Menu",
     variant: "primary",
     primaryText: "Start",
@@ -135,127 +135,131 @@ export default function Status() {
   const [jointTarget, setJointTarget] = useState<any | null>(null);
   const [walls, setWalls] = useState<WallInfo[]>([]);
   const [maxWall, setMaxWall] = useState<number | null>(null);
-  const [currentWall, setCurrentWall] = useState<number>(1)
+  const [currentWall, setCurrentWall] = useState<number>(1);
 
   const [autoBootStatus, setAutoBootStatus] = useState<
     "idle" | "booting" | "ok" | "error"
   >("idle");
   const [autoBootError, setAutoBootError] = useState<string | null>(null);
-  
-interface JointTargetResponse {
-  ok: boolean;
-  jointtarget: any;
-}
 
-const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
-const [pathByFilename, setPathByFilename] = useState<Record<string, string>>({});
-async function handleGetDirectory() {
-  try {
-    const res = await axios.get(`${API_BASE_URL}/getdirectory`);
-
-    if (!res.data.ok) {
-      console.error("Backend returned not ok");
-      return;
-    }
-
-    const lines: string[] = res.data.data || [];
-
-    // Accept any "found" format
-    const entries: FileEntry[] = lines
-      .filter((line) => line.toLowerCase().includes("found"))
-      .map((line) => {
-        // remove "found", "found :", "found file:" etc.
-        const fullPath = line.replace(/found\s*\w*\s*:?/i, "").trim();
-
-        const filename = fullPath.split("/").pop() || fullPath;
-
-        return { filename, fullPath };
-      });
-
-    setFileEntries(entries);
-
-    // filename -> path map
-    const map: Record<string, string> = {};
-    for (const e of entries) map[e.filename] = e.fullPath;
-    setPathByFilename(map);
-
-  } catch (err) {
-    console.error("getdirectory error:", err);
+  interface JointTargetResponse {
+    ok: boolean;
+    jointtarget: any;
   }
-}
 
-async function getRobotJointTarget(): Promise<any> {
-  console.log("API triggered at /jointtarget/connection");
-  try {
-    const res = await axios.get(`${API_BASE_URL}/jointtarget/connection`);
-    console.log("JOINTTARGET RAW RESPONSE:", res.data);
+  const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
+  const [pathByFilename, setPathByFilename] = useState<Record<string, string>>(
+    {}
+  );
+
+  // NEW: remember which Excel has already been processed by detectwalls
+  const [processedExcel, setProcessedExcel] = useState<string | null>(null);
+
+  async function handleGetDirectory() {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/getdirectory`);
+
+      if (!res.data.ok) {
+        console.error("Backend returned not ok");
+        return;
+      }
+
+      const lines: string[] = res.data.data || [];
+
+      const entries: FileEntry[] = lines
+        .filter((line) => line.toLowerCase().includes("found"))
+        .map((line) => {
+          const fullPath = line.replace(/found\s*\w*\s*:?/i, "").trim();
+          const filename = fullPath.split("/").pop() || fullPath;
+          return { filename, fullPath };
+        });
+
+      setFileEntries(entries);
+
+      const map: Record<string, string> = {};
+      for (const e of entries) map[e.filename] = e.fullPath;
+      setPathByFilename(map);
+    } catch (err) {
+      console.error("getdirectory error:", err);
+    }
+  }
+
+  async function getRobotJointTarget(): Promise<any> {
+    console.log("API triggered at /jointtarget/connection");
+    try {
+      const res = await axios.get(`${API_BASE_URL}/jointtarget/connection`);
+      console.log("JOINTTARGET RAW RESPONSE:", res.data);
+      return res.data;
+    } catch (err) {
+      setAppState("home_verified");
+      return { ok: false, data: [] };
+    }
+  }
+
+  interface ReadDirectoryResponse {
+    ok: boolean;
+    data: string[];
+  }
+  interface WallRow {
+    [key: string]: any;
+  }
+
+  interface WallInfo {
+    wall: string;
+    count: number;
+    rows: WallRow[];
+  }
+
+  const [directory, setDirectory] = useState<string>("");
+  async function readDirectory(): Promise<ReadDirectoryResponse> {
+    console.log("readDirectoryAPI triggered!");
+    const res = await axios.post<ReadDirectoryResponse>(
+      `${API_BASE_URL}/read_directory`
+    );
+    if (res.data?.ok) {
+      console.log(res.data);
+      setAppState("home_position_setup");
+    } else {
+      console.log(res.data);
+    }
     return res.data;
-  } catch (err) {
-    setAppState("home_verified")
-    return { ok: false, data: [] };
   }
-}
 
-interface ReadDirectoryResponse {
-  ok: boolean;
-  data: string[];
-}
-interface WallRow {
-  [key: string]: any;
-}
+  const [excelfile, setExcelfile] = useState<string>(
+    "/root/catkin_ws/newui_Greyform/TERRAHL2-FP-MB-T1am(JMB)_out.xlsx"
+  );
+  const [excelFiles, setExcelFiles] = useState<string[]>([]);
+  const [meshfile, setMeshfile] = useState<string>("SIMTech_L_PBU.stl");
+  const [file_direct, set_file_direct] = useState<string>(
+    "/home/ros_user/catkin_ws/"
+  );
 
-interface WallInfo {
-  wall: string;
-  count: number;
-  rows: WallRow[];
-}
+  type WallRowDict = { [key: string]: string };
+  interface FileExecuteResult {
+    folder: string;
+    excelFile: string;
+    excelFiles: string[]; 
+    maxWall: number;
+    allWalls: number[];
+    wallRows: Record<number, number>;
+    wallDetails: Record<number, WallRowDict[]>;
+    rawLines: string[];
+  }
 
-const [directory, setDirectory] = useState<string>("");
-async function readDirectory(): Promise<ReadDirectoryResponse> {
-  console.log("readDirectoryAPI triggered!")
-  const res = await axios.post<ReadDirectoryResponse>(`${API_BASE_URL}/read_directory`);
-  if (res.data?.ok){ 
-    console.log(res.data)
-    setAppState("home_position_setup")} 
-  else{
-    console.log(res.data)
+  useEffect(() => {
+    if (appState === "select_PBU") {
+      (async () => {
+        await handleGetDirectory();
+      })();
     }
-  return res.data
-}
-const [excelfiletest, setExcelfiletest] = useState<string>(
-  "/root/catkin_ws/newui_Greyform/TERRAHL2-FP-MB-T1am(JMB)_out.xlsx"
-);
-const [excelfile, setExcelfile] = useState<string>(
-  "/home/ros_user/catkin_ws/TERRAHL2_wall_2.xlsx"
-);
-const [meshfile, setMeshfile] = useState<string>(
-  "SIMTech_L_PBU.stl"
-);
-const [file_direct , set_file_direct] = useState<string>(
-  "/home/ros_user/catkin_ws/"
-);
-type WallRowDict = { [key: string]: string };
-interface FileExecuteResult {
-  folder : string;
-  excelFile: string;
-  maxWall: number;
-  allWalls: number[];
-  wallRows: Record<number, number>;
-  wallDetails: Record<number, WallRowDict[]>;
-  rawLines: string[];
-}
-useEffect(() => {
-  if (appState === "select_PBU") {
-    (async () => {
-      await handleGetDirectory();
-    })();
-  }
-}, [appState]);
-const [allWalls, setAllWalls] = useState<number[]>([]);
-const [wallRows, setWallRows] = useState<Record<number, number>>({});
-const [wallDetails, setWallDetails] =
-  useState<Record<number, WallRowDict[]>>({})
-async function handleFileExecute(excelPath: string): Promise<FileExecuteResult> {
+  }, [appState]);
+
+  const [allWalls, setAllWalls] = useState<number[]>([]);
+  const [wallRows, setWallRows] = useState<Record<number, number>>({});
+  const [wallDetails, setWallDetails] =
+    useState<Record<number, WallRowDict[]>>({});
+
+  async function handleFileExecute(excelPath: string): Promise<FileExecuteResult> {
   console.log("➡ handleFileExecute() starting with:", excelPath);
 
   const res = await axios.post(`${API_BASE_URL}/file_execute_data`, {
@@ -264,7 +268,14 @@ async function handleFileExecute(excelPath: string): Promise<FileExecuteResult> 
 
   const lines: string[] = res.data.data || [];
 
+  // ---------------------------------------------
+  // NEW: array of excel files
+  // ---------------------------------------------
+  const excelFiles: string[] = [];
+
+  // keep your existing variable (but it's no longer the only one)
   let excelFile = excelPath;
+
   let folder = "";
   let maxWall = 0;
   let allWalls: number[] = [];
@@ -275,28 +286,29 @@ async function handleFileExecute(excelPath: string): Promise<FileExecuteResult> 
   let currentBlock: string[] = [];
 
   // ---------------------------------------------------------
-  // 1. FIRST PASS – PARSE TOP-LEVEL INFO (folder, maxwall, etc.)
+  // 1. FIRST PASS – PARSE TOP-LEVEL INFO
   // ---------------------------------------------------------
   for (const rawLine of lines) {
     const line = (rawLine ?? "").trim();
 
-    // Folder:
     if (line.startsWith("Folder:")) {
       folder = line.replace("Folder:", "").trim();
     }
 
-    // ExcelFile:
+    // ---------------------------------------------
+    // NEW: collect ALL Working Excel paths
+    // ---------------------------------------------
     if (line.startsWith("Working Excel:")) {
-      excelFile = line.replace("Working Excel:", "").trim();
+      const path = line.replace("Working Excel:", "").trim();
+      excelFiles.push(path);  // store multiple files
+      excelFile = path;       // keep latest for backward compatibility
     }
 
-    // MaxWall:
     if (line.startsWith("MaxWall") || line.startsWith("Max wall number:")) {
       const parts = line.split(":");
       if (parts.length >= 2) maxWall = Number(parts[1].trim());
     }
 
-    // All walls:
     if (line.startsWith("Walls Found") || line.startsWith("All walls found:")) {
       const match = line.match(/\[(.*)\]/);
       if (match) {
@@ -307,16 +319,14 @@ async function handleFileExecute(excelPath: string): Promise<FileExecuteResult> 
       }
     }
 
-    // Wall summary:
+    // Wall X — Y rows
     const upper = line.toUpperCase();
     if (upper.includes("WALL") && upper.includes("ROWS")) {
-      // Example: "Wall 1 → 16 rows"
       const nums = line.match(/\d+/g);
       if (nums && nums.length >= 2) {
         const wallNum = Number(nums[0]);
         const rowCount = Number(nums[1]);
 
-        // Close previous block
         if (currentWall !== null && currentBlock.length > 0) {
           wallLines[currentWall] = currentBlock;
         }
@@ -328,11 +338,9 @@ async function handleFileExecute(excelPath: string): Promise<FileExecuteResult> 
       }
     }
 
-    // Collect block lines
     if (currentWall !== null) currentBlock.push(line);
   }
 
-  // Final block
   if (currentWall !== null && currentBlock.length > 0) {
     wallLines[currentWall] = currentBlock;
   }
@@ -351,7 +359,6 @@ async function handleFileExecute(excelPath: string): Promise<FileExecuteResult> 
       let clean = (raw ?? "").trim();
       if (!clean) continue;
 
-      // Row start: "Row 1:"
       const rm = clean.match(/^Row\s+(\d+):/i);
       if (rm) {
         if (currentRow) rows.push(currentRow);
@@ -361,7 +368,6 @@ async function handleFileExecute(excelPath: string): Promise<FileExecuteResult> 
 
       if (!currentRow) continue;
 
-      // Key-value pairs: "Marking Type: Tiles Point"
       const kv = clean.match(/^(.+?):\s*(.*)$/);
       if (kv) {
         const key = kv[1].trim();
@@ -375,11 +381,12 @@ async function handleFileExecute(excelPath: string): Promise<FileExecuteResult> 
   }
 
   // ---------------------------------------------------------
-  // Return FINAL structured result
+  // RETURN (now includes excelFiles array)
   // ---------------------------------------------------------
   return {
-    folder,        // NEW
-    excelFile,
+    folder,
+    excelFile,     // still available (last one)
+    excelFiles,    // ⭐ NEW: ARRAY OF ALL Working Excel
     maxWall,
     allWalls,
     wallRows,
@@ -388,60 +395,78 @@ async function handleFileExecute(excelPath: string): Promise<FileExecuteResult> 
   };
 }
 
-
-async function handleStartLayout(maxWallValue: number | null) {
-  console.log("➡️ Starting layout with maxWall =", maxWallValue);
-  if (maxWallValue === null) {
-    console.warn("⚠ No maxWall yet, cannot start layout");
-    setError("Excel file is missing Wall Number column");
-    setAppState("error");
-    return;
-  }
-  if (maxWallValue === 4) {
-    setAppState("four_wall_flow");
-  } else if (maxWallValue === 6) {
-    setAppState("six_wall_flow");
-  } else {
-    console.error("❌ Unsupported wall count:", maxWallValue);
-    setError(`Excel contains invalid wall count: ${maxWallValue}`);
-    setAppState("error");
-  }
-}
-
-const handleFileExecuteAndStartLayout = async (excelPath: string) => {
-  console.log("▶ handleFileExecuteAndStartLayout:", excelPath);
-
-  if (!excelPath) {
-    console.error("❌ handleFileExecuteAndStartLayout called with undefined filepath");
-    setError("Missing Excel file path");
-    setAppState("error");
-    return;
+  async function handleStartLayout(maxWallValue: number | null) {
+    console.log("➡️ Starting layout with maxWall =", maxWallValue);
+    if (maxWallValue === null) {
+      console.warn("⚠ No maxWall yet, cannot start layout");
+      setError("Excel file is missing Wall Number column");
+      setAppState("error");
+      return;
+    }
+    if (maxWallValue === 4) {
+      setAppState("four_wall_flow");
+    } else if (maxWallValue === 6) {
+      setAppState("six_wall_flow");
+    } else {
+      console.error("❌ Unsupported wall count:", maxWallValue);
+      setError(`Excel contains invalid wall count: ${maxWallValue}`);
+      setAppState("error");
+    }
   }
 
-  try {
-    const result = await handleFileExecute(excelPath);
+  const handleFileExecuteAndStartLayout = async (excelPath: string) => {
+    console.log("▶ handleFileExecuteAndStartLayout:", excelPath);
 
-    // store updated Excel file (backend may rewrite it)
-    set_file_direct(result.folder)
-    setExcelfile(result.excelFile);
-    setMaxWall(result.maxWall);
-    setAllWalls(result.allWalls);
-    setWallRows(result.wallRows);
-    setWallDetails(result.wallDetails);
-    console.log(result.folder);
-    console.log(result.excelFile);
-    console.log(result.maxWall);
-    console.log(result.wallRows);
-    console.log(result.wallDetails[1][0]);
-    await handleStartLayout(result.maxWall);
+    if (!excelPath) {
+      console.error("❌ handleFileExecuteAndStartLayout called with undefined filepath");
+      setError("Missing Excel file path");
+      setAppState("error");
+      return;
+    }
 
-  } catch (err) {
-    console.error("❌ Failed to execute file:", err);
-    setError(err instanceof Error ? err.message : String(err));
-    setAppState("error");
-  }
-};
+    // ✅ If this Excel has already been processed, DO NOT run detectwalls again.
+    // This prevents extra "_out1_out" folder creation & keeps wallDetails intact.
+    if (processedExcel === excelPath && maxWall !== null) {
+      console.log("🔁 Re-using cached detectwalls result for:", excelPath);
+      console.log("   cached folder =", file_direct);
+      console.log("   cached maxWall =", maxWall);
+      console.log("   cached wallDetails keys =", Object.keys(wallDetails));
+      await handleStartLayout(maxWall);
+      return;
+    }
 
+    try {
+      const result = await handleFileExecute(excelPath);
+
+      // mark this Excel as processed (note: backend may rewrite excelFile path)
+      setProcessedExcel(result.excelFile);
+
+      set_file_direct(result.folder);
+      setExcelFiles(result.excelFiles)
+      setExcelfile(result.excelFile);
+      setMaxWall(result.maxWall);
+      setAllWalls(result.allWalls);
+      setWallRows(result.wallRows);
+      setWallDetails(result.wallDetails);
+
+      console.log("📂 folder:", result.folder);
+      console.log(result.excelFiles)
+      console.log("📄 excelFile:", result.excelFile);
+      console.log("🔢 maxWall:", result.maxWall);
+      console.log("📊 wallRows:", result.wallRows);
+      if (result.wallDetails[1]?.[0]) {
+        console.log("🧱 wallDetails[1][0]:", result.wallDetails[1][0]);
+      } else {
+        console.log("⚠ no wallDetails[1][0]");
+      }
+
+      await handleStartLayout(result.maxWall);
+    } catch (err) {
+      console.error("❌ Failed to execute file:", err);
+      setError(err instanceof Error ? err.message : String(err));
+      setAppState("error");
+    }
+  };
 
   return (
     <>
@@ -455,29 +480,8 @@ const handleFileExecuteAndStartLayout = async (excelPath: string) => {
             <div className="max-w-max space-y-5">
               <h1 className="text-4xl md:text-5xl font-bold">{v.title}</h1>
 
-              <div className="text-sm opacity-80">
-                {autoBootStatus === "booting" && (
-                  <span className="text-blue-300">
-                    Starting ROS & listener…
-                  </span>
-                )}
-                {autoBootStatus === "ok" && (
-                  <span className="text-green-300">
-                    ROS & listener ready ✅
-                  </span>
-                )}
-                {autoBootStatus === "error" && (
-                  <span className="text-red-300">
-                    Auto boot error: {autoBootError}
-                  </span>
-                )}
-              </div>
-
               {appState === "detect_PBU" && (
-                <DetectPBU
-                  v={v}
-                  searchFilePath={readDirectory}
-                />
+                <DetectPBU v={v} searchFilePath={readDirectory} />
               )}
 
               {appState === "select_PBU" && (
@@ -488,45 +492,50 @@ const handleFileExecuteAndStartLayout = async (excelPath: string) => {
 
                     const selectedPath = file.fullPath;
 
-                    // keep in state if other parts of the app use it
                     setExcelfile(selectedPath);
-
                     console.log("Selected PBU Excel:", selectedPath);
 
-                    // 🔹 run your flow using the selected file
                     await handleFileExecuteAndStartLayout(selectedPath);
 
-                    // then move to the next step
                     setAppState("home_position_setup");
                   }}
                 />
               )}
 
+              {/*
+                {appState === "home_position_setup" && (
+                  <HomePositionCheck
+                    ABBHOMEImage={ABBHOMEImage}
+                    RobotPowerONOutside={RobotPowerONOutside}
+                    v={v}
+                    verifyHomePosition={getRobotJointTarget}
+                    onHomeVerified={() => setAppState("home_verified")}
+                  />
+                )}
+                */}
               {appState === "home_position_setup" && (
-                <HomePositionCheck
-                  ABBHOMEImage={ABBHOMEImage}
-                  RobotPowerONOutside={RobotPowerONOutside}
-                  v={v}
-                  verifyHomePosition={getRobotJointTarget}
-                  // NEW: update app state once HOME is verified
-                  onHomeVerified={() => setAppState("home_verified")}
-                />
+                <>
+                  {/** AUTO SKIP HOME CHECK */}
+                  {setAppState("home_verified")}
+                </>
               )}
 
               {appState === "home_verified" && (
                 <HomeVerified
-                    pushRobotIntoPBUImage={pushRobotIntoPBUImage}
-                    FlexPendantImage={FlexPendantImage}
-                    RobotPowerOFFOutside={RobotPowerOFFOutside}
-                    RobotPowerONInside={RobotPowerONInside}
-                    v={v}
-                    onNext={() => handleFileExecuteAndStartLayout(excelfile)}
-                  />
+                  pushRobotIntoPBUImage={pushRobotIntoPBUImage}
+                  FlexPendantImage={FlexPendantImage}
+                  RobotPowerOFFOutside={RobotPowerOFFOutside}
+                  RobotPowerONInside={RobotPowerONInside}
+                  v={v}
+                  onNext={() => handleFileExecuteAndStartLayout(excelfile)}
+                />
               )}
 
               {appState === "error" && (
                 <div className="text-red-400">
-                  <h2 className="text-2xl font-bold mb-2">{error ?? "Unknown error"}</h2>
+                  <h2 className="text-2xl font-bold mb-2">
+                    {error ?? "Unknown error"}
+                  </h2>
                 </div>
               )}
             </div>
@@ -539,9 +548,14 @@ const handleFileExecuteAndStartLayout = async (excelPath: string) => {
       )}
 
       {appState === "six_wall_flow" && (
-        <SixWallFlow wallDetails={wallDetails} maxWall={maxWall ?? 0} excelfile={excelfile} meshfile={meshfile} folderdirectory={file_direct} />
+        <SixWallFlow
+          wallDetails={wallDetails}
+          maxWall={maxWall ?? 0}
+          excelFiles={excelFiles}
+          meshfile={meshfile}
+          folderdirectory={file_direct}
+        />
       )}
     </>
   );
-
 }

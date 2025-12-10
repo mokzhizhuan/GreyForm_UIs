@@ -25,6 +25,7 @@ interface MarkingStatusResponse {
   meshFile?: string;
   folder?: string;
   lineCount?: number;
+  rowTotals?: Record<number, number>;
 }
 
 interface WallRow {
@@ -66,6 +67,7 @@ const STEP_IMAGES = [
   wallMarking2,
 ];
 
+// Map wall → step index
 const STEP_SEQUENCE: Record<number | string, number> = {
   2: 1,
   3: 2,
@@ -77,6 +79,7 @@ const STEP_SEQUENCE: Record<number | string, number> = {
   DONE: 8,
 };
 
+// Next wall mapping
 const NEXT_KEY_FOR_WALL: Record<number, number | "P2" | "DONE"> = {
   2: 3,
   3: 4,
@@ -100,7 +103,6 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
   const [status, setStatus] = useState<StepStatus>("idle");
   const [paused, setPaused] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [autoCompletedWall, setAutoCompletedWall] = useState<number | null>(null);
 
   const pollingRef = useRef<number | null>(null);
   const mountedRef = useRef(false);
@@ -112,11 +114,11 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
     currentStepRef.current = currentStep;
   }, [currentStep]);
 
-  const isMarkingStep = (step: number) => [1, 2, 3, 5, 6, 7].includes(step);
+  const isMarkingStep = (step: number) =>
+    [1, 2, 3, 5, 6, 7].includes(step);
 
   const clearPolling = () => {
     if (pollingRef.current) clearTimeout(pollingRef.current);
-    pollingRef.current = null;
   };
 
   const schedulePoll = (ms = 1500) => {
@@ -130,8 +132,8 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
   // --------------------------------------------------------
   const normalizedDetails: Record<string, WallRow[]> = {};
   for (const [key, rows] of Object.entries(wallDetails)) {
-    const match = key.match(/\d+/);
-    const label = match ? `wall_${match[0]}` : key;
+    const m = key.match(/\d+/);
+    const label = m ? `wall_${m[0]}` : key;
     normalizedDetails[label] = rows ?? [];
   }
 
@@ -139,117 +141,60 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
     normalizedDetails[`wall_${wallNum}`]?.length ?? 0;
 
   // --------------------------------------------------------
-// API: PAUSE / RESUME
-// --------------------------------------------------------
-const pauseMarking = async () => {
-  try {
-    await axios.post(`${API_BASE_URL}/marking/pause`);
-    setPaused(true);
-    schedulePoll(500);   // refresh quickly
-  } catch (err) {
-    console.error("Pause failed:", err);
-    setErrorMessage("Failed to pause marking.");
-  }
-};
-
-const resumeMarking = async () => {
-  try {
-    await axios.post(`${API_BASE_URL}/marking/continue`);
-    setPaused(false);
-    schedulePoll(500);
-  } catch (err) {
-    console.error("Resume failed:", err);
-    setErrorMessage("Failed to resume marking.");
-  }
-};
-
-  // --------------------------------------------------------
-  // HOME CHECK (DO NOT MODIFY THIS BLOCK)
+  // HOME CHECK LOGIC
   // --------------------------------------------------------
   const [homeCurrentRax, setHomeCurrentRax] = useState<Record<string, number> | null>(null);
   const [homeTargetJoints, setHomeTargetJoints] = useState<Record<string, number> | null>(null);
 
-  const requestHomeCheck = async (phase: number): Promise<boolean> => {
+  const requestHomeCheckForWall = async (label: string) => {
     try {
-      const res = await axios.post(`${API_BASE_URL}/marking/homecheck`, { phase });
+      const res = await axios.post(`${API_BASE_URL}/marking/homecheck`, {
+        target: label,
+      });
 
-      console.log("JOINTTARGET RAW RESPONSE:", res.data);
+      const raw = res.data.output ?? "";
+      const arr = raw.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 
-      const output: string = res.data.output ?? "";
-      const arr = output
-        .split(/\r?\n/)
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-      console.log("PARSED LINES:", arr);
-
-      const raxLine = arr.find((line) => line.includes("rax_1"));
+      const raxLine = arr.find(l => l.includes("rax_1"));
       if (raxLine) {
         try {
-          const cleaned = raxLine
-            .trim()
-            .replace(/^"+|"+$/g, "")
-            .replace(/^'+|'+$/g, "")
-            .replace(/'/g, '"');
-          console.log("CLEANED RAX:", cleaned);
-          setHomeCurrentRax(JSON.parse(cleaned));
-        } catch (e) {
-          console.warn("Failed to parse RAX JSON:", raxLine, e);
-        }
+          setHomeCurrentRax(JSON.parse(raxLine.replace(/'/g, '"')));
+        } catch {}
       }
 
-      const targetLine = arr.find((line) => line.includes("j0"));
+      const targetLine = arr.find(l => l.includes("j0"));
       if (targetLine) {
         try {
-          const cleaned = targetLine
-            .trim()
-            .replace(/^"+|"+$/g, "")
-            .replace(/^'+|'+$/g, "")
-            .replace(/'/g, '"');
-          console.log("CLEANED TARGET:", cleaned);
-          setHomeTargetJoints(JSON.parse(cleaned));
-        } catch (e) {
-          console.warn("Failed to parse poses.json:", targetLine, e);
-        }
+          setHomeTargetJoints(JSON.parse(targetLine.replace(/'/g, '"')));
+        } catch {}
       }
 
-      const last = arr[arr.length - 1]?.trim();
-      const inHome = last === "True";
+      const last = arr[arr.length - 1];
+      const ok = last === "True";
 
-      if (!inHome) {
-        setErrorMessage("Robot is NOT in HOME position. Please move robot to HOME and try again.");
-      } else {
-        setErrorMessage(null);
-      }
+      if (!ok) setErrorMessage("Robot NOT in HOME position");
 
-      return inHome;
-    } catch (err) {
-      console.error("Home check failed:", err);
-      setErrorMessage("Home check failed. Please try again.");
+      return ok;
+    } catch {
+      setErrorMessage("Home check failed.");
       return false;
     }
   };
 
-  // --------------------------------------------------------
-  // BUILD TABLE ROWS
-  // --------------------------------------------------------
   const homeCheckRows =
     homeCurrentRax && homeTargetJoints
-      ? Object.entries(homeTargetJoints).map(([key, targetVal], idx) => ({
+      ? Object.entries(homeTargetJoints).map(([key, target], idx) => ({
           axis: key.toUpperCase(),
           current: homeCurrentRax[`rax_${idx + 1}`],
-          target: targetVal,
+          target,
         }))
       : [];
 
   // --------------------------------------------------------
-  // START PHASE 1
+  // START PHASES
   // --------------------------------------------------------
   const startPhaseOne = async () => {
-    /*const ok = await requestHomeCheck(1);
-    if (!ok) return;*/
-
-    const walls = ["wall_2", "wall_3", "wall_4"].map((label) => ({
+    const walls = ["wall_2", "wall_3", "wall_4"].map(label => ({
       wall: label,
       rows: normalizedDetails[label] ?? [],
     }));
@@ -267,14 +212,8 @@ const resumeMarking = async () => {
     schedulePoll(500);
   };
 
-  // --------------------------------------------------------
-  // START PHASE 2
-  // --------------------------------------------------------
   const startPhaseTwo = async () => {
-    /*const ok = await requestHomeCheck(2);
-    if (!ok) return;*/
-
-    const walls = ["wall_5", "wall_6", "wall_1"].map((label) => ({
+    const walls = ["wall_5", "wall_6", "wall_1"].map(label => ({
       wall: label,
       rows: normalizedDetails[label] ?? [],
     }));
@@ -293,13 +232,11 @@ const resumeMarking = async () => {
   };
 
   // --------------------------------------------------------
-  // POLLING — USE BACKEND'S COUNTER ONLY
+  // POLLING
   // --------------------------------------------------------
   const fetchStatus = async () => {
     try {
-      const res = await axios.get<MarkingStatusResponse>(
-        `${API_BASE_URL}/marking/status`
-      );
+      const res = await axios.get<MarkingStatusResponse>(`${API_BASE_URL}/marking/status`);
       const data = res.data;
 
       setPaused(Boolean(data.paused));
@@ -307,47 +244,54 @@ const resumeMarking = async () => {
 
       const stepNow = currentStepRef.current;
 
-      // ACTIVE MARKING
+      // ACTIVE marking
       if (data.running && data.startedWall) {
         const wall = data.startedWall;
+        const total = data.rowTotals?.[wall] ?? getRowCountForWall(wall);
         const lineCount = data.lineCount ?? 0;
-        const total = getRowCountForWall(wall);
+
+        // 🔍 NON-VISIBLE COUNTER (console only)
+        console.log(`Wall ${wall} → ${lineCount} / ${total} points done`);
 
         const stepIdx = STEP_SEQUENCE[wall];
         if (stepIdx !== undefined && stepIdx !== stepNow) {
           setCurrentStep(stepIdx);
         }
 
-        // AUTO-ADVANCE WHEN COMPLETED
-        if (total > 0 && lineCount >= total && autoCompletedWall !== wall) {
-          setAutoCompletedWall(wall);
+        // AUTO MOVE
+        if (lineCount >= total && total > 0) {
+          console.log(`🌟 Auto-advance → wall ${wall}`);
           const nextKey = NEXT_KEY_FOR_WALL[wall];
           const nextStep = STEP_SEQUENCE[nextKey];
           if (nextStep !== undefined) setCurrentStep(nextStep);
         }
 
-        schedulePoll(1000);
+        schedulePoll(3000);
         return;
       }
 
-      // IDLE FALLBACK
+      // IDLE fallback
       if (!data.running && data.doneWall !== null) {
-        const wallDone = data.doneWall;
-        const nextKey = NEXT_KEY_FOR_WALL[wallDone];
+        const w = data.doneWall;
+        console.log(`✅ Backend confirms wall ${w} complete`);
+
+        const nextKey = NEXT_KEY_FOR_WALL[w];
         const nextStep = STEP_SEQUENCE[nextKey];
         if (nextStep !== undefined) setCurrentStep(nextStep);
+
         schedulePoll(1500);
         return;
       }
 
       schedulePoll(1500);
-    } catch {
+    } catch (err) {
+      console.error("Polling error:", err);
       schedulePoll(3000);
     }
   };
 
   // --------------------------------------------------------
-  // NEXT BUTTON
+  // Placement Button
   // --------------------------------------------------------
   const handlePlacementNext = () => {
     if (currentStep === 0) startPhaseOne();
@@ -355,11 +299,14 @@ const resumeMarking = async () => {
   };
 
   // --------------------------------------------------------
-  // INSTRUCTION TEXT
+  // Instructions
   // --------------------------------------------------------
   const getInstruction = () => {
-    if (currentStep === 0) return <>Position robot for <b>Wall 2</b>. Press Next.</>;
-    if (currentStep === 4) return <>Reposition robot for <b>Wall 1</b>. Press Next.</>;
+    if (currentStep === 0)
+      return <>Position robot for <b>Wall 2</b>. Press Next.</>;
+
+    if (currentStep === 4)
+      return <>Reposition robot for <b>Wall 1</b>. Press Next.</>;
 
     if (currentStep >= 1 && currentStep <= 3)
       return <>Currently marking <b>Wall {currentStep + 1}</b>.</>;
@@ -370,13 +317,14 @@ const resumeMarking = async () => {
     }
 
     if (currentStep === 8) return <>Marking complete!</>;
+
     return <>...</>;
   };
 
   const handleExit = () => window.close();
 
   // --------------------------------------------------------
-  // CLEAN UP ON UNMOUNT
+  // MOUNT
   // --------------------------------------------------------
   useEffect(() => {
     mountedRef.current = true;
@@ -387,7 +335,7 @@ const resumeMarking = async () => {
   }, []);
 
   // --------------------------------------------------------
-  // UI RENDER
+  // RENDER UI
   // --------------------------------------------------------
   return (
     <>
@@ -396,7 +344,10 @@ const resumeMarking = async () => {
 
         <ul className="steps w-full max-w-4xl mt-4">
           {STEPS.map((label, i) => (
-            <li key={label} className={i === currentStep ? "step step-primary" : "step"}>
+            <li
+              key={label}
+              className={i === currentStep ? "step step-primary" : "step"}
+            >
               {label}
             </li>
           ))}
@@ -404,7 +355,7 @@ const resumeMarking = async () => {
       </div>
 
       <div className="flex flex-row gap-6 justify-center">
-        {/* MAIN IMAGE */}
+        {/* IMAGE */}
         <div className="card bg-base-100 shadow-md max-w-2xl">
           <img
             src={STEP_IMAGES[currentStep]}
@@ -454,6 +405,7 @@ const resumeMarking = async () => {
               </div>
             )}
 
+          {/* BUTTONS */}
           <div className="flex flex-col items-center mt-6 gap-4">
             {(currentStep === 0 || currentStep === 4) && (
               <button className="btn btn-primary px-6 py-3" onClick={handlePlacementNext}>
