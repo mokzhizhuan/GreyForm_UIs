@@ -162,5 +162,59 @@ def file_execute_data(body: FileExecuBody):
 
     except Exception as e:
         return {"ok": False, "error": str(e), "data": []}
+    
+
+class CombineRequest(BaseModel):
+    folder: str   # full path: /home/ros_user/pbu_data/mockup/PBU_TERRAHL2_out
+
+
+@app.post("/combine_walls")
+def combine_walls(req: CombineRequest):
+
+    # Remote command for SSH
+    remote_cmd = (
+        f"python3 /home/winsys/combine_wall_excels.py '{req.folder}'"
+    )
+
+    cmd = [
+        "sshpass",
+        "-p",
+        "winsys",
+        "ssh",
+        "winsys@192.168.130.5",
+        remote_cmd,
+    ]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=60,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"SSH call failed: {str(e)}"
+        )
+
+    # If SSH failed
+    if result.returncode != 0:
+        raise HTTPException(
+            status_code=500,
+            detail=f"SSH error: {result.stderr.strip()}"
+        )
+
+    # Parse the JSON return from combine_wall_excels.py
+    try:
+        response_data = json.loads(result.stdout.strip())
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Invalid JSON returned from remote script: {result.stdout}"
+        )
+
+    return response_data
 
 

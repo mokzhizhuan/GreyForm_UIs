@@ -544,7 +544,11 @@ export default function Status() {
       )}
 
       {appState === "four_wall_flow" && (
-        <FourWallFlow walls={walls} maxWall={maxWall ?? 0} excelfile={excelfile} />
+        <FourWallFlow wallDetails={wallDetails}
+          maxWall={maxWall ?? 0}
+          excelFiles={excelFiles}
+          meshfile={meshfile}
+          folderdirectory={file_direct}/>
       )}
 
       {appState === "six_wall_flow" && (
