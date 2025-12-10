@@ -440,7 +440,7 @@ useEffect(() => {
                 className="btn btn-primary"
                 onClick={startPhaseOne}
               >
-                Next (Placement 1 → Wall 2)
+                Next 
               </button>
             )}
 
@@ -449,7 +449,7 @@ useEffect(() => {
                 className="btn btn-primary"
                 onClick={startPhaseTwo}
               >
-                Next (Placement 2 → Wall 5)
+                Next
               </button>
             )}
 
