@@ -1,7 +1,14 @@
 # backend/marking_controller.py
-# FINAL VERSION — FALLBACK + POINT-BASED COUNTER
-# Uses "Point ... done" lines to increment wall_line_count,
-# AND keeps 5s fallback in /status for silent robots.
+# FINAL VERSION — EVENT-BASED POINT COUNTER + BRINGUP DETECTION
+# - Uses real robot output, NO time-based fallback.
+# - Bringup success when:
+#       success: True
+#       message: "Service executed successfully"
+# - Point counter increments on:
+#       "Point ... done"
+# - Wall completes when:
+#       point_count == row_totals[wall_id]
+# - On mismatch → error, stay at that wall, wait for Retry from frontend.
 
 import subprocess
 import threading
@@ -9,7 +16,7 @@ import re
 import time
 import os
 import shlex
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -26,22 +33,27 @@ current_process: Optional[subprocess.Popen] = None
 current_wall: Optional[int] = None
 last_completed_wall: Optional[int] = None
 
-wall_queue: List[str] = []
-total_walls: int = 0
-row_totals: dict[int, int] = {}  # {2: 6, 3: 8, 4: 4}
+# Walls sequence & index
+wall_sequence: List[str] = []  # ["wall_2", "wall_3", ...]
+queue_index: int = 0           # index into wall_sequence
 
-excel_file_path: str = ""
+total_walls: int = 0
+row_totals: Dict[int, int] = {}          # {2: 6, 3: 8, 4: 4}
+wall_point_count: Dict[int, int] = {}    # {2: 0, 3: 3, ...}
+bringup_success: Dict[int, bool] = {}    # {2: True/False}
+wall_error: Dict[int, bool] = {}         # {2: True if mismatch/error}
+
+excel_file_path: str = ""   # EXPECTED RELATIVE, e.g. "PBU_TERRAHL2_out/PBU_TERRAHL2_out1.xlsx"
 mesh_file_path: str = ""
-current_folder: str = ""  # not really used now, but kept for completeness
+current_folder: str = ""    # For info/status only
 current_phase: Optional[int] = None
 
 state_lock = threading.Lock()
 event_counter = 0
 
-# robot line counter + fallback timestamps
-wall_line_count: dict[int, int] = {}      # {2: 0, 3: 1, ...}
-fallback_counter: dict[int, float] = {}   # {2: timestamp, ...}
-
+# Raw logs per wall (for /errorlog)
+error_logs: Dict[int, List[str]] = {}
+MAX_LOG_LINES_PER_WALL = 400
 
 # -------------------------------------------------------------------
 # MODELS
@@ -105,12 +117,23 @@ def home_position_check(body: HomeCheckBody):
 
 
 # -------------------------------------------------------------------
-# READER THREAD — ONLY reads output; counting uses "Point ... done"
+# HELPER: append to error_logs[wall_id]
+# -------------------------------------------------------------------
+def _append_log(wall_id: int, line: str):
+    if wall_id not in error_logs:
+        error_logs[wall_id] = []
+    error_logs[wall_id].append(line)
+    # keep only last N lines
+    if len(error_logs[wall_id]) > MAX_LOG_LINES_PER_WALL:
+        error_logs[wall_id] = error_logs[wall_id][-MAX_LOG_LINES_PER_WALL:]
+
+
+# -------------------------------------------------------------------
+# READER THREAD — reads output; decides success/error only by logs
 # -------------------------------------------------------------------
 def reader_thread(proc: subprocess.Popen, wall_id: int):
     global last_completed_wall, current_process, event_counter
-
-    detected_completion = False
+    start_detected = False  # whether we've seen "Service executed successfully"
 
     try:
         if proc.stdout:
@@ -118,96 +141,131 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
                 line = raw.rstrip("\n")
                 print(line)
 
-                # --- POINT-BASED COUNTER ----------------------------------
-                # Any line containing something like:
-                #   "Point 20 is already done. Skipping..."
-                # or generally "Point <num> ... done"
-                done_match = re.search(r"Point\s+(\d+).*done", line, re.IGNORECASE)
-                if done_match:
-                    point_id = done_match.group(1)
-                    with state_lock:
-                        wall_line_count[wall_id] = wall_line_count.get(wall_id, 0) + 1
-                        fallback_counter[wall_id] = time.time()
-                        current_count = wall_line_count[wall_id]
-                        total = row_totals.get(wall_id, 0)
-                        print(
-                            f"[point] Wall {wall_id}: Point {point_id} DONE "
-                            f"({current_count}/{total})"
-                        )
+                # always log
+                with state_lock:
+                    _append_log(wall_id, line)
 
-                # --- OPTIONAL: explicit script completion (if printed) -----
-                wall_match = re.search(r"wall\D*(\d+)", line, re.IGNORECASE)
-                if wall_match:
-                    finished = int(wall_match.group(1))
-                    print(f"✔ COMPLETED SIGNAL: Wall {finished}")
+                # DETECT bringup success
+                if "Service executed successfully" in line:
                     with state_lock:
-                        last_completed_wall = finished
-                        event_counter += 1
-                    detected_completion = True
+                        bringup_success[wall_id] = True
+                    start_detected = True
+                    print(f"[bringup] Wall {wall_id}: service executed successfully")
+
+                # DETECT marking points only AFTER bringup success
+                # Matches lines like "Point 20 is already done. Skipping..."
+                if start_detected and "Point" in line and "done" in line:
+                    with state_lock:
+                        wall_point_count[wall_id] = wall_point_count.get(wall_id, 0) + 1
+                        count = wall_point_count[wall_id]
+                        total = row_totals.get(wall_id, 0)
+                        print(f"[point] Wall {wall_id}: {count}/{total} points done")
 
         proc.wait()
         rc = proc.returncode
         print(f"[controller] Script RC={rc}")
 
-        # IMPORTANT: do NOT auto-complete here if silent.
-        if rc == 0 and not detected_completion:
-            print(
-                f"[info] Script ended for wall {wall_id} without explicit completion. "
-                f"Fallback/point counter will handle progression."
-            )
-    finally:
+        # Decide success vs error based on counts & bringup
+        start_next = False
+
         with state_lock:
             current_process = None
-            # running_flag is controlled by /status when we decide wall is done
+            running_flag.clear()
 
-        # Do NOT start next wall here. Progression handled in /status via fallback.
+            total = row_totals.get(wall_id, 0)
+            count = wall_point_count.get(wall_id, 0)
+            ok_start = bringup_success.get(wall_id, False)
+
+            if rc == 0 and ok_start and total > 0 and count >= total:
+                # ✅ SUCCESSFUL WALL
+                last_completed_wall = wall_id
+                wall_error[wall_id] = False
+                event_counter += 1
+                print(f"[success] Wall {wall_id} COMPLETE ({count}/{total})")
+                # advance queue index
+                global queue_index, current_wall
+                queue_index += 1
+                current_wall = None
+
+                # schedule next wall IF any & not paused
+                if queue_index < len(wall_sequence) and not pause_flag.is_set():
+                    start_next = True
+            else:
+                # ❌ ERROR — either rc!=0, or no bringup success, or insufficient points
+                wall_error[wall_id] = True
+                # Do NOT advance queue_index; stay on same wall
+                current_wall = wall_id
+
+                # add a summary error line
+                msg_parts = []
+                if rc != 0:
+                    msg_parts.append(f"script exit code {rc}")
+                if not ok_start:
+                    msg_parts.append("bringup not successful")
+                if total > 0 and count < total:
+                    msg_parts.append(f"only {count}/{total} points done")
+
+                summary = f"[ERROR] Wall {wall_id}: " + ", ".join(msg_parts) if msg_parts else f"[ERROR] Wall {wall_id}: unknown error"
+                _append_log(wall_id, summary)
+                print(summary)
+
+        if start_next:
+            threading.Thread(target=start_next_wall, daemon=True).start()
+
+    finally:
+        # nothing extra; state handled above
+        pass
 
 
 # -------------------------------------------------------------------
-# START NEXT WALL
+# START NEXT WALL (from wall_sequence[queue_index])
 # -------------------------------------------------------------------
 def start_next_wall():
-    global current_wall, current_process, last_completed_wall
+    global current_wall, current_process, last_completed_wall, queue_index
 
     with state_lock:
         if pause_flag.is_set():
             print("[controller] Paused → stop")
             return
 
-        if not wall_queue:
-            print("[controller] All walls done!")
+        if queue_index >= len(wall_sequence):
+            print("[controller] All walls done! queue_index >= len(wall_sequence)")
             current_wall = None
             running_flag.clear()
             return
 
-        label = wall_queue.pop(0)
-        print(f"[DEBUG] RAW LABEL FROM QUEUE = '{label}'")
+        label = wall_sequence[queue_index]
+        print(f"[DEBUG] QUEUE INDEX={queue_index}, LABEL='{label}'")
 
-        wall_id = int(re.search(r"(\d+)", label).group(1))
+        m = re.search(r"(\d+)", label)
+        if not m:
+            print(f"[ERROR] Invalid wall label: {label}")
+            wall_error[-1] = True
+            return
+
+        wall_id = int(m.group(1))
         current_wall = wall_id
 
         # reset counters for this wall
-        wall_line_count[wall_id] = 0
-        fallback_counter[wall_id] = time.time()
+        wall_point_count[wall_id] = 0
+        bringup_success[wall_id] = False
+        wall_error[wall_id] = False
         last_completed_wall = None
+
+        # DO NOT clear error_logs[wall_id] automatically; keep history
         running_flag.set()
 
-        # we ignore body.folder here for the remote command and use
-        # the fixed /home/ros_user/pbu_data/mockup as requested
-        folder = "/home/ros_user/pbu_data/mockup"
+        # We respect the exact excelfile as provided (relative)
+        excel_rel = excel_file_path  # e.g. "PBU_TERRAHL2_out/PBU_TERRAHL2_out1.xlsx"
 
-        # excel_file_path is already a relative path like
-        #   "PBU_TERRAHL2_out/PBU_TERRAHL2_out1.xlsx"
-        # so we pass it as-is to the remote script
-        excel_rel = excel_file_path
-
-    # Build a single remote command string
+    # Build remote command:
+    #   folder MUST be /home/ros_user/pbu_data/mockup
     remote_command = (
         "cd /home/winsys/pbu_marking_ros && "
         "./run_marking.sh "
         "--stage 2 "
         f"--wall {shlex.quote(label)} "
-        f"--folder {shlex.quote(folder)} "
+        "--folder /home/ros_user/pbu_data/mockup "
         f"--excel {shlex.quote(excel_rel)} "
         f"--mesh {shlex.quote(mesh_file_path)}"
     )
@@ -221,13 +279,21 @@ def start_next_wall():
     print(f"[controller] 🚀 Starting wall {wall_id}")
     print(marking_cmd)
 
-    proc = subprocess.Popen(
-        marking_cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        bufsize=1,
-    )
+    try:
+        proc = subprocess.Popen(
+            marking_cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+        )
+    except Exception as e:
+        with state_lock:
+            current_process = None
+            running_flag.clear()
+            wall_error[wall_id] = True
+            _append_log(wall_id, f"[ERROR] Failed to start marking script: {e}")
+        raise RuntimeError(f"Marking script failed: {e}")
 
     with state_lock:
         current_process = proc
@@ -242,30 +308,34 @@ def start_next_wall():
 # -------------------------------------------------------------------
 @app.post("/start")
 def marking_start(body: MarkingStartBody):
-    global wall_queue, excel_file_path, mesh_file_path
-    global current_phase, total_walls, current_folder
-    global current_wall, last_completed_wall, event_counter, row_totals
+    global wall_sequence, queue_index
+    global excel_file_path, mesh_file_path, current_folder
+    global current_phase, total_walls
+    global current_wall, last_completed_wall, event_counter
+    global row_totals, wall_point_count, bringup_success, wall_error, error_logs
+
+    if not body.walls:
+        raise HTTPException(400, "walls is empty")
 
     with state_lock:
-        # set queue as labels: "wall_2", "wall_3", ...
-        wall_queue = [w.wall.strip() for w in body.walls]
+        wall_sequence = [w.wall.strip() for w in body.walls]
+        queue_index = 0
 
-        # build row_totals from rows length
+        # Build row_totals
         row_totals = {}
         for w in body.walls:
             m = re.search(r"(\d+)", w.wall)
             if m:
-                row_totals[int(m.group(1))] = len(w.rows)
+                wall_id = int(m.group(1))
+                row_totals[wall_id] = len(w.rows)
 
         print("[controller] New Marking Sequence")
-        print("Queue:", wall_queue)
+        print("Sequence:", wall_sequence)
         print("Row totals:", row_totals)
 
-        # we expect body.excelfile to be something like
-        #   "PBU_TERRAHL2_out/PBU_TERRAHL2_out1.xlsx"
-        excel_file_path = body.excelfile
+        excel_file_path = body.excelfile  # MUST be like "PBU_TERRAHL2_out/PBU_TERRAHL2_out1.xlsx"
         mesh_file_path = body.meshfile
-        current_folder = body.folder
+        current_folder = body.folder  # informational
         total_walls = body.max_wall
         current_phase = body.phase
 
@@ -275,17 +345,17 @@ def marking_start(body: MarkingStartBody):
         event_counter += 1
 
         pause_flag.clear()
+        running_flag.clear()
 
-        # initialize counters
-        wall_line_count.clear()
-        fallback_counter.clear()
-        for wid, total in row_totals.items():
-            wall_line_count[wid] = 0
-            fallback_counter[wid] = time.time()
+        # reset per-wall state
+        wall_point_count = {}
+        bringup_success = {}
+        wall_error = {}
+        error_logs = {}
 
     # start first wall
     threading.Thread(target=start_next_wall, daemon=True).start()
-    return {"ok": True, "queue": wall_queue}
+    return {"ok": True, "queue": wall_sequence}
 
 
 # -------------------------------------------------------------------
@@ -300,77 +370,120 @@ def pause():
 @app.post("/continue")
 def resume():
     pause_flag.clear()
-    # if nothing is running but queue has items, start next
     with state_lock:
-        should_start = (current_process is None) and bool(wall_queue)
+        should_start = (current_process is None) and (current_wall is None) and (queue_index < len(wall_sequence))
     if should_start:
         threading.Thread(target=start_next_wall, daemon=True).start()
     return {"resumed": True}
 
 
 # -------------------------------------------------------------------
-# STATUS — point-based + 5s fallback
+# RETRY API — rerun current or selected wall, no auto retry
+# -------------------------------------------------------------------
+@app.post("/retry")
+def retry_wall(wall: Optional[int] = None):
+    """
+    Retry marking for a specific wall.
+    - If ?wall=<id> is absent, retry current_wall (if any).
+    - Does NOT auto-advance; re-runs the same wall.
+    """
+
+    global current_wall, current_process
+
+    with state_lock:
+        if wall is None:
+            if current_wall is None:
+                raise HTTPException(400, "No wall specified and no current wall.")
+            wall_id = current_wall
+        else:
+            wall_id = wall
+
+        # Ensure no process is running
+        if current_process is not None:
+            raise HTTPException(400, "Cannot retry while a process is still running.")
+
+        # Find this wall in sequence; queue_index must point to it
+        label = f"wall_{wall_id}"
+        if label not in wall_sequence:
+            raise HTTPException(400, f"Wall label {label} not in sequence.")
+
+        # Force queue_index to this wall
+        global queue_index
+        queue_index = wall_sequence.index(label)
+
+        # Reset state for that wall
+        wall_point_count[wall_id] = 0
+        bringup_success[wall_id] = False
+        wall_error[wall_id] = False
+        current_wall = None
+        running_flag.clear()
+
+        # Do NOT clear error_logs[wall_id] here; frontend can call /errorlog/clear if wanted
+
+    threading.Thread(target=start_next_wall, daemon=True).start()
+    return {"ok": True, "wall": wall_id, "message": "Retry started."}
+
+
+# -------------------------------------------------------------------
+# STATUS — event-based only (no fallback)
 # -------------------------------------------------------------------
 @app.get("/status")
 def marking_status():
-    global current_wall, last_completed_wall
-
-    should_start_next = False
-
     with state_lock:
-        # Fallback logic: increment current_wall's line count every 5s
-        if current_wall is not None:
-            cw = current_wall
-            total = row_totals.get(cw, 0)
-            lc = wall_line_count.get(cw, 0)
-            now = time.time()
-            last = fallback_counter.get(cw, now)
+        # Choose "active wall" for counters & error reporting
+        active_wall: Optional[int] = current_wall
 
-            # Fallback only if we haven't reached total yet
-            if lc < total and now - last >= 5:
-                lc += 1
-                wall_line_count[cw] = lc
-                fallback_counter[cw] = now
-                print(f"[auto] Wall {cw}: {lc}/{total}")
+        # derive queue (remaining walls after queue_index)
+        remaining_queue = wall_sequence[queue_index + 1 :] if queue_index < len(wall_sequence) else []
 
-            # When this wall is fully done:
-            if total > 0 and lc >= total:
-                if last_completed_wall != cw:
-                    print(f"[auto] Wall {cw} COMPLETE ({lc}/{total})")
-                last_completed_wall = cw
+        has_error = False
+        error_summary: Optional[str] = None
+        point_count = 0
+        total_points = 0
 
-                # mark done + prepare next
-                current_wall = None
-                running_flag.clear()
+        if active_wall is not None:
+            has_error = wall_error.get(active_wall, False)
+            point_count = wall_point_count.get(active_wall, 0)
+            total_points = row_totals.get(active_wall, 0)
+            # optional: last error line as summary
+            lines = error_logs.get(active_wall, [])
+            if lines:
+                error_summary = lines[-1]
+        else:
+            # no active wall; if last_completed_wall had an error, report it
+            if last_completed_wall is not None and wall_error.get(last_completed_wall, False):
+                has_error = True
+                point_count = wall_point_count.get(last_completed_wall, 0)
+                total_points = row_totals.get(last_completed_wall, 0)
+                lines = error_logs.get(last_completed_wall, [])
+                if lines:
+                    error_summary = lines[-1]
 
-                if wall_queue and not pause_flag.is_set():
-                    should_start_next = True
-
-        # Note: folder here is only for returning to client
         folder = current_folder or "/home/ros_user/pbu_data/mockup"
         excel_rel = excel_file_path or ""
 
-        response = {
+        response: Dict[str, Any] = {
             "running": running_flag.is_set(),
             "paused": pause_flag.is_set(),
-            "startedWall": current_wall,
+            "startedWall": active_wall,
             "doneWall": last_completed_wall,
-            "queue": list(wall_queue),
+            "queue": remaining_queue,
             "phase": current_phase,
             "maxWalls": total_walls,
             "excelFile": excel_rel,
             "folder": folder,
             "meshFile": mesh_file_path,
-            "lineCount": wall_line_count.get(current_wall, 0) if current_wall else 0,
+            # use lineCount as "points done"
+            "lineCount": point_count,
+            "totalPoints": total_points,
             "eventID": event_counter,
             "rowTotals": row_totals,
+            "hasError": has_error,
+            "errorSummary": error_summary,
         }
 
-    # Start next wall outside the lock to avoid deadlock
-    if should_start_next:
-        threading.Thread(target=start_next_wall, daemon=True).start()
-
     return response
+
 
 # -------------------------------------------------------------------
 # ERROR LOG API — returns raw log output exactly as printed
@@ -383,7 +496,7 @@ def get_error_log(wall: Optional[int] = None):
     - Else, use current_wall if available.
     """
     with state_lock:
-        wid = wall or current_wall
+        wid = wall if wall is not None else current_wall
 
         if wid is None:
             return {
