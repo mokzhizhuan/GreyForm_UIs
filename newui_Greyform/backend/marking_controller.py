@@ -129,7 +129,7 @@ def home_position_check(body: HomeCheckBody):
         "python3",
         "/home/winsys/pbu_marking_ros/homeposcheck.py",
         "--file", "/home/winsys/pbu_marking_ros/pbu_data/mockup/poses.json",
-        "--target", m,
+        "--target", wall_num,
     ]
 
     print(f"[HomeCheck] Running:", cmd)
@@ -625,3 +625,4 @@ def clear_error_log(wall: Optional[int] = None):
             "wall": wall,
             "message": f"No error log stored for wall {wall}.",
         }
+

@@ -325,6 +325,37 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
       if (pollingRef.current) clearTimeout(pollingRef.current);
     };
   }, []);
+  // --------------------------------------------------------
+// API: Automatically combine all wall Excel files
+// --------------------------------------------------------
+/*const combineWalls = async () => {
+  try {
+    const res = await axios.post(`${API_BASE_URL}/combine_walls`, {
+      folder: folderdirectory,
+    });
+
+    console.log("📦 /combine_walls response:", res.data);
+
+    if (!res.data.ok) {
+      setErrorMessage("Combine Walls failed: " + res.data.message);
+      return;
+    }
+
+    console.log(`✅ Combined log created: ${res.data.log_file}`);
+  } catch (err) {
+    console.error("❌ Combine walls failed", err);
+    setErrorMessage("Unable to combine wall Excel files.");
+  }
+};
+// --------------------------------------------------------
+// AUTO-COMBINE WHEN MARKING COMPLETES
+// --------------------------------------------------------
+useEffect(() => {
+  if (currentStep === 8) {
+    console.log("🎉 All walls complete → combining Excel logs automatically...");
+    combineWalls();
+  }
+}, [currentStep]);*/
 
   // -------------------------------------------------------
   // UI HELPERS
@@ -375,8 +406,7 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
           </div>
           
           {/* HOME CHECK TABLE */}
-          {/*{(currentStep === 0 || currentStep === 4) &&
-            homeCheckRows.length > 0 || showHomeCheck && (
+          {/*{showHomeCheck && (
             <div className="bg-white shadow rounded-lg overflow-hidden">
               <table className="w-full text-sm text-black">
                 <thead className="bg-gray-100">
