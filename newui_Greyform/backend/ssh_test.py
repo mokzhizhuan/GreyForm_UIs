@@ -5,10 +5,10 @@ remote_command = (
     "cd /home/winsys/pbu_marking_ros; "
     "./run_marking.sh "
     "--folder /home/ros_user/pbu_data/mockup "
-    "--excel PBU_TERRAHL2_out/PBU_TERRAHL2_out1_wall_2.xlsx "
+    "--excel test_points_tmp_out/test_points_tmp_out1_wall_4.xlsx "
     "--mesh SIMTech_L_PBU.stl "
     "--stage 2 "
-    "--wall wall_2"
+    "--wall wall_4"
 )
 
 cmd = [

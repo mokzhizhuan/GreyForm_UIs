@@ -1,9 +1,12 @@
 // =========================================================
 // FINAL SixWallFlow.tsx
-// With: Auto HomeCheck on Error + Retry + Point Counter
+// - NO refresh needed after error / continue
+// - poll() never stops (no early return on hasError)
+// - Continue → shows HomeCheck for next wall immediately
+// - Stepper locks on error wall but UI stays live
 // =========================================================
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 
 import placementOne from "../assets/six_wall_flow/6_wall_flow_placement1.jpg";
@@ -25,52 +28,20 @@ interface MarkingStatusResponse {
   paused: boolean;
   startedWall: number | null;
   doneWall: number | null;
-  queue: string[];
   phase: number | null;
-  maxWalls: number;
-  folder: string;
-  excelMap: Record<number, string>;
-  meshFile: string;
-  lineCount: number;
-  totalPoints: number;
   hasError: boolean;
   errorSummary?: string | null;
-  rowTotals: Record<number, number>;
-}
 
-interface SixWallFlowProps {
-  wallDetails: Record<string, WallRow[]>;
-  maxWall: number;
-  excelFiles: string[]; // wall_2, wall_3, wall_4, wall_5, wall_6, wall_1 mapping by index
-  meshfile: string;
-  folderdirectory: string;
+  homeCheckPending?: boolean;
+  homeCheckWall?: number | null;
+  homeCheckOutput?: string | null;
 }
 
 // --------------------------------------------------------
-// CONSTANTS (flow order + UI mapping)
+// CONSTANTS
 // --------------------------------------------------------
 const PHASE1_ORDER = ["wall_2", "wall_3", "wall_4"];
 const PHASE2_ORDER = ["wall_5", "wall_6", "wall_1"];
-
-const STEP_SEQUENCE: Record<number | string, number> = {
-  2: 1,
-  3: 2,
-  4: 3,
-  P2: 4,
-  5: 5,
-  6: 6,
-  1: 7,
-  DONE: 8,
-};
-
-const NEXT_KEY_FOR_WALL: Record<number, number | "P2" | "DONE"> = {
-  2: 3,
-  3: 4,
-  4: "P2",
-  5: 6,
-  6: 1,
-  1: "DONE",
-};
 
 const STEP_IMAGES = [
   placementOne, // 0
@@ -97,9 +68,62 @@ const STEP_LABELS = [
 ];
 
 // --------------------------------------------------------
-// COMPONENT
+// HELPERS
 // --------------------------------------------------------
-const SixWallFlow: React.FC<SixWallFlowProps> = ({
+const wallToStep = (wall: number) => {
+  switch (wall) {
+    case 2: return 1;
+    case 3: return 2;
+    case 4: return 3;
+    case 5: return 5;
+    case 6: return 6;
+    case 1: return 7;
+    default: return 0;
+  }
+};
+
+const buildExcelMap = (files: string[]) => {
+  const map: Record<string, string> = {};
+  for (const f of files) {
+    const m = f.match(/_wall_(\d+)\.xlsx$/);
+    if (m) map[`wall_${m[1]}`] = f;
+  }
+  return map;
+};
+
+const parseHomeCheck = (output: string) => {
+  const lines = (output || "").split(/\r?\n/).map(l => l.trim());
+  const rax = lines.find(l => l.includes("rax_1"));
+  const tgt = lines.find(l => l.includes("j0"));
+
+  let current: any = {};
+  let target: any = {};
+
+  try {
+    if (rax) current = JSON.parse(rax.replace(/'/g, '"'));
+    if (tgt) target = JSON.parse(tgt.replace(/'/g, '"'));
+  } catch {}
+
+  return Object.entries(target).map(([k, v], i) => ({
+    axis: k.toUpperCase(),
+    target: v,
+    current: current[`rax_${i + 1}`],
+  }));
+};
+
+const getLogClass = (line: string) => {
+  if (line.includes("[ERROR]")) return "text-red-400 font-bold";
+  if (line.includes("[SKIP]")) return "text-yellow-300";
+  if (line.toLowerCase().includes("bringup")) return "text-blue-400";
+  return "text-green-400";
+};
+
+const isMarkingStep = (s: number) => [1, 2, 3, 5, 6, 7].includes(s);
+
+// =========================================================
+// COMPONENT
+// =========================================================
+const SixWallFlow: React.FC<any> = ({
   wallDetails,
   maxWall,
   excelFiles,
@@ -107,268 +131,238 @@ const SixWallFlow: React.FC<SixWallFlowProps> = ({
   folderdirectory,
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
+
+  const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [errorWall, setErrorWall] = useState<number | null>(null);
 
-  // homecheck state
+  // HomeCheck UI
   const [homeCheckRows, setHomeCheckRows] = useState<any[]>([]);
-  const [homeCheckTriggered, setHomeCheckTriggered] = useState(false);
+  const [homeCheckWall, setHomeCheckWall] = useState<number | null>(null);
+  const [homeCheckPassed, setHomeCheckPassed] = useState<boolean | null>(null);
 
+  // Logs UI
+  const [cmdLogs, setCmdLogs] = useState<string[]>([]);
+  const logEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Poll control
   const pollingRef = useRef<number | null>(null);
-  const currentStepRef = useRef(0);
+  const uiLockedRef = useRef(false);
 
-  useEffect(() => {
-    currentStepRef.current = currentStep;
-  }, [currentStep]);
-
-  // -------------------------------------------------------
-  // NORMALIZE WALL DETAILS
-  // -------------------------------------------------------
-  const normalized: Record<string, WallRow[]> = {};
-  for (const [key, rows] of Object.entries(wallDetails)) {
-    const m = key.match(/\d+/);
-    const label = m ? `wall_${m[0]}` : key;
-    normalized[label] = rows;
-  }
-
-  const getDetails = (label: string) => normalized[label] ?? [];
-  const getRowCountForWall = (n: number) =>
-    normalized[`wall_${n}`]?.length ?? 0;
-
-  // -------------------------------------------------------
-  // HOME CHECK CALL
-  // -------------------------------------------------------
-  const requestHomeCheckForWall = async (label: string) => {
-    try {
-      setHomeCheckTriggered(true);
-
-      const res = await axios.post(`${API_BASE_URL}/marking/homecheck`, {
-        target: label,
-      });
-
-      const output = res.data.output || "";
-      const lines = output
-        .split(/\r?\n/)
-        .map((x: string) => x.trim())
-        .filter(Boolean);
-
-      const raxLine = lines.find((l: string) => l.includes("rax_1"));
-      const targetLine = lines.find((l: string) => l.includes("j0"));
-
-      let current: any = {};
-      let target: any = {};
-
-      if (raxLine) {
-        try {
-          current = JSON.parse(raxLine.replace(/'/g, '"'));
-        } catch {}
-      }
-
-      if (targetLine) {
-        try {
-          target = JSON.parse(targetLine.replace(/'/g, '"'));
-        } catch {}
-      }
-
-      const rows = Object.entries(target).map(([key, val], idx) => ({
-        axis: key.toUpperCase(),
-        target: val,
-        current: current[`rax_${idx + 1}`],
-      }));
-
-      setHomeCheckRows(rows);
-    } catch (err) {
-      console.error("HomeCheck error:", err);
+  // --------------------------------------------------------
+  // NORMALIZATION
+  // --------------------------------------------------------
+  const normalized = useMemo(() => {
+    const out: Record<string, WallRow[]> = {};
+    for (const [k, v] of Object.entries(wallDetails || {})) {
+      const m = k.match(/\d+/);
+      out[`wall_${m ? m[0] : k}`] = v as any;
     }
+    return out;
+  }, [wallDetails]);
+
+  const excelMap = useMemo(() => buildExcelMap(excelFiles || []), [excelFiles]);
+  const getRows = (w: string) => normalized[w] ?? [];
+
+  // --------------------------------------------------------
+  // AUTO SCROLL LOGS
+  // --------------------------------------------------------
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [cmdLogs]);
+
+  // --------------------------------------------------------
+  // HOME CHECK (used by start, retry, continue)
+  // --------------------------------------------------------
+  const triggerHomeCheck = async (wall: number) => {
+    setHomeCheckWall(wall);
+    setHomeCheckRows([]);
+    setHomeCheckPassed(null);
+
+    // 🔒 lock stepper to the homecheck wall immediately
+    setCurrentStep(wallToStep(wall));
+    uiLockedRef.current = true;
+
+    const res = await axios.post(`${API_BASE_URL}/marking/homecheck`, {
+      target: `wall_${wall}`,
+    });
+
+    const passed = !!res.data?.passed;
+    const output = res.data?.output || "";
+
+    setHomeCheckPassed(passed);
+    setHomeCheckRows(parseHomeCheck(output));
+
+    if (!passed) {
+      setHasError(true);
+      setErrorMessage(res.data?.error || `Home check failed for wall ${wall}`);
+      // keep uiLocked until operator clicks retry/continue (safer)
+      return;
+    }
+
+    // cleanup table after short delay
+    setTimeout(() => {
+      setHomeCheckRows([]);
+      setHomeCheckWall(null);
+      setHomeCheckPassed(null);
+      uiLockedRef.current = false;
+    }, 800);
   };
 
-  // -------------------------------------------------------
-  // START PHASE 1
-  // -------------------------------------------------------
+  // --------------------------------------------------------
+  // START PHASES
+  // --------------------------------------------------------
   const startPhaseOne = async () => {
-     /*const ok = await requestHomeCheck("wall_2");
-    if (!ok) return;*/
-    const walls = PHASE1_ORDER.map((label, index) => ({
-      wall: label,
-      rows: getDetails(label),
-      excel: excelFiles[index], // index 0→wall_2, 1→wall_3, 2→wall_4
-    }));
-
     await axios.post(`${API_BASE_URL}/marking/start`, {
-      walls,
+      walls: PHASE1_ORDER.map(w => ({
+        wall: w,
+        rows: getRows(w),
+        excel: excelMap[w] ?? "",
+      })),
       meshfile,
       folder: folderdirectory,
       max_wall: maxWall,
       phase: 1,
     });
 
-    setCurrentStep(1);
+    setCurrentStep(0);
+    setCmdLogs([]);
+    setHasError(false);
+    setErrorMessage(null);
+
+    await triggerHomeCheck(2);
   };
 
-  // -------------------------------------------------------
-  // START PHASE 2
-  // -------------------------------------------------------
   const startPhaseTwo = async () => {
-     /*const ok = await requestHomeCheck(wall_5);
-    if (!ok) return;*/
-    const walls = PHASE2_ORDER.map((label, index) => ({
-      wall: label,
-      rows: getDetails(label),
-      excel: excelFiles[index + 3], // 3→wall_5, 4→wall_6, 5→wall_1
-    }));
-
     await axios.post(`${API_BASE_URL}/marking/start`, {
-      walls,
+      walls: PHASE2_ORDER.map(w => ({
+        wall: w,
+        rows: getRows(w),
+        excel: excelMap[w] ?? "",
+      })),
       meshfile,
       folder: folderdirectory,
       max_wall: maxWall,
       phase: 2,
     });
 
-    setCurrentStep(5);
-  };
-
-  // -------------------------------------------------------
-  // RETRY WALL
-  // -------------------------------------------------------
-  const retryCurrentWall = async () => {
-    const step = currentStepRef.current;
-    const wall =
-      step === 1
-        ? 2
-        : step === 2
-        ? 3
-        : step === 3
-        ? 4
-        : step === 5
-        ? 5
-        : step === 6
-        ? 6
-        : step === 7
-        ? 1
-        : null;
-
-    if (!wall) return;
-
-    // must pass homecheck first
-    /*const ok = await requestHomeCheckForWall(`wall_${wall}`);
-    if (!ok) return;*/
-
-    await axios.post(`${API_BASE_URL}/marking/retry`, null, {
-      params: { wall },
-    });
-
+    setCurrentStep(4);
+    setCmdLogs([]);
     setHasError(false);
     setErrorMessage(null);
+
+    await triggerHomeCheck(5);
   };
 
-  // -------------------------------------------------------
-  // FETCH STATUS (Polling)
-  // -------------------------------------------------------
-  const schedulePoll = (t = 2000) => {
-    if (pollingRef.current) clearTimeout(pollingRef.current);
-    pollingRef.current = window.setTimeout(fetchStatus, t);
+  // --------------------------------------------------------
+  // ACTIONS
+  // --------------------------------------------------------
+  const pauseMarking = async () => {
+    await axios.post(`${API_BASE_URL}/marking/pause`);
+  };
+  const showFailureActions = hasError || homeCheckPassed === false;
+  const retryCurrentWall = async () => {
+    if (!homeCheckWall) return;
+
+    setCmdLogs([]);
+    setHasError(false);
+    setErrorMessage(null);
+
+    // allow UI to proceed
+    uiLockedRef.current = false;
+
+    await triggerHomeCheck(homeCheckWall);
+    await axios.post(`${API_BASE_URL}/marking/retry`, null, {
+      params: { wall: homeCheckWall },
+    });
   };
 
-  const fetchStatus = async () => {
+  const continueNextWall = async () => {
+    const res = await axios.post(`${API_BASE_URL}/marking/continue`);
+
+    if (res.data?.homeCheckRequired && res.data?.next_wall) {
+      // clear previous wall error state
+      setHasError(false);
+      setErrorMessage(null);
+      setCmdLogs([]);
+
+      // 🔓 unlock UI so the next homecheck can show and stepper can move
+      uiLockedRef.current = false;
+
+      // show homecheck for next wall immediately (e.g., wall 3)
+      await triggerHomeCheck(res.data.next_wall);
+    }
+  };
+
+  // --------------------------------------------------------
+  // POLLING (IMPORTANT: never stop polling on error)
+  // --------------------------------------------------------
+  const poll = async () => {
     try {
-      const res = await axios.get<MarkingStatusResponse>(
+      const { data } = await axios.get<MarkingStatusResponse>(
         `${API_BASE_URL}/marking/status`
       );
-      const data = res.data;
 
+      setRunning(data.running);
       setPaused(data.paused);
-      setHasError(data.hasError);
-      if (data.errorSummary) setErrorMessage(data.errorSummary);
-      if (data.hasError && data.startedWall) {
-          setErrorWall(data.startedWall);
-        } else if (!data.hasError) {
-          setErrorWall(null);
-        }
+      setHasError(!!data.hasError);
+      setErrorMessage(data.errorSummary || null);
 
-      // ---- Auto HomeCheck when error ----
-      /*if (data.hasError && data.startedWall) {
-        const wallLabel = `wall_${data.startedWall}`;
-        if (!homeCheckTriggered) {
-          console.log("🔍 Auto homecheck (error detected)");
-          requestHomeCheckForWall(wallLabel);
-        }
-      }*/
+      // Always fetch logs (even on error / paused / idle)
+      const wallForLogs =
+        data.startedWall ?? data.doneWall ?? data.homeCheckWall ?? null;
 
-      // ---- point counter (hidden) ----
-      if (data.startedWall) {
-        const wall = data.startedWall;
-        const localRows = getRowCountForWall(wall);
-        const total = data.totalPoints || localRows;
-        console.log(`🔢 Wall ${wall}: ${data.lineCount} / ${total}`);
-
-        // auto-advance
-        if (!data.hasError && total > 0 && data.lineCount >= total) {
-          const nextKey = NEXT_KEY_FOR_WALL[wall];
-          const nextStep = STEP_SEQUENCE[nextKey];
-          if (nextStep !== undefined) setCurrentStep(nextStep);
+      if (wallForLogs !== null) {
+        try {
+          const logRes = await axios.get(
+            `${API_BASE_URL}/marking/errorlog/${wallForLogs}`
+          );
+          if (logRes.data?.error) {
+            setCmdLogs(logRes.data.error.slice(-50));
+          }
+        } catch {
+          // ignore
         }
       }
 
-      schedulePoll(2000);
-    } catch (err) {
-      console.error("Polling error:", err);
-      schedulePoll(4000);
+      // 🔒 If backend says error, lock stepper but DO NOT return (keep polling alive)
+      if (data.hasError) {
+        if (data.startedWall !== null) {
+          setCurrentStep(wallToStep(data.startedWall));
+        } else if (data.homeCheckWall !== null) {
+          setCurrentStep(wallToStep(data.homeCheckWall));
+        } else if (data.doneWall !== null) {
+          setCurrentStep(wallToStep(data.doneWall));
+        }
+      } else {
+        // Normal auto-step while running (but not during homecheck UI lock)
+        if (!uiLockedRef.current && data.running && data.startedWall !== null) {
+          setCurrentStep(wallToStep(data.startedWall));
+        }
+
+        // Placement transitions
+        if (data.doneWall === 4 && data.phase === 1) setCurrentStep(4);
+        if (data.doneWall === 1 && data.phase === 2) setCurrentStep(8);
+      }
+    } catch {
+      // ignore network errors
     }
+
+    pollingRef.current = window.setTimeout(poll, 1500);
   };
 
   useEffect(() => {
-    fetchStatus();
+    poll();
     return () => {
       if (pollingRef.current) clearTimeout(pollingRef.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
   // --------------------------------------------------------
-// API: Automatically combine all wall Excel files
-// --------------------------------------------------------
-/*const combineWalls = async () => {
-  try {
-    const res = await axios.post(`${API_BASE_URL}/combine_walls`, {
-      folder: folderdirectory,
-    });
-
-    console.log("📦 /combine_walls response:", res.data);
-
-    if (!res.data.ok) {
-      setErrorMessage("Combine Walls failed: " + res.data.message);
-      return;
-    }
-
-    console.log(`✅ Combined log created: ${res.data.log_file}`);
-  } catch (err) {
-    console.error("❌ Combine walls failed", err);
-    setErrorMessage("Unable to combine wall Excel files.");
-  }
-};
-// --------------------------------------------------------
-// AUTO-COMBINE WHEN MARKING COMPLETES
-// --------------------------------------------------------
-useEffect(() => {
-  if (currentStep === 8) {
-    console.log("🎉 All walls complete → combining Excel logs automatically...");
-    combineWalls();
-  }
-}, [currentStep]);*/
-
-  // -------------------------------------------------------
-  // UI HELPERS
-  // -------------------------------------------------------
-  const isMarkingStep = (s: number) => [1, 2, 3, 5, 6, 7].includes(s);
-  const showHomeCheck =
-    homeCheckRows.length > 0 &&
-    ((currentStep === 0 || currentStep === 4) ||
-      (isMarkingStep(currentStep) && hasError));
-
-  // -------------------------------------------------------
-  // RENDER UI
-  // -------------------------------------------------------
+  // RENDER
+  // --------------------------------------------------------
   return (
     <>
       <h2 className="text-4xl font-bold text-center mb-6">
@@ -376,99 +370,146 @@ useEffect(() => {
       </h2>
 
       <ul className="steps w-full mb-6">
-        {STEP_LABELS.map((s, i) => (
-          <li
-            key={s}
-            className={i === currentStep ? "step step-primary" : "step"}
-          >
-            {s}
+        {STEP_LABELS.map((l, i) => (
+          <li key={l} className={i === currentStep ? "step step-primary" : "step"}>
+            {l}
           </li>
         ))}
       </ul>
 
       <div className="flex gap-6">
-        {/* IMAGE */}
         <img
           src={STEP_IMAGES[currentStep]}
-          className="max-w-2xl max-h-[70vh] object-contain rounded-lg shadow"
+          className="max-w-2xl max-h-[70vh] rounded-lg shadow object-contain"
+          alt="step"
         />
 
-        {/* RIGHT PANEL */}
-        <div className="flex flex-col w-[420px] gap-4">
-          <div className="p-4 bg-base-200 rounded-lg shadow">
-            <h3 className="font-bold text-xl mb-2">Instructions</h3>
-            <p>{STEP_LABELS[currentStep]}</p>
-            {errorMessage && (
-              <p className="text-red-600 mt-2 whitespace-pre-line">
-                {errorMessage}
-              </p>
-            )}
+        <div className="flex flex-col w-[520px] gap-4">
+          {/* STEP TITLE */}
+          <div className="menu bg-base-200 rounded-box p-4 shadow">
+            <p className="text-2xl font-semibold">{STEP_LABELS[currentStep]}</p>
           </div>
-          
+
+          {/* INSTRUCTIONS */}
+          <div className="menu bg-base-200 rounded-box p-4 shadow">
+            <p className="text-lg font-semibold">Instruction</p>
+            <p className="mt-1 text-sm">
+              {currentStep === 0 && "Push robot into PBU and align for Placement 1."}
+              {currentStep === 1 && "Marking Wall 2 in progress."}
+              {currentStep === 2 && "Marking Wall 3 in progress."}
+              {currentStep === 3 && "Marking Wall 4 in progress."}
+              {currentStep === 4 && "Reposition robot for Placement 2."}
+              {currentStep >= 5 && currentStep <= 7 && "Marking wall in progress."}
+              {currentStep === 8 && "Marking complete."}
+            </p>
+          </div>
+
+          {/* BACKEND OUTPUT */}
+          <div className="bg-black font-mono text-xs rounded p-3 max-h-[220px] overflow-y-auto shadow">
+            <div className="text-green-300 mb-1">Backend Output</div>
+            {cmdLogs.length === 0 ? (
+              <div className="opacity-60 text-green-400">
+                Waiting for backend output…
+              </div>
+            ) : (
+              cmdLogs.map((l, i) => (
+                <div key={i} className={getLogClass(l)}>
+                  {l}
+                </div>
+              ))
+            )}
+            <div ref={logEndRef} />
+          </div>
+
+          {/* ERROR MESSAGE */}
+          {errorMessage && (
+            <div className="p-3 bg-red-100 text-red-700 rounded">
+              {errorMessage}
+            </div>
+          )}
+
           {/* HOME CHECK TABLE */}
-          {/*{showHomeCheck && (
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              <table className="w-full text-sm text-black">
-                <thead className="bg-gray-100">
+          {homeCheckRows.length > 0 && (
+            <div className="bg-white shadow rounded overflow-hidden">
+              <div
+                className={`text-center font-bold py-1 ${
+                  homeCheckPassed === false
+                    ? "bg-red-100 text-red-800"
+                    : "bg-green-100 text-green-800"
+                }`}
+              >
+                {homeCheckPassed === false ? "✖ Home check failed" : "✔ Home position verified"}
+              </div>
+
+              <table className="w-full text-sm">
+                <thead>
                   <tr>
-                    <th className="px-3 py-2">Axis</th>
-                    <th className="px-3 py-2 text-right">Current</th>
-                    <th className="px-3 py-2 text-right">Target</th>
+                    <th className="p-2 text-left">Axis</th>
+                    <th className="p-2 text-left">Current</th>
+                    <th className="p-2 text-left">Target</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {homeCheckRows.map((row) => (
-                    <tr key={row.axis} className="border-t">
-                      <td className="px-3 py-2">{row.axis}</td>
-                      <td className="px-3 py-2 text-right">
-                        {row.current?.toFixed(3)}
-                      </td>
-                      <td className="px-3 py-2 text-right">
-                        {row.target?.toFixed(3)}
-                      </td>
+                  {homeCheckRows.map((r, i) => (
+                    <tr key={i} className="border-t">
+                      <td className="p-2">{r.axis}</td>
+                      <td className="p-2">{r.current?.toFixed?.(3)}</td>
+                      <td className="p-2">{r.target?.toFixed?.(3)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          )}*/}
+          )}
 
           {/* BUTTONS */}
-          <div className="flex flex-col gap-3 mt-4">
+          <div className="flex flex-col gap-3">
             {currentStep === 0 && (
-              <button
-                className="btn btn-primary"
-                onClick={startPhaseOne}
-              >
-                Next 
-              </button>
-            )}
-
-            {currentStep === 4 && (
-              <button
-                className="btn btn-primary"
-                onClick={startPhaseTwo}
-              >
+              <button className="btn btn-primary" onClick={startPhaseOne}>
                 Next
               </button>
             )}
 
-            {isMarkingStep(currentStep) && hasError && (
-                <button className="btn btn-error" onClick={retryCurrentWall}>
-                  {errorWall
-                    ? `Retry Current Wall ${errorWall}`
-                    : "Retry Current Wall"}
+            {currentStep === 4 && (
+              <button className="btn btn-primary" onClick={startPhaseTwo}>
+                Next
+              </button>
+            )}
+
+            {running && isMarkingStep(currentStep) && !hasError && (
+              <button className="btn btn-warning" onClick={pauseMarking}>
+                Pause
+              </button>
+            )}
+
+            {showFailureActions && (
+              <div className="flex gap-2">
+                <button
+                  className="btn btn-error flex-1"
+                  onClick={retryCurrentWall}
+                >
+                  Retry
                 </button>
-              )}
+
+                <button
+                  className="btn btn-warning flex-1"
+                  onClick={continueNextWall}
+                >
+                  Continue →
+                </button>
+              </div>
+            )}
 
             {currentStep === 8 && (
-              <button
-                className="btn btn-error"
-                onClick={() => window.close()}
-              >
+              <button className="btn btn-success" onClick={() => window.close()}>
                 Exit
               </button>
             )}
+          </div>
+
+          {/* tiny debug line */}
+          <div className="text-xs opacity-60">
+            running={String(running)} paused={String(paused)} hasError={String(hasError)}
           </div>
         </div>
       </div>
@@ -477,4 +518,3 @@ useEffect(() => {
 };
 
 export default SixWallFlow;
-

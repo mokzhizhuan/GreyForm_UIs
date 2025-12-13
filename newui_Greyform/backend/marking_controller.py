@@ -42,7 +42,11 @@ wall_point_count: Dict[int, int] = {}    # {2: 0, 3: 3, ...}
 bringup_success: Dict[int, bool] = {}    # {2: True/False}
 wall_error: Dict[int, bool] = {}         # {2: True if mismatch/error}
 
-# PER-WALL EXCEL MAPPING (RELATIVE paths, e.g. "PBU_TERRAHL2_out/..._wall_2.xlsx")
+# Track which points were skipped per wall, and the "current point" while reading logs
+skipped_points: Dict[int, List[int]] = {}
+current_point: Dict[int, Optional[int]] = {}
+
+# PER-WALL EXCEL MAPPING (RELATIVE paths)
 excel_map: Dict[int, str] = {}
 
 mesh_file_path: str = ""
@@ -56,6 +60,10 @@ event_counter = 0
 error_logs: Dict[int, List[str]] = {}
 MAX_LOG_LINES_PER_WALL = 400
 
+homecheck_pending: bool = False
+homecheck_wall: Optional[int] = None
+homecheck_output: Optional[str] = None
+
 
 # -------------------------------------------------------------------
 # MODELS
@@ -63,14 +71,14 @@ MAX_LOG_LINES_PER_WALL = 400
 class WallPayload(BaseModel):
     wall: str          # e.g. "wall_2"
     rows: list         # rows for that wall
-    excel: str         # FULL PATH from React (e.g. "/home/winsys/.../PBU_TERRAHL2_out/..._wall_2.xlsx")
+    excel: str         # FULL PATH from React
 
 
 class MarkingStartBody(BaseModel):
     walls: List[WallPayload]
     meshfile: str
     max_wall: int
-    folder: str
+    folder: str                # e.g. "/home/ros_user/pbu_data/mockup"
     phase: Optional[int] = None  # just a logical phase flag
 
 
@@ -79,31 +87,68 @@ class HomeCheckBody(BaseModel):
 
 
 # -------------------------------------------------------------------
-# EXCEL PATH NORMALIZATION (TRIM TO RELATIVE)
+# EXCEL PATH NORMALIZATION (USING FOLDERDIRECTORY)
 # -------------------------------------------------------------------
-def make_relative_excel(path: str) -> str:
+def make_relative_excel(path: str, folder: Optional[str] = None) -> str:
     """
-    React sends an ABSOLUTE path, e.g.:
-      /home/winsys/pbu_marking_ros/pbu_data/mockup/PBU_TERRAHL2_out/PBU_TERRAHL2_out1_wall_2.xlsx
+    Convert any absolute or semi-absolute Excel path to a path
+    that is *relative to the folderdirectory*.
 
-    We ONLY want:
-      PBU_TERRAHL2_out/PBU_TERRAHL2_out1_wall_2.xlsx
+    Examples:
+      folder = "/home/ros_user/pbu_data/mockup"
 
-    Logic:
-      - Find "PBU_" in the path (e.g. "PBU_TERRAHL2_out/...")
-      - Return from that position (no leading slash)
-      - If not found, return the original path as-is.
+      1) path = "/home/winsys/pbu_marking_ros/pbu_data/mockup/test_points_tmp_out/test_points_tmp_out1_wall_1.xlsx"
+         -> "test_points_tmp_out/test_points_tmp_out1_wall_1.xlsx"
+
+      2) path = "mockup/test_points_tmp_out/test_points_tmp_out1_wall_1.xlsx"
+         -> "test_points_tmp_out/test_points_tmp_out1_wall_1.xlsx"
+
+      3) path = "/home/.../pbu_data/mockup/PBU_TERRAHL2_out/PBU_TERRAHL2_out1_wall_2.xlsx"
+         -> "PBU_TERRAHL2_out/PBU_TERRAHL2_out1_wall_2.xlsx"
+
+      4) path = "/home/.../PBU_TERRAHL2_out/PBU_TERRAHL2_out1_wall_2.xlsx"
+         -> "PBU_TERRAHL2_out/PBU_TERRAHL2_out1_wall_2.xlsx"
     """
     if not path:
         return path
 
-    # Try generic token "PBU_"
-    token = "PBU_"
-    idx = path.find(token)
-    if idx != -1:
-        return path[idx:]
+    # Normalise folder (folderdirectory)
+    folder = (folder or "").rstrip("/")
 
-    # Fallback: just strip any leading slash
+    # 1) If the path already starts with the folderdirectory, strip it
+    #    e.g. "/home/ros_user/pbu_data/mockup/test_points/..." with folder "/home/ros_user/pbu_data/mockup"
+    if folder and path.startswith(folder + "/"):
+        return path[len(folder) + 1 :]
+
+    # 2) If the path starts with "mockup/", drop that prefix:
+    #    "mockup/test_points_tmp_out/..." -> "test_points_tmp_out/..."
+    if path.startswith("mockup/"):
+        return path[len("mockup/") :]
+
+    # 3) If the path contains "/mockup/", strip everything up to and including that:
+    #    "/.../mockup/test_points_tmp_out/..." -> "test_points_tmp_out/..."
+    marker = "/mockup/"
+    idx = path.find(marker)
+    if idx != -1:
+        return path[idx + len(marker) :]
+
+    # 4) If we have a folderdirectory, try using just its basename:
+    #    folder "/home/ros_user/pbu_data/mockup" -> base "mockup"
+    #    path "...mockup/test_points/..." -> "test_points/..."
+    if folder:
+        base = folder.split("/")[-1]
+        marker2 = base + "/"
+        idx2 = path.find(marker2)
+        if idx2 != -1:
+            return path[idx2 + len(marker2) :]
+
+    # 5) Fallback: old PBU_ logic, for files like ".../PBU_TERRAHL2_out/..."
+    token = "PBU_"
+    idx3 = path.find(token)
+    if idx3 != -1:
+        return path[idx3:]
+
+    # 6) Last fallback — just strip leading slash
     return path.lstrip("/")
 
 
@@ -112,16 +157,17 @@ def make_relative_excel(path: str) -> str:
 # -------------------------------------------------------------------
 @app.post("/homecheck")
 def home_position_check(body: HomeCheckBody):
-    """
-    Calls remote homeposcheck.py with:
-      --file /home/winsys/pbu_marking_ros/pbu_data/mockup/poses.json
-      --target <wall_number>
-    """
-    m = re.search(r"(\d+)$", body.target)
-    if not m:
-        raise HTTPException(400, f"Invalid target format: {body.target}")
+    global homecheck_pending, homecheck_wall, homecheck_output
 
-    wall_num = m.group(1)
+    target = body.target.strip()
+    if not target:
+        raise HTTPException(400, "Missing target for homecheck")
+
+    m = re.search(r"(\d+)", target)
+    if not m:
+        raise HTTPException(400, f"Invalid wall label {target}")
+
+    wall_id = int(m.group(1))
 
     cmd = [
         "sshpass", "-p", "winsys",
@@ -129,26 +175,66 @@ def home_position_check(body: HomeCheckBody):
         "python3",
         "/home/winsys/pbu_marking_ros/homeposcheck.py",
         "--file", "/home/winsys/pbu_marking_ros/pbu_data/mockup/poses.json",
-        "--target", wall_num,
+        "--target", target,
     ]
 
-    print(f"[HomeCheck] Running:", cmd)
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    out, _ = proc.communicate()
 
-    try:
-        proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
-        )
-        out, _ = proc.communicate()
+    if proc.returncode != 0:
+        # script itself failed
+        with state_lock:
+            homecheck_pending = True
+            homecheck_wall = wall_id
+            homecheck_output = out
+        raise HTTPException(400, out)
 
-        print("[HomeCheck Output]\n", out)
+    # --------------------------------------------------
+    # PARSE PASS/FAIL FROM homeposcheck.py OUTPUT
+    # Expect somewhere in stdout: "True" or "False"
+    # --------------------------------------------------
+    passed: Optional[bool] = None
+    for line in out.splitlines():
+        t = line.strip()
+        if t == "True":
+            passed = True
+            break
+        if t == "False":
+            passed = False
+            break
 
-        if proc.returncode != 0:
-            raise HTTPException(400, "Home position check FAILED!")
+    # If homeposcheck.py didn't print True/False, treat as fail
+    if passed is None:
+        passed = False
 
-        return {"ok": True, "wall": m , "output": out}
+    # --------------------------------------------------
+    # STORE HOME CHECK STATE (gate)
+    # - passed => clear gate
+    # - failed => keep gate (blocked)
+    # --------------------------------------------------
+    with state_lock:
+        homecheck_output = out
 
-    except Exception as e:
-        raise HTTPException(500, f"HomePosCheck error: {str(e)}")
+        if passed:
+            print(f"[HOME CHECK] Wall {wall_id} passed → starting marking")
+            threading.Thread(target=start_next_wall, daemon=True).start()
+        else:
+            homecheck_pending = True
+            homecheck_wall = wall_id
+    
+    return {
+        "ok": True,
+        "wall": wall_id,
+        "passed": passed,
+        "error": None if passed else "Home check failed (homeposcheck.py returned False).",
+        "output": out,  # UI can still parse table from this
+    }
+
 
 
 # -------------------------------------------------------------------
@@ -166,18 +252,8 @@ def _append_log(wall_id: int, line: str):
 # READER THREAD — event-based bringup + point counting + logs
 # -------------------------------------------------------------------
 def reader_thread(proc: subprocess.Popen, wall_id: int):
-    """
-    - Watches process stdout line-by-line
-    - Detects bringup success via: "Service executed successfully"
-    - Counts points via lines containing both "Point" and "done"
-    - After process ends, decides success/error purely from:
-        * exit code
-        * bringup_success[wall_id]
-        * wall_point_count[wall_id] vs row_totals[wall_id]
-    """
     global last_completed_wall, current_process, event_counter
-
-    start_detected = False  # bringup success seen?
+    start_detected = False  # whether we've seen "Service executed successfully"
 
     try:
         if proc.stdout:
@@ -185,19 +261,53 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
                 line = raw.rstrip("\n")
                 print(line)
 
-                # Always store in raw logs
+                # always log
                 with state_lock:
                     _append_log(wall_id, line)
 
-                # 1) Bringup success
+                # --------------------------------------
+                # 1) DETECT bringup success
+                # --------------------------------------
                 if "Service executed successfully" in line:
                     with state_lock:
                         bringup_success[wall_id] = True
                     start_detected = True
                     print(f"[bringup] Wall {wall_id}: service executed successfully")
 
-                # 2) Point counting (only after bringup success)
-                # e.g. "Point 20 is already done. Skipping..."
+                # --------------------------------------
+                # 2) DETECT which point is currently running
+                #    pattern: "Now working on point 2 of frame wall_2"
+                # --------------------------------------
+                m_point = re.search(
+                    r"Now working on point\s+(\d+)\s+of frame wall", line
+                )
+                if m_point:
+                    p = int(m_point.group(1))
+                    with state_lock:
+                        current_point[wall_id] = p
+                    # optional debug
+                    print(f"[point] Wall {wall_id}: now working on point {p}")
+
+                # --------------------------------------
+                # 3) DETECT "skipped" points
+                #    pattern: "Writing into excel - ROW: X COLUMN: 8 VALUE skipped"
+                # --------------------------------------
+                if "VALUE skipped" in line:
+                    with state_lock:
+                        p = current_point.get(wall_id)
+                        if p is not None:
+                            skipped_points.setdefault(wall_id, []).append(p)
+                            # Add a clean SKIP line into error log
+                            _append_log(
+                                wall_id,
+                                f"[SKIP] Wall {wall_id}: point {p} skipped"
+                            )
+                            print(f"[skip] Wall {wall_id}: point {p} skipped")
+
+                # --------------------------------------
+                # 4) DETECT marking points only AFTER bringup success
+                #    (still for your normal "Point ... done" pattern if present)
+                # --------------------------------------
                 if start_detected and "Point" in line and "done" in line:
                     with state_lock:
                         wall_point_count[wall_id] = wall_point_count.get(wall_id, 0) + 1
@@ -226,7 +336,6 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
                 wall_error[wall_id] = False
                 event_counter += 1
                 print(f"[success] Wall {wall_id} COMPLETE ({count}/{total})")
-
                 # advance queue index
                 global queue_index, current_wall
                 queue_index += 1
@@ -238,8 +347,9 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
             else:
                 # ❌ ERROR — either rc!=0, or no bringup success, or insufficient points
                 wall_error[wall_id] = True
-                current_wall = wall_id  # stay on this wall
+                current_wall = wall_id
 
+                # add a summary error line
                 msg_parts = []
                 if rc != 0:
                     msg_parts.append(f"script exit code {rc}")
@@ -248,10 +358,17 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
                 if total > 0 and count < total:
                     msg_parts.append(f"only {count}/{total} points done")
 
+                # 🔥 include skipped points in summary if any
+                skips = skipped_points.get(wall_id, [])
+                if skips:
+                    msg_parts.append(
+                        "skipped points: " + ", ".join(str(p) for p in sorted(skips))
+                    )
+
                 summary = (
                     f"[ERROR] Wall {wall_id}: " + ", ".join(msg_parts)
-                    if msg_parts else
-                    f"[ERROR] Wall {wall_id}: unknown error"
+                    if msg_parts
+                    else f"[ERROR] Wall {wall_id}: unknown error"
                 )
                 _append_log(wall_id, summary)
                 print(summary)
@@ -260,7 +377,7 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
             threading.Thread(target=start_next_wall, daemon=True).start()
 
     finally:
-        # state handled above
+        # nothing extra; state handled above
         pass
 
 
@@ -271,6 +388,9 @@ def start_next_wall():
     global current_wall, current_process, last_completed_wall, queue_index
 
     with state_lock:
+        if homecheck_pending:
+            print("[BLOCKED] HomeCheck pending — marking not allowed")
+            return
         if pause_flag.is_set():
             print("[controller] Paused → stop")
             return
@@ -301,7 +421,7 @@ def start_next_wall():
 
         running_flag.set()
 
-        # Excel file for this wall (RELATIVE)
+        # Excel file for this wall (RELATIVE to folderdirectory)
         excel_rel = excel_map.get(wall_id, "")
         # remote folder is fixed for ROS script
         remote_folder = "/home/ros_user/pbu_data/mockup"
@@ -310,11 +430,11 @@ def start_next_wall():
     # Build remote command:
     #   cd /home/winsys/pbu_marking_ros &&
     #   ./run_marking.sh --stage 2 --wall wall_2 --folder /home/ros_user/pbu_data/mockup
-    #                    --excel PBU_TERRAHL2_out/..._wall_2.xlsx --mesh SIMTech_L_PBU.stl
+    #                    --excel test_points_tmp_out/..._wall_2.xlsx --mesh SIMTech_L_PBU.stl
     remote_command = (
         "cd /home/winsys/pbu_marking_ros && "
         "./run_marking.sh "
-        "--stage 2 "
+        "--stage 0 "
         f"--wall {shlex.quote(label)} "
         f"--folder {shlex.quote(remote_folder)} "
         f"--excel {shlex.quote(excel_rel)} "
@@ -353,7 +473,6 @@ def start_next_wall():
         target=reader_thread, args=(proc, wall_id), daemon=True
     ).start()
 
-
 # -------------------------------------------------------------------
 # START MARKING — per-wall Excel mapping
 # -------------------------------------------------------------------
@@ -362,8 +481,8 @@ def marking_start(body: MarkingStartBody):
     """
     Frontend calls this for Phase 1 (walls 2,3,4) and Phase 2 (walls 5,6,1):
       walls: [
-        { wall: "wall_2", rows: [...], excel: "/home/.../PBU_TERRAHL2_out/..._wall_2.xlsx" },
-        { wall: "wall_3", rows: [...], excel: "/home/.../PBU_TERRAHL2_out/..._wall_3.xlsx" },
+        { wall: "wall_2", rows: [...], excel: "/home/.../mockup/..._wall_2.xlsx" },
+        { wall: "wall_3", rows: [...], excel: "/home/.../mockup/..._wall_3.xlsx" },
         ...
       ]
     """
@@ -380,7 +499,7 @@ def marking_start(body: MarkingStartBody):
         wall_sequence = [w.wall.strip() for w in body.walls]
         queue_index = 0
 
-        # build row_totals
+        # build row_totals & excel_map
         row_totals = {}
         excel_map = {}
         for w in body.walls:
@@ -391,8 +510,8 @@ def marking_start(body: MarkingStartBody):
             wid = int(m.group(1))
             row_totals[wid] = len(w.rows)
 
-            # per-wall Excel (trim absolute to relative)
-            rel_excel = make_relative_excel(w.excel)
+            # per-wall Excel (trim absolute/semi-absolute to relative using folderdirectory)
+            rel_excel = make_relative_excel(w.excel, body.folder)
             excel_map[wid] = rel_excel
 
         print("[controller] New Marking Sequence")
@@ -413,10 +532,15 @@ def marking_start(body: MarkingStartBody):
         pause_flag.clear()
         running_flag.clear()
 
+        # reset per-wall state
         wall_point_count = {}
         bringup_success = {}
         wall_error = {}
         error_logs = {}
+
+        # reset skipped tracking
+        skipped_points = {}
+        current_point = {}
 
         # init per-wall state
         for wid, _total in row_totals.items():
@@ -425,9 +549,20 @@ def marking_start(body: MarkingStartBody):
             wall_error[wid] = False
             error_logs[wid] = []
 
+        first_label = wall_sequence[0]
+        m = re.search(r"(\d+)", first_label)
+        homecheck_pending = True
+        homecheck_wall = int(m.group(1))
+        homecheck_output = None
+
     # start first wall
-    threading.Thread(target=start_next_wall, daemon=True).start()
-    return {"ok": True, "queue": wall_sequence}
+    return {
+            "ok": True,
+            "queue": wall_sequence,
+            "homeCheckRequired": True,
+            "firstWall": homecheck_wall
+        }
+
 
 
 # -------------------------------------------------------------------
@@ -441,16 +576,40 @@ def pause():
 
 @app.post("/continue")
 def resume():
+    global current_wall, queue_index
+
     pause_flag.clear()
+
     with state_lock:
-        should_start = (
-            current_process is None
-            and current_wall is None
-            and queue_index < len(wall_sequence)
-        )
-    if should_start:
-        threading.Thread(target=start_next_wall, daemon=True).start()
-    return {"resumed": True}
+        if current_wall is None:
+            return {"resumed": False, "message": "No wall to continue from"}
+
+        # Move queue forward ONLY ONCE
+        idx = wall_sequence.index(f"wall_{current_wall}")
+        queue_index = idx + 1
+
+        current_wall = None
+        running_flag.clear()
+
+        # 🔐 REQUIRE HOME CHECK FOR NEXT WALL
+        if queue_index < len(wall_sequence):
+            next_label = wall_sequence[queue_index]
+            m = re.search(r"(\d+)", next_label)
+            next_wall = int(m.group(1))
+
+            global homecheck_pending, homecheck_wall, homecheck_output
+            homecheck_pending = True
+            homecheck_wall = next_wall
+            homecheck_output = None
+
+            return {
+                "resumed": True,
+                "next_wall": next_wall,
+                "homeCheckRequired": True
+            }
+
+    return {"resumed": True, "next_wall": None}
+
 
 
 # -------------------------------------------------------------------
@@ -458,12 +617,8 @@ def resume():
 # -------------------------------------------------------------------
 @app.post("/retry")
 def retry_wall(wall: Optional[int] = None):
-    """
-    Retry marking for a specific wall.
-    - If ?wall=<id> is absent, retry current_wall (if any).
-    - Does NOT auto-advance; re-runs the same wall.
-    """
     global current_wall, current_process, queue_index
+    global skipped_points, current_point   # 🔥 ADD THIS
 
     with state_lock:
         if wall is None:
@@ -472,6 +627,12 @@ def retry_wall(wall: Optional[int] = None):
             wall_id = current_wall
         else:
             wall_id = wall
+        if current_process:
+            try:
+                current_process.kill()
+            except:
+                pass
+            current_process = None
 
         if current_process is not None:
             raise HTTPException(400, "Cannot retry while a process is still running.")
@@ -483,15 +644,26 @@ def retry_wall(wall: Optional[int] = None):
         # force queue_index to this wall
         queue_index = wall_sequence.index(label)
 
-        # reset this wall's state
+        # 🔥 RESET ALL WALL STATE (IMPORTANT)
         wall_point_count[wall_id] = 0
         bringup_success[wall_id] = False
         wall_error[wall_id] = False
+
+        # 🔥 CLEAR SKIPPED TRACKING
+        skipped_points[wall_id] = []     # 🔥 reset skipped
+        wall_point_count[wall_id] = 0
+        bringup_success[wall_id] = False
+        wall_error[wall_id] = False
+
+        homecheck_pending = True
+        homecheck_wall = wall_id
+        homecheck_output = None
+
         current_wall = None
         running_flag.clear()
-        # keep error_logs[wall_id] so UI can still show history
 
-    threading.Thread(target=start_next_wall, daemon=True).start()
+        # keep error_logs so UI can show history if needed
+
     return {"ok": True, "wall": wall_id, "message": "Retry started."}
 
 
@@ -547,6 +719,9 @@ def marking_status():
             "rowTotals": row_totals,
             "hasError": has_error,
             "errorSummary": error_summary,
+            "homeCheckPending": homecheck_pending,
+            "homeCheckWall": homecheck_wall,
+            "homeCheckOutput": homecheck_output,
         }
 
     return response
@@ -625,4 +800,3 @@ def clear_error_log(wall: Optional[int] = None):
             "wall": wall,
             "message": f"No error log stored for wall {wall}.",
         }
-
