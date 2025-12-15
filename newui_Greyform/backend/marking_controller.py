@@ -221,6 +221,10 @@ def home_position_check(body: HomeCheckBody):
         homecheck_output = out
 
         if passed:
+            # 🔥 CLEAR HOME CHECK GATE
+            homecheck_pending = False
+            homecheck_wall = None
+
             print(f"[HOME CHECK] Wall {wall_id} passed → starting marking")
             threading.Thread(target=start_next_wall, daemon=True).start()
         else:
@@ -584,20 +588,21 @@ def resume():
         if current_wall is None:
             return {"resumed": False, "message": "No wall to continue from"}
 
-        # Move queue forward ONLY ONCE
+        # 🔥 CLEAR ERROR STATE
+        wall_error[current_wall] = False
+        error_logs[current_wall] = []
+
         idx = wall_sequence.index(f"wall_{current_wall}")
         queue_index = idx + 1
 
         current_wall = None
         running_flag.clear()
 
-        # 🔐 REQUIRE HOME CHECK FOR NEXT WALL
         if queue_index < len(wall_sequence):
             next_label = wall_sequence[queue_index]
             m = re.search(r"(\d+)", next_label)
             next_wall = int(m.group(1))
 
-            global homecheck_pending, homecheck_wall, homecheck_output
             homecheck_pending = True
             homecheck_wall = next_wall
             homecheck_output = None
@@ -608,7 +613,7 @@ def resume():
                 "homeCheckRequired": True
             }
 
-    return {"resumed": True, "next_wall": None}
+    return {"resumed": True}
 
 
 

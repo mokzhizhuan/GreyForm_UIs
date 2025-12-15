@@ -10,6 +10,7 @@ import HomePositionCheck from "./HomePositionCheck";
 import HomeVerified from "./HomeVerified";
 import FourWallFlow from "./FourWallFlow";
 import SixWallFlow from "./SixWallFlow";
+import { SetToAutoMode } from "./SetToAutoMode";
 
 // Import images
 import ABBHOMEImage from "../assets/ABB_Robot_HOME.jpg";
@@ -51,6 +52,7 @@ type CurrentState =
   | "invalid_model"
   | "home_position_setup"
   | "home_verified"
+  | "set_to_auto_mode"
   | "four_wall_flow"
   | "six_wall_flow";
 
@@ -97,6 +99,12 @@ const views = {
     primaryText: "Next Step",
     showSpinner: false,
   },
+  set_to_auto_mode: {
+    title: "Robot automatic mode setup",
+    variant: "success",
+    primaryText: "Next Step",
+    showSpinner: false,
+  },
   four_wall_flow: {
     title: "Marking of PBU (Four Walls)",
   },
@@ -127,7 +135,7 @@ async function postWithRetries(
 }
 
 export default function Status() {
-  const [appState, setAppState] = useState<CurrentState>("select_PBU");
+  const [appState, setAppState] = useState<CurrentState>("set_to_auto_mode");
   const v = views[appState];
 
   const [loading, setLoading] = useState(false);
@@ -502,23 +510,24 @@ export default function Status() {
                 />
               )}
 
+              {appState === "home_position_setup" && (
+                <HomePositionCheck
+                  ABBHOMEImage={ABBHOMEImage}
+                  RobotPowerONOutside={RobotPowerONOutside}
+                  v={v}
+                  verifyHomePosition={getRobotJointTarget}
+                  onHomeVerified={() => setAppState("home_verified")}
+                />
+              )}
+
               {/*
                 {appState === "home_position_setup" && (
-                  <HomePositionCheck
-                    ABBHOMEImage={ABBHOMEImage}
-                    RobotPowerONOutside={RobotPowerONOutside}
-                    v={v}
-                    verifyHomePosition={getRobotJointTarget}
-                    onHomeVerified={() => setAppState("home_verified")}
-                  />
+                  <>
+                    // AUTO SKIP HOME CHECK
+                    {setAppState("home_verified")}
+                  </>
                 )}
-                */}
-              {appState === "home_position_setup" && (
-                <>
-                  {/** AUTO SKIP HOME CHECK */}
-                  {setAppState("home_verified")}
-                </>
-              )}
+              */}
 
               {appState === "home_verified" && (
                 <HomeVerified
@@ -529,6 +538,10 @@ export default function Status() {
                   v={v}
                   onNext={() => handleFileExecuteAndStartLayout(excelfile)}
                 />
+              )}
+
+              {appState === "set_to_auto_mode" && (
+                <SetToAutoMode/>
               )}
 
               {appState === "error" && (

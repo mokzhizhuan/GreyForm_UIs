@@ -1,9 +1,9 @@
 // =========================================================
-// FINAL SixWallFlow.tsx
-// - NO refresh needed after error / continue
-// - poll() never stops (no early return on hasError)
-// - Continue → shows HomeCheck for next wall immediately
-// - Stepper locks on error wall but UI stays live
+// FINAL SixWallFlow.tsx (ROBUST)
+// - Retry ALWAYS works (uses lastErrorWall)
+// - Continue handles Wall 4 -> Placement 2, Wall 1 -> Complete
+// - failureWall + lastErrorWall captured from poll()
+// - No refresh needed
 // =========================================================
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -104,11 +104,16 @@ const parseHomeCheck = (output: string) => {
     if (tgt) target = JSON.parse(tgt.replace(/'/g, '"'));
   } catch {}
 
-  return Object.entries(target).map(([k, v], i) => ({
-    axis: k.toUpperCase(),
-    target: v,
-    current: current[`rax_${i + 1}`],
-  }));
+  // Map j0..j5 -> J1..J6
+  return Object.entries(target).map(([k, v], i) => {
+    const m = k.match(/^j(\d+)$/i);
+    const idx = m ? parseInt(m[1], 10) : i;
+    return {
+      axis: `J${idx + 1}`,
+      target: v,
+      current: current[`rax_${idx + 1}`],
+    };
+  });
 };
 
 const getLogClass = (line: string) => {
@@ -136,6 +141,10 @@ const SixWallFlow: React.FC<any> = ({
   const [paused, setPaused] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // 🔥 error targeting
+  const [failureWall, setFailureWall] = useState<number | null>(null);
+  const [lastErrorWall, setLastErrorWall] = useState<number | null>(null);
 
   // HomeCheck UI
   const [homeCheckRows, setHomeCheckRows] = useState<any[]>([]);
@@ -173,14 +182,16 @@ const SixWallFlow: React.FC<any> = ({
   }, [cmdLogs]);
 
   // --------------------------------------------------------
-  // HOME CHECK (used by start, retry, continue)
+  // HOME CHECK
   // --------------------------------------------------------
   const triggerHomeCheck = async (wall: number) => {
+    setErrorMessage(null);
+    setHasError(false);
+
     setHomeCheckWall(wall);
     setHomeCheckRows([]);
     setHomeCheckPassed(null);
 
-    // 🔒 lock stepper to the homecheck wall immediately
     setCurrentStep(wallToStep(wall));
     uiLockedRef.current = true;
 
@@ -197,11 +208,11 @@ const SixWallFlow: React.FC<any> = ({
     if (!passed) {
       setHasError(true);
       setErrorMessage(res.data?.error || `Home check failed for wall ${wall}`);
-      // keep uiLocked until operator clicks retry/continue (safer)
+      setLastErrorWall(wall);
+      setFailureWall(wall);
       return;
     }
 
-    // cleanup table after short delay
     setTimeout(() => {
       setHomeCheckRows([]);
       setHomeCheckWall(null);
@@ -226,7 +237,6 @@ const SixWallFlow: React.FC<any> = ({
       phase: 1,
     });
 
-    setCurrentStep(0);
     setCmdLogs([]);
     setHasError(false);
     setErrorMessage(null);
@@ -247,7 +257,6 @@ const SixWallFlow: React.FC<any> = ({
       phase: 2,
     });
 
-    setCurrentStep(4);
     setCmdLogs([]);
     setHasError(false);
     setErrorMessage(null);
@@ -261,42 +270,49 @@ const SixWallFlow: React.FC<any> = ({
   const pauseMarking = async () => {
     await axios.post(`${API_BASE_URL}/marking/pause`);
   };
+
   const showFailureActions = hasError || homeCheckPassed === false;
+
   const retryCurrentWall = async () => {
-    if (!homeCheckWall) return;
+    const wall = lastErrorWall;
+    if (!wall) return;
 
     setCmdLogs([]);
     setHasError(false);
     setErrorMessage(null);
-
-    // allow UI to proceed
     uiLockedRef.current = false;
 
-    await triggerHomeCheck(homeCheckWall);
+    await triggerHomeCheck(wall);
     await axios.post(`${API_BASE_URL}/marking/retry`, null, {
-      params: { wall: homeCheckWall },
+      params: { wall },
     });
   };
 
   const continueNextWall = async () => {
     const res = await axios.post(`${API_BASE_URL}/marking/continue`);
 
+    setHasError(false);
+    setErrorMessage(null);
+    setCmdLogs([]);
+    uiLockedRef.current = false;
+
+    // 🔥 UI flow rules
+    if (failureWall === 4) {
+      setCurrentStep(4); // Placement 2
+      return;
+    }
+    if (failureWall === 1) {
+      setCurrentStep(8); // Marking Complete
+      return;
+    }
+
     if (res.data?.homeCheckRequired && res.data?.next_wall) {
-      // clear previous wall error state
-      setHasError(false);
-      setErrorMessage(null);
-      setCmdLogs([]);
-
-      // 🔓 unlock UI so the next homecheck can show and stepper can move
-      uiLockedRef.current = false;
-
-      // show homecheck for next wall immediately (e.g., wall 3)
       await triggerHomeCheck(res.data.next_wall);
     }
   };
 
   // --------------------------------------------------------
-  // POLLING (IMPORTANT: never stop polling on error)
+  // POLLING
   // --------------------------------------------------------
   const poll = async () => {
     try {
@@ -309,55 +325,43 @@ const SixWallFlow: React.FC<any> = ({
       setHasError(!!data.hasError);
       setErrorMessage(data.errorSummary || null);
 
-      // Always fetch logs (even on error / paused / idle)
+      if (data.hasError) {
+        const failed =
+          data.startedWall ?? data.homeCheckWall ?? data.doneWall ?? null;
+        if (failed !== null) {
+          setFailureWall(failed);
+          setLastErrorWall(failed);
+          setCurrentStep(wallToStep(failed));
+        }
+      }
+
       const wallForLogs =
         data.startedWall ?? data.doneWall ?? data.homeCheckWall ?? null;
 
       if (wallForLogs !== null) {
-        try {
-          const logRes = await axios.get(
-            `${API_BASE_URL}/marking/errorlog/${wallForLogs}`
-          );
-          if (logRes.data?.error) {
-            setCmdLogs(logRes.data.error.slice(-50));
-          }
-        } catch {
-          // ignore
+        const logRes = await axios.get(
+          `${API_BASE_URL}/marking/errorlog/${wallForLogs}`
+        );
+        if (logRes.data?.error) {
+          setCmdLogs(logRes.data.error.slice(-50));
         }
       }
 
-      // 🔒 If backend says error, lock stepper but DO NOT return (keep polling alive)
-      if (data.hasError) {
-        if (data.startedWall !== null) {
-          setCurrentStep(wallToStep(data.startedWall));
-        } else if (data.homeCheckWall !== null) {
-          setCurrentStep(wallToStep(data.homeCheckWall));
-        } else if (data.doneWall !== null) {
-          setCurrentStep(wallToStep(data.doneWall));
-        }
-      } else {
-        // Normal auto-step while running (but not during homecheck UI lock)
-        if (!uiLockedRef.current && data.running && data.startedWall !== null) {
-          setCurrentStep(wallToStep(data.startedWall));
-        }
-
-        // Placement transitions
-        if (data.doneWall === 4 && data.phase === 1) setCurrentStep(4);
-        if (data.doneWall === 1 && data.phase === 2) setCurrentStep(8);
+      if (!data.hasError && !uiLockedRef.current && data.running && data.startedWall !== null) {
+        setCurrentStep(wallToStep(data.startedWall));
       }
-    } catch {
-      // ignore network errors
-    }
+
+      if (data.doneWall === 4 && data.phase === 1) setCurrentStep(4);
+      if (data.doneWall === 1 && data.phase === 2) setCurrentStep(8);
+
+    } catch {}
 
     pollingRef.current = window.setTimeout(poll, 1500);
   };
 
   useEffect(() => {
     poll();
-    return () => {
-      if (pollingRef.current) clearTimeout(pollingRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => pollingRef.current && clearTimeout(pollingRef.current);
   }, []);
 
   // --------------------------------------------------------
@@ -385,12 +389,12 @@ const SixWallFlow: React.FC<any> = ({
         />
 
         <div className="flex flex-col w-[520px] gap-4">
-          {/* STEP TITLE */}
+          {/*
           <div className="menu bg-base-200 rounded-box p-4 shadow">
             <p className="text-2xl font-semibold">{STEP_LABELS[currentStep]}</p>
           </div>
+          */}
 
-          {/* INSTRUCTIONS */}
           <div className="menu bg-base-200 rounded-box p-4 shadow">
             <p className="text-lg font-semibold">Instruction</p>
             <p className="mt-1 text-sm">
@@ -402,45 +406,32 @@ const SixWallFlow: React.FC<any> = ({
               {currentStep >= 5 && currentStep <= 7 && "Marking wall in progress."}
               {currentStep === 8 && "Marking complete."}
             </p>
+            <p className="mt-1 text-sm">
+              {"Ensure that the laser leveller is turned on and is facing the wall that is to be marked."}
+            </p>
           </div>
-
-          {/* BACKEND OUTPUT */}
+          {/*
           <div className="bg-black font-mono text-xs rounded p-3 max-h-[220px] overflow-y-auto shadow">
             <div className="text-green-300 mb-1">Backend Output</div>
             {cmdLogs.length === 0 ? (
-              <div className="opacity-60 text-green-400">
-                Waiting for backend output…
-              </div>
+              <div className="opacity-60 text-green-400">Waiting for backend output…</div>
             ) : (
               cmdLogs.map((l, i) => (
-                <div key={i} className={getLogClass(l)}>
-                  {l}
-                </div>
+                <div key={i} className={getLogClass(l)}>{l}</div>
               ))
             )}
             <div ref={logEndRef} />
           </div>
-
-          {/* ERROR MESSAGE */}
+          */}
           {errorMessage && (
-            <div className="p-3 bg-red-100 text-red-700 rounded">
-              {errorMessage}
-            </div>
+            <div className="p-3 bg-red-100 text-red-700 rounded">{errorMessage}</div>
           )}
 
-          {/* HOME CHECK TABLE */}
           {homeCheckRows.length > 0 && (
             <div className="bg-white shadow rounded overflow-hidden">
-              <div
-                className={`text-center font-bold py-1 ${
-                  homeCheckPassed === false
-                    ? "bg-red-100 text-red-800"
-                    : "bg-green-100 text-green-800"
-                }`}
-              >
+              <div className={`text-center font-bold py-1 ${homeCheckPassed === false ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}>
                 {homeCheckPassed === false ? "✖ Home check failed" : "✔ Home position verified"}
               </div>
-
               <table className="w-full text-sm">
                 <thead>
                   <tr>
@@ -462,52 +453,31 @@ const SixWallFlow: React.FC<any> = ({
             </div>
           )}
 
-          {/* BUTTONS */}
           <div className="flex flex-col gap-3">
             {currentStep === 0 && (
-              <button className="btn btn-primary" onClick={startPhaseOne}>
-                Next
-              </button>
+              <button className="btn btn-primary" onClick={startPhaseOne}>Next</button>
             )}
 
             {currentStep === 4 && (
-              <button className="btn btn-primary" onClick={startPhaseTwo}>
-                Next
-              </button>
+              <button className="btn btn-primary" onClick={startPhaseTwo}>Next</button>
             )}
 
             {running && isMarkingStep(currentStep) && !hasError && (
-              <button className="btn btn-warning" onClick={pauseMarking}>
-                Pause
-              </button>
+              <button className="btn btn-warning" onClick={pauseMarking}>Pause</button>
             )}
 
             {showFailureActions && (
               <div className="flex gap-2">
-                <button
-                  className="btn btn-error flex-1"
-                  onClick={retryCurrentWall}
-                >
-                  Retry
-                </button>
-
-                <button
-                  className="btn btn-warning flex-1"
-                  onClick={continueNextWall}
-                >
-                  Continue →
-                </button>
+                <button className="btn btn-error flex-1" onClick={retryCurrentWall}>Retry</button>
+                <button className="btn btn-warning flex-1" onClick={continueNextWall}>Continue →</button>
               </div>
             )}
 
             {currentStep === 8 && (
-              <button className="btn btn-success" onClick={() => window.close()}>
-                Exit
-              </button>
+              <button className="btn btn-success" onClick={() => window.close()}>Exit</button>
             )}
           </div>
 
-          {/* tiny debug line */}
           <div className="text-xs opacity-60">
             running={String(running)} paused={String(paused)} hasError={String(hasError)}
           </div>
