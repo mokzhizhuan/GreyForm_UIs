@@ -470,7 +470,7 @@ const SixWallFlow: React.FC<any> = ({
               {"Ensure that the laser leveller is turned on and is facing the wall that is to be marked."}
             </p>
           </div>
-
+	{/*
           <div className="bg-black font-mono text-xs rounded p-3 max-h-[220px] overflow-y-auto shadow">
             <div className="text-green-300 mb-1">Backend Output</div>
             {cmdLogs.length === 0 ? (
@@ -482,11 +482,11 @@ const SixWallFlow: React.FC<any> = ({
             )}
             <div ref={logEndRef} />
           </div>
-
+		
           {errorMessage && (
             <div className="p-3 bg-red-100 text-red-700 rounded">{errorMessage}</div>
           )}
-
+	*/}
           {homeCheckRows.length > 0 && (
             <div className="bg-white shadow rounded overflow-hidden">
               <div className={`text-center font-bold py-1 ${homeCheckPassed === false ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}>
