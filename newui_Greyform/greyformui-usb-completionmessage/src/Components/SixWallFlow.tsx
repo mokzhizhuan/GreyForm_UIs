@@ -31,7 +31,7 @@ interface MarkingStatusResponse {
   phase: number | null;
   hasError: boolean;
   errorSummary?: string | null;
-
+  lastFailedWall?: number | null;
   homeCheckPending?: boolean;
   homeCheckWall?: number | null;
   homeCheckOutput?: string | null;
@@ -236,7 +236,6 @@ const SixWallFlow: React.FC<any> = ({
       max_wall: maxWall,
       phase: 1,
     });
-
     setCmdLogs([]);
     setHasError(false);
     setErrorMessage(null);
@@ -272,92 +271,147 @@ const SixWallFlow: React.FC<any> = ({
   };
 
   const showFailureActions = hasError || homeCheckPassed === false;
-
+  const [homeCheckPending, setHomeCheckPending] = useState(false);
   const retryCurrentWall = async () => {
-    const wall = lastErrorWall;
-    if (!wall) return;
+  const wall = lastErrorWall;
+  if (!wall) return;
 
-    setCmdLogs([]);
-    setHasError(false);
-    setErrorMessage(null);
-    uiLockedRef.current = false;
+  setCmdLogs([]);
+  setHasError(false);
+  setErrorMessage(null);
 
-    await triggerHomeCheck(wall);
-    await axios.post(`${API_BASE_URL}/marking/retry`, null, {
-      params: { wall },
-    });
-  };
+  // 1) Tell backend: retry same wall (sets homecheck gate)
+  await axios.post(`${API_BASE_URL}/marking/retry`);
+
+  // 2) Run homecheck for SAME wall
+  await triggerHomeCheck(wall);
+};
 
   const continueNextWall = async () => {
-    const res = await axios.post(`${API_BASE_URL}/marking/continue`);
+  const res = await axios.post(`${API_BASE_URL}/marking/continue`);
 
-    setHasError(false);
-    setErrorMessage(null);
-    setCmdLogs([]);
-    uiLockedRef.current = false;
+  setHasError(false);
+  setErrorMessage(null);
+  setCmdLogs([]);
+  uiLockedRef.current = false;
 
-    // 🔥 UI flow rules
-    if (failureWall === 4) {
-      setCurrentStep(4); // Placement 2
-      return;
-    }
-    if (failureWall === 1) {
-      setCurrentStep(8); // Marking Complete
-      return;
-    }
+  // phase jump rules
+  if (!hasError && running === false && failureWall === null && currentStep === 3) {
+    setCurrentStep(4);
+  }
+  if (!hasError && running === false && failureWall === null && currentStep === 7) {
+  setCurrentStep(8);  
+  }
 
-    if (res.data?.homeCheckRequired && res.data?.next_wall) {
-      await triggerHomeCheck(res.data.next_wall);
-    }
-  };
+  if (res.data?.homeCheckRequired && res.data?.next_wall) {
+    await triggerHomeCheck(res.data.next_wall); // ✅ THIS is the key
+  }
+};
 
   // --------------------------------------------------------
   // POLLING
   // --------------------------------------------------------
   const poll = async () => {
-    try {
-      const { data } = await axios.get<MarkingStatusResponse>(
-        `${API_BASE_URL}/marking/status`
+  try {
+    const { data } = await axios.get<MarkingStatusResponse>(
+      `${API_BASE_URL}/marking/status`
+    );
+
+    setRunning(data.running);
+    setPaused(data.paused);
+    setHasError(!!data.hasError);
+    setErrorMessage(data.errorSummary || null);
+    setHomeCheckPending(!!data.homeCheckPending);
+    setHomeCheckWall(data.homeCheckWall ?? null);
+    // ✅ Re-hydrate failure wall after page refresh
+    if (data.lastFailedWall !== undefined && data.lastFailedWall !== null) {
+      setLastErrorWall(data.lastFailedWall);
+      setFailureWall(data.lastFailedWall);
+    }
+
+    // 🔥 UNLOCK UI WHEN WAITING FOR HOME CHECK
+    if (data.homeCheckPending) {
+      uiLockedRef.current = false;
+    }
+
+    // ==================================================
+    // 1️⃣ HOME CHECK PENDING → MOVE TO NEXT WALL
+    // ==================================================
+    if (data.homeCheckPending && data.homeCheckWall !== null) {
+      setCurrentStep(wallToStep(data.homeCheckWall));
+
+      const logRes = await axios.get(
+        `${API_BASE_URL}/marking/errorlog/${data.homeCheckWall}`
       );
-
-      setRunning(data.running);
-      setPaused(data.paused);
-      setHasError(!!data.hasError);
-      setErrorMessage(data.errorSummary || null);
-
-      if (data.hasError) {
-        const failed =
-          data.startedWall ?? data.homeCheckWall ?? data.doneWall ?? null;
-        if (failed !== null) {
-          setFailureWall(failed);
-          setLastErrorWall(failed);
-          setCurrentStep(wallToStep(failed));
-        }
+      if (logRes.data?.error) {
+        setCmdLogs(logRes.data.error.slice(-50));
       }
 
-      const wallForLogs =
-        data.startedWall ?? data.doneWall ?? data.homeCheckWall ?? null;
+      pollingRef.current = window.setTimeout(poll, 1500);
+      return;
+    }
+    
+    // ==================================================
+    // 2️⃣ ERROR STATE → STAY ON FAILED WALL
+    // ==================================================
+    if (data.hasError) {
+      const failed = data.startedWall ?? data.doneWall ?? null;
+      if (failed !== null) {
+        setFailureWall(failed);
+        setLastErrorWall(failed);
+        setCurrentStep(wallToStep(failed));
 
-      if (wallForLogs !== null) {
         const logRes = await axios.get(
-          `${API_BASE_URL}/marking/errorlog/${wallForLogs}`
+          `${API_BASE_URL}/marking/errorlog/${failed}`
         );
         if (logRes.data?.error) {
           setCmdLogs(logRes.data.error.slice(-50));
         }
       }
 
-      if (!data.hasError && !uiLockedRef.current && data.running && data.startedWall !== null) {
-        setCurrentStep(wallToStep(data.startedWall));
+      pollingRef.current = window.setTimeout(poll, 1500);
+      return;
+    }
+
+    // ==================================================
+    // 3️⃣ ACTIVE MARKING
+    // ==================================================
+    if (
+      data.running &&
+      data.startedWall !== null &&
+      !uiLockedRef.current
+    ) {
+      setCurrentStep(wallToStep(data.startedWall));
+
+      const logRes = await axios.get(
+        `${API_BASE_URL}/marking/errorlog/${data.startedWall}`
+      );
+      if (logRes.data?.error) {
+        setCmdLogs(logRes.data.error.slice(-50));
       }
 
-      if (data.doneWall === 4 && data.phase === 1) setCurrentStep(4);
-      if (data.doneWall === 1 && data.phase === 2) setCurrentStep(8);
+      pollingRef.current = window.setTimeout(poll, 1500);
+      return;
+    }
 
-    } catch {}
+    // ==================================================
+    // 4️⃣ PHASE TRANSITIONS
+    // ==================================================
+    if (data.doneWall === 4 && data.phase === 1) {
+      setCurrentStep(4);
+    }
 
-    pollingRef.current = window.setTimeout(poll, 1500);
-  };
+    if (data.doneWall === 1 && data.phase === 2) {
+      setCurrentStep(8);
+    }
+
+  } catch (e) {
+    // optional console.error(e)
+  }
+
+  pollingRef.current = window.setTimeout(poll, 1500);
+};
+
 
   useEffect(() => {
     poll();
@@ -398,19 +452,25 @@ const SixWallFlow: React.FC<any> = ({
           <div className="menu bg-base-200 rounded-box p-4 shadow">
             <p className="text-lg font-semibold">Instruction</p>
             <p className="mt-1 text-sm">
-              {currentStep === 0 && "Push robot into PBU and align for Placement 1."}
-              {currentStep === 1 && "Marking Wall 2 in progress."}
-              {currentStep === 2 && "Marking Wall 3 in progress."}
-              {currentStep === 3 && "Marking Wall 4 in progress."}
-              {currentStep === 4 && "Reposition robot for Placement 2."}
-              {currentStep >= 5 && currentStep <= 7 && "Marking wall in progress."}
+              {homeCheckPending && homeCheckWall !== null && (
+                <>Home position check required for Wall {homeCheckWall}.</>
+              )}
+
+              {!homeCheckPending && currentStep === 1 && "Marking Wall 2 in progress."}
+              {!homeCheckPending && currentStep === 2 && "Marking Wall 3 in progress."}
+              {!homeCheckPending && currentStep === 3 && "Marking Wall 4 in progress."}
+
+              {!homeCheckPending && currentStep >= 5 && currentStep <= 7 && (
+                "Marking wall in progress."
+              )}
               {currentStep === 8 && "Marking complete."}
             </p>
+
             <p className="mt-1 text-sm">
               {"Ensure that the laser leveller is turned on and is facing the wall that is to be marked."}
             </p>
           </div>
-          {/*
+
           <div className="bg-black font-mono text-xs rounded p-3 max-h-[220px] overflow-y-auto shadow">
             <div className="text-green-300 mb-1">Backend Output</div>
             {cmdLogs.length === 0 ? (
@@ -422,7 +482,7 @@ const SixWallFlow: React.FC<any> = ({
             )}
             <div ref={logEndRef} />
           </div>
-          */}
+
           {errorMessage && (
             <div className="p-3 bg-red-100 text-red-700 rounded">{errorMessage}</div>
           )}

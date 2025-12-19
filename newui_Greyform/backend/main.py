@@ -6,6 +6,8 @@ import pandas as pd
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from backend.marking_controller import app as marking_subapp
+import os
+
 # ============================================================
 # 🌐 Main FastAPI Application (NO ROS)
 # ============================================================
@@ -36,7 +38,7 @@ def getdirectory():
             "python3",
             "/home/winsys/pbu_marking_ros/directorysearch.py",
             "--directory",
-            "/home/winsys/pbu_marking_ros/pbu_data/mockup/",
+            "/home/winsys/pbu_marking_ros/pbu_data/",
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -117,7 +119,8 @@ def read_directory():
 # ============================================================
 class FileExecBody(BaseModel):
     directory: str
-    excelfile: str
+    folder: Optional[str] = None
+    excelfile: Optional[str] = None
 
 
 class WallInfo(BaseModel):
@@ -127,54 +130,86 @@ class WallInfo(BaseModel):
 
 
 class FileExecuBody(BaseModel):
-    excelfile: str
+    folder: str   # user clicked folder (e.g. .../mockup/test_tmp)
 
 
 @app.post("/file_execute_data")
 def file_execute_data(body: FileExecuBody):
-    excelFile = body.excelfile  # <── get from JSON body
     try:
-        process = subprocess.Popen(
+        root_dir = body.folder
+
+        # ------------------------------------------------------------
+        # 1️⃣ Find EXACT test_points_tmp.xlsx and output ABSOLUTE path
+        # ------------------------------------------------------------
+        find_cmd = (
+            f"cd '{root_dir}' && "
+            f"find . -type f -iname 'test_points_tmp.xlsx' "
+            f"-exec realpath {{}} \\; -quit"
+        )
+
+        p1 = subprocess.Popen(
             [
-                "sshpass",
-                "-p",
-                "winsys",
-                "ssh",
-                "winsys@192.168.130.5",
-                "python3",
-                "/home/winsys/pbu_marking_ros/detectwalls.py",
-                "--filename",
-                excelFile,
+                "sshpass", "-p", "winsys",
+                "ssh", "winsys@192.168.130.5",
+                "bash", "-lc", find_cmd,
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
         )
 
-        lines = [line.rstrip("\n") for line in process.stdout]
-        process.wait()
+        excel_path = p1.stdout.read().strip()
+        p1.wait()
+
+        if not excel_path:
+            return {
+                "ok": False,
+                "returncode": 0,
+                "error": "test_points_tmp.xlsx not found",
+                "data": [],
+            }
+
+        print("✅ USING EXCEL:", excel_path)
+
+        # ------------------------------------------------------------
+        # 2️⃣ Run detectwalls.py with CLEAN absolute path
+        # ------------------------------------------------------------
+        p2 = subprocess.Popen(
+            [
+                "sshpass", "-p", "winsys",
+                "ssh", "winsys@192.168.130.5",
+                "python3",
+                "/home/winsys/pbu_marking_ros/detectwalls.py",
+                "--filename",
+                excel_path,
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+
+        lines = [line.rstrip("\n") for line in p2.stdout]
+        p2.wait()
 
         return {
-            "ok": process.returncode == 0,
-            "returncode": process.returncode,
+            "ok": p2.returncode == 0,
+            "returncode": p2.returncode,
             "data": lines,
         }
 
     except Exception as e:
         return {"ok": False, "error": str(e), "data": []}
-    
+
 
 class CombineRequest(BaseModel):
-    folder: str   # full path: /home/ros_user/pbu_data/mockup/PBU_TERRAHL2_out
+    folder: str  # full path: /home/ros_user/pbu_data/mockup/PBU_TERRAHL2_out
 
 
 @app.post("/combine_walls")
 def combine_walls(req: CombineRequest):
 
     # Remote command for SSH
-    remote_cmd = (
-        f"python3 /home/winsys/combine_wall_excels.py '{req.folder}'"
-    )
+    remote_cmd = f"python3 /home/winsys/combine_wall_excels.py '{req.folder}'"
 
     cmd = [
         "sshpass",
@@ -194,16 +229,12 @@ def combine_walls(req: CombineRequest):
             timeout=60,
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"SSH call failed: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"SSH call failed: {str(e)}")
 
     # If SSH failed
     if result.returncode != 0:
         raise HTTPException(
-            status_code=500,
-            detail=f"SSH error: {result.stderr.strip()}"
+            status_code=500, detail=f"SSH error: {result.stderr.strip()}"
         )
 
     # Parse the JSON return from combine_wall_excels.py
@@ -212,9 +243,7 @@ def combine_walls(req: CombineRequest):
     except json.JSONDecodeError:
         raise HTTPException(
             status_code=500,
-            detail=f"Invalid JSON returned from remote script: {result.stdout}"
+            detail=f"Invalid JSON returned from remote script: {result.stdout}",
         )
 
     return response_data
-
-

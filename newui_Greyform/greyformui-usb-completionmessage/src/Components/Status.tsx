@@ -10,7 +10,7 @@ import HomePositionCheck from "./HomePositionCheck";
 import HomeVerified from "./HomeVerified";
 import FourWallFlow from "./FourWallFlow";
 import SixWallFlow from "./SixWallFlow";
-import { SetToAutoMode } from "./SetToAutoMode";
+//import { SetToAutoMode } from "./SetToAutoMode";
 
 // Import images
 import ABBHOMEImage from "../assets/ABB_Robot_HOME.jpg";
@@ -52,7 +52,7 @@ type CurrentState =
   | "invalid_model"
   | "home_position_setup"
   | "home_verified"
-  | "set_to_auto_mode"
+  //| "set_to_auto_mode"
   | "four_wall_flow"
   | "six_wall_flow";
 
@@ -99,12 +99,12 @@ const views = {
     primaryText: "Next Step",
     showSpinner: false,
   },
-  set_to_auto_mode: {
+  /*set_to_auto_mode: {
     title: "Robot automatic mode setup",
     variant: "success",
     primaryText: "Next Step",
     showSpinner: false,
-  },
+  },*/
   four_wall_flow: {
     title: "Marking of PBU (Four Walls)",
   },
@@ -135,7 +135,7 @@ async function postWithRetries(
 }
 
 export default function Status() {
-  const [appState, setAppState] = useState<CurrentState>("set_to_auto_mode");
+  const [appState, setAppState] = useState<CurrentState>("select_PBU");
   const v = views[appState];
 
   const [loading, setLoading] = useState(false);
@@ -267,11 +267,11 @@ export default function Status() {
   const [wallDetails, setWallDetails] =
     useState<Record<number, WallRowDict[]>>({});
 
-  async function handleFileExecute(excelPath: string): Promise<FileExecuteResult> {
-  console.log("➡ handleFileExecute() starting with:", excelPath);
+  async function handleFileExecute(folderPath: string): Promise<FileExecuteResult> {
+  console.log("➡ handleFileExecute() starting with folder:", folderPath);
 
   const res = await axios.post(`${API_BASE_URL}/file_execute_data`, {
-    excelfile: excelPath,
+    folder: folderPath,   // ✅ CHANGED
   });
 
   const lines: string[] = res.data.data || [];
@@ -281,10 +281,10 @@ export default function Status() {
   // ---------------------------------------------
   const excelFiles: string[] = [];
 
-  // keep your existing variable (but it's no longer the only one)
-  let excelFile = excelPath;
+  // keep backward compatibility
+  let excelFile = "";
 
-  let folder = "";
+  let folder = folderPath;   // ✅ now comes from argument
   let maxWall = 0;
   let allWalls: number[] = [];
   let wallRows: Record<number, number> = {};
@@ -299,17 +299,19 @@ export default function Status() {
   for (const rawLine of lines) {
     const line = (rawLine ?? "").trim();
 
+    if (!line) continue;
+
     if (line.startsWith("Folder:")) {
       folder = line.replace("Folder:", "").trim();
     }
 
     // ---------------------------------------------
-    // NEW: collect ALL Working Excel paths
+    // collect ALL Working Excel paths
     // ---------------------------------------------
     if (line.startsWith("Working Excel:")) {
       const path = line.replace("Working Excel:", "").trim();
-      excelFiles.push(path);  // store multiple files
-      excelFile = path;       // keep latest for backward compatibility
+      excelFiles.push(path);
+      excelFile = path; // last one for backward compatibility
     }
 
     if (line.startsWith("MaxWall") || line.startsWith("Max wall number:")) {
@@ -364,7 +366,7 @@ export default function Status() {
     let currentRow: WallRowDict | null = null;
 
     for (const raw of linesArr) {
-      let clean = (raw ?? "").trim();
+      const clean = (raw ?? "").trim();
       if (!clean) continue;
 
       const rm = clean.match(/^Row\s+(\d+):/i);
@@ -389,12 +391,12 @@ export default function Status() {
   }
 
   // ---------------------------------------------------------
-  // RETURN (now includes excelFiles array)
+  // RETURN
   // ---------------------------------------------------------
   return {
     folder,
-    excelFile,     // still available (last one)
-    excelFiles,    // ⭐ NEW: ARRAY OF ALL Working Excel
+    excelFile,      // last excel (compat)
+    excelFiles,     // ⭐ ALL excels found in subfolders
     maxWall,
     allWalls,
     wallRows,
@@ -422,59 +424,63 @@ export default function Status() {
     }
   }
 
-  const handleFileExecuteAndStartLayout = async (excelPath: string) => {
-    console.log("▶ handleFileExecuteAndStartLayout:", excelPath);
+ const handleFileExecuteAndStartLayout = async (folderPath: string) => {
+  console.log("▶ handleFileExecuteAndStartLayout (folder):", folderPath);
 
-    if (!excelPath) {
-      console.error("❌ handleFileExecuteAndStartLayout called with undefined filepath");
-      setError("Missing Excel file path");
-      setAppState("error");
-      return;
+  if (!folderPath) {
+    console.error("❌ handleFileExecuteAndStartLayout called with undefined folderPath");
+    setError("Missing folder path");
+    setAppState("error");
+    return;
+  }
+
+  // ✅ If this folder has already been processed, DO NOT run detectwalls again.
+  // This prevents extra folder creation & keeps wallDetails intact.
+  if (file_direct === folderPath && maxWall !== null) {
+    console.log("🔁 Re-using cached detectwalls result for folder:", folderPath);
+    console.log("   cached folder =", file_direct);
+    console.log("   cached maxWall =", maxWall);
+    console.log("   cached wallDetails keys =", Object.keys(wallDetails));
+    await handleStartLayout(maxWall);
+    return;
+  }
+
+  try {
+    const result = await handleFileExecute(folderPath); // ✅ CHANGED
+
+    // If you still want to cache, cache by folder now
+    // (processedExcel no longer makes sense if you start from folder)
+    setProcessedExcel(result.excelFile); // optional: keep if you still use it elsewhere
+
+    set_file_direct(result.folder);
+    setExcelFiles(result.excelFiles);
+    setExcelfile(result.excelFile);
+
+    setMaxWall(result.maxWall);
+    setAllWalls(result.allWalls);
+    setWallRows(result.wallRows);
+    setWallDetails(result.wallDetails);
+
+    console.log("📂 folder:", result.folder);
+    console.log("📄 excelFiles:", result.excelFiles);
+    console.log("📄 excelFile:", result.excelFile);
+    console.log("🔢 maxWall:", result.maxWall);
+    console.log("📊 wallRows:", result.wallRows);
+
+    if (result.wallDetails[1]?.[0]) {
+      console.log("🧱 wallDetails[1][0]:", result.wallDetails[1][0]);
+    } else {
+      console.log("⚠ no wallDetails[1][0]");
     }
 
-    // ✅ If this Excel has already been processed, DO NOT run detectwalls again.
-    // This prevents extra "_out1_out" folder creation & keeps wallDetails intact.
-    if (processedExcel === excelPath && maxWall !== null) {
-      console.log("🔁 Re-using cached detectwalls result for:", excelPath);
-      console.log("   cached folder =", file_direct);
-      console.log("   cached maxWall =", maxWall);
-      console.log("   cached wallDetails keys =", Object.keys(wallDetails));
-      await handleStartLayout(maxWall);
-      return;
-    }
+    await handleStartLayout(result.maxWall);
+  } catch (err) {
+    console.error("❌ Failed to execute folder:", err);
+    setError(err instanceof Error ? err.message : String(err));
+    setAppState("error");
+  }
+};
 
-    try {
-      const result = await handleFileExecute(excelPath);
-
-      // mark this Excel as processed (note: backend may rewrite excelFile path)
-      setProcessedExcel(result.excelFile);
-
-      set_file_direct(result.folder);
-      setExcelFiles(result.excelFiles)
-      setExcelfile(result.excelFile);
-      setMaxWall(result.maxWall);
-      setAllWalls(result.allWalls);
-      setWallRows(result.wallRows);
-      setWallDetails(result.wallDetails);
-
-      console.log("📂 folder:", result.folder);
-      console.log(result.excelFiles)
-      console.log("📄 excelFile:", result.excelFile);
-      console.log("🔢 maxWall:", result.maxWall);
-      console.log("📊 wallRows:", result.wallRows);
-      if (result.wallDetails[1]?.[0]) {
-        console.log("🧱 wallDetails[1][0]:", result.wallDetails[1][0]);
-      } else {
-        console.log("⚠ no wallDetails[1][0]");
-      }
-
-      await handleStartLayout(result.maxWall);
-    } catch (err) {
-      console.error("❌ Failed to execute file:", err);
-      setError(err instanceof Error ? err.message : String(err));
-      setAppState("error");
-    }
-  };
 
   return (
     <>
@@ -498,18 +504,16 @@ export default function Status() {
                   onConfirm={async (file) => {
                     if (!file) return;
 
-                    const selectedPath = file.fullPath;
+                    const selectedFolder = file.fullPath;
 
-                    setExcelfile(selectedPath);
-                    console.log("Selected PBU Excel:", selectedPath);
-
-                    await handleFileExecuteAndStartLayout(selectedPath);
+                    console.log("Selected PBU Folder:", selectedFolder);
+                    await handleFileExecuteAndStartLayout(selectedFolder);
 
                     setAppState("home_position_setup");
                   }}
                 />
               )}
-
+            {/*
               {appState === "home_position_setup" && (
                 <HomePositionCheck
                   ABBHOMEImage={ABBHOMEImage}
@@ -519,15 +523,15 @@ export default function Status() {
                   onHomeVerified={() => setAppState("home_verified")}
                 />
               )}
+                */}
 
-              {/*
                 {appState === "home_position_setup" && (
                   <>
                     // AUTO SKIP HOME CHECK
                     {setAppState("home_verified")}
                   </>
                 )}
-              */}
+  
 
               {appState === "home_verified" && (
                 <HomeVerified
@@ -536,13 +540,15 @@ export default function Status() {
                   RobotPowerOFFOutside={RobotPowerOFFOutside}
                   RobotPowerONInside={RobotPowerONInside}
                   v={v}
-                  onNext={() => handleFileExecuteAndStartLayout(excelfile)}
+                  onNext={() => handleFileExecuteAndStartLayout(file_direct)}
                 />
               )}
 
+              {/*
               {appState === "set_to_auto_mode" && (
                 <SetToAutoMode/>
               )}
+                */}
 
               {appState === "error" && (
                 <div className="text-red-400">
