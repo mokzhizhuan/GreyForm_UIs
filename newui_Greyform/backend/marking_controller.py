@@ -158,10 +158,21 @@ def make_relative_excel(path: str, folder: Optional[str] = None) -> str:
 # -------------------------------------------------------------------
 @app.post("/homecheck")
 def home_position_check(body: HomeCheckBody):
-    global homecheck_pending, homecheck_wall, homecheck_output
+    wall_id = int(re.search(r"\d+", body.target).group())
 
-    target = body.target.strip()
-    wall_id = int(re.search(r"\d+", target).group())
+    passed, out = run_home_check(wall_id)
+
+    return {
+        "ok": True,
+        "wall": wall_id,
+        "passed": passed,
+        "output": out,
+    }
+
+def run_home_check(wall_id: int):
+    global homecheck_pending, homecheck_wall, homecheck_output, last_failed_wall
+
+    target = f"wall_{wall_id}"
 
     cmd = [
         "sshpass", "-p", "winsys",
@@ -172,37 +183,23 @@ def home_position_check(body: HomeCheckBody):
         "--target", target,
     ]
 
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    proc = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+    )
     out, _ = proc.communicate()
 
     passed = any(line.strip() == "True" for line in out.splitlines())
 
     with state_lock:
         homecheck_output = out
+        homecheck_pending = not passed
+        homecheck_wall = None if passed else wall_id
+        last_failed_wall = None if passed else wall_id
 
-        if not passed:
-            homecheck_pending = True
-            homecheck_wall = wall_id
-            return {
-                "ok": True,
-                "wall": wall_id,
-                "passed": False,
-                "output": out,
-            }
-
-        # ✅ PASSED — start marking SAME queue_index
-        homecheck_pending = False
-        homecheck_wall = None
-
+    if passed:
         threading.Thread(target=start_next_wall, daemon=True).start()
 
-    return {
-        "ok": True,
-        "wall": wall_id,
-        "passed": True,
-        "output": out,
-    }
-
+    return passed, out
 
 
 # -------------------------------------------------------------------
@@ -225,13 +222,18 @@ PROCESS_FAIL_MESSAGE = re.compile(r"data capture/processing failed", re.IGNORECA
 processing_failed = False
 def reader_thread(proc: subprocess.Popen, wall_id: int):
     global last_completed_wall, current_process, queue_index
+    global current_wall, last_failed_wall
+    global skipped_points, current_point
 
     fatal_traceback = False
     skipped_found = False
+    processing_failed_local = False  # ✅ use a local that we control
 
+    last_line = ""
     try:
         for raw in proc.stdout:
             line = raw.rstrip()
+            last_line = line
             print(line)
 
             with state_lock:
@@ -240,43 +242,47 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
             # 🔴 FATAL: Python traceback
             if TRACEBACK_RE.search(line):
                 fatal_traceback = True
-                _append_log(wall_id, "[FATAL] Python traceback detected")
+                with state_lock:
+                    _append_log(wall_id, "[FATAL] Python traceback detected")
                 break
 
             # Track current point
             m = re.search(r"Now working on point\s+(\d+)", line)
             if m:
-                current_point[wall_id] = int(m.group(1))
+                with state_lock:
+                    current_point[wall_id] = int(m.group(1))
 
             # 🟠 SKIPPED = ERROR
             if "VALUE skipped" in line:
                 skipped_found = True
-                p = current_point.get(wall_id)
-                if p is not None:
-                    skipped_points.setdefault(wall_id, []).append(p)
-                _append_log(wall_id, f"[SKIPPED] Wall {wall_id}: point {p}")
+                with state_lock:
+                    p = current_point.get(wall_id)
+                    if p is not None:
+                        skipped_points.setdefault(wall_id, []).append(p)
+                    #_append_log(wall_id, f"[SKIPPED] Wall {wall_id}: point {p}")
 
             # Count done points
             if "Point" in line and "done" in line:
-                wall_point_count[wall_id] += 1
+                with state_lock:
+                    wall_point_count[wall_id] = wall_point_count.get(wall_id, 0) + 1
+
+            # Processing failure markers (✅ detect inside loop)
+            if PROCESS_FAIL_SUCCESS_FALSE.search(line) or PROCESS_FAIL_MESSAGE.search(line):
+                processing_failed_local = True
+                with state_lock:
+                    _append_log(wall_id, "[ERROR] Processing/data capture failed")
 
         # 🔴 Kill on fatal traceback
         if fatal_traceback:
             try:
                 pgid = os.getpgid(proc.pid)
-                os.killpg(pgid, signal.SIGINT)   # Ctrl+C
+                os.killpg(pgid, signal.SIGINT)
                 time.sleep(1)
                 if proc.poll() is None:
                     os.killpg(pgid, signal.SIGKILL)
             except Exception as e:
-                _append_log(wall_id, f"[KILL ERROR] {e}")
-        if (
-            PROCESS_FAIL_SUCCESS_FALSE.search(line)
-            or PROCESS_FAIL_MESSAGE.search(line)
-        ):
-            processing_failed = True
-            _append_log(wall_id, "[ERROR] Processing/data capture failed")
-
+                with state_lock:
+                    _append_log(wall_id, f"[KILL ERROR] {e}")
 
         proc.wait()
 
@@ -285,38 +291,52 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
             running_flag.clear()
             current_process = None
 
-            # 🔴 TRACEBACK ERROR
-            if fatal_traceback:
+            # --- ANY ERROR CASE: set last_failed_wall ---
+            def mark_failed(msg: str):
+                global current_wall, last_failed_wall
                 wall_error[wall_id] = True
                 current_wall = wall_id
-                _append_log(wall_id, f"[ERROR] Fatal traceback — wall {wall_id} aborted")
+                last_failed_wall = wall_id
+                _append_log(wall_id, msg)
+
+            if fatal_traceback:
+                mark_failed(f"[ERROR] Fatal traceback — wall {wall_id} aborted")
                 return
 
-            # 🟠 SKIPPED = ERROR (NO KILL)
             if skipped_found:
-                wall_error[wall_id] = True
-                current_wall = wall_id
-                _append_log(
-                    wall_id,
-                    f"[ERROR] Wall {wall_id} has skipped points: "
-                    + ", ".join(map(str, skipped_points.get(wall_id, [])))
+                pts = skipped_points.get(wall_id, [])
+                done = wall_point_count.get(wall_id, 0)
+                total = row_totals.get(wall_id, 0)
+
+                msg = (
+                    f"[ERROR] Wall {wall_id} FAILED — "
+                    f"skipped points: {', '.join(map(str, pts))} | "
+                    f"Progress: {done}/{total} done"
                 )
+
+                mark_failed(msg)
                 return
-            if processing_failed:
-                wall_error[wall_id] = True
-                current_wall = wall_id
-                _append_log(wall_id, "[ERROR] Wall aborted due to processing failure")
+
+            if processing_failed_local:
+                mark_failed("[ERROR] Wall aborted due to processing failure")
                 return
-            # 🟢 SUCCESS → AUTO NEXT WALL
+
+            # ✅ SUCCESS
             wall_error[wall_id] = False
             last_completed_wall = wall_id
             current_wall = None
+            last_failed_wall = None  # optional: clear on success
             queue_index += 1
-
-            _append_log(wall_id, "[SUCCESS] Wall completed successfully")
+            done = wall_point_count.get(wall_id, 0)
+            total = row_totals.get(wall_id, 0)
+            _append_log(
+                wall_id,
+                f"[SUCCESS] Wall {wall_id} completed successfully ({done}/{total})"
+            )
 
             if queue_index < len(wall_sequence):
                 threading.Thread(target=start_next_wall, daemon=True).start()
+
 
 # -------------------------------------------------------------------
 # START NEXT WALL (from wall_sequence[queue_index])
@@ -403,7 +423,7 @@ def start_next_wall():
         with state_lock:
             current_process = None
             running_flag.clear()
-            wall_error[wall_id] = Trueg
+            wall_error[wall_id] = True
             _append_log(wall_id, f"[ERROR] Failed to start marking script: {e}")
         raise RuntimeError(f"Marking script failed: {e}")
 
@@ -517,28 +537,52 @@ def pause():
 
 @app.post("/continue")
 def continue_to_next_wall():
-    global current_wall          # ✅ ADD THIS
     global homecheck_pending, homecheck_wall
-    global queue_index
+    global queue_index, current_wall
 
     with state_lock:
-        if current_wall is None:
-            return {"resumed": False, "error": "No active wall"}
+        # 🚫 Cannot continue while home check unresolved
+        if homecheck_pending:
+            return {
+                "resumed": False,
+                "homeCheckRequired": True,
+                "wall": homecheck_wall,
+            }
 
-        # move to NEXT wall
+        # 🚫 Cannot continue while marking is running
+        if running_flag.is_set():
+            return {
+                "resumed": False,
+                "running": True,
+            }
+
+        # ✅ Advance queue ONLY after success or explicit skip
+        if queue_index >= len(wall_sequence):
+            current_wall = None
+            running_flag.clear()
+            return {
+                "resumed": True,
+                "done": True,
+            }
+
+        # Only advance if not last wall
         queue_index += 1
 
         if queue_index >= len(wall_sequence):
-            return {"resumed": True, "done": True}
+            current_wall = None
+            running_flag.clear()
+            return {
+                "resumed": True,
+                "done": True,
+            }
 
         next_label = wall_sequence[queue_index]
         next_wall = int(re.search(r"\d+", next_label).group())
 
-        # clear current wall
         current_wall = None
         running_flag.clear()
 
-        # 🔒 gate with homecheck
+        # 🔒 DO NOT clear last_failed_wall here
         homecheck_pending = True
         homecheck_wall = next_wall
 
@@ -549,30 +593,30 @@ def continue_to_next_wall():
     }
 
 
+
 # -------------------------------------------------------------------
 # RETRY API — rerun current or selected wall, no auto retry
 # -------------------------------------------------------------------
-@@app.post("/retry")
+@app.post("/retry")
 def retry_current_wall():
     global last_failed_wall
     global homecheck_pending, homecheck_wall
 
     with state_lock:
-        if last_failed_wall is None:
-            raise HTTPException(400, "No failed wall to retry")
+        wall_id = homecheck_wall or last_failed_wall
 
-        wall_id = last_failed_wall
+    if wall_id is None:
+        raise HTTPException(400, "No failed wall to retry")
 
-        # 🔒 DO NOT change queue_index
-        homecheck_pending = True
-        homecheck_wall = wall_id
-        running_flag.clear()
+    passed, out = run_home_check(wall_id)
 
     return {
         "ok": True,
         "wall": wall_id,
-        "homeCheckRequired": True,
+        "passed": passed,
+        "homeCheckRequired": not passed,
     }
+
 
 # -------------------------------------------------------------------
 # STATUS — event-based only (no fallback)

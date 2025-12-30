@@ -513,7 +513,7 @@ export default function Status() {
                   }}
                 />
               )}
-            {/*
+              {/*
               {appState === "home_position_setup" && (
                 <HomePositionCheck
                   ABBHOMEImage={ABBHOMEImage}
@@ -522,16 +522,14 @@ export default function Status() {
                   verifyHomePosition={getRobotJointTarget}
                   onHomeVerified={() => setAppState("home_verified")}
                 />
-              )}
-                */}
-
+              )}*/}
                 {appState === "home_position_setup" && (
                   <>
                     // AUTO SKIP HOME CHECK
                     {setAppState("home_verified")}
                   </>
                 )}
-  
+
 
               {appState === "home_verified" && (
                 <HomeVerified
