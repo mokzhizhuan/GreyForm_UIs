@@ -10,8 +10,8 @@ import axios from "axios";
 
 import placementOne from "../assets/six_wall_flow/6_wall_flow_placement1.jpg";
 import placementTwo from "../assets/six_wall_flow/6_wall_flow_placement2.jpg";
-import wallMarking1 from "../assets/six_wall_flow/wall_marking_6_walls1.jpg";
-import wallMarking2 from "../assets/six_wall_flow/wall_marking_6_walls2.jpg";
+import wallMarking1 from "../assets/six_wall_flow/wall_marking_6_walls1_backup.jpg";
+import wallMarking2 from "../assets/six_wall_flow/wall_marking_6_walls2_backup.jpg";
 
 import { API_BASE_URL } from "./config";
 
@@ -591,8 +591,9 @@ const isTerminalStep = currentStep === 8;
               {!homeCheckPending && currentStep === 1 && "Marking Wall 2 in progress."}
               {!homeCheckPending && currentStep === 2 && "Marking Wall 3 in progress."}
               {!homeCheckPending && currentStep === 3 && "Marking Wall 4 in progress."}
-
-              {!homeCheckPending && currentStep >= 5 && currentStep <= 7 && "Marking wall in progress."}
+              {!homeCheckPending && currentStep === 5 && "Marking wall 5 in progress."}
+              {!homeCheckPending && currentStep === 6 && "Marking wall 6 in progress."}
+              {!homeCheckPending && currentStep === 7 && "Marking wall 1 in progress."}
               {currentStep === 8 && "Marking complete."}
             </p>
 
@@ -620,7 +621,6 @@ const isTerminalStep = currentStep === 8;
               {errorMessage}
             </div>
           )}
-
           {/* HOME CHECK TABLE (backend-driven, stable) */}
           {homeCheckPending && homeCheckWall !== null && homeCheckRows.length > 0 && (
             <div className="bg-white shadow rounded overflow-hidden">
@@ -721,8 +721,6 @@ const isTerminalStep = currentStep === 8;
                 </button>
               </div>
             )}
-
-
             {currentStep === 8 && (
                 <button
                   className="btn btn-success"

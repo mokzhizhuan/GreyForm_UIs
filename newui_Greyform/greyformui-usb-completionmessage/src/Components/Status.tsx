@@ -529,8 +529,6 @@ export default function Status() {
                     {setAppState("home_verified")}
                   </>
                 )}
-
-
               {appState === "home_verified" && (
                 <HomeVerified
                   pushRobotIntoPBUImage={pushRobotIntoPBUImage}

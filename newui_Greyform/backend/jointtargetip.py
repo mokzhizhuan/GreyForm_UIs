@@ -4,7 +4,6 @@ import base64
 import json
 import warnings
 
-
 warnings.filterwarnings("ignore")
 userpass = "Default User:robotics"
 encoded = base64.b64encode(userpass.encode())
@@ -36,8 +35,7 @@ def get_request(conn, uri, proto='https://', host='192.168.1.200'):
             data = resp.text
         return data
     except Exception as e:
-        logger.info('Error:{}'.format(e))
-        
+        logger.info('Error:{}'.format(e))        
 
 if __name__ == '__main__':
     conn = requests.Session()

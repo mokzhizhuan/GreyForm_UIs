@@ -2,17 +2,14 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 import subprocess
-import pandas as pd
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 from backend.marking_controller import app as marking_subapp
-import os
 
 # ============================================================
 # 🌐 Main FastAPI Application (NO ROS)
 # ============================================================
 app = FastAPI(title="Main API (no ROS)")
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -44,16 +41,13 @@ def getdirectory():
         stderr=subprocess.STDOUT,
         text=True,
     )
-
     lines = [line.rstrip("\n") for line in process.stdout]
     process.wait()
-
     if process.returncode != 0:
         raise HTTPException(
             status_code=500,
             detail=f"joint_target failed (code {process.returncode})",
         )
-
     return {"ok": True, "data": lines}
 
 
@@ -101,16 +95,13 @@ def read_directory():
         stderr=subprocess.STDOUT,
         text=True,
     )
-
     lines = [line.rstrip("\n") for line in process.stdout]
     process.wait()
-
     if process.returncode != 0:
         raise HTTPException(
             status_code=500,
             detail=f"read_directory failed (code {process.returncode})",
         )
-
     return {"ok": True, "data": lines}
 
 
@@ -130,14 +121,13 @@ class WallInfo(BaseModel):
 
 
 class FileExecuBody(BaseModel):
-    folder: str   # user clicked folder (e.g. .../mockup/test_tmp)
+    folder: str  # user clicked folder (e.g. .../mockup/test_tmp)
 
 
 @app.post("/file_execute_data")
 def file_execute_data(body: FileExecuBody):
     try:
         root_dir = body.folder
-
         # ------------------------------------------------------------
         # 1️⃣ Find EXACT test_points_tmp.xlsx and output ABSOLUTE path
         # ------------------------------------------------------------
@@ -146,21 +136,23 @@ def file_execute_data(body: FileExecuBody):
             f"find . -type f -iname 'test_points_tmp.xlsx' "
             f"-exec realpath {{}} \\; -quit"
         )
-
         p1 = subprocess.Popen(
             [
-                "sshpass", "-p", "winsys",
-                "ssh", "winsys@192.168.130.5",
-                "bash", "-lc", find_cmd,
+                "sshpass",
+                "-p",
+                "winsys",
+                "ssh",
+                "winsys@192.168.130.5",
+                "bash",
+                "-lc",
+                find_cmd,
             ],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
         )
-
         excel_path = p1.stdout.read().strip()
         p1.wait()
-
         if not excel_path:
             return {
                 "ok": False,
@@ -168,16 +160,17 @@ def file_execute_data(body: FileExecuBody):
                 "error": "test_points_tmp.xlsx not found",
                 "data": [],
             }
-
         print("✅ USING EXCEL:", excel_path)
-
         # ------------------------------------------------------------
         # 2️⃣ Run detectwalls.py with CLEAN absolute path
         # ------------------------------------------------------------
         p2 = subprocess.Popen(
             [
-                "sshpass", "-p", "winsys",
-                "ssh", "winsys@192.168.130.5",
+                "sshpass",
+                "-p",
+                "winsys",
+                "ssh",
+                "winsys@192.168.130.5",
                 "python3",
                 "/home/winsys/pbu_marking_ros/detectwalls.py",
                 "--filename",
@@ -187,16 +180,13 @@ def file_execute_data(body: FileExecuBody):
             stderr=subprocess.STDOUT,
             text=True,
         )
-
         lines = [line.rstrip("\n") for line in p2.stdout]
         p2.wait()
-
         return {
             "ok": p2.returncode == 0,
             "returncode": p2.returncode,
             "data": lines,
         }
-
     except Exception as e:
         return {"ok": False, "error": str(e), "data": []}
 
@@ -207,10 +197,8 @@ class CombineRequest(BaseModel):
 
 @app.post("/combine_walls")
 def combine_walls(req: CombineRequest):
-
     # Remote command for SSH
     remote_cmd = f"python3 /home/winsys/combine_wall_excels.py '{req.folder}'"
-
     cmd = [
         "sshpass",
         "-p",
@@ -219,7 +207,6 @@ def combine_walls(req: CombineRequest):
         "winsys@192.168.130.5",
         remote_cmd,
     ]
-
     try:
         result = subprocess.run(
             cmd,
@@ -230,13 +217,11 @@ def combine_walls(req: CombineRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"SSH call failed: {str(e)}")
-
     # If SSH failed
     if result.returncode != 0:
         raise HTTPException(
             status_code=500, detail=f"SSH error: {result.stderr.strip()}"
         )
-
     # Parse the JSON return from combine_wall_excels.py
     try:
         response_data = json.loads(result.stdout.strip())
@@ -245,5 +230,4 @@ def combine_walls(req: CombineRequest):
             status_code=500,
             detail=f"Invalid JSON returned from remote script: {result.stdout}",
         )
-
     return response_data
