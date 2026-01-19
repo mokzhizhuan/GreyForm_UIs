@@ -135,34 +135,28 @@ async function postWithRetries(
 }
 
 export default function Status() {
-  const [appState, setAppState] = useState<CurrentState>("select_PBU");
+  const [appState, setAppState] = useState<CurrentState>("six_wall_flow");
   const v = views[appState];
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [jointTarget, setJointTarget] = useState<any | null>(null);
   const [walls, setWalls] = useState<WallInfo[]>([]);
   const [maxWall, setMaxWall] = useState<number | null>(null);
   const [currentWall, setCurrentWall] = useState<number>(1);
-
   const [autoBootStatus, setAutoBootStatus] = useState<
     "idle" | "booting" | "ok" | "error"
   >("idle");
   const [autoBootError, setAutoBootError] = useState<string | null>(null);
-
   interface JointTargetResponse {
     ok: boolean;
     jointtarget: any;
   }
-
   const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
   const [pathByFilename, setPathByFilename] = useState<Record<string, string>>(
     {}
   );
-
   // NEW: remember which Excel has already been processed by detectwalls
   const [processedExcel, setProcessedExcel] = useState<string | null>(null);
-
   async function handleGetDirectory() {
     try {
       const res = await axios.get(`${API_BASE_URL}/getdirectory`);

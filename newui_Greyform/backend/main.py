@@ -31,7 +31,7 @@ def getdirectory():
             "-p",
             "winsys",
             "ssh",
-            "winsys@192.168.130.5",
+            "winsys@192.168.1.5",
             "python3",
             "/home/winsys/pbu_marking_ros/directorysearch.py",
             "--directory",
@@ -59,7 +59,7 @@ def jointtarget_connection():
             "-p",
             "winsys",
             "ssh",
-            "winsys@192.168.130.5",
+            "winsys@192.168.1.5",
             "python3",
             "/home/winsys/pbu_marking_ros/homeposcheck.py",
             "--file",
@@ -90,7 +90,7 @@ def jointtarget_connection():
 @app.post("/read_directory")
 def read_directory():
     process = subprocess.Popen(
-        ["sshpass", "-p", "winsys", "ssh", "winsys@192.168.130.5", "ls", "/home"],
+        ["sshpass", "-p", "winsys", "ssh", "winsys@192.168.1.5", "ls", "/home"],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
@@ -142,7 +142,7 @@ def file_execute_data(body: FileExecuBody):
                 "-p",
                 "winsys",
                 "ssh",
-                "winsys@192.168.130.5",
+                "winsys@192.168.1.5",
                 "bash",
                 "-lc",
                 find_cmd,
@@ -170,7 +170,7 @@ def file_execute_data(body: FileExecuBody):
                 "-p",
                 "winsys",
                 "ssh",
-                "winsys@192.168.130.5",
+                "winsys@192.168.1.5",
                 "python3",
                 "/home/winsys/pbu_marking_ros/detectwalls.py",
                 "--filename",
@@ -204,7 +204,7 @@ def combine_walls(req: CombineRequest):
         "-p",
         "winsys",
         "ssh",
-        "winsys@192.168.130.5",
+        "winsys@192.168.1.5",
         remote_cmd,
     ]
     try:

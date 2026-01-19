@@ -33,17 +33,17 @@ last_completed_wall: Optional[int] = None
 wall_sequence: List[str] = []
 queue_index: int = 0  # index into wall_sequence
 total_walls: int = 0
-row_totals: Dict[int, int] = {}          # {2: 6, 3: 8, 4: 4}
-wall_point_count: Dict[int, int] = {}    # {2: 0, 3: 3, ...}
-bringup_success: Dict[int, bool] = {}    # {2: True/False}
-wall_error: Dict[int, bool] = {}         # {2: True if mismatch/error}
+row_totals: Dict[int, int] = {}  # {2: 6, 3: 8, 4: 4}
+wall_point_count: Dict[int, int] = {}  # {2: 0, 3: 3, ...}
+bringup_success: Dict[int, bool] = {}  # {2: True/False}
+wall_error: Dict[int, bool] = {}  # {2: True if mismatch/error}
 # Track which points were skipped per wall, and the "current point" while reading logs
 skipped_points: Dict[int, List[int]] = {}
 current_point: Dict[int, Optional[int]] = {}
 # PER-WALL EXCEL MAPPING (RELATIVE paths)
 excel_map: Dict[int, str] = {}
 mesh_file_path: str = ""
-current_folder: str = ""    # informational only (your local folder)
+current_folder: str = ""  # informational only (your local folder)
 current_phase: Optional[int] = None
 state_lock = threading.Lock()
 event_counter = 0
@@ -54,20 +54,22 @@ homecheck_pending: bool = False
 homecheck_wall: Optional[int] = None
 homecheck_output: Optional[str] = None
 last_failed_wall: Optional[int] = None
+
+
 # -------------------------------------------------------------------
 # MODELS
 # -------------------------------------------------------------------
 class WallPayload(BaseModel):
-    wall: str          # e.g. "wall_2"
-    rows: list         # rows for that wall
-    excel: str         # FULL PATH from React
+    wall: str  # e.g. "wall_2"
+    rows: list  # rows for that wall
+    excel: str  # FULL PATH from React
 
 
 class MarkingStartBody(BaseModel):
     walls: List[WallPayload]
     meshfile: str
     max_wall: int
-    folder: str                # e.g. "/home/ros_user/pbu_data/mockup"
+    folder: str  # e.g. "/home/ros_user/pbu_data/mockup"
     phase: Optional[int] = None  # just a logical phase flag
 
 
@@ -143,16 +145,22 @@ def home_position_check(body: HomeCheckBody):
         "output": out,
     }
 
+
 def run_home_check(wall_id: int):
     global homecheck_pending, homecheck_wall, homecheck_output, last_failed_wall
     target = f"wall_{wall_id}"
     cmd = [
-        "sshpass", "-p", "winsys",
-        "ssh", "winsys@192.168.130.5",
+        "sshpass",
+        "-p",
+        "winsys",
+        "ssh",
+        "winsys@192.168.1.5",
         "python3",
         "/home/winsys/pbu_marking_ros/homeposcheck.py",
-        "--file", "/home/winsys/pbu_marking_ros/pbu_data/mockup/poses.json",
-        "--target", target,
+        "--file",
+        "/home/winsys/pbu_marking_ros/pbu_data/mockup/poses.json",
+        "--target",
+        target,
     ]
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
@@ -179,6 +187,7 @@ def _append_log(wall_id: int, line: str):
     if len(error_logs[wall_id]) > MAX_LOG_LINES_PER_WALL:
         error_logs[wall_id] = error_logs[wall_id][-MAX_LOG_LINES_PER_WALL:]
 
+
 # -------------------------------------------------------------------
 # READER THREAD — event-based bringup + point counting + logs
 # -------------------------------------------------------------------
@@ -199,6 +208,7 @@ MACHINE_PROCESSING_FAIL_PATTERNS = [
 ]
 processing_failed = False
 
+
 def classify_machine_error(line: str):
     for pat in MACHINE_FATAL_PATTERNS:
         if pat.search(line):
@@ -207,6 +217,7 @@ def classify_machine_error(line: str):
         if pat.search(line):
             return "PROCESSING"
     return None
+
 
 def reader_thread(proc: subprocess.Popen, wall_id: int):
     global last_completed_wall, current_process, queue_index
@@ -252,7 +263,9 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
                 with state_lock:
                     wall_point_count[wall_id] = wall_point_count.get(wall_id, 0) + 1
             # Processing failure markers (✅ detect inside loop)
-            if PROCESS_FAIL_SUCCESS_FALSE.search(line) or PROCESS_FAIL_MESSAGE.search(line):
+            if PROCESS_FAIL_SUCCESS_FALSE.search(line) or PROCESS_FAIL_MESSAGE.search(
+                line
+            ):
                 processing_failed_local = True
                 with state_lock:
                     _append_log(wall_id, "[ERROR] Processing/data capture failed")
@@ -272,12 +285,14 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
         with state_lock:
             running_flag.clear()
             current_process = None
+
             def mark_failed(msg):
                 global current_wall, last_failed_wall
                 wall_error[wall_id] = True
                 current_wall = wall_id
                 last_failed_wall = wall_id
                 _append_log(wall_id, msg)
+
             if error_type == "FATAL":
                 mark_failed(f"[MACHINE] Fatal error: {error_line}")
                 return
@@ -285,9 +300,7 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
                 pts = skipped_points.get(wall_id, [])
                 done = wall_point_count.get(wall_id, 0)
                 total = row_totals.get(wall_id, 0)
-                mark_failed(
-                    f"[MACHINE] Skipped points {pts} ({done}/{total})"
-                )
+                mark_failed(f"[MACHINE] Skipped points {pts} ({done}/{total})")
                 return
             if error_type == "PROCESSING":
                 mark_failed(f"[MACHINE] Processing failed: {error_line}")
@@ -359,8 +372,11 @@ def start_next_wall():
         f"--mesh {shlex.quote(mesh_value)}"
     )
     marking_cmd = [
-        "sshpass", "-p", "winsys",
-        "ssh", "winsys@192.168.130.5",
+        "sshpass",
+        "-p",
+        "winsys",
+        "ssh",
+        "winsys@192.168.1.5",
         remote_command,
     ]
     print(f"[controller] 🚀 Starting wall {wall_id}")
@@ -372,7 +388,7 @@ def start_next_wall():
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
-            preexec_fn=os.setsid,   # 🔥 REQUIRED
+            preexec_fn=os.setsid,  # 🔥 REQUIRED
         )
     except Exception as e:
         with state_lock:
@@ -383,9 +399,8 @@ def start_next_wall():
         raise RuntimeError(f"Marking script failed: {e}")
     with state_lock:
         current_process = proc
-    threading.Thread(
-        target=reader_thread, args=(proc, wall_id), daemon=True
-    ).start()
+    threading.Thread(target=reader_thread, args=(proc, wall_id), daemon=True).start()
+
 
 # -------------------------------------------------------------------
 # START MARKING — per-wall Excel mapping
@@ -458,11 +473,11 @@ def marking_start(body: MarkingStartBody):
         homecheck_output = None
     # start first wall
     return {
-            "ok": True,
-            "queue": wall_sequence,
-            "homeCheckRequired": True,
-            "firstWall": homecheck_wall
-        }
+        "ok": True,
+        "queue": wall_sequence,
+        "homeCheckRequired": True,
+        "firstWall": homecheck_wall,
+    }
 
 
 # -------------------------------------------------------------------
@@ -565,7 +580,9 @@ def marking_status():
             if lines:
                 error_summary = lines[-1]
         else:
-            if last_completed_wall is not None and wall_error.get(last_completed_wall, False):
+            if last_completed_wall is not None and wall_error.get(
+                last_completed_wall, False
+            ):
                 has_error = True
                 point_count = wall_point_count.get(last_completed_wall, 0)
                 total_points = row_totals.get(last_completed_wall, 0)
@@ -584,8 +601,8 @@ def marking_status():
             "excelMap": excel_map,
             "folder": folder,
             "meshFile": mesh_file_path,
-            "lineCount": point_count,       # points done
-            "totalPoints": total_points,    # expected points
+            "lineCount": point_count,  # points done
+            "totalPoints": total_points,  # expected points
             "eventID": event_counter,
             "rowTotals": row_totals,
             "hasError": has_error,
@@ -611,11 +628,7 @@ def get_error_log(wall: Optional[int] = None):
     with state_lock:
         wid = wall if wall is not None else current_wall
         if wid is None:
-            return {
-                "ok": False,
-                "wall": None,
-                "error": ["No active or selected wall."]
-            }
+            return {"ok": False, "wall": None, "error": ["No active or selected wall."]}
         logs = list(error_logs.get(wid, []))
     return {
         "ok": True,
