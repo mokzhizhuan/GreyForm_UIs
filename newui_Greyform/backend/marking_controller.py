@@ -191,131 +191,110 @@ def _append_log(wall_id: int, line: str):
 # -------------------------------------------------------------------
 # READER THREAD — event-based bringup + point counting + logs
 # -------------------------------------------------------------------
-TRACEBACK_RE = re.compile(r"^Traceback \(most recent call last\):")
 PROCESS_FAIL_SUCCESS_FALSE = re.compile(r"success\s*:\s*False", re.IGNORECASE)
 PROCESS_FAIL_MESSAGE = re.compile(r"data capture/processing failed", re.IGNORECASE)
-MACHINE_FATAL_PATTERNS = [
-    re.compile(r"^Traceback \(most recent call last\):"),
-    re.compile(r"Segmentation fault", re.IGNORECASE),
-    re.compile(r"Killed", re.IGNORECASE),
-    re.compile(r"core dumped", re.IGNORECASE),
-]
-MACHINE_PROCESSING_FAIL_PATTERNS = [
-    re.compile(r"success\s*:\s*False", re.IGNORECASE),
-    re.compile(r"data capture/processing failed", re.IGNORECASE),
-    re.compile(r"camera.*failed", re.IGNORECASE),
-    re.compile(r"no frame received", re.IGNORECASE),
-]
+ERROR_PATTERNS = {
+    "FATAL": [
+        r"Traceback \(most recent call last\):",
+        r"Segmentation fault",
+        r"core dumped",
+        r"\bKilled\b",
+    ],
+    "PROCESSING": [
+        r"success\s*:\s*False",
+        r"data capture/processing failed",
+        r"camera.*failed",
+        r"no frame received",
+    ],
+}
+ERROR_REGEX = {
+    k: [re.compile(p, re.IGNORECASE) for p in v]
+    for k, v in ERROR_PATTERNS.items()
+}
 processing_failed = False
 
 
-def classify_machine_error(line: str):
-    for pat in MACHINE_FATAL_PATTERNS:
-        if pat.search(line):
-            return "FATAL"
-    for pat in MACHINE_PROCESSING_FAIL_PATTERNS:
-        if pat.search(line):
-            return "PROCESSING"
+def classify_error(line: str) -> str | None:
+    for kind, patterns in ERROR_REGEX.items():
+        if any(p.search(line) for p in patterns):
+            return kind
     return None
 
-
 def reader_thread(proc: subprocess.Popen, wall_id: int):
-    global last_completed_wall, current_process, queue_index
-    global current_wall, last_failed_wall
-    global skipped_points, current_point
-    fatal_traceback = False
-    skipped_found = False
-    processing_failed_local = False  # ✅ use a local that we control
-    last_line = ""
+    global current_process, queue_index, last_completed_wall
+    fatal = False
+    processing_failed = False
+    skipped_points_local = []
+    error_line = None
     try:
-        error_type = None
-        error_line = None
         for raw in proc.stdout:
             line = raw.rstrip()
-            last_line = line
             print(line)
             with state_lock:
                 _append_log(wall_id, line)
-            # Track current point
-            m = re.search(r"Now working on point\s+(\d+)", line)
-            if m:
+            # ── Track current point
+            if m := re.search(r"Now working on point\s+(\d+)", line):
                 with state_lock:
                     current_point[wall_id] = int(m.group(1))
-            # Skipped = machine-reported failure
+            # ── Done point
+            if "Point" in line and "done" in line:
+                with state_lock:
+                    wall_point_count[wall_id] = wall_point_count.get(wall_id, 0) + 1
+            # ── Skipped
             if "VALUE skipped" in line:
-                skipped_found = True
-                with state_lock:
-                    p = current_point.get(wall_id)
-                    if p is not None:
-                        skipped_points.setdefault(wall_id, []).append(p)
-            # Count done points
-            if "Point" in line and "done" in line:
-                with state_lock:
-                    wall_point_count[wall_id] = wall_point_count.get(wall_id, 0) + 1
-            # 🔴 MACHINE-ONLY ERROR CLASSIFICATION
-            err = classify_machine_error(line)
+                p = current_point.get(wall_id)
+                if p is not None:
+                    skipped_points_local.append(p)
+            # ── Error detection (ONE place)
+            err = classify_error(line)
             if err:
-                error_type = err
                 error_line = line
+                fatal = err == "FATAL"
+                processing_failed = err == "PROCESSING"
                 break
-            # Count done points
-            if "Point" in line and "done" in line:
-                with state_lock:
-                    wall_point_count[wall_id] = wall_point_count.get(wall_id, 0) + 1
-            # Processing failure markers (✅ detect inside loop)
-            if PROCESS_FAIL_SUCCESS_FALSE.search(line) or PROCESS_FAIL_MESSAGE.search(
-                line
-            ):
-                processing_failed_local = True
-                with state_lock:
-                    _append_log(wall_id, "[ERROR] Processing/data capture failed")
-            # Kill process only if machine says it's fatal
-            if error_type == "FATAL":
-                try:
-                    pgid = os.getpgid(proc.pid)
-                    os.killpg(pgid, signal.SIGINT)
-                    time.sleep(1)
-                    if proc.poll() is None:
-                        os.killpg(pgid, signal.SIGKILL)
-                except Exception as e:
-                    with state_lock:
-                        _append_log(wall_id, str(e))
         proc.wait()
     finally:
         with state_lock:
             running_flag.clear()
             current_process = None
-
-            def mark_failed(msg):
-                global current_wall, last_failed_wall
+            def fail(msg):
                 wall_error[wall_id] = True
-                current_wall = wall_id
-                last_failed_wall = wall_id
                 _append_log(wall_id, msg)
-
-            if error_type == "FATAL":
-                mark_failed(f"[MACHINE] Fatal error: {error_line}")
+            # ── Priority order matters
+            if fatal:
+                _kill_process(proc)
+                fail(f"[MACHINE:FATAL] {error_line}")
                 return
-            if skipped_found:
-                pts = skipped_points.get(wall_id, [])
+            if skipped_points_local:
                 done = wall_point_count.get(wall_id, 0)
                 total = row_totals.get(wall_id, 0)
-                mark_failed(f"[MACHINE] Skipped points {pts} ({done}/{total})")
+                fail(f"[MACHINE] Skipped points {skipped_points_local} ({done}/{total})")
                 return
-            if error_type == "PROCESSING":
-                mark_failed(f"[MACHINE] Processing failed: {error_line}")
+            if processing_failed:
+                fail(f"[MACHINE:PROCESSING] {error_line}")
                 return
-            # ✅ SUCCESS
+            # ── SUCCESS
             wall_error[wall_id] = False
             last_completed_wall = wall_id
-            current_wall = None
-            last_failed_wall = None
             queue_index += 1
             done = wall_point_count.get(wall_id, 0)
             total = row_totals.get(wall_id, 0)
             _append_log(wall_id, f"[SUCCESS] {done}/{total}")
             if queue_index < len(wall_sequence):
-                threading.Thread(target=start_next_wall, daemon=True).start()
+                threading.Thread(
+                    target=start_next_wall, daemon=True
+                ).start()
+
+
+def _kill_process(proc):
+    try:
+        pgid = os.getpgid(proc.pid)
+        os.killpg(pgid, signal.SIGINT)
+        time.sleep(1)
+        if proc.poll() is None:
+            os.killpg(pgid, signal.SIGKILL)
+    except Exception as e:
+        print(f"[WARN] Failed to kill process: {e}")
 
 
 # -------------------------------------------------------------------

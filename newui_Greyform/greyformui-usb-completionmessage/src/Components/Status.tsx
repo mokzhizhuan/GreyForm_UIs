@@ -135,7 +135,7 @@ async function postWithRetries(
 }
 
 export default function Status() {
-  const [appState, setAppState] = useState<CurrentState>("six_wall_flow");
+  const [appState, setAppState] = useState<CurrentState>("select_PBU");
   const v = views[appState];
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -286,7 +286,11 @@ export default function Status() {
 
   let currentWall: number | null = null;
   let currentBlock: string[] = [];
-
+/*useEffect(() => {
+  if (appState === "home_position_setup") {
+    setAppState("home_verified");
+  }
+}, [appState]);*/
   // ---------------------------------------------------------
   // 1. FIRST PASS – PARSE TOP-LEVEL INFO
   // ---------------------------------------------------------
@@ -517,7 +521,7 @@ export default function Status() {
                   onHomeVerified={() => setAppState("home_verified")}
                 />
               )}*/}
-                {appState === "home_position_setup" && (
+              {appState === "home_position_setup" && (
                   <>
                     // AUTO SKIP HOME CHECK
                     {setAppState("home_verified")}
@@ -533,7 +537,6 @@ export default function Status() {
                   onNext={() => handleFileExecuteAndStartLayout(file_direct)}
                 />
               )}
-
               {/*
               {appState === "set_to_auto_mode" && (
                 <SetToAutoMode/>

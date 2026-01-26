@@ -520,11 +520,6 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
   // - Marking error => show buttons
   // - HomeCheck failed => also show buttons (operator expects Retry/Continue
 
-const isMarkingComplete =
-  status?.phase === 2 &&
-  !status?.running &&
-  !status?.homeCheckPending &&
-  currentStep === 7;
 
 const isPlacement2 = currentStep === 4;
 
@@ -540,11 +535,11 @@ const isRealMarkingError =
   !isPlacement2;
 
 const isWall4MarkingError =
-  (!hasError || hasError) &&
-   !running &&
+  !running &&
   !homeCheckPending &&
   status?.phase === 1 &&
   currentStep === 3;
+
 
 const showErrorBanner =errorMessage && isMarkingStep(currentStep); 
 
@@ -553,120 +548,120 @@ const isTerminalStep = currentStep === 8;
   // POLLING (single loop, no overlap, stable)
   // --------------------------------------------------------
   const poll = async () => {
+  if (!aliveRef.current) return;
+  // Prevent overlapping polls
+  if (pollInFlightRef.current) {
+    pollingTimerRef.current = window.setTimeout(poll, 1200);
+    return;
+  }
+  pollInFlightRef.current = true;
+  try {
+    const { data } = await axios.get<MarkingStatusResponse>(
+      `${API_BASE_URL}/marking/status`
+    );
     if (!aliveRef.current) return;
-    if (pollInFlightRef.current) {
-      // prevent overlap
-      pollingTimerRef.current = window.setTimeout(poll, 1200);
+    setStatus(data);
+    // -------------------------------
+    // 🔴 Derive last failed wall safely
+    // -------------------------------
+    if (data.lastFailedWall !== undefined && data.lastFailedWall !== null) {
+      setLastErrorWall(data.lastFailedWall);
+    } else if (data.hasError) {
+      const failed = data.startedWall ?? data.doneWall ?? null;
+      if (failed !== null) setLastErrorWall(failed);
+    }
+    // -------------------------------
+    // 🔴 Error message handling
+    // -------------------------------
+    if (data.hasError) {
+      setErrorMessage(data.errorSummary || "Marking error detected");
+    } else if (data.homeCheckPending && data.homeCheckWall !== null) {
+      // Homecheck table itself is the message
+      setErrorMessage(null);
+    } else {
+      setErrorMessage(null);
+    }
+    // =========================================================
+    // 🧠 STEP RESOLUTION (PRIORITY-ORDERED, SAFE)
+    // =========================================================
+    let nextStep = currentStep;
+    // 🔒 ABSOLUTE TERMINAL — NEVER LEAVE
+    if (currentStep === 8) {
+      // Do nothing forever once completed
+      pollInFlightRef.current = false;
+      pollingTimerRef.current = window.setTimeout(poll, 1500);
       return;
     }
-
-    pollInFlightRef.current = true;
-    try {
-      const { data } = await axios.get<MarkingStatusResponse>(
-        `${API_BASE_URL}/marking/status`
-      );
-
-      if (!aliveRef.current) return;
-
-      setStatus(data);
-
-      // derive lastErrorWall reliably
-      if (data.lastFailedWall !== undefined && data.lastFailedWall !== null) {
-        setLastErrorWall(data.lastFailedWall);
-      } else if (data.hasError) {
-        const failed = data.startedWall ?? data.doneWall ?? null;
-        if (failed !== null) setLastErrorWall(failed);
-      }
-
-      // instruction/error message
-      if (data.hasError) {
-        setErrorMessage(data.errorSummary || "Marking error detected");
-      } else if (data.homeCheckPending && data.homeCheckWall !== null) {
-        // On homecheck failure, backend should still provide output.
-        // If it doesn't, keep message minimal.
-        if (homeCheckOutput) {
-          const passed = homeCheckOutput.split(/\r?\n/).some((l) => l.trim() === "True");
-          if (!passed) setErrorMessage(null); // table itself is the message
-        }
-      } else {
-        setErrorMessage(null);
-      }
-
-      // Step control:
-      // 1) HomeCheck pending -> step to that wall
-    let nextStep = currentStep;
-
-    // 🔒 MARKING COMPLETE — ABSOLUTE TERMINAL
+    // 🔒 MARKING COMPLETE (backend truth only)
+    const isMarkingComplete =
+      data.phase === 2 &&
+      !data.running &&
+      !data.homeCheckPending &&
+      data.doneWall === 1;
+    
     if (isMarkingComplete) {
       nextStep = 8;
     }
-
-    // 🔒 Placement 2 forced by operator
+    if (
+      data.phase === 1 &&
+      data.doneWall === 4 &&
+      !data.running &&
+      !data.homeCheckPending
+    ) {
+      setForcedPlacement2(true); // 🔒 lock it
+      nextStep = 4;              // Placement 2
+    }
+    // 🔒 PLACEMENT 2 — operator-forced, never overridden
     else if (forcedPlacement2) {
       nextStep = 4;
     }
-
-    // 🟡 Home check pending
+    // 🟡 HOME CHECK PENDING
     else if (data.homeCheckPending && data.homeCheckWall !== null) {
       nextStep = wallToStep(data.homeCheckWall);
     }
-
-    // 🟢 Marking running
+    // 🟢 MARKING RUNNING
     else if (data.running && data.startedWall !== null) {
       nextStep = wallToStep(data.startedWall);
     }
-
-    // 🟣 Phase 1 idle on Wall 4 (wait for Continue)
-    else if (
-      data.phase === 1 &&
-      !data.running &&
-      !data.homeCheckPending &&
-      currentStep === 3
-    ) {
-      nextStep = 3;
-    }
-
-    // 🟠 Idle fallback
+    // 🟠 IDLE FALLBACK (safe now, terminal guarded)
     else if (!data.running && data.doneWall !== null) {
       nextStep = wallToStep(data.doneWall);
     }
-
     if (nextStep !== currentStep) {
       setCurrentStep(nextStep);
     }
-      // logs (only for a relevant wall)
-      const logWall =
-        data.homeCheckPending && data.homeCheckWall !== null
-          ? data.homeCheckWall
-          : data.startedWall ?? (data.hasError ? (data.startedWall ?? data.doneWall) : null);
+    // -------------------------------
+    // 🔴 Logs (single-line summary only)
+    // -------------------------------
+    const logWall =
+      data.homeCheckPending && data.homeCheckWall !== null
+        ? data.homeCheckWall
+        : data.startedWall ??
+          (data.hasError ? data.startedWall ?? data.doneWall : null);
 
-      if (logWall !== null) {
-        try {
-          const logRes = await axios.get(`${API_BASE_URL}/marking/errorlog/${logWall}`);
-          if (logRes.data?.error) {
-            const logs = logRes.data.error as string[];
-
-            const finalLine = extractFinalSummary(logs);
-
-            if (finalLine) {
-              setCmdLogs([finalLine]); // 🔥 ONLY ONE LINE
-            } else {
-              setCmdLogs([]); // or keep previous
-            }
-          }
-
-        } catch {
-          // ignore log fetch errors
+    if (logWall !== null) {
+      try {
+        const logRes = await axios.get(
+          `${API_BASE_URL}/marking/errorlog/${logWall}`
+        );
+        if (logRes.data?.error) {
+          const logs = logRes.data.error as string[];
+          const finalLine = extractFinalSummary(logs);
+          setCmdLogs(finalLine ? [finalLine] : []);
         }
+      } catch {
+        // ignore log fetch errors
       }
-
-    } catch {
-      // ignore poll errors; keep polling
-    } finally {
-      pollInFlightRef.current = false;
-      pollingTimerRef.current = window.setTimeout(poll, 1500);
     }
-  };
+
+  } catch {
+    // ignore polling errors; keep polling
+  } finally {
+    pollInFlightRef.current = false;
+    pollingTimerRef.current = window.setTimeout(poll, 1500);
+  }
+};
+
 
   useEffect(() => {
     aliveRef.current = true;
@@ -847,7 +842,7 @@ const isTerminalStep = currentStep === 8;
               </div>
             )}
             {currentStep === 8 && (
-              <button className="btn btn-success" onClick={() => window.close()}>
+              <button className="btn btn-success" onClick={() => window.location.reload()}>
                 Exit
               </button>
             )}
