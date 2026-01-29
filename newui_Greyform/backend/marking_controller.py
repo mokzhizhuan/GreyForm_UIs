@@ -208,72 +208,125 @@ ERROR_PATTERNS = {
     ],
 }
 ERROR_REGEX = {
-    k: [re.compile(p, re.IGNORECASE) for p in v]
-    for k, v in ERROR_PATTERNS.items()
+    k: [re.compile(p, re.IGNORECASE) for p in v] for k, v in ERROR_PATTERNS.items()
 }
 processing_failed = False
 
 
-def classify_error(line: str) -> str | None:
+def classify_error(line: str) -> Optional[str]:
+    if "Traceback (most recent call last)" in line:
+        return "PYTHON_TRACEBACK"
     for kind, patterns in ERROR_REGEX.items():
         if any(p.search(line) for p in patterns):
             return kind
     return None
 
+
 def reader_thread(proc: subprocess.Popen, wall_id: int):
-    global current_process, queue_index, last_completed_wall
+    global current_process, queue_index, last_completed_wall, last_failed_wall
     fatal = False
     processing_failed = False
     skipped_points_local = []
     error_line = None
+
+    def capture_full_traceback(first_line: str):
+        """Read remaining stdout lines until we see the final Exception/Error line or stream ends."""
+        tb_lines = [first_line]
+        for raw2 in proc.stdout:
+            l2 = raw2.rstrip()
+            print(l2)
+            with state_lock:
+                _append_log(wall_id, l2)
+            tb_lines.append(l2)
+            # Common end line: "IndexError: ..." / "ValueError: ..." / "Exception: ..."
+            if re.match(r"^[A-Za-z_][A-Za-z0-9_]*(Error|Exception)\s*:", l2):
+                break
+        return "\n".join(tb_lines)
+
     try:
         for raw in proc.stdout:
             line = raw.rstrip()
             print(line)
             with state_lock:
                 _append_log(wall_id, line)
-            # ── Track current point
-            if m := re.search(r"Now working on point\s+(\d+)", line):
+            # Track current point
+            m = re.search(r"Now working on point\s+(\d+)", line)
+            if m:
                 with state_lock:
                     current_point[wall_id] = int(m.group(1))
-            # ── Done point
+            # Done point
             if "Point" in line and "done" in line:
                 with state_lock:
                     wall_point_count[wall_id] = wall_point_count.get(wall_id, 0) + 1
-            # ── Skipped
+            # Skipped
             if "VALUE skipped" in line:
                 p = current_point.get(wall_id)
                 if p is not None:
                     skipped_points_local.append(p)
-            # ── Error detection (ONE place)
+            # Error detection
             err = classify_error(line)
             if err:
-                error_line = line
-                fatal = err == "FATAL"
-                processing_failed = err == "PROCESSING"
-                break
-        proc.wait()
+                # --- TRACEBACK: capture full block ---
+                if "Traceback (most recent call last)" in line:
+                    fatal = True
+                    error_line = capture_full_traceback(line)
+                    _kill_process(proc)
+                    try:
+                        proc.wait(timeout=3)
+                    except Exception:
+                        pass
+                    break
+                # --- Other fatal patterns ---
+                if err == "FATAL":
+                    fatal = True
+                    error_line = line
+                    _kill_process(proc)
+                    try:
+                        proc.wait(timeout=3)
+                    except Exception:
+                        pass
+                    break
+                # --- Processing failures ---
+                if err == "PROCESSING":
+                    processing_failed = True
+                    error_line = line
+                    break
+        # Ensure process finishes if loop ends naturally
+        try:
+            proc.wait(timeout=2)
+        except Exception:
+            pass
     finally:
         with state_lock:
             running_flag.clear()
             current_process = None
+
             def fail(msg):
                 wall_error[wall_id] = True
                 _append_log(wall_id, msg)
-            # ── Priority order matters
+
+            # Priority order matters
             if fatal:
-                _kill_process(proc)
-                fail(f"[MACHINE:FATAL] {error_line}")
+                last_failed_wall = wall_id
+                fail(
+                    "[MACHINE:FATAL]\n"
+                    f"{error_line or 'Fatal error'}\n\n"
+                    "👉 Please click **View Auto Mode Instructions** before pressing Retry or Continue."
+                )
                 return
             if skipped_points_local:
+                last_failed_wall = wall_id
                 done = wall_point_count.get(wall_id, 0)
                 total = row_totals.get(wall_id, 0)
-                fail(f"[MACHINE] Skipped points {skipped_points_local} ({done}/{total})")
+                fail(
+                    f"[MACHINE] Skipped points {skipped_points_local} ({done}/{total})"
+                )
                 return
             if processing_failed:
-                fail(f"[MACHINE:PROCESSING] {error_line}")
+                last_failed_wall = wall_id
+                fail(f"[MACHINE:PROCESSING] {error_line or 'Processing failed'}")
                 return
-            # ── SUCCESS
+            # SUCCESS
             wall_error[wall_id] = False
             last_completed_wall = wall_id
             queue_index += 1
@@ -281,9 +334,7 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
             total = row_totals.get(wall_id, 0)
             _append_log(wall_id, f"[SUCCESS] {done}/{total}")
             if queue_index < len(wall_sequence):
-                threading.Thread(
-                    target=start_next_wall, daemon=True
-                ).start()
+                threading.Thread(target=start_next_wall, daemon=True).start()
 
 
 def _kill_process(proc):

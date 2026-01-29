@@ -35,12 +35,9 @@ interface MarkingStatusResponse {
   startedWall: number | null;
   doneWall: number | null;
   phase: number | null;
-
   hasError: boolean;
   errorSummary?: string | null;
-
   lastFailedWall?: number | null;
-
   homeCheckPending?: boolean;
   homeCheckWall?: number | null;
   homeCheckOutput?: string | null;
@@ -185,7 +182,6 @@ const wallToStep = (wall: number) => {
       return 0;
   }
 };
-
 const buildExcelMap = (files: string[]) => {
   const map: Record<string, string> = {};
   for (const f of files) {
@@ -194,22 +190,18 @@ const buildExcelMap = (files: string[]) => {
   }
   return map;
 };
-
 const parseHomeCheck = (output: string) => {
   const lines = (output || "").split(/\r?\n/).map((l) => l.trim());
   const rax = lines.find((l) => l.includes("rax_1"));
   const tgt = lines.find((l) => l.includes("j0"));
-
   let current: any = {};
   let target: any = {};
-
   try {
     if (rax) current = JSON.parse(rax.replace(/'/g, '"'));
     if (tgt) target = JSON.parse(tgt.replace(/'/g, '"'));
   } catch {
     // ignore parse errors
   }
-
   return Object.entries(target).map(([k, v], i) => {
     const m = k.match(/^j(\d+)$/i);
     const idx = m ? parseInt(m[1], 10) : i;
@@ -220,16 +212,7 @@ const parseHomeCheck = (output: string) => {
     };
   });
 };
-
-const getLogClass = (line: string) => {
-  if (line.includes("[ERROR]")) return "text-red-400 font-bold";
-  if (line.includes("[SKIP]") || line.includes("[SKIPPED]")) return "text-yellow-300";
-  if (line.toLowerCase().includes("bringup")) return "text-blue-400";
-  return "text-green-400";
-};
-
 const isMarkingStep = (s: number) => [1, 2, 3, 5, 6, 7].includes(s);
-
 // --------------------------------------------------------
 // COMPONENT
 // --------------------------------------------------------
@@ -241,31 +224,24 @@ const SixWallFlow: React.FC<any> = ({
   folderdirectory,
 }) => {
   const [currentStep, setCurrentStep] = useState(0);
-
   // Canonical status snapshot (single source of truth in UI)
   const [status, setStatus] = useState<MarkingStatusResponse | null>(null);
-
   // Derived flags
   const running = !!status?.running;
   const paused = !!status?.paused;
   const hasError = !!status?.hasError;
-
   const homeCheckPending = !!status?.homeCheckPending;
   const homeCheckWall = status?.homeCheckWall ?? null;
   const homeCheckOutput = status?.homeCheckOutput ?? "";
-
   // Error targeting
   const [lastErrorWall, setLastErrorWall] = useState<number | null>(null);
-
   // UI messaging/logs
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [cmdLogs, setCmdLogs] = useState<string[]>([]);
   const logEndRef = useRef<HTMLDivElement | null>(null);
-
   // Action locking (prevents double-click / poll fights)
   const actionLockRef = useRef(false);
   const [actionBusy, setActionBusy] = useState(false);
-
   // Poll control (no overlap)
   const pollingTimerRef = useRef<number | null>(null);
   const pollInFlightRef = useRef(false);
@@ -274,7 +250,6 @@ const SixWallFlow: React.FC<any> = ({
   const [showAutoInstr, setShowAutoInstr] = useState(false);
   const [autoStep, setAutoStep] = useState(0);
   const totalAutoSteps = AUTO_STEPS.length;
-
   // Prevent background scroll when overlay open
   useEffect(() => {
     if (showAutoInstr) {
@@ -285,7 +260,6 @@ const SixWallFlow: React.FC<any> = ({
       };
     }
   }, [showAutoInstr]);
-
   // Keyboard navigation when overlay is open
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -305,7 +279,6 @@ const SixWallFlow: React.FC<any> = ({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [showAutoInstr, totalAutoSteps]);
-
   // --------------------------------------------------------
   // NORMALIZATION
   // --------------------------------------------------------
@@ -317,21 +290,8 @@ const SixWallFlow: React.FC<any> = ({
     }
     return out;
   }, [wallDetails]);
-
   const excelMap = useMemo(() => buildExcelMap(excelFiles || []), [excelFiles]);
   const getRows = (w: string) => normalized[w] ?? [];
-  const phase1Ended =
-  status?.phase === 1 &&
-  status?.doneWall === 4 &&
-  !status?.running &&
-  !status?.homeCheckPending &&
-  !status?.hasError;
-
-const phase2Ended =
-  status?.phase === 2 &&
-  status?.doneWall === 1 &&
-  !status?.running &&
-  !status?.homeCheckPending;
   // --------------------------------------------------------
   // HOME CHECK TABLE (backend-driven; never stored in state)
   // --------------------------------------------------------
@@ -340,7 +300,6 @@ const phase2Ended =
     if (!homeCheckOutput) return [];
     return parseHomeCheck(homeCheckOutput);
   }, [homeCheckPending, homeCheckWall, homeCheckOutput]);
-
   const homeCheckPassed = useMemo(() => {
     if (!homeCheckPending || homeCheckWall === null) return null;
     if (!homeCheckOutput) return null;
@@ -349,24 +308,20 @@ const phase2Ended =
   }, [homeCheckPending, homeCheckWall, homeCheckOutput]);
   const extractFinalSummary = (logs: string[]) => {
   if (!logs || logs.length === 0) return null;
-
   // Prefer final ERROR
   for (let i = logs.length - 1; i >= 0; i--) {
     if (logs[i].startsWith("[ERROR]")) {
       return logs[i];
     }
   }
-
   // Otherwise final SUCCESS
   for (let i = logs.length - 1; i >= 0; i--) {
     if (logs[i].startsWith("[SUCCESS]")) {
       return logs[i];
     }
   }
-
   return null;
 };
-
   // --------------------------------------------------------
   // AUTO SCROLL LOGS
   // --------------------------------------------------------
@@ -388,7 +343,6 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
       setActionBusy(false);
     }
   };
-
   // --------------------------------------------------------
   // API: start phases
   // --------------------------------------------------------
@@ -396,7 +350,6 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
     withActionLock(async () => {
       setErrorMessage(null);
       setCmdLogs([]);
-
       await axios.post(`${API_BASE_URL}/marking/start`, {
         walls: PHASE1_ORDER.map((w) => ({
           wall: w,
@@ -408,18 +361,15 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
         max_wall: maxWall,
         phase: 1,
       });
-
       // Kick the first homecheck via backend homecheck endpoint:
       await axios.post(`${API_BASE_URL}/marking/homecheck`, { target: "wall_2" });
       // No local state changes; poll will reflect backend state.
     });
-
   const startPhaseTwo = async () =>
   withActionLock(async () => {
     setForcedPlacement2(false); // 🔓 unlock Placement 2
     setErrorMessage(null);
     setCmdLogs([]);
-
     await axios.post(`${API_BASE_URL}/marking/start`, {
       walls: PHASE2_ORDER.map((w) => ({
         wall: w,
@@ -431,11 +381,8 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
       max_wall: maxWall,
       phase: 2,
     });
-
     await axios.post(`${API_BASE_URL}/marking/homecheck`, { target: "wall_5" });
   });
-
-
   // --------------------------------------------------------
   // ACTIONS
   // --------------------------------------------------------
@@ -443,19 +390,16 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
     withActionLock(async () => {
       await axios.post(`${API_BASE_URL}/marking/pause`);
     });
-
   const retryCurrentWall = async () =>
     withActionLock(async () => {
       setErrorMessage(null);
       setCmdLogs([]);
-
       try {
         await axios.post(`${API_BASE_URL}/marking/retry`);
       } catch (e: any) {
         setErrorMessage(e?.response?.data?.detail || "Retry failed (backend error)");
         return;
       }
-
       // IMPORTANT: Do not run homecheck directly here unless you really want it.
       // If your backend requires it, you can keep it.
       // Most stable approach: backend sets homeCheckPending + homeCheckWall.
@@ -464,7 +408,6 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
       // const w = status?.homeCheckWall ?? status?.lastFailedWall ?? lastErrorWall;
       // if (w) await axios.post(`${API_BASE_URL}/marking/homecheck`, { target: `wall_${w}` });
     });
-
   const continueNextWall = async () =>
   withActionLock(async () => {
     // ------------------------------------------------------
@@ -480,13 +423,11 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
       currentStep === 3 &&
       !status?.running &&
       !status?.homeCheckPending;
-
     if (phase1IdleOnWall4) {
       setForcedPlacement2(true);
       setCurrentStep(4); // Placement 2
       return;
     }
-
     // ------------------------------------------------------
     // MARKING COMPLETE (terminal)
     // ------------------------------------------------------
@@ -499,50 +440,36 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
       setCurrentStep(8);
       return;
     }
-
     // ------------------------------------------------------
     // Otherwise normal backend continue
     // ------------------------------------------------------
     setErrorMessage(null);
     setCmdLogs([]);
-
     const res = await axios.post(`${API_BASE_URL}/marking/continue`);
-
     if (res.data?.homeCheckRequired && res.data?.next_wall) {
       await axios.post(`${API_BASE_URL}/marking/homecheck`, {
         target: `wall_${res.data.next_wall}`,
       });
     }
   });
-
-
   // Show actions:
   // - Marking error => show buttons
   // - HomeCheck failed => also show buttons (operator expects Retry/Continue
-
-
 const isPlacement2 = currentStep === 4;
-
 const isPhase1Wall4 = status?.phase === 1 && currentStep === 3;
-
 const isHomeCheckFailed = homeCheckPending && homeCheckPassed === false;
-
 const isRealMarkingError =
   hasError &&
   !running &&
   !homeCheckPending &&
   !isPhase1Wall4 &&   // ❌ THIS EXCLUDES WALL 4
   !isPlacement2;
-
 const isWall4MarkingError =
   !running &&
   !homeCheckPending &&
   status?.phase === 1 &&
   currentStep === 3;
-
-
 const showErrorBanner =errorMessage && isMarkingStep(currentStep); 
-
 const isTerminalStep = currentStep === 8;
   // --------------------------------------------------------
   // POLLING (single loop, no overlap, stable)
@@ -606,7 +533,8 @@ const isTerminalStep = currentStep === 8;
       data.phase === 1 &&
       data.doneWall === 4 &&
       !data.running &&
-      !data.homeCheckPending
+      !data.homeCheckPending && 
+      !forcedPlacement2    
     ) {
       setForcedPlacement2(true); // 🔒 lock it
       nextStep = 4;              // Placement 2
@@ -699,7 +627,6 @@ const isTerminalStep = currentStep === 8;
           className="max-w-2xl max-h-[70vh] rounded-lg shadow object-contain"
           alt="step"
         />
-
         <div className="flex flex-col w-[520px] gap-4">
           <div className="menu bg-base-200 rounded-box p-4 shadow">
             <p className="text-lg font-semibold">Instruction</p>
@@ -707,7 +634,6 @@ const isTerminalStep = currentStep === 8;
               {homeCheckPending && homeCheckWall !== null && (
                 <>Home position check required for Wall {homeCheckWall}.</>
               )}
-
               {!homeCheckPending && currentStep === 1 && "Marking Wall 2 in progress."}
               {!homeCheckPending && currentStep === 2 && "Marking Wall 3 in progress."}
               {!homeCheckPending && currentStep === 3 && "Marking Wall 4 in progress."}
@@ -716,7 +642,6 @@ const isTerminalStep = currentStep === 8;
               {!homeCheckPending && currentStep === 7 && "Marking wall 1 in progress."}
               {currentStep === 8 && "Marking complete."}
             </p>
-
             <p className="mt-1 text-sm">
               Ensure that the laser leveller is turned on and is facing the wall that is to be marked.
             </p>
@@ -738,7 +663,9 @@ const isTerminalStep = currentStep === 8;
           */}
           {showErrorBanner && (
             <div className="p-3 bg-red-100 text-red-700 rounded">
-              {errorMessage}
+              <pre className="whitespace-pre-wrap text-sm">
+                {errorMessage}
+              </pre>
             </div>
           )}
           {/* HOME CHECK TABLE (backend-driven, stable) */}
@@ -774,7 +701,6 @@ const isTerminalStep = currentStep === 8;
               </table>
             </div>
           )}
-
           <div className="flex flex-col gap-3">
             {currentStep === 0 && (
               <button className="btn btn-primary" onClick={startPhaseOne} disabled={actionBusy}>
@@ -786,7 +712,6 @@ const isTerminalStep = currentStep === 8;
                 {actionBusy ? "Working..." : "Next"}
               </button>
             )}
-
             {running && isMarkingStep(currentStep) && !hasError && (
               <button className="btn btn-warning" onClick={pauseMarking} disabled={actionBusy}>
                 {actionBusy ? "Working..." : "Pause"}
@@ -811,7 +736,6 @@ const isTerminalStep = currentStep === 8;
                 >
                   Retry
                 </button>
-
                 <button
                   className="btn btn-warning flex-1"
                   onClick={continueNextWall}
@@ -831,7 +755,6 @@ const isTerminalStep = currentStep === 8;
                 >
                   Retry
                 </button>
-
                 <button
                   className="btn btn-warning flex-1"
                   onClick={continueNextWall}
@@ -847,7 +770,6 @@ const isTerminalStep = currentStep === 8;
               </button>
             )}
           </div>
-
           <div>
             <button
               className="btn btn-neutral btn-sm"
@@ -864,7 +786,6 @@ const isTerminalStep = currentStep === 8;
           </div>
         </div>
       </div>
-
       {/* Overlay / Modal for Auto Mode Instructions (multi-step) */}
       {showAutoInstr && (
         <div
@@ -900,7 +821,6 @@ const isTerminalStep = currentStep === 8;
                   ✕
                 </button>
               </div>
-
               {/* Body */}
               <div className="p-5 space-y-4 text-sm leading-6">
                 {AUTO_STEPS[autoStep].body}
@@ -911,7 +831,6 @@ const isTerminalStep = currentStep === 8;
                   </div>
                 </div>
               </div>
-
               {/* Footer controls */}
               <div className="flex justify-between border-t px-5 py-3">
                 <div className="flex gap-2">
@@ -960,5 +879,4 @@ const isTerminalStep = currentStep === 8;
     </>
   );
 };
-
 export default SixWallFlow;                
