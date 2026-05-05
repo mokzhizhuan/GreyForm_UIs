@@ -57,6 +57,30 @@ type FlowStep = {
   wall: string | null;
 };
 
+const STEP_IMAGES = [
+  placementOne, // 0
+  wallMarking1, // 1
+  wallMarking1, // 2
+  wallMarking1, // 3
+  placementTwo, // 4
+  wallMarking2, // 5
+  wallMarking2, // 6
+  wallMarking2, // 7
+  wallMarking2, // 8
+];
+
+const STEP_LABELS = [
+  "Placement 1",
+  "Wall 2",
+  "Wall 3",
+  "Wall 4",
+  "Placement 2",
+  "Wall 5",
+  "Wall 6",
+  "Wall 1",
+  "Marking Complete",
+];
+
 // Auto Mode Instructions steps (overlay pages)
 const AUTO_STEPS = [
   {
@@ -165,6 +189,39 @@ const findExcelForWall = (files: string[], stage: number, wallKey: string) => {
     }) ?? ""
   );
 };
+
+const buildFlowSteps = (stage: number, phase1Order: string[], phase2Order: string[]): FlowStep[] => [
+  {
+    type: "placement",
+    label: `Stage ${stage} - Placement 1`,
+    phase: 1,
+    wall: null,
+  },
+  ...phase1Order.map((w) => ({
+    type: "wall" as const,
+    label: `Stage ${stage} - Wall ${getWallNo(w)}`,
+    phase: 1 as const,
+    wall: w,
+  })),
+  {
+    type: "placement",
+    label: `Stage ${stage} - Placement 2`,
+    phase: 2,
+    wall: null,
+  },
+  ...phase2Order.map((w) => ({
+    type: "wall" as const,
+    label: `Stage ${stage} - Wall ${getWallNo(w)}`,
+    phase: 2 as const,
+    wall: w,
+  })),
+  {
+    type: "complete",
+    label: "Marking Complete",
+    phase: 0,
+    wall: null,
+  },
+];
 const parseHomeCheck = (output: string) => {
   const lines = (output || "").split(/\r?\n/).map((l) => l.trim());
   const rax = lines.find((l) => l.includes("rax_1"));
@@ -187,6 +244,7 @@ const parseHomeCheck = (output: string) => {
     };
   });
 };
+
 // --------------------------------------------------------
 // COMPONENT
 // --------------------------------------------------------
@@ -221,10 +279,6 @@ const SixWallFlow: React.FC<any> = ({
   const pollingTimerRef = useRef<number | null>(null);
   const pollInFlightRef = useRef(false);
   const aliveRef = useRef(true);
-  const currentStepRef = useRef(currentStep);
-  const currentStageRef = useRef(currentStage);
-  const flowStepsRef = useRef<FlowStep[]>([]);
-  const forcedPlacement2Ref = useRef(false);
     // Overlay state for auto mode instructions (multi-step)
   const [showAutoInstr, setShowAutoInstr] = useState(false);
   const [autoStep, setAutoStep] = useState(0);
@@ -276,73 +330,32 @@ const SixWallFlow: React.FC<any> = ({
 
   const phase1OrderForStage = useMemo(
     () => PHASE1_ORDER.filter((w) => getExcelForWall(currentStage, w)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentStage, excelFiles]
   );
 
   const phase2OrderForStage = useMemo(
     () => PHASE2_ORDER.filter((w) => getExcelForWall(currentStage, w)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentStage, excelFiles]
   );
 
-  const flowSteps = useMemo<FlowStep[]>(() => {
-    const steps: FlowStep[] = [
-      {
-        type: "placement",
-        label: `Stage ${currentStage} - Placement 1`,
-        phase: 1,
-        wall: null,
-      },
-      ...phase1OrderForStage.map((w) => ({
-        type: "wall" as const,
-        label: `Stage ${currentStage} - Wall ${getWallNo(w)}`,
-        phase: 1 as const,
-        wall: w,
-      })),
-      {
-        type: "placement",
-        label: `Stage ${currentStage} - Placement 2`,
-        phase: 2,
-        wall: null,
-      },
-      ...phase2OrderForStage.map((w) => ({
-        type: "wall" as const,
-        label: `Stage ${currentStage} - Wall ${getWallNo(w)}`,
-        phase: 2 as const,
-        wall: w,
-      })),
-      { type: "complete", label: "Marking Complete", phase: 0, wall: null },
-    ];
-
-    return steps;
-  }, [currentStage, phase1OrderForStage, phase2OrderForStage]);
+  const flowSteps = useMemo(
+    () => buildFlowSteps(currentStage, phase1OrderForStage, phase2OrderForStage),
+    [currentStage, phase1OrderForStage, phase2OrderForStage]
+  );
 
   const currentFlowStep = flowSteps[currentStep] ?? flowSteps[0];
-  const completeStepIndex = Math.max(flowSteps.length - 1, 0);
-  const placement2StepIndex = flowSteps.findIndex(
-    (s) => s.type === "placement" && s.phase === 2
-  );
-  const phase1LastWall = phase1OrderForStage[phase1OrderForStage.length - 1] ?? null;
-  const phase2LastWall = phase2OrderForStage[phase2OrderForStage.length - 1] ?? null;
-  const phase1LastStepIndex = phase1LastWall
-    ? flowSteps.findIndex((s) => s.wall === phase1LastWall)
-    : -1;
+  const terminalStepIndex = flowSteps.length - 1;
+  const placement2StepIndex = phase1OrderForStage.length + 1;
+  const lastPhase1Wall = phase1OrderForStage[phase1OrderForStage.length - 1] ?? null;
+  const lastPhase2Wall = phase2OrderForStage[phase2OrderForStage.length - 1] ?? null;
 
-  const getStepImage = (step: FlowStep | undefined) => {
-    if (!step) return placementOne;
-    if (step.type === "complete") return wallMarking2;
-    if (step.type === "placement") return step.phase === 2 ? placementTwo : placementOne;
-    return step.phase === 2 ? wallMarking2 : wallMarking1;
+  const findStepIndexByWall = (wallNo: number | null | undefined) => {
+    if (wallNo === null || wallNo === undefined) return 0;
+    const idx = flowSteps.findIndex((step) => step.wall === `wall_${wallNo}`);
+    return idx >= 0 ? idx : 0;
   };
 
-  const activeExcelFile =
-    currentFlowStep?.type === "wall" && currentFlowStep.wall
-      ? getExcelForWall(currentStage, currentFlowStep.wall)
-      : "";
-  const activeExcelName = activeExcelFile
-    ? activeExcelFile.split(/[\\/]/).pop()
-    : "";
+  const isMarkingStep = (stepIndex: number) => flowSteps[stepIndex]?.type === "wall";
   // --------------------------------------------------------
   // HOME CHECK TABLE (backend-driven; never stored in state)
   // --------------------------------------------------------
@@ -380,22 +393,6 @@ const SixWallFlow: React.FC<any> = ({
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [cmdLogs]);
 const [forcedPlacement2, setForcedPlacement2] = useState(false);
-
-  useEffect(() => {
-    currentStepRef.current = currentStep;
-  }, [currentStep]);
-
-  useEffect(() => {
-    currentStageRef.current = currentStage;
-  }, [currentStage]);
-
-  useEffect(() => {
-    flowStepsRef.current = flowSteps;
-  }, [flowSteps]);
-
-  useEffect(() => {
-    forcedPlacement2Ref.current = forcedPlacement2;
-  }, [forcedPlacement2]);
   // --------------------------------------------------------
   // Small helper: safely lock actions
   // --------------------------------------------------------
@@ -417,8 +414,6 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
     withActionLock(async () => {
       setErrorMessage(null);
       setCmdLogs([]);
-      setForcedPlacement2(false);
-      forcedPlacement2Ref.current = false;
       await axios.post(`${API_BASE_URL}/marking/start`, {
         walls: phase1OrderForStage.map((w) => ({
           wall: w,
@@ -431,18 +426,13 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
         phase: 1,
         stage: currentStage,
       });
-      // Kick the first available wall homecheck via backend homecheck endpoint:
-      if (phase1OrderForStage[0]) {
-        await axios.post(`${API_BASE_URL}/marking/homecheck`, {
-          target: phase1OrderForStage[0],
-        });
-      }
+      // Kick the first available homecheck via backend homecheck endpoint:
+      await axios.post(`${API_BASE_URL}/marking/homecheck`, { target: phase1OrderForStage[0] });
       // No local state changes; poll will reflect backend state.
     });
   const startPhaseTwo = async () =>
   withActionLock(async () => {
     setForcedPlacement2(false); // 🔓 unlock Placement 2
-    forcedPlacement2Ref.current = false;
     setErrorMessage(null);
     setCmdLogs([]);
     await axios.post(`${API_BASE_URL}/marking/start`, {
@@ -457,11 +447,7 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
       phase: 2,
       stage: currentStage,
     });
-    if (phase2OrderForStage[0]) {
-      await axios.post(`${API_BASE_URL}/marking/homecheck`, {
-        target: phase2OrderForStage[0],
-      });
-    }
+    await axios.post(`${API_BASE_URL}/marking/homecheck`, { target: phase2OrderForStage[0] });
   });
   // --------------------------------------------------------
   // ACTIONS
@@ -494,22 +480,18 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
     // PHASE 1 → PLACEMENT 2 (UI-controlled transition)
     // Allow if:
     // - phase 1
-    // - UI currently on the last available Phase 1 wall
+    // - UI currently on Wall 4 step (step 3)
     // - idle (not running, not homecheck pending)
-    // This avoids relying on one fixed wall number.
+    // This avoids relying on doneWall===4 timing.
     // ------------------------------------------------------
-    const phase1IdleOnLastAvailableWall =
+    const phase1IdleOnLastWall =
       status?.phase === 1 &&
-      currentStep === phase1LastStepIndex &&
+      currentFlowStep?.wall === lastPhase1Wall &&
       !status?.running &&
       !status?.homeCheckPending;
-    if (phase1IdleOnLastAvailableWall) {
+    if (phase1IdleOnLastWall) {
       setForcedPlacement2(true);
-      forcedPlacement2Ref.current = true;
-      if (placement2StepIndex >= 0) {
-        setCurrentStep(placement2StepIndex);
-        currentStepRef.current = placement2StepIndex;
-      }
+      setCurrentStep(placement2StepIndex); // Placement 2
       return;
     }
     // ------------------------------------------------------
@@ -517,22 +499,11 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
     // ------------------------------------------------------
     if (
       status?.phase === 2 &&
-      currentFlowStep?.wall === phase2LastWall &&
+      currentFlowStep?.wall === lastPhase2Wall &&
       !status?.running &&
       !status?.homeCheckPending
     ) {
-      if (currentStage < TOTAL_STAGES) {
-        const nextStage = currentStage + 1;
-        setCurrentStage(nextStage);
-        currentStageRef.current = nextStage;
-        setForcedPlacement2(false);
-        forcedPlacement2Ref.current = false;
-        setCurrentStep(0);
-        currentStepRef.current = 0;
-      } else {
-        setCurrentStep(completeStepIndex);
-        currentStepRef.current = completeStepIndex;
-      }
+      setCurrentStep(terminalStepIndex);
       return;
     }
     // ------------------------------------------------------
@@ -550,23 +521,32 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
   // Show actions:
   // - Marking error => show buttons
   // - HomeCheck failed => also show buttons (operator expects Retry/Continue
-const isPlacement2 = currentStep === placement2StepIndex;
-const isPhase1LastWall = status?.phase === 1 && currentStep === phase1LastStepIndex;
+const isPlacement2 = currentFlowStep?.type === "placement" && currentFlowStep?.phase === 2;
+const isPhase1LastWall = status?.phase === 1 && currentFlowStep?.wall === lastPhase1Wall;
 const isHomeCheckFailed = homeCheckPending && homeCheckPassed === false;
-const isCurrentMarkingStep = currentFlowStep?.type === "wall";
 const isRealMarkingError =
   hasError &&
   !running &&
   !homeCheckPending &&
   !isPhase1LastWall &&
   !isPlacement2;
-const isPhase1LastWallMarkingError =
+const isLastPhase1WallMarkingError =
   !running &&
   !homeCheckPending &&
   status?.phase === 1 &&
-  currentStep === phase1LastStepIndex;
-const showErrorBanner = errorMessage && isCurrentMarkingStep; 
+  currentFlowStep?.wall === lastPhase1Wall;
+const showErrorBanner = errorMessage && isMarkingStep(currentStep); 
 const isTerminalStep = currentFlowStep?.type === "complete";
+const canContinueNextStage = isTerminalStep && currentStage < TOTAL_STAGES;
+const continueNextStage = () => {
+  const nextStage = currentStage + 1;
+  setCurrentStage(nextStage);
+  setCurrentStep(0);
+  setForcedPlacement2(false);
+  setStatus(null);
+  setErrorMessage(null);
+  setCmdLogs([]);
+};
   // --------------------------------------------------------
   // POLLING (single loop, no overlap, stable)
   // --------------------------------------------------------
@@ -607,95 +587,69 @@ const isTerminalStep = currentFlowStep?.type === "complete";
     // =========================================================
     // 🧠 STEP RESOLUTION (PRIORITY-ORDERED, SAFE)
     // =========================================================
-    const stepNow = currentStepRef.current;
-    const stepsNow = flowStepsRef.current;
-    const stageNow = currentStageRef.current;
-    const completeIdxNow = Math.max(stepsNow.length - 1, 0);
-    const placement2IdxNow = stepsNow.findIndex(
-      (s) => s.type === "placement" && s.phase === 2
-    );
-    const phase1OrderNow = PHASE1_ORDER.filter((w) =>
-      findExcelForWall(excelFiles || [], stageNow, w)
-    );
-    const phase2OrderNow = PHASE2_ORDER.filter((w) =>
-      findExcelForWall(excelFiles || [], stageNow, w)
-    );
-    const phase1LastWallNow =
-      phase1OrderNow.length > 0 ? phase1OrderNow[phase1OrderNow.length - 1] : undefined;
-    const phase2LastWallNow =
-      phase2OrderNow.length > 0 ? phase2OrderNow[phase2OrderNow.length - 1] : undefined;
-    const phase1LastWallNoNow = phase1LastWallNow
-      ? Number(getWallNo(phase1LastWallNow))
-      : null;
-    const phase2LastWallNoNow = phase2LastWallNow
-      ? Number(getWallNo(phase2LastWallNow))
-      : null;
-
-    const wallToDynamicStep = (wall: number | null) => {
-      if (wall === null) return 0;
-      const idx = stepsNow.findIndex((s) => s.wall === `wall_${wall}`);
-      return idx >= 0 ? idx : 0;
-    };
-
-    let nextStep = stepNow;
-    // 🔒 ABSOLUTE TERMINAL — NEVER LEAVE
-    if (stepNow === completeIdxNow && stepsNow[stepNow]?.type === "complete") {
-      // Do nothing forever once completed
+    let nextStep = currentStep;
+    // 🔒 ABSOLUTE TERMINAL — keep terminal screen until the operator continues/exits
+    if (currentFlowStep?.type === "complete") {
       pollInFlightRef.current = false;
       pollingTimerRef.current = window.setTimeout(poll, 1500);
       return;
     }
-    // 🔒 MARKING COMPLETE (backend truth only)
+
+    // When operator presses "Continue to Stage X", the backend may still report
+    // the previous stage's completed Phase 2 status until the new stage is started.
+    // Keep the UI on Stage X Placement 1 and ignore that stale completed status.
+    if (
+      currentFlowStep?.type === "placement" &&
+      currentFlowStep.phase === 1 &&
+      data.phase === 2 &&
+      !data.running &&
+      !data.homeCheckPending
+    ) {
+      pollInFlightRef.current = false;
+      pollingTimerRef.current = window.setTimeout(poll, 1500);
+      return;
+    }
+    // 🔒 MARKING COMPLETE for this stage only when UI is already on the last Phase 2 wall
     const isStageComplete =
       data.phase === 2 &&
       !data.running &&
       !data.homeCheckPending &&
-      phase2LastWallNoNow !== null &&
-      data.doneWall === phase2LastWallNoNow;
+      data.doneWall !== null &&
+      currentFlowStep?.wall === lastPhase2Wall &&
+      data.doneWall === Number(getWallNo(lastPhase2Wall || "wall_0"));
     
     if (isStageComplete) {
-      if (stageNow < TOTAL_STAGES) {
-        const nextStage = stageNow + 1;
-        setCurrentStage(nextStage);
-        currentStageRef.current = nextStage;
-        setForcedPlacement2(false);
-        forcedPlacement2Ref.current = false;
-        nextStep = 0;
-      } else {
-        nextStep = completeIdxNow;
-      }
+      nextStep = terminalStepIndex;
     }
-    else if (
+    if (
       data.phase === 1 &&
-      phase1LastWallNoNow !== null &&
-      data.doneWall === phase1LastWallNoNow &&
       !data.running &&
-      !data.homeCheckPending && 
-      !forcedPlacement2Ref.current    
+      !data.homeCheckPending &&
+      !forcedPlacement2 &&
+      lastPhase1Wall &&
+      data.doneWall === Number(getWallNo(lastPhase1Wall))
     ) {
       setForcedPlacement2(true); // 🔒 lock it
-      forcedPlacement2Ref.current = true;
-      nextStep = placement2IdxNow >= 0 ? placement2IdxNow : stepNow;
+      nextStep = placement2StepIndex; // Placement 2
     }
     // 🔒 PLACEMENT 2 — operator-forced, never overridden
-    else if (forcedPlacement2Ref.current) {
-      nextStep = placement2IdxNow >= 0 ? placement2IdxNow : stepNow;
+    else if (forcedPlacement2) {
+      nextStep = placement2StepIndex;
     }
     // 🟡 HOME CHECK PENDING
     else if (data.homeCheckPending && data.homeCheckWall !== null) {
-      nextStep = wallToDynamicStep(data.homeCheckWall);
+      nextStep = findStepIndexByWall(data.homeCheckWall);
     }
     // 🟢 MARKING RUNNING
     else if (data.running && data.startedWall !== null) {
-      nextStep = wallToDynamicStep(data.startedWall);
+      nextStep = findStepIndexByWall(data.startedWall);
     }
     // 🟠 IDLE FALLBACK (safe now, terminal guarded)
     else if (!data.running && data.doneWall !== null) {
-      nextStep = wallToDynamicStep(data.doneWall);
+      nextStep = findStepIndexByWall(data.doneWall);
     }
-    if (nextStep !== stepNow) {
+    if (nextStep !== currentStep) {
       setCurrentStep(nextStep);
-      currentStepRef.current = nextStep;
     }
     // -------------------------------
     // 🔴 Logs (single-line summary only)
@@ -738,7 +692,7 @@ const isTerminalStep = currentFlowStep?.type === "complete";
       if (pollingTimerRef.current) clearTimeout(pollingTimerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [currentStep, currentStage, forcedPlacement2, flowSteps]);
 
   // --------------------------------------------------------
   // RENDER
@@ -746,13 +700,13 @@ const isTerminalStep = currentFlowStep?.type === "complete";
   return (
     <>
       <h2 className="text-4xl font-bold text-center mb-6">
-        Marking of PBU (6-Wall Flow) — Stage {currentStage} / {TOTAL_STAGES}
+        Marking of PBU — Stage {currentStage} / {TOTAL_STAGES}
       </h2>
 
       <ul className="steps w-full mb-6">
         {flowSteps.map((step, i) => (
           <li
-            key={`${step.type}-${step.phase}-${step.wall ?? i}`}
+            key={`${step.label}-${i}`}
             className={i === currentStep ? "step step-primary" : "step"}
           >
             {step.label}
@@ -762,7 +716,13 @@ const isTerminalStep = currentFlowStep?.type === "complete";
 
       <div className="flex gap-6">
         <img
-          src={getStepImage(currentFlowStep)}
+          src={currentFlowStep?.type === "placement" && currentFlowStep.phase === 1
+            ? placementOne
+            : currentFlowStep?.type === "placement" && currentFlowStep.phase === 2
+            ? placementTwo
+            : currentFlowStep?.phase === 1
+            ? wallMarking1
+            : wallMarking2}
           className="max-w-2xl max-h-[70vh] rounded-lg shadow object-contain"
           alt="step"
         />
@@ -773,20 +733,17 @@ const isTerminalStep = currentFlowStep?.type === "complete";
               {homeCheckPending && homeCheckWall !== null && (
                 <>Home position check required for Wall {homeCheckWall}.</>
               )}
-              {!homeCheckPending && currentFlowStep?.type === "wall" && currentFlowStep.wall && (
-                <>Marking Wall {getWallNo(currentFlowStep.wall)} in progress.</>
-              )}
-              {currentFlowStep?.type === "placement" && currentFlowStep.phase === 1 &&
-                "Prepare robot for Placement 1."}
-              {currentFlowStep?.type === "placement" && currentFlowStep.phase === 2 &&
-                "Prepare robot for Placement 2."}
-              {currentFlowStep?.type === "complete" && "Marking complete."}
+              {!homeCheckPending && currentFlowStep?.type === "placement" && currentFlowStep.phase === 1 &&
+                `Prepare Placement 1 for Stage ${currentStage}.`}
+              {!homeCheckPending && currentFlowStep?.type === "placement" && currentFlowStep.phase === 2 &&
+                `Prepare Placement 2 for Stage ${currentStage}.`}
+              {!homeCheckPending && currentFlowStep?.type === "wall" &&
+                `Marking Wall ${getWallNo(currentFlowStep.wall || "")} in progress.`}
+              {isTerminalStep &&
+                (currentStage < TOTAL_STAGES
+                  ? `Stage ${currentStage} complete. Continue to Stage ${currentStage + 1}.`
+                  : "Marking complete.")}
             </p>
-            {activeExcelName && (
-              <p className="mt-2 text-xs opacity-70">
-                Export file: <span className="font-mono">{activeExcelName}</span>
-              </p>
-            )}
             <p className="mt-1 text-sm">
               Ensure that the laser leveller is turned on and is facing the wall that is to be marked.
             </p>
@@ -852,12 +809,12 @@ const isTerminalStep = currentFlowStep?.type === "complete";
                 {actionBusy ? "Working..." : "Next"}
               </button>
             )}
-            {currentStep === placement2StepIndex && !isHomeCheckFailed  && (
+            {currentFlowStep?.type === "placement" && currentFlowStep.phase === 2 && !isHomeCheckFailed  && (
               <button className="btn btn-primary" onClick={startPhaseTwo} disabled={actionBusy}>
                 {actionBusy ? "Working..." : "Next"}
               </button>
             )}
-            {running && isCurrentMarkingStep && !hasError && (
+            {running && isMarkingStep(currentStep) && !hasError && (
               <button className="btn btn-warning" onClick={pauseMarking} disabled={actionBusy}>
                 {actionBusy ? "Working..." : "Pause"}
               </button>
@@ -871,8 +828,8 @@ const isTerminalStep = currentFlowStep?.type === "complete";
                 Retry
               </button>
             )}
-            {/* WALL 4 MARKING ERROR → Retry + Continue (to Placement 2) */}
-            {isPhase1LastWallMarkingError && (
+            {/* LAST PHASE 1 WALL MARKING ERROR → Retry + Continue (to Placement 2) */}
+            {isLastPhase1WallMarkingError && (
               <div className="flex gap-2">
                 <button
                   className="btn btn-error flex-1"
@@ -909,7 +866,12 @@ const isTerminalStep = currentFlowStep?.type === "complete";
                 </button>
               </div>
             )}
-            {isTerminalStep && (
+            {canContinueNextStage && (
+              <button className="btn btn-success" onClick={continueNextStage} disabled={actionBusy}>
+                Continue to Stage {currentStage + 1}
+              </button>
+            )}
+            {isTerminalStep && currentStage === TOTAL_STAGES && (
               <button className="btn btn-success" onClick={() => window.location.reload()}>
                 Exit
               </button>
