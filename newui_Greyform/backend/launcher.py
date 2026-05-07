@@ -49,7 +49,10 @@ def is_alive(pid: int) -> bool:
 
 def _build_cmd():
     """Build the uvicorn command (uvicorn backend.main:app ...)."""
-    venv_python = ROOT_DIR / ".venv" / "bin" / "python3"
+    if os.name == "nt":
+        venv_python = ROOT_DIR / ".venv" / "Scripts" / "python.exe"
+    else:
+        venv_python = ROOT_DIR / ".venv" / "bin" / "python3"
     python_bin = str(venv_python) if venv_python.exists() else sys.executable
 
     cmd = [
