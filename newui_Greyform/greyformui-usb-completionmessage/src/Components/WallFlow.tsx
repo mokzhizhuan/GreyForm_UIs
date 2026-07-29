@@ -24,6 +24,10 @@ import emergencyStop from "../assets/flex_pendant_emergency_stop.png";
 // Fallback image for the terminal "Marking Complete" step — there's no
 // per-PBU photo for that, unlike the placement/wall photos below.
 import markingCompleteFallback from "../assets/six_wall_flow/6_wall_flow_placement2_1.png";
+// Photo illustrating the robot's required 1m placement distance from
+// the wall — same photo used for both Placement 1 and Placement 2
+// across all stages, since the instruction is identical.
+import placementDistanceImg from "../assets/instructions/placement_distance.png";
 
 import { API_BASE_URL } from "./config";
 import type { WallRow, MarkingStatusResponse } from "./flowShared";
@@ -51,30 +55,69 @@ const FOUR_WALL_FLOW: { phase1: string[]; phase2: string[] } = {
 // INSTRUCTION TEXT — everything shown in the "Instruction" panel.
 // Edit the strings below for each stage; anything left out falls back
 // to the generic default at the bottom.
+//
+// Each entry can be either:
+//   - a plain string, e.g. "Position the robot at Placement 1."
+//   - or { text: "...", image: someImportedImage } to also show a
+//     small illustrative photo/diagram alongside the text — handy for
+//     more complicated instructions.
+//
+// To add an image: import it at the top of this file like the
+// Auto Mode photos above (e.g. `import pipeAlignPhoto from
+// "../assets/instructions/pipe_align.png";`), then reference it here:
+//   wall: (w) => ({ text: `Marking pipe positions on Wall ${w}.`, image: pipeAlignPhoto }),
 // --------------------------------------------------------
+type InstructionEntry = string | { text: string; image?: string };
+
 interface StageInstructions {
-  placement1?: string;
-  placement2?: string;
-  wall?: (wallNum: number) => string;
-  complete?: string;
+  placement1?: InstructionEntry;
+  placement2?: InstructionEntry;
+  wall?: (wallNum: number) => InstructionEntry;
+  complete?: InstructionEntry;
+}
+
+function instructionText(entry: InstructionEntry): string {
+  return typeof entry === "string" ? entry : entry.text;
+}
+
+function instructionImage(entry: InstructionEntry): string | undefined {
+  return typeof entry === "string" ? undefined : entry.image;
 }
 
 const STAGE_INSTRUCTIONS: Record<number, StageInstructions> = {
   1: {
-    placement1: "Position the robot at Placement 1. The robot should be facing wall 2 and be 1m away from the wall.",
-    placement2: "Move the robot to Placement 2. The robot should be facing wall 1 and be 1m away from the wall.",
+    placement1: {
+      text: "Position the robot at Placement 1. The robot should be facing wall 2 and be 1m away from the wall.",
+      image: placementDistanceImg,
+    },
+    placement2: {
+      text: "Move the robot to Placement 2. The robot should be facing wall 1 and be 1m away from the wall.",
+      image: placementDistanceImg,
+    },
     wall: (w) => `Marking pipe positions on Wall ${w} in progress.`,
     complete: "Stage 1 (pipe) marking complete.",
   },
   2: {
-    placement1: "Position the robot at Placement 1. The robot should be facing wall 2 and be 1m away from the wall.",
-    placement2: "Move the robot to Placement 2. The robot should be facing wall 1 and be 1m away from the wall.",
+    placement1: {
+      text: "Position the robot at Placement 1. The robot should be facing wall 2 and be 1m away from the wall.",
+      image: placementDistanceImg,
+    },
+    placement2: {
+      text: "Move the robot to Placement 2. The robot should be facing wall 1 and be 1m away from the wall.",
+      image: placementDistanceImg,
+    },
     wall: (w) => `Marking Wall ${w} in progress.`,
     complete: "Stage 2 (tile) marking complete.",
   },
   3: {
-    placement1: "Position the robot at Placement 1. The robot should be facing wall 2 and be 1m away from the wall.",
-    placement2: "Move the robot to Placement 2. The robot should be facing wall 1 and be 1m away from the wall.",
+    placement1: {
+      text: "Position the robot at Placement 1. The robot should be facing wall 2 and be 1m away from the wall.",
+      image: placementDistanceImg,
+    },
+    placement2: {
+      text: "Move the robot to Placement 2. The robot should be facing wall 1 and be 1m away from the wall.",
+      image: placementDistanceImg,
+    },
     wall: (w) => `Marking fixture positions on Wall ${w} in progress.`,
     complete: "Stage 3 (fixture) marking complete.",
   },
@@ -512,6 +555,15 @@ const WallFlow: React.FC<any> = ({
   const showErrorBanner = !!errorMessage && wallForStep[currentStep] !== null;
   const isTerminalStep = currentStep === terminalStep;
 
+  const currentInstructionEntry: InstructionEntry | null = useMemo(() => {
+    if (currentStep === placement1Step) return stageInstructions.placement1;
+    if (isPlacement2) return stageInstructions.placement2;
+    if (isTerminalStep) return stageInstructions.complete;
+    const w = wallForStep[currentStep];
+    if (w !== null) return stageInstructions.wall(w);
+    return null;
+  }, [currentStep, isPlacement2, isTerminalStep, wallForStep, placement1Step, stageInstructions]);
+
   // --------------------------------------------------------
   // POLLING (single loop, no overlap, stable)
   // --------------------------------------------------------
@@ -654,12 +706,15 @@ const WallFlow: React.FC<any> = ({
               {homeCheckPending && homeCheckWall !== null && (
                 <>Home position check required for Wall {homeCheckWall}.</>
               )}
-              {!homeCheckPending && currentStep === placement1Step && stageInstructions.placement1}
-              {!homeCheckPending && isPlacement2 && stageInstructions.placement2}
-              {!homeCheckPending && !isTerminalStep && wallForStep[currentStep] !== null &&
-                stageInstructions.wall(wallForStep[currentStep] as number)}
-              {isTerminalStep && stageInstructions.complete}
+              {!homeCheckPending && currentInstructionEntry && instructionText(currentInstructionEntry)}
             </p>
+            {!homeCheckPending && currentInstructionEntry && instructionImage(currentInstructionEntry) && (
+              <img
+                src={instructionImage(currentInstructionEntry)}
+                alt="Instruction illustration"
+                className="mt-2 max-h-[440px] max-w-full w-auto object-contain rounded mx-auto block"
+              />
+            )}
           </div>
 
           {showErrorBanner && (
