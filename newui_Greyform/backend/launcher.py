@@ -62,8 +62,6 @@ def _build_cmd():
         "--host", HOST,
         "--port", str(PORT),
         "--workers", str(WORKERS),
-        "--proxy-headers",
-        "--forwarded-allow-ips", "*",
         "--log-level", "info",
     ]
     if EXTRA.strip():

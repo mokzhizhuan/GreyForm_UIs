@@ -8,16 +8,15 @@
 #       point_count >= row_totals[wall_id]
 # - On mismatch → error, stay at that wall, wait for Retry from frontend.
 # - Each wall has its own Excel file (from frontend), mapped by wall id.
-import subprocess
 import threading
 import re
 import time
-import os
 import shlex
-import signal
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+
+from backend.ssh_client import run_command, open_stream, RemoteProcess
 
 app = FastAPI()
 
@@ -26,7 +25,7 @@ app = FastAPI()
 # -------------------------------------------------------------------
 pause_flag = threading.Event()
 running_flag = threading.Event()
-current_process: Optional[subprocess.Popen] = None
+current_process: Optional[RemoteProcess] = None
 current_wall: Optional[int] = None
 last_completed_wall: Optional[int] = None
 # Walls sequence & index (e.g. ["wall_2", "wall_3", "wall_4"])
@@ -45,6 +44,7 @@ excel_map: Dict[int, str] = {}
 mesh_file_path: str = ""
 current_folder: str = ""  # informational only (your local folder)
 current_phase: Optional[int] = None
+current_stage: int = 1  # which Excel "Stage N" sheet this run's data came from
 state_lock = threading.Lock()
 event_counter = 0
 # Raw logs per wall (for /errorlog)
@@ -71,6 +71,7 @@ class MarkingStartBody(BaseModel):
     max_wall: int
     folder: str  # e.g. "/home/ros_user/pbu_data/mockup"
     phase: Optional[int] = None  # just a logical phase flag
+    stage: int = 1  # which Excel "Stage N" this run's Excel data came from
 
 
 class HomeCheckBody(BaseModel):
@@ -149,24 +150,14 @@ def home_position_check(body: HomeCheckBody):
 def run_home_check(wall_id: int):
     global homecheck_pending, homecheck_wall, homecheck_output, last_failed_wall
     target = f"wall_{wall_id}"
-    cmd = [
-        "sshpass",
-        "-p",
-        "winsys",
-        "ssh",
-        "winsys@192.168.1.5",
-        "python3",
-        "/home/winsys/pbu_marking_ros/homeposcheck.py",
-        "--file",
-        "/home/winsys/pbu_marking_ros/pbu_data/mockup/poses.json",
-        "--target",
-        target,
-    ]
-    proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+    cmd = (
+        "python3 /home/winsys/pbu_marking_ros/homeposcheck.py "
+        "--file /home/winsys/pbu_marking_ros/pbu_data/mockup/poses.json "
+        f"--target {target}"
     )
-    out, _ = proc.communicate()
-    passed = any(line.strip() == "True" for line in out.splitlines())
+    lines, _ = run_command(cmd)
+    out = "\n".join(lines)
+    passed = any(line.strip() == "True" for line in lines)
     with state_lock:
         homecheck_output = out
         homecheck_pending = not passed
@@ -222,7 +213,7 @@ def classify_error(line: str) -> Optional[str]:
     return None
 
 
-def reader_thread(proc: subprocess.Popen, wall_id: int):
+def reader_thread(proc: RemoteProcess, wall_id: int):
     global current_process, queue_index, last_completed_wall, last_failed_wall
     fatal = False
     processing_failed = False
@@ -337,13 +328,13 @@ def reader_thread(proc: subprocess.Popen, wall_id: int):
                 threading.Thread(target=start_next_wall, daemon=True).start()
 
 
-def _kill_process(proc):
+def _kill_process(proc: RemoteProcess):
+    """
+    Best-effort stop of the remote marking script. See RemoteProcess.kill()
+    in ssh_client.py — sends Ctrl-C over the SSH channel then closes it.
+    """
     try:
-        pgid = os.getpgid(proc.pid)
-        os.killpg(pgid, signal.SIGINT)
-        time.sleep(1)
-        if proc.poll() is None:
-            os.killpg(pgid, signal.SIGKILL)
+        proc.kill()
     except Exception as e:
         print(f"[WARN] Failed to kill process: {e}")
 
@@ -388,38 +379,32 @@ def start_next_wall():
         # remote folder is fixed for ROS script
         remote_folder = "/home/ros_user/pbu_data/mockup"
         mesh_value = mesh_file_path
+        stage_value = current_stage
     # Build remote command:
     #   cd /home/winsys/pbu_marking_ros &&
     #   ./run_marking.sh --stage 2 --wall wall_2 --folder /home/ros_user/pbu_data/mockup
     #                    --excel test_points_tmp_out/..._wall_2.xlsx --mesh SIMTech_L_PBU.stl
+    #
+    # NOTE: run_marking.sh currently accepts --stage but doesn't actually
+    # use it in any of the docker/ROS commands it runs — it's only echoed
+    # for debug output right now. The stage number's real effect on what
+    # gets marked comes through --excel (a per-wall file already scoped to
+    # the correct Stage N sheet). Passing the real stage here anyway keeps
+    # logs accurate and future-proofs this if run_marking.sh starts using
+    # it later.
     remote_command = (
         "cd /home/winsys/pbu_marking_ros && "
         "./run_marking.sh "
-        "--stage 0 "
+        f"--stage {stage_value} "
         f"--wall {shlex.quote(label)} "
         f"--folder {shlex.quote(remote_folder)} "
         f"--excel {shlex.quote(excel_rel)} "
         f"--mesh {shlex.quote(mesh_value)}"
     )
-    marking_cmd = [
-        "sshpass",
-        "-p",
-        "winsys",
-        "ssh",
-        "winsys@192.168.1.5",
-        remote_command,
-    ]
-    print(f"[controller] 🚀 Starting wall {wall_id}")
-    print(marking_cmd)
+    print(f"[controller] Starting wall {wall_id}")
+    print(remote_command)
     try:
-        proc = subprocess.Popen(
-            marking_cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1,
-            preexec_fn=os.setsid,  # 🔥 REQUIRED
-        )
+        proc = open_stream(remote_command)
     except Exception as e:
         with state_lock:
             current_process = None
@@ -446,7 +431,7 @@ def marking_start(body: MarkingStartBody):
       ]
     """
     global wall_sequence, queue_index
-    global mesh_file_path, current_folder, current_phase, total_walls
+    global mesh_file_path, current_folder, current_phase, current_stage, total_walls
     global current_wall, last_completed_wall, event_counter
     global row_totals, wall_point_count, bringup_success, wall_error, error_logs, excel_map
     if not body.walls:
@@ -476,6 +461,7 @@ def marking_start(body: MarkingStartBody):
         current_folder = body.folder
         total_walls = body.max_wall
         current_phase = body.phase
+        current_stage = body.stage
         # reset global state
         current_wall = None
         last_completed_wall = None
@@ -631,6 +617,7 @@ def marking_status():
             "excelMap": excel_map,
             "folder": folder,
             "meshFile": mesh_file_path,
+            "stage": current_stage,
             "lineCount": point_count,  # points done
             "totalPoints": total_points,  # expected points
             "eventID": event_counter,
