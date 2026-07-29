@@ -8,13 +8,11 @@ import DetectPBU from "./DetectPBU";
 import { API_BASE_URL } from "./config";
 import HomePositionCheck from "./HomePositionCheck";
 import HomeVerified from "./HomeVerified";
-import FourWallFlow from "./FourWallFlow";
-import SixWallFlow from "./SixWallFlow";
+import WallFlow from "./WallFlow";
 //import { SetToAutoMode } from "./SetToAutoMode";
 
 // Import images
 import ABBHOMEImage from "../assets/ABB_Robot_HOME.jpg";
-import FlexPendantImage from "../assets/ABB_Robot_FlexPendant.jpg";
 import pushRobotIntoPBUImage from "../assets/PushIntoPBU.jpg";
 import RobotPowerONOutside from "../assets/ABB_Robot_Power_ON_outside.jpg";
 import RobotPowerOFFOutside from "../assets/ABB_Robot_Power_OFF_outside.jpg";
@@ -53,8 +51,7 @@ type CurrentState =
   | "home_position_setup"
   | "home_verified"
   //| "set_to_auto_mode"
-  | "four_wall_flow"
-  | "six_wall_flow";
+  | "wall_flow";
 
 const views = {
   select_PBU: {
@@ -105,14 +102,15 @@ const views = {
     primaryText: "Next Step",
     showSpinner: false,
   },*/
-  four_wall_flow: {
-    title: "Marking of PBU (Four Walls)",
-  },
-  six_wall_flow: {
-    title: "Marking of PBU (Six Walls)",
+  wall_flow: {
+    title: "Marking of PBU",
   },
 } as const;
 
+// NOTE: currently unused — no call site wraps a request with this yet.
+// Kept in case the flaky /marking/start or SSH-backed calls should be
+// wrapped with retries; wire it in explicitly if/when that's needed
+// rather than leaving callers guessing whether retries are already happening.
 async function postWithRetries(
   url: string,
   data?: any,
@@ -137,26 +135,12 @@ async function postWithRetries(
 export default function Status() {
   const [appState, setAppState] = useState<CurrentState>("select_PBU");
   const v = views[appState];
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [jointTarget, setJointTarget] = useState<any | null>(null);
-  const [walls, setWalls] = useState<WallInfo[]>([]);
-  const [maxWall, setMaxWall] = useState<number | null>(null);
-  const [currentWall, setCurrentWall] = useState<number>(1);
-  const [autoBootStatus, setAutoBootStatus] = useState<
-    "idle" | "booting" | "ok" | "error"
-  >("idle");
-  const [autoBootError, setAutoBootError] = useState<string | null>(null);
-  interface JointTargetResponse {
-    ok: boolean;
-    jointtarget: any;
-  }
   const [fileEntries, setFileEntries] = useState<FileEntry[]>([]);
   const [pathByFilename, setPathByFilename] = useState<Record<string, string>>(
     {}
   );
-  // NEW: remember which Excel has already been processed by detectwalls
-  const [processedExcel, setProcessedExcel] = useState<string | null>(null);
+
   async function handleGetDirectory() {
     try {
       const res = await axios.get(`${API_BASE_URL}/getdirectory`);
@@ -202,17 +186,7 @@ export default function Status() {
     ok: boolean;
     data: string[];
   }
-  interface WallRow {
-    [key: string]: any;
-  }
 
-  interface WallInfo {
-    wall: string;
-    count: number;
-    rows: WallRow[];
-  }
-
-  const [directory, setDirectory] = useState<string>("");
   async function readDirectory(): Promise<ReadDirectoryResponse> {
     console.log("readDirectoryAPI triggered!");
     const res = await axios.post<ReadDirectoryResponse>(
@@ -235,17 +209,22 @@ export default function Status() {
   const [file_direct, set_file_direct] = useState<string>(
     "/home/ros_user/catkin_ws/"
   );
+  const [maxWall, setMaxWall] = useState<number | null>(null);
+  const [currentStage, setCurrentStage] = useState<number | null>(null);
+  const [outputName, setOutputName] = useState<string>("");
 
   type WallRowDict = { [key: string]: string };
   interface FileExecuteResult {
     folder: string;
     excelFile: string;
-    excelFiles: string[]; 
+    excelFiles: string[];
     maxWall: number;
     allWalls: number[];
     wallRows: Record<number, number>;
     wallDetails: Record<number, WallRowDict[]>;
     rawLines: string[];
+    currentStage: number | null;
+    outputName: string;
   }
 
   useEffect(() => {
@@ -256,152 +235,167 @@ export default function Status() {
     }
   }, [appState]);
 
+  // Home position check is currently bypassed. Restoring it just means
+  // removing this effect and un-commenting the <HomePositionCheck /> render
+  // branch further down (imports/props for it are already left in place).
+  useEffect(() => {
+    if (appState === "home_position_setup") {
+      setAppState("home_verified");
+    }
+  }, [appState]);
+
   const [allWalls, setAllWalls] = useState<number[]>([]);
   const [wallRows, setWallRows] = useState<Record<number, number>>({});
   const [wallDetails, setWallDetails] =
     useState<Record<number, WallRowDict[]>>({});
 
   async function handleFileExecute(folderPath: string): Promise<FileExecuteResult> {
-  console.log("➡ handleFileExecute() starting with folder:", folderPath);
+    console.log("➡ handleFileExecute() starting with folder:", folderPath);
 
-  const res = await axios.post(`${API_BASE_URL}/file_execute_data`, {
-    folder: folderPath,   // ✅ CHANGED
-  });
+    const res = await axios.post(`${API_BASE_URL}/file_execute_data`, {
+      folder: folderPath,
+    });
 
-  const lines: string[] = res.data.data || [];
-
-  // ---------------------------------------------
-  // NEW: array of excel files
-  // ---------------------------------------------
-  const excelFiles: string[] = [];
-
-  // keep backward compatibility
-  let excelFile = "";
-
-  let folder = folderPath;   // ✅ now comes from argument
-  let maxWall = 0;
-  let allWalls: number[] = [];
-  let wallRows: Record<number, number> = {};
-  const wallLines: Record<number, string[]> = {};
-
-  let currentWall: number | null = null;
-  let currentBlock: string[] = [];
-/*useEffect(() => {
-  if (appState === "home_position_setup") {
-    setAppState("home_verified");
-  }
-}, [appState]);*/
-  // ---------------------------------------------------------
-  // 1. FIRST PASS – PARSE TOP-LEVEL INFO
-  // ---------------------------------------------------------
-  for (const rawLine of lines) {
-    const line = (rawLine ?? "").trim();
-
-    if (!line) continue;
-
-    if (line.startsWith("Folder:")) {
-      folder = line.replace("Folder:", "").trim();
+    if (!res.data.ok) {
+      throw new Error(res.data.error || "file_execute_data failed (backend/SSH error)");
     }
 
-    // ---------------------------------------------
-    // collect ALL Working Excel paths
-    // ---------------------------------------------
-    if (line.startsWith("Working Excel:")) {
-      const path = line.replace("Working Excel:", "").trim();
-      excelFiles.push(path);
-      excelFile = path; // last one for backward compatibility
-    }
+    const backendCurrentStage: number | null =
+      typeof res.data.currentStage === "number" ? res.data.currentStage : null;
+    const backendOutputName: string =
+      typeof res.data.outputName === "string" ? res.data.outputName : "";
 
-    if (line.startsWith("MaxWall") || line.startsWith("Max wall number:")) {
-      const parts = line.split(":");
-      if (parts.length >= 2) maxWall = Number(parts[1].trim());
-    }
+    const lines: string[] = res.data.data || [];
 
-    if (line.startsWith("Walls Found") || line.startsWith("All walls found:")) {
-      const match = line.match(/\[(.*)\]/);
-      if (match) {
-        allWalls = match[1]
-          .split(",")
-          .map((n) => Number(n.trim()))
-          .filter((n) => !isNaN(n));
+    // array of excel files
+    const excelFiles: string[] = [];
+
+    // keep backward compatibility
+    let excelFile = "";
+
+    let folder = folderPath;
+    let maxWall = 0;
+    let allWalls: number[] = [];
+    let wallRows: Record<number, number> = {};
+    const wallLines: Record<number, string[]> = {};
+
+    let currentWall: number | null = null;
+    let currentBlock: string[] = [];
+
+    // ---------------------------------------------------------
+    // 1. FIRST PASS – PARSE TOP-LEVEL INFO
+    // ---------------------------------------------------------
+    for (const rawLine of lines) {
+      const line = (rawLine ?? "").trim();
+
+      if (!line) continue;
+
+      if (line.startsWith("Folder:")) {
+        folder = line.replace("Folder:", "").trim();
       }
+
+      // collect ALL Working Excel paths
+      if (line.startsWith("Working Excel:")) {
+        const path = line.replace("Working Excel:", "").trim();
+        excelFiles.push(path);
+        excelFile = path; // last one for backward compatibility
+      }
+
+      if (line.startsWith("MaxWall") || line.startsWith("Max wall number:")) {
+        const parts = line.split(":");
+        if (parts.length >= 2) maxWall = Number(parts[1].trim());
+      }
+
+      // "Stage N Walls Found: [...]" — no longer starts the line, so use includes()
+      if (line.includes("Walls Found") || line.includes("All walls found:")) {
+        const match = line.match(/\[(.*)\]/);
+        if (match) {
+          allWalls = match[1]
+            .split(",")
+            .map((n) => Number(n.trim()))
+            .filter((n) => !isNaN(n));
+        }
+      }
+
+      // "========== STAGE {stage} WALL {wall} — {rows} ROWS ==========" — 3 numbers now
+      // (stage, wall, rowCount), not 2. Require "STAGE" too, so this only matches
+      // detectwalls.py's per-wall block header and nothing else.
+      const upper = line.toUpperCase();
+      if (upper.includes("STAGE") && upper.includes("WALL") && upper.includes("ROWS")) {
+        const nums = line.match(/\d+/g);
+        if (nums && nums.length >= 3) {
+          const wallNum = Number(nums[1]);
+          const rowCount = Number(nums[2]);
+
+          if (currentWall !== null && currentBlock.length > 0) {
+            wallLines[currentWall] = currentBlock;
+          }
+
+          currentWall = wallNum;
+          wallRows[wallNum] = rowCount;
+          currentBlock = [line];
+          continue;
+        }
+      }
+
+      if (currentWall !== null) currentBlock.push(line);
     }
 
-    // Wall X — Y rows
-    const upper = line.toUpperCase();
-    if (upper.includes("WALL") && upper.includes("ROWS")) {
-      const nums = line.match(/\d+/g);
-      if (nums && nums.length >= 2) {
-        const wallNum = Number(nums[0]);
-        const rowCount = Number(nums[1]);
+    if (currentWall !== null && currentBlock.length > 0) {
+      wallLines[currentWall] = currentBlock;
+    }
 
-        if (currentWall !== null && currentBlock.length > 0) {
-          wallLines[currentWall] = currentBlock;
+    // ---------------------------------------------------------
+    // 2. SECOND PASS – PARSE FULL ROW DETAILS
+    // ---------------------------------------------------------
+    const wallDetails: Record<number, WallRowDict[]> = {};
+
+    for (const [wallStr, linesArr] of Object.entries(wallLines)) {
+      const wall = Number(wallStr);
+      const rows: WallRowDict[] = [];
+      let currentRow: WallRowDict | null = null;
+
+      for (const raw of linesArr) {
+        const clean = (raw ?? "").trim();
+        if (!clean) continue;
+
+        const rm = clean.match(/^Row\s+(\d+):/i);
+        if (rm) {
+          if (currentRow) rows.push(currentRow);
+          currentRow = { Row: rm[1] };
+          continue;
         }
 
-        currentWall = wallNum;
-        wallRows[wallNum] = rowCount;
-        currentBlock = [line];
-        continue;
+        if (!currentRow) continue;
+
+        const kv = clean.match(/^(.+?):\s*(.*)$/);
+        if (kv) {
+          const key = kv[1].trim();
+          const value = kv[2].trim();
+          currentRow[key] = value;
+        }
       }
+
+      if (currentRow) rows.push(currentRow);
+      wallDetails[wall] = rows;
     }
 
-    if (currentWall !== null) currentBlock.push(line);
+    // ---------------------------------------------------------
+    // RETURN
+    // ---------------------------------------------------------
+    return {
+      folder,
+      excelFile,  // last excel (compat)
+      excelFiles, // all excels found in subfolders
+      maxWall,
+      allWalls,
+      wallRows,
+      wallDetails,
+      rawLines: lines,
+      currentStage: backendCurrentStage,
+      outputName: backendOutputName,
+    };
   }
-
-  if (currentWall !== null && currentBlock.length > 0) {
-    wallLines[currentWall] = currentBlock;
-  }
-
-  // ---------------------------------------------------------
-  // 2. SECOND PASS – PARSE FULL ROW DETAILS
-  // ---------------------------------------------------------
-  const wallDetails: Record<number, WallRowDict[]> = {};
-
-  for (const [wallStr, linesArr] of Object.entries(wallLines)) {
-    const wall = Number(wallStr);
-    const rows: WallRowDict[] = [];
-    let currentRow: WallRowDict | null = null;
-
-    for (const raw of linesArr) {
-      const clean = (raw ?? "").trim();
-      if (!clean) continue;
-
-      const rm = clean.match(/^Row\s+(\d+):/i);
-      if (rm) {
-        if (currentRow) rows.push(currentRow);
-        currentRow = { Row: rm[1] };
-        continue;
-      }
-
-      if (!currentRow) continue;
-
-      const kv = clean.match(/^(.+?):\s*(.*)$/);
-      if (kv) {
-        const key = kv[1].trim();
-        const value = kv[2].trim();
-        currentRow[key] = value;
-      }
-    }
-
-    if (currentRow) rows.push(currentRow);
-    wallDetails[wall] = rows;
-  }
-
-  // ---------------------------------------------------------
-  // RETURN
-  // ---------------------------------------------------------
-  return {
-    folder,
-    excelFile,      // last excel (compat)
-    excelFiles,     // ⭐ ALL excels found in subfolders
-    maxWall,
-    allWalls,
-    wallRows,
-    wallDetails,
-    rawLines: lines,
-  };
-}
 
   async function handleStartLayout(maxWallValue: number | null) {
     console.log("➡️ Starting layout with maxWall =", maxWallValue);
@@ -411,78 +405,75 @@ export default function Status() {
       setAppState("error");
       return;
     }
-    if (maxWallValue === 4) {
-      setAppState("four_wall_flow");
-    } else if (maxWallValue === 6) {
-      setAppState("six_wall_flow");
-    } else {
-      console.error("❌ Unsupported wall count:", maxWallValue);
-      setError(`Excel contains invalid wall count: ${maxWallValue}`);
+    // The wall-marking flow's shape (steps, wall order, placements) is
+    // driven by `stage`, not by the room's physical wall count — see
+    // WallFlow.tsx's STAGE_FLOWS. maxWall is still passed through to the
+    // backend for reference, but no longer selects which component renders.
+    setAppState("wall_flow");
+  }
+
+  const handleFileExecuteAndStartLayout = async (
+    folderPath: string
+  ): Promise<boolean> => {
+    console.log("▶ handleFileExecuteAndStartLayout (folder):", folderPath);
+
+    if (!folderPath) {
+      console.error("❌ handleFileExecuteAndStartLayout called with undefined folderPath");
+      setError("Missing folder path");
       setAppState("error");
-    }
-  }
-
- const handleFileExecuteAndStartLayout = async (folderPath: string) => {
-  console.log("▶ handleFileExecuteAndStartLayout (folder):", folderPath);
-
-  if (!folderPath) {
-    console.error("❌ handleFileExecuteAndStartLayout called with undefined folderPath");
-    setError("Missing folder path");
-    setAppState("error");
-    return;
-  }
-
-  // ✅ If this folder has already been processed, DO NOT run detectwalls again.
-  // This prevents extra folder creation & keeps wallDetails intact.
-  if (file_direct === folderPath && maxWall !== null) {
-    console.log("🔁 Re-using cached detectwalls result for folder:", folderPath);
-    console.log("   cached folder =", file_direct);
-    console.log("   cached maxWall =", maxWall);
-    console.log("   cached wallDetails keys =", Object.keys(wallDetails));
-    await handleStartLayout(maxWall);
-    return;
-  }
-
-  try {
-    const result = await handleFileExecute(folderPath); // ✅ CHANGED
-
-    // If you still want to cache, cache by folder now
-    // (processedExcel no longer makes sense if you start from folder)
-    setProcessedExcel(result.excelFile); // optional: keep if you still use it elsewhere
-
-    set_file_direct(result.folder);
-    setExcelFiles(result.excelFiles);
-    setExcelfile(result.excelFile);
-
-    setMaxWall(result.maxWall);
-    setAllWalls(result.allWalls);
-    setWallRows(result.wallRows);
-    setWallDetails(result.wallDetails);
-
-    console.log("📂 folder:", result.folder);
-    console.log("📄 excelFiles:", result.excelFiles);
-    console.log("📄 excelFile:", result.excelFile);
-    console.log("🔢 maxWall:", result.maxWall);
-    console.log("📊 wallRows:", result.wallRows);
-
-    if (result.wallDetails[1]?.[0]) {
-      console.log("🧱 wallDetails[1][0]:", result.wallDetails[1][0]);
-    } else {
-      console.log("⚠ no wallDetails[1][0]");
+      return false;
     }
 
-    await handleStartLayout(result.maxWall);
-  } catch (err) {
-    console.error("❌ Failed to execute folder:", err);
-    setError(err instanceof Error ? err.message : String(err));
-    setAppState("error");
-  }
-};
+    // If this folder has already been processed, don't run detectwalls again.
+    // This prevents extra folder creation & keeps wallDetails intact.
+    if (file_direct === folderPath && maxWall !== null && maxWall > 0) {
+      console.log("🔁 Re-using cached detectwalls result for folder:", folderPath);
+      console.log("   cached folder =", file_direct);
+      console.log("   cached maxWall =", maxWall);
+      console.log("   cached wallDetails keys =", Object.keys(wallDetails));
+      await handleStartLayout(maxWall);
+      return true;
+    }
 
+    try {
+      const result = await handleFileExecute(folderPath);
+
+      set_file_direct(result.folder);
+      setExcelFiles(result.excelFiles);
+      setExcelfile(result.excelFile);
+
+      setMaxWall(result.maxWall);
+      setCurrentStage(result.currentStage);
+      setOutputName(result.outputName);
+      setAllWalls(result.allWalls);
+      setWallRows(result.wallRows);
+      setWallDetails(result.wallDetails);
+
+      console.log("📂 folder:", result.folder);
+      console.log("📄 excelFiles:", result.excelFiles);
+      console.log("📄 excelFile:", result.excelFile);
+      console.log("🔢 maxWall:", result.maxWall);
+      console.log("📊 wallRows:", result.wallRows);
+
+      if (result.wallDetails[1]?.[0]) {
+        console.log("🧱 wallDetails[1][0]:", result.wallDetails[1][0]);
+      } else {
+        console.log("⚠ no wallDetails[1][0]");
+      }
+
+      await handleStartLayout(result.maxWall);
+      return true;
+    } catch (err) {
+      console.error("❌ Failed to execute folder:", err);
+      setError(err instanceof Error ? err.message : String(err));
+      setAppState("error");
+      return false;
+    }
+  };
 
   return (
     <>
-      {appState !== "four_wall_flow" && appState !== "six_wall_flow" && (
+      {appState !== "wall_flow" && (
         <div
           className="hero min-h-screen relative bg-cover bg-center"
           style={{ backgroundImage: `url("${bgDataUri}")` }}
@@ -505,9 +496,16 @@ export default function Status() {
                     const selectedFolder = file.fullPath;
 
                     console.log("Selected PBU Folder:", selectedFolder);
-                    await handleFileExecuteAndStartLayout(selectedFolder);
-
-                    setAppState("home_position_setup");
+                    const success = await handleFileExecuteAndStartLayout(
+                      selectedFolder
+                    );
+                    // Only continue into the Home Verified steps if the
+                    // folder/Excel actually parsed successfully — otherwise
+                    // stay on the "error" screen handleFileExecuteAndStartLayout
+                    // already switched to.
+                    if (success) {
+                      setAppState("home_position_setup");
+                    }
                   }}
                 />
               )}
@@ -521,16 +519,9 @@ export default function Status() {
                   onHomeVerified={() => setAppState("home_verified")}
                 />
               )}*/}
-              {appState === "home_position_setup" && (
-                  <>
-                    // AUTO SKIP HOME CHECK
-                    {setAppState("home_verified")}
-                  </>
-                )}
               {appState === "home_verified" && (
                 <HomeVerified
                   pushRobotIntoPBUImage={pushRobotIntoPBUImage}
-                  FlexPendantImage={FlexPendantImage}
                   RobotPowerOFFOutside={RobotPowerOFFOutside}
                   RobotPowerONInside={RobotPowerONInside}
                   v={v}
@@ -555,21 +546,15 @@ export default function Status() {
         </div>
       )}
 
-      {appState === "four_wall_flow" && (
-        <FourWallFlow wallDetails={wallDetails}
-          maxWall={maxWall ?? 0}
-          excelFiles={excelFiles}
-          meshfile={meshfile}
-          folderdirectory={file_direct}/>
-      )}
-
-      {appState === "six_wall_flow" && (
-        <SixWallFlow
+      {appState === "wall_flow" && (
+        <WallFlow
           wallDetails={wallDetails}
           maxWall={maxWall ?? 0}
           excelFiles={excelFiles}
           meshfile={meshfile}
           folderdirectory={file_direct}
+          stage={currentStage ?? 1}
+          outputName={outputName}
         />
       )}
     </>

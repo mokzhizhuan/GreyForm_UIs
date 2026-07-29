@@ -4,7 +4,6 @@ interface Props {
   RobotPowerOFFOutside: string;
   pushRobotIntoPBUImage: string;
   RobotPowerONInside: string;
-  FlexPendantImage: string;
   v: {
     variant: string;
     primaryText: string;
@@ -16,7 +15,6 @@ const HomeVerified: React.FC<Props> = ({
   RobotPowerOFFOutside,
   pushRobotIntoPBUImage,
   RobotPowerONInside,
-  FlexPendantImage,
   v,
   onNext
 }) => {

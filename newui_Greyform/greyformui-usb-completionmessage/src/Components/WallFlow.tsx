@@ -1,17 +1,19 @@
 // =========================================================
-// SixWallFlow.tsx (UI-STABLE / FRONTEND-ONLY FIX)
-// - HomeCheck table is backend-driven (status.homeCheckOutput)
-// - Retry/Continue are stable (action lock + no UI clearing fights poll)
-// - Poll never overlaps; no stale updates; no hidden table issues
+// WallFlow.tsx
+// Replaces FourWallFlow.tsx / SixWallFlow.tsx. The wall-marking flow
+// (how many walls, which walls, how many placement breaks) is now
+// driven entirely by STAGE, not by the room's physical wall count
+// (maxWall). Each stage's exact operator-facing order is defined in
+// STAGE_FLOWS below, per the specified sequence:
+//   Stage 1: Placement 1 -> Wall 3 -> Placement 2 -> Wall 5
+//   Stage 2: Placement 1 -> Wall 2,3,4 -> Placement 2 -> Wall 5,6,1
+//   Stage 3: Placement 1 -> Wall 4 -> Placement 2 -> Wall 1,5
 // =========================================================
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 
-import placementOne from "../assets/six_wall_flow/6_wall_flow_placement1.jpg";
-import placementTwo from "../assets/six_wall_flow/6_wall_flow_placement2.jpg";
-import wallMarking1 from "../assets/six_wall_flow/6_wall_flow_placement1_1.png";
-import wallMarking2 from "../assets/six_wall_flow/6_wall_flow_placement2_1.png";
+// Generic Auto Mode overlay photos — same regardless of stage/PBU.
 import manToAuto1 from "../assets/Manual_to_auto_1.png";
 import manToAuto2 from "../assets/Manual_to_auto_2.png";
 import manToAuto3 from "../assets/Manual_to_auto_3.png";
@@ -19,61 +21,150 @@ import manToAuto4 from "../assets/Manual_to_auto_4.png";
 import manToAuto5 from "../assets/Manual_to_auto_5().png";
 import manToAuto6 from "../assets/Manual_to_auto_6.png";
 import emergencyStop from "../assets/flex_pendant_emergency_stop.png";
+// Fallback image for the terminal "Marking Complete" step — there's no
+// per-PBU photo for that, unlike the placement/wall photos below.
+import markingCompleteFallback from "../assets/six_wall_flow/6_wall_flow_placement2_1.png";
 
 import { API_BASE_URL } from "./config";
+import type { WallRow, MarkingStatusResponse } from "./flowShared";
+import { buildExcelMap, parseHomeCheck, useActionLock, buildPbuImageUrl } from "./flowShared";
 
 // --------------------------------------------------------
-// TYPES
+// STAGE FLOWS
 // --------------------------------------------------------
-interface WallRow {
-  [key: string]: any;
+// For 6-wall rooms, the flow shape (which walls, how split across the
+// two placements) differs per stage:
+const SIX_WALL_STAGE_FLOWS: Record<number, { phase1: string[]; phase2: string[] }> = {
+  1: { phase1: ["wall_3"], phase2: ["wall_5"] },
+  2: { phase1: ["wall_2", "wall_3", "wall_4"], phase2: ["wall_5", "wall_6", "wall_1"] },
+  3: { phase1: ["wall_4"], phase2: ["wall_1", "wall_5"] },
+};
+
+// For 4-wall rooms, one placement reaches every wall — there is no
+// second placement or phase 2, regardless of stage.
+const FOUR_WALL_FLOW: { phase1: string[]; phase2: string[] } = {
+  phase1: ["wall_2", "wall_3", "wall_4", "wall_1"],
+  phase2: [],
+};
+
+// --------------------------------------------------------
+// INSTRUCTION TEXT — everything shown in the "Instruction" panel.
+// Edit the strings below for each stage; anything left out falls back
+// to the generic default at the bottom.
+// --------------------------------------------------------
+interface StageInstructions {
+  placement1?: string;
+  placement2?: string;
+  wall?: (wallNum: number) => string;
+  complete?: string;
 }
 
-interface MarkingStatusResponse {
-  running: boolean;
-  paused: boolean;
-  startedWall: number | null;
-  doneWall: number | null;
-  phase: number | null;
-  hasError: boolean;
-  errorSummary?: string | null;
-  lastFailedWall?: number | null;
-  homeCheckPending?: boolean;
-  homeCheckWall?: number | null;
-  homeCheckOutput?: string | null;
+const STAGE_INSTRUCTIONS: Record<number, StageInstructions> = {
+  1: {
+    placement1: "Position the robot at Placement 1. The robot should be facing wall 2 and be 1m away from the wall.",
+    placement2: "Move the robot to Placement 2. The robot should be facing wall 1 and be 1m away from the wall.",
+    wall: (w) => `Marking pipe positions on Wall ${w} in progress.`,
+    complete: "Stage 1 (pipe) marking complete.",
+  },
+  2: {
+    placement1: "Position the robot at Placement 1. The robot should be facing wall 2 and be 1m away from the wall.",
+    placement2: "Move the robot to Placement 2. The robot should be facing wall 1 and be 1m away from the wall.",
+    wall: (w) => `Marking Wall ${w} in progress.`,
+    complete: "Stage 2 (tile) marking complete.",
+  },
+  3: {
+    placement1: "Position the robot at Placement 1. The robot should be facing wall 2 and be 1m away from the wall.",
+    placement2: "Move the robot to Placement 2. The robot should be facing wall 1 and be 1m away from the wall.",
+    wall: (w) => `Marking fixture positions on Wall ${w} in progress.`,
+    complete: "Stage 3 (fixture) marking complete.",
+  },
+};
+
+const DEFAULT_INSTRUCTIONS: Required<StageInstructions> = {
+  placement1: "Position the robot at Placement 1.",
+  placement2: "Move the robot to Placement 2.",
+  wall: (w) => `Marking Wall ${w} in progress.`,
+  complete: "Marking complete.",
+};
+
+function getStageInstructions(stage: number): Required<StageInstructions> {
+  const custom = STAGE_INSTRUCTIONS[stage] ?? {};
+  return { ...DEFAULT_INSTRUCTIONS, ...custom };
 }
 
-// --------------------------------------------------------
-// CONSTANTS
-// --------------------------------------------------------
-const PHASE1_ORDER = ["wall_2", "wall_3", "wall_4"];
-const PHASE2_ORDER = ["wall_5", "wall_6", "wall_1"];
+function getFlowForRoom(maxWall: number, stage: number) {
+  if (maxWall === 4) {
+    return FOUR_WALL_FLOW;
+  }
+  return SIX_WALL_STAGE_FLOWS[stage] ?? SIX_WALL_STAGE_FLOWS[2];
+}
 
-const STEP_IMAGES = [
-  placementOne, // 0
-  wallMarking1, // 1
-  wallMarking1, // 2
-  wallMarking1, // 3
-  placementTwo, // 4
-  wallMarking2, // 5
-  wallMarking2, // 6
-  wallMarking2, // 7
-  wallMarking2, // 8
-];
+function wallNumFromLabel(label: string): number {
+  const m = label.match(/\d+/);
+  return m ? parseInt(m[0], 10) : 0;
+}
 
-const STEP_LABELS = [
-  "Placement 1",
-  "Wall 2",
-  "Wall 3",
-  "Wall 4",
-  "Placement 2",
-  "Wall 5",
-  "Wall 6",
-  "Wall 1",
-  "Marking Complete",
-];
+// Builds the ordered step plan for a room/stage combination:
+//   step 0                = Placement 1
+//   steps 1..P1len        = phase1 walls, in order
+//   [only if phase2 non-empty:]
+//     step P1len+1          = Placement 2
+//     steps P1len+2..+P2len = phase2 walls, in order
+//   last step             = Marking Complete (terminal)
+function buildStepPlan(maxWall: number, stage: number) {
+  const { phase1, phase2 } = getFlowForRoom(maxWall, stage);
+  const hasSecondPlacement = phase2.length > 0;
 
-// Auto Mode Instructions steps (overlay pages)
+  const labels: string[] = ["Placement 1"];
+  const wallForStep: (number | null)[] = [null];
+
+  for (const w of phase1) {
+    const n = wallNumFromLabel(w);
+    labels.push(`Wall ${n}`);
+    wallForStep.push(n);
+  }
+
+  let placement2Step: number | null = null;
+  if (hasSecondPlacement) {
+    placement2Step = labels.length;
+    labels.push("Placement 2");
+    wallForStep.push(null);
+
+    for (const w of phase2) {
+      const n = wallNumFromLabel(w);
+      labels.push(`Wall ${n}`);
+      wallForStep.push(n);
+    }
+  }
+
+  const terminalStep = labels.length;
+  labels.push("Marking Complete");
+  wallForStep.push(null);
+
+  const wallToStep: Record<number, number> = {};
+  wallForStep.forEach((w, i) => {
+    if (w !== null) wallToStep[w] = i;
+  });
+
+  const lastPhase1Step = hasSecondPlacement ? (placement2Step as number) - 1 : terminalStep - 1;
+  const lastPhase2Step = hasSecondPlacement ? terminalStep - 1 : null;
+
+  return {
+    phase1,
+    phase2,
+    hasSecondPlacement,
+    labels,
+    wallForStep,
+    wallToStep,
+    placement1Step: 0,
+    placement2Step,
+    terminalStep,
+    lastPhase1Step,
+    lastPhase2Step,
+  };
+}
+
+// Auto Mode Instructions steps (overlay pages) — generic, unrelated to stage.
 const AUTO_STEPS = [
   {
     title: "Control panel",
@@ -162,94 +253,60 @@ const AUTO_STEPS = [
 ];
 
 // --------------------------------------------------------
-// HELPERS
-// --------------------------------------------------------
-const wallToStep = (wall: number) => {
-  switch (wall) {
-    case 2:
-      return 1;
-    case 3:
-      return 2;
-    case 4:
-      return 3;
-    case 5:
-      return 5;
-    case 6:
-      return 6;
-    case 1:
-      return 7;
-    default:
-      return 0;
-  }
-};
-const buildExcelMap = (files: string[]) => {
-  const map: Record<string, string> = {};
-  for (const f of files) {
-    const m = f.match(/_wall_(\d+)\.xlsx$/);
-    if (m) map[`wall_${m[1]}`] = f;
-  }
-  return map;
-};
-const parseHomeCheck = (output: string) => {
-  const lines = (output || "").split(/\r?\n/).map((l) => l.trim());
-  const rax = lines.find((l) => l.includes("rax_1"));
-  const tgt = lines.find((l) => l.includes("j0"));
-  let current: any = {};
-  let target: any = {};
-  try {
-    if (rax) current = JSON.parse(rax.replace(/'/g, '"'));
-    if (tgt) target = JSON.parse(tgt.replace(/'/g, '"'));
-  } catch {
-    // ignore parse errors
-  }
-  return Object.entries(target).map(([k, v], i) => {
-    const m = k.match(/^j(\d+)$/i);
-    const idx = m ? parseInt(m[1], 10) : i;
-    return {
-      axis: `J${idx + 1}`,
-      target: v,
-      current: current[`rax_${idx + 1}`],
-    };
-  });
-};
-const isMarkingStep = (s: number) => [1, 2, 3, 5, 6, 7].includes(s);
-// --------------------------------------------------------
 // COMPONENT
 // --------------------------------------------------------
-const SixWallFlow: React.FC<any> = ({
+const WallFlow: React.FC<any> = ({
   wallDetails,
   maxWall,
   excelFiles,
   meshfile,
   folderdirectory,
+  stage,
+  outputName,
 }) => {
+  const stagePlan = useMemo(() => buildStepPlan(maxWall, stage), [maxWall, stage]);
+  const stageInstructions = useMemo(() => getStageInstructions(stage), [stage]);
+  const {
+    phase1,
+    phase2,
+    hasSecondPlacement,
+    labels: STEP_LABELS,
+    wallForStep,
+    wallToStep,
+    placement1Step,
+    placement2Step,
+    terminalStep,
+    lastPhase1Step,
+    lastPhase2Step,
+  } = stagePlan;
+
   const [currentStep, setCurrentStep] = useState(0);
   // Canonical status snapshot (single source of truth in UI)
   const [status, setStatus] = useState<MarkingStatusResponse | null>(null);
-  // Derived flags
   const running = !!status?.running;
-  const paused = !!status?.paused;
   const hasError = !!status?.hasError;
   const homeCheckPending = !!status?.homeCheckPending;
   const homeCheckWall = status?.homeCheckWall ?? null;
   const homeCheckOutput = status?.homeCheckOutput ?? "";
-  // Error targeting
-  const [lastErrorWall, setLastErrorWall] = useState<number | null>(null);
-  // UI messaging/logs
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [cmdLogs, setCmdLogs] = useState<string[]>([]);
   const logEndRef = useRef<HTMLDivElement | null>(null);
-  // Action locking (prevents double-click / poll fights)
-  const actionLockRef = useRef(false);
-  const [actionBusy, setActionBusy] = useState(false);
-  // Poll control (no overlap)
+  const { actionBusy, withActionLock } = useActionLock();
   const pollingTimerRef = useRef<number | null>(null);
   const pollInFlightRef = useRef(false);
   const aliveRef = useRef(true);
-    // Overlay state for auto mode instructions (multi-step)
   const [showAutoInstr, setShowAutoInstr] = useState(false);
   const [autoStep, setAutoStep] = useState(0);
   const totalAutoSteps = AUTO_STEPS.length;
+  const [forcedPlacement2, setForcedPlacement2] = useState(false);
+
+  // Reset to step 0 whenever the active stage or room's wall count
+  // changes (different flow shape)
+  useEffect(() => {
+    setCurrentStep(0);
+    setForcedPlacement2(false);
+  }, [stage, maxWall]);
+
   // Prevent background scroll when overlay open
   useEffect(() => {
     if (showAutoInstr) {
@@ -260,6 +317,7 @@ const SixWallFlow: React.FC<any> = ({
       };
     }
   }, [showAutoInstr]);
+
   // Keyboard navigation when overlay is open
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -279,6 +337,7 @@ const SixWallFlow: React.FC<any> = ({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [showAutoInstr, totalAutoSteps]);
+
   // --------------------------------------------------------
   // NORMALIZATION
   // --------------------------------------------------------
@@ -292,6 +351,24 @@ const SixWallFlow: React.FC<any> = ({
   }, [wallDetails]);
   const excelMap = useMemo(() => buildExcelMap(excelFiles || []), [excelFiles]);
   const getRows = (w: string) => normalized[w] ?? [];
+
+  // --------------------------------------------------------
+  // CURRENT STEP IMAGE (fetched from the Linux PC, per stage/wall)
+  // --------------------------------------------------------
+  const stepImageSrc = useMemo(() => {
+    if (currentStep === placement1Step) {
+      return buildPbuImageUrl(folderdirectory, `${outputName}_pos1.png`);
+    }
+    if (currentStep === placement2Step) {
+      return buildPbuImageUrl(folderdirectory, `${outputName}_pos2.png`);
+    }
+    const w = wallForStep[currentStep];
+    if (w) {
+      return buildPbuImageUrl(folderdirectory, `stage${stage}_wall${w}.png`);
+    }
+    return markingCompleteFallback; // terminal step
+  }, [currentStep, stage, folderdirectory, outputName, placement1Step, placement2Step, wallForStep]);
+
   // --------------------------------------------------------
   // HOME CHECK TABLE (backend-driven; never stored in state)
   // --------------------------------------------------------
@@ -303,46 +380,24 @@ const SixWallFlow: React.FC<any> = ({
   const homeCheckPassed = useMemo(() => {
     if (!homeCheckPending || homeCheckWall === null) return null;
     if (!homeCheckOutput) return null;
-    // your homeposcheck prints "True" in output
     return homeCheckOutput.split(/\r?\n/).some((l) => l.trim() === "True");
   }, [homeCheckPending, homeCheckWall, homeCheckOutput]);
+
   const extractFinalSummary = (logs: string[]) => {
-  if (!logs || logs.length === 0) return null;
-  // Prefer final ERROR
-  for (let i = logs.length - 1; i >= 0; i--) {
-    if (logs[i].startsWith("[ERROR]")) {
-      return logs[i];
+    if (!logs || logs.length === 0) return null;
+    for (let i = logs.length - 1; i >= 0; i--) {
+      if (logs[i].startsWith("[ERROR]")) return logs[i];
     }
-  }
-  // Otherwise final SUCCESS
-  for (let i = logs.length - 1; i >= 0; i--) {
-    if (logs[i].startsWith("[SUCCESS]")) {
-      return logs[i];
+    for (let i = logs.length - 1; i >= 0; i--) {
+      if (logs[i].startsWith("[SUCCESS]")) return logs[i];
     }
-  }
-  return null;
-};
-  // --------------------------------------------------------
-  // AUTO SCROLL LOGS
-  // --------------------------------------------------------
+    return null;
+  };
+
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [cmdLogs]);
-const [forcedPlacement2, setForcedPlacement2] = useState(false);
-  // --------------------------------------------------------
-  // Small helper: safely lock actions
-  // --------------------------------------------------------
-  const withActionLock = async (fn: () => Promise<void>) => {
-    if (actionLockRef.current) return;
-    actionLockRef.current = true;
-    setActionBusy(true);
-    try {
-      await fn();
-    } finally {
-      actionLockRef.current = false;
-      setActionBusy(false);
-    }
-  };
+
   // --------------------------------------------------------
   // API: start phases
   // --------------------------------------------------------
@@ -351,7 +406,7 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
       setErrorMessage(null);
       setCmdLogs([]);
       await axios.post(`${API_BASE_URL}/marking/start`, {
-        walls: PHASE1_ORDER.map((w) => ({
+        walls: phase1.map((w) => ({
           wall: w,
           rows: getRows(w),
           excel: excelMap[w] ?? "",
@@ -359,30 +414,32 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
         meshfile,
         folder: folderdirectory,
         max_wall: maxWall,
+        stage,
         phase: 1,
       });
-      // Kick the first homecheck via backend homecheck endpoint:
-      await axios.post(`${API_BASE_URL}/marking/homecheck`, { target: "wall_2" });
-      // No local state changes; poll will reflect backend state.
+      await axios.post(`${API_BASE_URL}/marking/homecheck`, { target: phase1[0] });
     });
+
   const startPhaseTwo = async () =>
-  withActionLock(async () => {
-    setForcedPlacement2(false); // 🔓 unlock Placement 2
-    setErrorMessage(null);
-    setCmdLogs([]);
-    await axios.post(`${API_BASE_URL}/marking/start`, {
-      walls: PHASE2_ORDER.map((w) => ({
-        wall: w,
-        rows: getRows(w),
-        excel: excelMap[w] ?? "",
-      })),
-      meshfile,
-      folder: folderdirectory,
-      max_wall: maxWall,
-      phase: 2,
+    withActionLock(async () => {
+      setForcedPlacement2(false);
+      setErrorMessage(null);
+      setCmdLogs([]);
+      await axios.post(`${API_BASE_URL}/marking/start`, {
+        walls: phase2.map((w) => ({
+          wall: w,
+          rows: getRows(w),
+          excel: excelMap[w] ?? "",
+        })),
+        meshfile,
+        folder: folderdirectory,
+        max_wall: maxWall,
+        stage,
+        phase: 2,
+      });
+      await axios.post(`${API_BASE_URL}/marking/homecheck`, { target: phase2[0] });
     });
-    await axios.post(`${API_BASE_URL}/marking/homecheck`, { target: "wall_5" });
-  });
+
   // --------------------------------------------------------
   // ACTIONS
   // --------------------------------------------------------
@@ -390,6 +447,7 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
     withActionLock(async () => {
       await axios.post(`${API_BASE_URL}/marking/pause`);
     });
+
   const retryCurrentWall = async () =>
     withActionLock(async () => {
       setErrorMessage(null);
@@ -398,198 +456,160 @@ const [forcedPlacement2, setForcedPlacement2] = useState(false);
         await axios.post(`${API_BASE_URL}/marking/retry`);
       } catch (e: any) {
         setErrorMessage(e?.response?.data?.detail || "Retry failed (backend error)");
+      }
+    });
+
+  const continueNextWall = async () =>
+    withActionLock(async () => {
+      const idleOnLastPhase1Wall =
+        status?.phase === 1 &&
+        currentStep === lastPhase1Step &&
+        !status?.running &&
+        !status?.homeCheckPending;
+
+      if (idleOnLastPhase1Wall) {
+        if (hasSecondPlacement) {
+          // Phase 1's last wall -> Placement 2
+          setForcedPlacement2(true);
+          setCurrentStep(placement2Step as number);
+        } else {
+          // Single-phase room (e.g. 4 walls) — last wall IS the last
+          // step, go straight to Marking Complete.
+          setCurrentStep(terminalStep);
+        }
         return;
       }
-      // IMPORTANT: Do not run homecheck directly here unless you really want it.
-      // If your backend requires it, you can keep it.
-      // Most stable approach: backend sets homeCheckPending + homeCheckWall.
-      // Poll will show it and operator can proceed.
-      // If you want auto-trigger, uncomment:
-      // const w = status?.homeCheckWall ?? status?.lastFailedWall ?? lastErrorWall;
-      // if (w) await axios.post(`${API_BASE_URL}/marking/homecheck`, { target: `wall_${w}` });
+      // Phase 2's last wall -> Marking Complete (terminal); only
+      // applicable to rooms that have a second placement/phase at all.
+      if (
+        hasSecondPlacement &&
+        status?.phase === 2 &&
+        currentStep === lastPhase2Step &&
+        !status?.running &&
+        !status?.homeCheckPending
+      ) {
+        setCurrentStep(terminalStep);
+        return;
+      }
+      // Otherwise normal backend continue
+      setErrorMessage(null);
+      setCmdLogs([]);
+      const res = await axios.post(`${API_BASE_URL}/marking/continue`);
+      if (res.data?.homeCheckRequired && res.data?.next_wall) {
+        await axios.post(`${API_BASE_URL}/marking/homecheck`, {
+          target: `wall_${res.data.next_wall}`,
+        });
+      }
     });
-  const continueNextWall = async () =>
-  withActionLock(async () => {
-    // ------------------------------------------------------
-    // PHASE 1 → PLACEMENT 2 (UI-controlled transition)
-    // Allow if:
-    // - phase 1
-    // - UI currently on Wall 4 step (step 3)
-    // - idle (not running, not homecheck pending)
-    // This avoids relying on doneWall===4 timing.
-    // ------------------------------------------------------
-    const phase1IdleOnWall4 =
-      status?.phase === 1 &&
-      currentStep === 3 &&
-      !status?.running &&
-      !status?.homeCheckPending;
-    if (phase1IdleOnWall4) {
-      setForcedPlacement2(true);
-      setCurrentStep(4); // Placement 2
-      return;
-    }
-    // ------------------------------------------------------
-    // MARKING COMPLETE (terminal)
-    // ------------------------------------------------------
-    if (
-      status?.phase === 2 &&
-      currentStep === 7 &&
-      !status?.running &&
-      !status?.homeCheckPending
-    ) {
-      setCurrentStep(8);
-      return;
-    }
-    // ------------------------------------------------------
-    // Otherwise normal backend continue
-    // ------------------------------------------------------
-    setErrorMessage(null);
-    setCmdLogs([]);
-    const res = await axios.post(`${API_BASE_URL}/marking/continue`);
-    if (res.data?.homeCheckRequired && res.data?.next_wall) {
-      await axios.post(`${API_BASE_URL}/marking/homecheck`, {
-        target: `wall_${res.data.next_wall}`,
-      });
-    }
-  });
-  // Show actions:
-  // - Marking error => show buttons
-  // - HomeCheck failed => also show buttons (operator expects Retry/Continue
-const isPlacement2 = currentStep === 4;
-const isPhase1Wall4 = status?.phase === 1 && currentStep === 3;
-const isHomeCheckFailed = homeCheckPending && homeCheckPassed === false;
-const isRealMarkingError =
-  hasError &&
-  !running &&
-  !homeCheckPending &&
-  !isPhase1Wall4 &&   // ❌ THIS EXCLUDES WALL 4
-  !isPlacement2;
-const isWall4MarkingError =
-  !running &&
-  !homeCheckPending &&
-  status?.phase === 1 &&
-  currentStep === 3;
-const showErrorBanner =errorMessage && isMarkingStep(currentStep); 
-const isTerminalStep = currentStep === 8;
+
+  const isPlacement2 = hasSecondPlacement && currentStep === placement2Step;
+  const isPhase1LastWall = status?.phase === 1 && currentStep === lastPhase1Step;
+  const isHomeCheckFailed = homeCheckPending && homeCheckPassed === false;
+  const isRealMarkingError =
+    hasError && !running && !homeCheckPending && !isPhase1LastWall && !isPlacement2;
+  const isPhase1LastWallIdle =
+    !running && !homeCheckPending && status?.phase === 1 && currentStep === lastPhase1Step;
+  const showErrorBanner = !!errorMessage && wallForStep[currentStep] !== null;
+  const isTerminalStep = currentStep === terminalStep;
+
   // --------------------------------------------------------
   // POLLING (single loop, no overlap, stable)
   // --------------------------------------------------------
   const poll = async () => {
-  if (!aliveRef.current) return;
-  // Prevent overlapping polls
-  if (pollInFlightRef.current) {
-    pollingTimerRef.current = window.setTimeout(poll, 1200);
-    return;
-  }
-  pollInFlightRef.current = true;
-  try {
-    const { data } = await axios.get<MarkingStatusResponse>(
-      `${API_BASE_URL}/marking/status`
-    );
     if (!aliveRef.current) return;
-    setStatus(data);
-    // -------------------------------
-    // 🔴 Derive last failed wall safely
-    // -------------------------------
-    if (data.lastFailedWall !== undefined && data.lastFailedWall !== null) {
-      setLastErrorWall(data.lastFailedWall);
-    } else if (data.hasError) {
-      const failed = data.startedWall ?? data.doneWall ?? null;
-      if (failed !== null) setLastErrorWall(failed);
-    }
-    // -------------------------------
-    // 🔴 Error message handling
-    // -------------------------------
-    if (data.hasError) {
-      setErrorMessage(data.errorSummary || "Marking error detected");
-    } else if (data.homeCheckPending && data.homeCheckWall !== null) {
-      // Homecheck table itself is the message
-      setErrorMessage(null);
-    } else {
-      setErrorMessage(null);
-    }
-    // =========================================================
-    // 🧠 STEP RESOLUTION (PRIORITY-ORDERED, SAFE)
-    // =========================================================
-    let nextStep = currentStep;
-    // 🔒 ABSOLUTE TERMINAL — NEVER LEAVE
-    if (currentStep === 8) {
-      // Do nothing forever once completed
-      pollInFlightRef.current = false;
-      pollingTimerRef.current = window.setTimeout(poll, 1500);
+    if (pollInFlightRef.current) {
+      pollingTimerRef.current = window.setTimeout(poll, 1200);
       return;
     }
-    // 🔒 MARKING COMPLETE (backend truth only)
-    const isMarkingComplete =
-      data.phase === 2 &&
-      !data.running &&
-      !data.homeCheckPending &&
-      data.doneWall === 1;
-    
-    if (isMarkingComplete) {
-      nextStep = 8;
-    }
-    if (
-      data.phase === 1 &&
-      data.doneWall === 4 &&
-      !data.running &&
-      !data.homeCheckPending && 
-      !forcedPlacement2    
-    ) {
-      setForcedPlacement2(true); // 🔒 lock it
-      nextStep = 4;              // Placement 2
-    }
-    // 🔒 PLACEMENT 2 — operator-forced, never overridden
-    else if (forcedPlacement2) {
-      nextStep = 4;
-    }
-    // 🟡 HOME CHECK PENDING
-    else if (data.homeCheckPending && data.homeCheckWall !== null) {
-      nextStep = wallToStep(data.homeCheckWall);
-    }
-    // 🟢 MARKING RUNNING
-    else if (data.running && data.startedWall !== null) {
-      nextStep = wallToStep(data.startedWall);
-    }
-    // 🟠 IDLE FALLBACK (safe now, terminal guarded)
-    else if (!data.running && data.doneWall !== null) {
-      nextStep = wallToStep(data.doneWall);
-    }
-    if (nextStep !== currentStep) {
-      setCurrentStep(nextStep);
-    }
-    // -------------------------------
-    // 🔴 Logs (single-line summary only)
-    // -------------------------------
-    const logWall =
-      data.homeCheckPending && data.homeCheckWall !== null
-        ? data.homeCheckWall
-        : data.startedWall ??
-          (data.hasError ? data.startedWall ?? data.doneWall : null);
+    pollInFlightRef.current = true;
+    try {
+      const { data } = await axios.get<MarkingStatusResponse>(
+        `${API_BASE_URL}/marking/status`
+      );
+      if (!aliveRef.current) return;
+      setStatus(data);
 
-    if (logWall !== null) {
-      try {
-        const logRes = await axios.get(
-          `${API_BASE_URL}/marking/errorlog/${logWall}`
-        );
-        if (logRes.data?.error) {
-          const logs = logRes.data.error as string[];
-          const finalLine = extractFinalSummary(logs);
-          setCmdLogs(finalLine ? [finalLine] : []);
-        }
-      } catch {
-        // ignore log fetch errors
+      if (data.hasError) {
+        setErrorMessage(data.errorSummary || "Marking error detected");
+      } else {
+        setErrorMessage(null);
       }
+
+      if (currentStep === terminalStep) {
+        pollInFlightRef.current = false;
+        pollingTimerRef.current = window.setTimeout(poll, 1500);
+        return;
+      }
+
+      let nextStep = currentStep;
+
+      // Which phase/wall marks "everything is actually done" depends on
+      // whether this room has a second placement at all.
+      const finalPhase = hasSecondPlacement ? 2 : 1;
+      const finalWall = hasSecondPlacement
+        ? wallForStep[lastPhase2Step as number]
+        : wallForStep[lastPhase1Step];
+      const isMarkingComplete =
+        data.phase === finalPhase &&
+        !data.running &&
+        !data.homeCheckPending &&
+        data.doneWall === finalWall;
+
+      const lastPhase1Wall = wallForStep[lastPhase1Step];
+
+      if (isMarkingComplete) {
+        nextStep = terminalStep;
+      } else if (
+        hasSecondPlacement &&
+        data.phase === 1 &&
+        data.doneWall === lastPhase1Wall &&
+        !data.running &&
+        !data.homeCheckPending &&
+        !forcedPlacement2
+      ) {
+        setForcedPlacement2(true);
+        nextStep = placement2Step as number;
+      } else if (hasSecondPlacement && forcedPlacement2) {
+        nextStep = placement2Step as number;
+      } else if (data.homeCheckPending && data.homeCheckWall !== null) {
+        nextStep = wallToStep[data.homeCheckWall] ?? nextStep;
+      } else if (data.running && data.startedWall !== null) {
+        nextStep = wallToStep[data.startedWall] ?? nextStep;
+      } else if (!data.running && data.doneWall !== null) {
+        nextStep = wallToStep[data.doneWall] ?? nextStep;
+      }
+
+      if (nextStep !== currentStep) {
+        setCurrentStep(nextStep);
+      }
+
+      const logWall =
+        data.homeCheckPending && data.homeCheckWall !== null
+          ? data.homeCheckWall
+          : data.startedWall ??
+            (data.hasError ? data.startedWall ?? data.doneWall : null);
+
+      if (logWall !== null) {
+        try {
+          const logRes = await axios.get(
+            `${API_BASE_URL}/marking/errorlog/${logWall}`
+          );
+          if (logRes.data?.error) {
+            const logs = logRes.data.error as string[];
+            const finalLine = extractFinalSummary(logs);
+            setCmdLogs(finalLine ? [finalLine] : []);
+          }
+        } catch {
+          // ignore log fetch errors
+        }
+      }
+    } catch {
+      // ignore polling errors; keep polling
+    } finally {
+      pollInFlightRef.current = false;
+      pollingTimerRef.current = window.setTimeout(poll, 1500);
     }
-
-  } catch {
-    // ignore polling errors; keep polling
-  } finally {
-    pollInFlightRef.current = false;
-    pollingTimerRef.current = window.setTimeout(poll, 1500);
-  }
-};
-
+  };
 
   useEffect(() => {
     aliveRef.current = true;
@@ -607,13 +627,13 @@ const isTerminalStep = currentStep === 8;
   return (
     <>
       <h2 className="text-4xl font-bold text-center mb-6">
-        Marking of PBU (6-Wall Flow)
+        Marking of PBU — Stage {stage}
       </h2>
 
       <ul className="steps w-full mb-6">
         {STEP_LABELS.map((l, i) => (
           <li
-            key={l}
+            key={`${l}-${i}`}
             className={i === currentStep ? "step step-primary" : "step"}
           >
             {l}
@@ -623,7 +643,7 @@ const isTerminalStep = currentStep === 8;
 
       <div className="flex gap-6">
         <img
-          src={STEP_IMAGES[currentStep]}
+          src={stepImageSrc}
           className="max-w-2xl max-h-[70vh] rounded-lg shadow object-contain"
           alt="step"
         />
@@ -634,33 +654,14 @@ const isTerminalStep = currentStep === 8;
               {homeCheckPending && homeCheckWall !== null && (
                 <>Home position check required for Wall {homeCheckWall}.</>
               )}
-              {!homeCheckPending && currentStep === 1 && "Marking Wall 2 in progress."}
-              {!homeCheckPending && currentStep === 2 && "Marking Wall 3 in progress."}
-              {!homeCheckPending && currentStep === 3 && "Marking Wall 4 in progress."}
-              {!homeCheckPending && currentStep === 5 && "Marking wall 5 in progress."}
-              {!homeCheckPending && currentStep === 6 && "Marking wall 6 in progress."}
-              {!homeCheckPending && currentStep === 7 && "Marking wall 1 in progress."}
-              {currentStep === 8 && "Marking complete."}
-            </p>
-            <p className="mt-1 text-sm">
-              Ensure that the laser leveller is turned on and is facing the wall that is to be marked.
+              {!homeCheckPending && currentStep === placement1Step && stageInstructions.placement1}
+              {!homeCheckPending && isPlacement2 && stageInstructions.placement2}
+              {!homeCheckPending && !isTerminalStep && wallForStep[currentStep] !== null &&
+                stageInstructions.wall(wallForStep[currentStep] as number)}
+              {isTerminalStep && stageInstructions.complete}
             </p>
           </div>
-          {/*
-          <div className="bg-black font-mono text-xs rounded p-3 max-h-[220px] overflow-y-auto shadow">
-            <div className="text-green-300 mb-1">Backend Output</div>
-            {cmdLogs.length === 0 ? (
-              <div className="opacity-60 text-green-400">Waiting for backend output…</div>
-            ) : (
-              cmdLogs.map((l, i) => (
-                <div key={i} className={getLogClass(l)}>
-                  {l}
-                </div>
-              ))
-            )}
-            <div ref={logEndRef} />
-          </div>
-          */}
+
           {showErrorBanner && (
             <div className="p-3 bg-red-100 text-red-700 rounded">
               <pre className="whitespace-pre-wrap text-sm">
@@ -668,7 +669,7 @@ const isTerminalStep = currentStep === 8;
               </pre>
             </div>
           )}
-          {/* HOME CHECK TABLE (backend-driven, stable) */}
+
           {homeCheckPending && homeCheckWall !== null && homeCheckRows.length > 0 && (
             <div className="bg-white shadow rounded overflow-hidden">
               <div
@@ -680,7 +681,6 @@ const isTerminalStep = currentStep === 8;
               >
                 {homeCheckPassed === false ? "✖ Home check failed" : "✔ Home position verified"}
               </div>
-
               <table className="w-full text-sm">
                 <thead>
                   <tr>
@@ -701,75 +701,57 @@ const isTerminalStep = currentStep === 8;
               </table>
             </div>
           )}
+
           <div className="flex flex-col gap-3">
-            {currentStep === 0 && (
+            {currentStep === placement1Step && (
               <button className="btn btn-primary" onClick={startPhaseOne} disabled={actionBusy}>
                 {actionBusy ? "Working..." : "Next"}
               </button>
             )}
-            {currentStep === 4 && !isHomeCheckFailed  && (
+            {currentStep === placement2Step && !isHomeCheckFailed && (
               <button className="btn btn-primary" onClick={startPhaseTwo} disabled={actionBusy}>
                 {actionBusy ? "Working..." : "Next"}
               </button>
             )}
-            {running && isMarkingStep(currentStep) && !hasError && (
+            {running && wallForStep[currentStep] !== null && !hasError && (
               <button className="btn btn-warning" onClick={pauseMarking} disabled={actionBusy}>
                 {actionBusy ? "Working..." : "Pause"}
               </button>
             )}
             {isHomeCheckFailed && (
-              <button
-                className="btn btn-error"
-                onClick={retryCurrentWall}
-                disabled={actionBusy}
-              >
+              <button className="btn btn-error" onClick={retryCurrentWall} disabled={actionBusy}>
                 Retry
               </button>
             )}
-            {/* WALL 4 MARKING ERROR → Retry + Continue (to Placement 2) */}
-            {isWall4MarkingError && (
+            {/* Phase 1's last wall finished (success or error) -> Retry or Continue to Placement 2 */}
+            {isPhase1LastWallIdle && (
               <div className="flex gap-2">
-                <button
-                  className="btn btn-error flex-1"
-                  onClick={retryCurrentWall}
-                  disabled={actionBusy}
-                >
+                <button className="btn btn-error flex-1" onClick={retryCurrentWall} disabled={actionBusy}>
                   Retry
                 </button>
-                <button
-                  className="btn btn-warning flex-1"
-                  onClick={continueNextWall}
-                  disabled={actionBusy}
-                >
+                <button className="btn btn-warning flex-1" onClick={continueNextWall} disabled={actionBusy}>
                   Continue →
                 </button>
               </div>
             )}
-            {/* Error / HomeCheck failure */}
+            {/* Any other marking error */}
             {isRealMarkingError && !isTerminalStep && (
               <div className="flex gap-2">
-                <button
-                  className="btn btn-error flex-1"
-                  onClick={retryCurrentWall}
-                  disabled={actionBusy}
-                >
+                <button className="btn btn-error flex-1" onClick={retryCurrentWall} disabled={actionBusy}>
                   Retry
                 </button>
-                <button
-                  className="btn btn-warning flex-1"
-                  onClick={continueNextWall}
-                  disabled={actionBusy}
-                >
+                <button className="btn btn-warning flex-1" onClick={continueNextWall} disabled={actionBusy}>
                   Continue →
                 </button>
               </div>
             )}
-            {currentStep === 8 && (
+            {isTerminalStep && (
               <button className="btn btn-success" onClick={() => window.location.reload()}>
                 Exit
               </button>
             )}
           </div>
+
           <div>
             <button
               className="btn btn-neutral btn-sm"
@@ -786,6 +768,7 @@ const isTerminalStep = currentStep === 8;
           </div>
         </div>
       </div>
+
       {/* Overlay / Modal for Auto Mode Instructions (multi-step) */}
       {showAutoInstr && (
         <div
@@ -794,15 +777,12 @@ const isTerminalStep = currentStep === 8;
           aria-modal="true"
           className="fixed inset-0 z-50"
         >
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/60"
             onClick={() => setShowAutoInstr(false)}
           />
-          {/* Panel */}
           <div className="absolute inset-0 flex items-center justify-center p-4">
             <div className="w-full max-w-3xl rounded-xl bg-base-100 shadow-2xl">
-              {/* Header */}
               <div className="flex items-center justify-between border-b px-5 py-3">
                 <div>
                   <h3 className="text-lg font-semibold">
@@ -821,7 +801,6 @@ const isTerminalStep = currentStep === 8;
                   ✕
                 </button>
               </div>
-              {/* Body */}
               <div className="p-5 space-y-4 text-sm leading-6">
                 {AUTO_STEPS[autoStep].body}
                 <div className="alert alert-info mt-2">
@@ -831,13 +810,9 @@ const isTerminalStep = currentStep === 8;
                   </div>
                 </div>
               </div>
-              {/* Footer controls */}
               <div className="flex justify-between border-t px-5 py-3">
                 <div className="flex gap-2">
-                  <button
-                    className="btn btn-ghost"
-                    onClick={() => setShowAutoInstr(false)}
-                  >
+                  <button className="btn btn-ghost" onClick={() => setShowAutoInstr(false)}>
                     Close
                   </button>
                 </div>
@@ -857,20 +832,11 @@ const isTerminalStep = currentStep === 8;
                       Next →
                     </button>
                   ) : (
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => setShowAutoInstr(false)}
-                    >
+                    <button className="btn btn-primary" onClick={() => setShowAutoInstr(false)}>
                       Finish
                     </button>
                   )}
                 </div>
-                {/*
-                <div className="text-xs opacity-60">
-            running={String(running)} paused={String(paused)} hasError={String(hasError)}{" "}
-            homeCheckPending={String(homeCheckPending)}
-          </div>
-          */}
               </div>
             </div>
           </div>
@@ -879,4 +845,5 @@ const isTerminalStep = currentStep === 8;
     </>
   );
 };
-export default SixWallFlow;                
+
+export default WallFlow;
