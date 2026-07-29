@@ -1,2 +1,33 @@
-
 /Greyform-linux/Python_Application/frontend/frontend
+
+# --- Python ---
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+
+# --- Build artifacts ---
+.build_lock
+.build_log.txt
+.build_pid
+.env_after_build
+build/
+
+# --- Catkin / ROS ---
+.catkin_workspace
+devel/
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+
+# --- Logs ---
+*.log
